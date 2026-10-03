@@ -17,6 +17,9 @@ export function StoryTile({
   meta,
   note,
   badge,
+  placeholder,
+  level = 3,
+  wide = false,
 }: {
   href: string;
   title: string;
@@ -26,19 +29,27 @@ export function StoryTile({
   note?: React.ReactNode;
   /** Najwyżej jedna etykieta na zdjęciu, np. „Nowość”. */
   badge?: string;
+  /** Treść szarego pola, gdy nie ma zdjęcia — np. ikona kategorii (dekoracyjna, aria-hidden). */
+  placeholder?: React.ReactNode;
+  /** Poziom nagłówka tytułu, gdy kafle stoją pod nagłówkiem h3 (domyślnie h3). */
+  level?: 3 | 4;
+  /** Niższe pole 2:1 — dla kafli z samą ikoną (bez zdjęcia), żeby siatka nie była zbyt wysoka. */
+  wide?: boolean;
 }) {
+  const Heading = level === 4 ? "h4" : "h3";
   return (
     <li className="relative flex flex-col gap-1 rounded-[16px] focus-within:outline-3 focus-within:outline-offset-[6px] focus-within:outline-ring">
-      <div className="relative mb-2 aspect-[4/3] overflow-hidden rounded-[16px] bg-muted">
+      <div className={cn("relative mb-2 overflow-hidden rounded-[16px] bg-muted", wide ? "aspect-[2/1]" : "aspect-[4/3]")}>
         {/* eslint-disable-next-line @next/next/no-img-element -- źródła zdjęć są dowolne (Supabase Storage, zewnętrzne) */}
-        {image && <img src={image.src} alt={image.alt} className="size-full object-cover" />}
+        {image && <img src={image.src} alt={image.alt} loading="lazy" className="size-full object-cover" />}
+        {!image && placeholder && <div className="flex size-full items-center justify-center text-muted-foreground">{placeholder}</div>}
         {badge && <span className="absolute top-3 left-3 rounded-full bg-background px-3 py-0.5 text-base">{badge}</span>}
       </div>
-      <h3 className="text-lg font-bold">
+      <Heading className="text-lg font-bold">
         <Link href={href} className="no-underline outline-none after:absolute after:inset-0 after:rounded-[16px] hover:underline">
           {title}
         </Link>
-      </h3>
+      </Heading>
       {meta && <p className="text-base text-muted-foreground">{meta}</p>}
       {note && <p className="text-base">{note}</p>}
     </li>

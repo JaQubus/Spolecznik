@@ -7,7 +7,9 @@ import { FieldError, FieldHint } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { MatchResponse, NeedCard } from "@/lib/schemas";
+import type { MatchResponse, MWS_AREAS, NeedCard } from "@/lib/schemas";
+
+type AreaKey = (typeof MWS_AREAS)[number];
 import { MatchResults } from "./match-results";
 import { VoiceInput } from "./voice-input";
 
@@ -27,7 +29,7 @@ async function post<T>(url: string, body: unknown): Promise<T> {
 
 const appendText = (prev: string, chunk: string) => (prev ? `${prev.trimEnd()} ${chunk}` : chunk);
 
-export function DescribeFlow({ initialText = "", initialGmina = "" }: { initialText?: string; initialGmina?: string }) {
+export function DescribeFlow({ initialText = "", initialGmina = "", area }: { initialText?: string; initialGmina?: string; area?: AreaKey }) {
   const [step, setStep] = useState<Step>({ kind: "input" });
   const [text, setText] = useState(initialText);
   const [gmina, setGmina] = useState(initialGmina);
@@ -75,7 +77,7 @@ export function DescribeFlow({ initialText = "", initialGmina = "" }: { initialT
     setFieldError(null);
     run(async () => {
       setStatus("Czytam opis…");
-      const r = await post<IntakeResponse>("/api/intake", { text, gmina: gmina || undefined });
+      const r = await post<IntakeResponse>("/api/intake", { text, gmina: gmina || undefined, area });
       setPiiFound(r.piiFound);
       if (r.needsFollowUp) {
         setStep({ kind: "followUp", card: r.card });

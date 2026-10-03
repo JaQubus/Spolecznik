@@ -1,13 +1,79 @@
-import { TodoPage } from "@/components/layout/todo-page";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { GROUP_ICONS } from "@/components/knowledge/icons";
+import { AreaTiles } from "@/components/knowledge/tiles";
+import { knowledge } from "@/lib/knowledge";
+import { searchKnowledge } from "@/lib/knowledge/search";
+import { GROUPS } from "@/lib/schemas";
+import { GROUP_LABELS } from "@/lib/taxonomy";
+import { ChallengesTab } from "./challenges-tab";
+import { LibraryTab, parseLibraryParams } from "./library-tab";
+import { MaterialsTab, parseMaterialParams } from "./materials-tab";
+import { SearchForm } from "./search-form";
+import { resultsSummary, SearchResults } from "./search-results";
+import { parseTab, SectionTabs } from "./section-tabs";
 
-export const metadata = { title: "Biblioteka i wiedza" };
+export const metadata: Metadata = {
+  title: "Biblioteka i wiedza",
+  description: "Sprawdzone innowacje społeczne z Małopolski, liczby o regionie i materiały do nauki.",
+};
 
-export default function Page() {
-  return <TodoPage title="Biblioteka i wiedza" items={[
-    "Innowacje jako historie: Problem → Rozwiązanie → Skąd wiemy, że działa → Jak skorzystać",
-    "Filtry „dla kogo” (9 kategorii) z ikonami i tekstem",
-    "Streszczenie w tekście łatwym do czytania",
-    "Kondycja Małopolski: mapa gmin z BDL",
-    "Zapytaj Bibliotekę: Q&A po raportach z odnośnikami do stron PDF",
-  ]} />;
+const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
+
+export default async function Page(props: PageProps<"/biblioteka">) {
+  const sp = await props.searchParams;
+  const q = first(sp.q);
+  const tab = parseTab(first(sp.tab));
+  const [areas, results] = await Promise.all([knowledge.areas(), q ? searchKnowledge(q) : null]);
+
+  return (
+    <div className="space-y-16">
+      {/* Kremowy pas: białe pole wyszukiwania na kremowym tle (SearchBar.md). */}
+      <section className="full-bleed -mt-8 space-y-6 bg-secondary py-12 md:py-16">
+        <h1 className="text-4xl font-bold sm:text-5xl">Biblioteka i wiedza</h1>
+        <p className="max-w-2xl text-xl">
+          Sprawdzone rozwiązania z Małopolski, liczby o naszym regionie i materiały do nauki. W jednym miejscu.
+        </p>
+        <SearchForm defaultValue={q} />
+      </section>
+
+      {/* Zawsze w drzewie, żeby czytnik ekranu ogłosił zmianę po każdym wyszukaniu. */}
+      <p role="status" className={results ? "text-lg font-bold" : "sr-only"}>
+        {results ? resultsSummary(results) : ""}
+      </p>
+      {results && <SearchResults results={results} />}
+
+      <section aria-labelledby="tematy" className="space-y-6">
+        <h2 id="tematy" className="text-3xl font-bold">Wybierz temat</h2>
+        <AreaTiles areas={areas} />
+      </section>
+
+      <section aria-labelledby="dla-kogo" className="space-y-6">
+        <h2 id="dla-kogo" className="text-3xl font-bold">Szukam rozwiązania dla…</h2>
+        <ul className="flex flex-wrap gap-3">
+          {GROUPS.map((g) => {
+            const Icon = GROUP_ICONS[g];
+            return (
+              <li key={g}>
+                <Link
+                  href={`/biblioteka?tab=library&dla=${g}#dzialy`}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-background px-4 text-lg hover:border-foreground hover:bg-secondary"
+                >
+                  <Icon aria-hidden className="size-5 shrink-0" />
+                  {GROUP_LABELS[g].replace(/^Dla /, "")}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <div id="dzialy" className="scroll-mt-4 space-y-10">
+        <SectionTabs current={tab} />
+        {tab === "library" && <LibraryTab params={parseLibraryParams(sp)} />}
+        {tab === "materials" && <MaterialsTab params={parseMaterialParams(sp)} />}
+        {tab === "challenges" && <ChallengesTab />}
+      </div>
+    </div>
+  );
 }
