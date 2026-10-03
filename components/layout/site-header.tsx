@@ -47,7 +47,7 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="border-b">
+    <header className="border-b print:hidden">
       <div className="bg-secondary" onKeyDown={closeA11y}>
         <div className="mx-auto max-w-6xl px-4 md:px-5">
           <div className="flex justify-end py-2 md:hidden">
