@@ -13,6 +13,7 @@ const NAV = [
   { href: "/biblioteka", label: "Biblioteka i wiedza" },
   { href: "/pomysl", label: "Zgłoś pomysł" },
   { href: "/wdrozenie", label: "Jak to wdrożyć u nas?" },
+  { href: "/zapytaj", label: "Zapytaj eksperta" },
   { href: "/status", label: "Sprawdź status" },
 ];
 

@@ -2,7 +2,7 @@
 
 Site header: thin flag band, accessibility strip, wordmark, primary nav, skip link.
 
-Consumer provides: nav items with the current page (the repo's five: Opisz problem, Biblioteka i wiedza, Zgłoś pomysł, Jak to wdrożyć u nas?, Sprawdź status), toggle states, the mobile menu sheet.
+Consumer provides: nav items with the current page (the repo's six: Opisz problem, Biblioteka i wiedza, Zgłoś pomysł, Jak to wdrożyć u nas?, Zapytaj eksperta, Sprawdź status), toggle states, the mobile menu sheet.
 
 - First focusable element: "Przejdź do treści".
 - Accessibility toggles are classes on `<html>`, as `components/a11y/a11y-toolbar.tsx` sets them: Większy tekst → `a11y-large` (root 125%), Wysoki kontrast → `a11y-contrast` (the contrast theme). Each a `button` with `aria-pressed`, pressed = `ink` fill, stored in `localStorage` and restored before hydration by `A11Y_INIT_SCRIPT`. Czytaj na głos (`speechSynthesis`) is planned, not in the code yet.
