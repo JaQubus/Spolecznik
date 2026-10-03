@@ -1,4 +1,4 @@
-"""Wzbogacanie LLM (Haiku, równolegle), README sekcja 8.4.
+"""Wzbogacanie LLM (Groq przez common.groq_chat, równolegle), README sekcja 8.4.
 
 Dla każdej innowacji: tagi obu osi, tematy przekrojowe, 10–20 lematów,
 streszczenie w tekście łatwym do czytania.

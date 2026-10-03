@@ -140,9 +140,8 @@ flowchart TD
 | Mapy | react-leaflet + GeoJSON gmin (PRG GUGiK uproszczony mapshaperem) | Lekkie, bez kluczy API |
 | Wykresy | Recharts | Szybkie, wystarczające |
 | Głos | Web Speech API: rozpoznawanie `pl-PL` (Chrome/Edge) + `speechSynthesis` do czytania na głos | Zero kosztu. W innych przeglądarkach fallback do pola tekstowego. |
-| AI SDK | **Vercel AI SDK** (`ai`, `@ai-sdk/anthropic`) | Streaming, `generateObject` ze schematem zod, `useChat` dla asystenta |
-| LLM (szybki) | **Claude Haiku 4.5** (`claude-haiku-4-5-20251001`) | Intake, triage, streszczenia w tekście łatwym do czytania, Q&A |
-| LLM (jakość) | **Claude Sonnet 5.5** (`claude-sonnet-5-5`) | Rerank z uzasadnieniem, asystent Pracowni, karta wdrożeniowa, wnioski |
+| LLM | **Groq** (`llama-3.3-70b-versatile`), wywołania `fetch` w `lib/groq.ts` | Tryb JSON + walidacja zod (`groqObject`). Wszystkie zadania: intake, rerank, lematy, Q&A, asystent Pracowni, karta wdrożeniowa, wnioski. Modele `fast` / `quality` w `lib/llm.ts`. |
+| AI SDK | **Vercel AI SDK** (`ai`, `@ai-sdk/openai`) | Tylko embeddingi |
 | Embeddingi | `text-embedding-3-small` (OpenAI) albo Voyage, czyli to, do czego macie klucz | Ten sam model dla korpusu i zapytań. Wymiar 1536 w schemacie poniżej dopasujcie do modelu. |
 | Baza | **Supabase**: Postgres + pgvector, Auth, RLS, Realtime, Storage, Database Webhooks | Jedna usługa zamiast pięciu. Open source, więc da się postawić on-prem w produkcji. |
 | E-mail | Resend | Powiadomienia i kody statusu |

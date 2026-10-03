@@ -52,6 +52,26 @@ export async function similarNeeds(embedding: number[], minSimilarity: number): 
   return (data ?? []) as SimilarNeed[];
 }
 
+export type DocChunkHit = {
+  id: string;
+  doc_title: string;
+  year: number | null;
+  url: string | null;
+  page: number | null;
+  text: string;
+  similarity: number;
+};
+
+export async function searchDocChunks(embedding: number[], count = 6): Promise<DocChunkHit[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.rpc("match_doc_chunks", {
+    p_embedding: JSON.stringify(embedding),
+    p_count: count,
+  });
+  if (error) throw error;
+  return (data ?? []) as DocChunkHit[];
+}
+
 export type IndexEntry = {
   kind: CardKind;
   refId: string;

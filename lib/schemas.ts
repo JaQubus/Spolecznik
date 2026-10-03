@@ -66,6 +66,80 @@ export const FeedbackRequest = z.object({
   value: z.union([z.literal(1), z.literal(-1), z.literal(0)]), // 0 = cofnięcie oceny
 });
 
+// /api/index-card: lematy i tagi obu osi dla karty w indeksie (README 5.3)
+export const IndexCardRequest = z.object({
+  kind: z.enum(CARD_KINDS),
+  refId: z.uuid(),
+});
+export const CardTags = z.object({
+  lemmas: z.array(z.string()).min(3).max(20), // FORMY PODSTAWOWE, jak keywords w NeedCard
+  areas: z.array(z.enum(MWS_AREAS)).max(3),
+  groups: z.array(z.enum(GROUPS)).max(3),
+});
+export type CardTags = z.infer<typeof CardTags>;
+
+// /api/ask: Zapytaj Bibliotekę (RAG po doc_chunks)
+export const AskRequest = z.object({ question: z.string().min(3).max(1000) });
+export const AskAnswer = z.object({
+  answered: z.boolean(), // false, gdy fragmenty raportów nie zawierają odpowiedzi
+  answer: z.string(),
+  sources: z.array(z.number().int()).max(5), // numery fragmentów z <fragment n="…">
+});
+export type AskResponse = {
+  answered: boolean;
+  answer: string;
+  sources: { docTitle: string; year: number | null; url: string | null; page: number | null }[];
+};
+
+// Pracownia: fiszka pomysłu (ideas.fiszka)
+export const Fiszka = z.object({
+  summary: z.string().min(1).max(500), // krótki opis
+  essence: z.string().max(3000).default(""), // istota
+  audience: z.string().max(1000).default(""), // dla kogo
+  stage: z.string().max(200).default(""), // etap
+});
+export type Fiszka = z.infer<typeof Fiszka>;
+
+// /api/assistant: asystent Pracowni
+export const AssistantRequest = z.object({
+  messages: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) }))
+    .min(1)
+    .max(30),
+  fiszka: Fiszka.optional(),
+});
+export type AssistantResponse = {
+  reply: string;
+  similar: { kind: "innowacja" | "pomysl"; id: string; title: string; similarity: number }[];
+};
+
+// /api/middleman: karta wdrożeniowa
+export const MiddlemanRequest = z.object({
+  innovationId: z.uuid(),
+  gmina: z.string().min(1).max(100),
+});
+export const ImplementationCard = z.object({
+  goal: z.string(),
+  audience: z.string(), // odbiorcy w tej gminie, z liczbami z profilu BDL
+  serviceForm: z.string(), // np. w ramach Centrum Usług Społecznych
+  steps: z.array(z.string()).min(3).max(10),
+  staffAndResources: z.string(),
+  costEstimate: z.object({ minPln: z.number(), maxPln: z.number(), basis: z.string() }), // zawsze szacunek
+  partners: z.array(z.object({ id: z.string(), role: z.string() })).max(5),
+  risks: z.array(z.string()).max(6),
+  successIndicators: z.array(z.string()).max(6),
+  assumptions: z.array(z.string()), // jawnie oznaczone założenia
+});
+export type ImplementationCard = z.infer<typeof ImplementationCard>;
+
+// /api/apply: szkic wniosku do aktywnego naboru
+export const ApplyRequest = z.object({ ideaId: z.uuid(), callId: z.uuid() });
+export const ApplicationDraft = z.object({
+  sections: z.array(z.object({ field: z.string(), label: z.string(), content: z.string() })).min(1),
+  checklist: z.array(z.object({ criterion: z.string(), met: z.boolean(), note: z.string() })),
+});
+export type ApplicationDraft = z.infer<typeof ApplicationDraft>;
+
 // Odpowiedź /api/match — wspólny typ dla serwera i klienta.
 export type InnovationMatch = RerankItem & {
   matchId: string;
@@ -96,3 +170,5 @@ export const CLARITY_THRESHOLD = 0.6;
  */
 export const RELATED_MIN_SIMILARITY = 0.35;
 export const SIMILAR_NEED_MIN_SIMILARITY = 0.55;
+/** Od tego podobieństwa asystent Pracowni mówi „podobne już istnieje”. */
+export const NOVELTY_MIN_SIMILARITY = 0.5;
