@@ -2,6 +2,7 @@ import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { NoDatabase } from "@/components/layout/no-database";
+import { ICON_LINK as linkClass } from "../shared";
 import { createClient, isMissingTable, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Ucz się" };
@@ -17,7 +18,6 @@ type Material = {
   year: number | null;
 };
 
-const linkClass = "inline-flex items-center gap-2 font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
 async function listMaterials(): Promise<Material[]> {
   const supabase = await createClient();

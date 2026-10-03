@@ -1,9 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { SUPABASE_KEY, SUPABASE_URL } from "./key";
 
 /** Czy są klucze Supabase (.env.local). Bez nich strony z danymi pokazują komunikat zamiast błędu. */
 export function isSupabaseConfigured(): boolean {
-  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY));
+  return Boolean(SUPABASE_URL && SUPABASE_KEY);
 }
 
 /** PostgREST nie zna tabeli — zwykle migracja nie została jeszcze uruchomiona. */
@@ -15,8 +16,8 @@ export function isMissingTable(error: { code?: string } | null): boolean {
 export async function createClient() {
   const cookieStore = await cookies();
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)!,
+    SUPABASE_URL,
+    SUPABASE_KEY,
     {
       cookies: {
         getAll: () => cookieStore.getAll(),

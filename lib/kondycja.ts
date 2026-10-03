@@ -181,11 +181,25 @@ export function median(values: number[]): number {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
+/** Wartość na tle mediany powiatów: 1 wyraźnie więcej, -1 wyraźnie mniej, 0 podobnie (różnica poniżej 5%). */
+export function regionDirection(value: number, values: number[]): -1 | 0 | 1 {
+  const m = median(values);
+  if (m === 0) return value > 0 ? 1 : value < 0 ? -1 : 0;
+  if (Math.abs(value - m) / Math.abs(m) < 0.05) return 0;
+  return value > m ? 1 : -1;
+}
+
 /** Porównanie z medianą powiatów prostymi słowami. */
 export function compareToRegion(value: number, values: number[]): string {
-  const m = median(values);
-  if (m === 0 || Math.abs(value - m) / Math.abs(m) < 0.05) return "Podobnie jak w większości powiatów Małopolski.";
-  return value > m ? "To więcej niż w większości powiatów Małopolski." : "To mniej niż w większości powiatów Małopolski.";
+  const d = regionDirection(value, values);
+  if (d === 0) return "Podobnie jak w większości powiatów Małopolski.";
+  return d > 0 ? "To więcej niż w większości powiatów Małopolski." : "To mniej niż w większości powiatów Małopolski.";
+}
+
+/** Czy wartość jest wyraźnie gorsza od mediany (ta sama miara co zdanie „więcej/mniej niż w większości”). */
+export function worseThanRegion(value: number, values: number[], worse: Indicator["worse"]): boolean {
+  const d = regionDirection(value, values);
+  return worse === "higher" ? d > 0 : d < 0;
 }
 
 /**

@@ -4,15 +4,13 @@ import Link from "next/link";
 import { NoDatabase } from "@/components/layout/no-database";
 import { listInnovations } from "@/lib/innovations";
 import { formatNumber, plural } from "@/lib/pl";
-import { GROUPS } from "@/lib/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { GROUP_LABELS } from "@/lib/taxonomy";
 import { LibraryFilters } from "./filters";
+import { LINK as linkClass, first, isGroup } from "./shared";
 
 export const metadata: Metadata = { title: "Biblioteka i wiedza" };
 
-const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
-const isGroup = (v: string): v is (typeof GROUPS)[number] => (GROUPS as readonly string[]).includes(v);
 
 const ENTRIES = [
   { href: "#innowacje", title: "Innowacje", text: "Sprawdzone rozwiązania z Małopolski: na czym polegają, skąd wiemy, że działają, i jak z nich skorzystać.", Icon: Lightbulb },
@@ -20,16 +18,15 @@ const ENTRIES = [
   { href: "/biblioteka/ucz-sie", title: "Ucz się", text: "Przewodniki i raporty ROPS o innowacjach społecznych, opisane prostym językiem.", Icon: GraduationCap },
 ];
 
-const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
-
 export default async function Page(props: PageProps<"/biblioteka">) {
   const params = await props.searchParams;
   const dla = first(params.dla);
   const group = isGroup(dla) ? dla : null;
   const q = first(params.q).slice(0, 100);
   const connected = isSupabaseConfigured();
-  const innovations = connected ? await listInnovations({ group: group ?? undefined, q }) : [];
-  const n = innovations.length;
+  const { items: innovations, total: n } = connected
+    ? await listInnovations({ group: group ?? undefined, q })
+    : { items: [], total: 0 };
   const filtered = Boolean(group || q);
 
   return (
@@ -65,59 +62,68 @@ export default async function Page(props: PageProps<"/biblioteka">) {
           <p className="max-w-2xl text-lg">Każde rozwiązanie opowiadamy w czterech krokach: problem, rozwiązanie, skąd wiemy, że działa, i jak z niego skorzystać.</p>
         </div>
 
-        {!connected && <NoDatabase />}
-
-        <LibraryFilters group={group} q={q} />
-
-        {/* Ogłaszane po każdej zmianie filtra — wyniki wymieniają się bez przeładowania strony. */}
-        <p role="status" className="text-lg font-bold">
-          {n === 0
-            ? "Nie znaleźliśmy rozwiązań."
-            : `${filtered ? "Znaleźliśmy" : "W bibliotece jest"} ${n} ${plural(n, "rozwiązanie", "rozwiązania", "rozwiązań")}`}
-          {n > 0 && group && ` · ${GROUP_LABELS[group].toLowerCase()}`}
-          {n > 0 && q && ` · „${q}”`}
-        </p>
-
-        {n === 0 ? (
-          <div className="max-w-2xl space-y-3 text-lg">
-            {filtered ? (
-              <>
-                <p>Spróbuj innego słowa albo wybierz „Wszystkie”.</p>
-                <p>
-                  Nie ma rozwiązania Twojego problemu?{" "}
-                  <Link href="/opisz" className={linkClass}>Opisz problem</Link>, a poszukamy dalej.
-                </p>
-              </>
-            ) : (
-              <p>Biblioteka jest jeszcze pusta. Dane trafiają tu z pipeline&apos;u (data/README.md).</p>
-            )}
-          </div>
+        {!connected ? (
+          <NoDatabase />
         ) : (
-          <ul className="max-w-3xl border-t">
-            {innovations.map((i) => (
-              <li key={i.id} className="grid gap-2 border-b py-6">
-                <h3 className="text-xl font-bold">
-                  <Link href={`/biblioteka/${i.slug ?? i.id}`} className={linkClass}>{i.title}</Link>
-                </h3>
-                <p className="flex flex-wrap gap-x-4 gap-y-1 text-base text-muted-foreground simple:hidden">
-                  {i.category && <span>{i.category}</span>}
-                  {i.video_url && (
-                    <span className="inline-flex items-center gap-1"><Play aria-hidden className="size-4" /> Z filmem</span>
-                  )}
-                  {i.synthetic && <span>Przykładowe dane</span>}
-                </p>
-                {/* Tryb prosty: streszczenie łatwe do czytania zamiast opisu (gdy jest). */}
-                <p className={i.etr_summary ? "max-w-[68ch] simple:hidden" : "max-w-[68ch]"}>{i.solution}</p>
-                {i.etr_summary && <p className="hidden max-w-[68ch] simple:block">{i.etr_summary}</p>}
-                {i.tests_count > 0 && (
-                  <p className="text-base text-muted-foreground">
-                    Przetestowano {i.tests_count} {plural(i.tests_count, "raz", "razy", "razy")}
-                    {i.avg_rating != null && `, średnia ocena ${formatNumber(Number(i.avg_rating))} na 5`}.
+          <>
+          <LibraryFilters group={group} q={q} />
+
+          {/* Ogłaszane po każdej zmianie filtra — wyniki wymieniają się bez przeładowania strony. */}
+          <p role="status" className="text-lg font-bold">
+            {n === 0
+              ? "Nie znaleźliśmy rozwiązań."
+              : `${filtered ? "Znaleźliśmy" : "W bibliotece jest"} ${n} ${plural(n, "rozwiązanie", "rozwiązania", "rozwiązań")}`}
+            {n > 0 && group && ` · ${GROUP_LABELS[group].toLowerCase()}`}
+            {n > 0 && q && ` · „${q}”`}
+          </p>
+          {n > innovations.length && (
+            <p className="text-base text-muted-foreground">
+              Pokazujemy pierwsze {innovations.length}. Zawęź listę filtrem „dla kogo” albo wpisz słowo w wyszukiwarkę.
+            </p>
+          )}
+
+          {n === 0 ? (
+            <div className="max-w-2xl space-y-3 text-lg">
+              {filtered ? (
+                <>
+                  <p>Spróbuj innego słowa albo wybierz „Wszystkie”.</p>
+                  <p>
+                    Nie ma rozwiązania Twojego problemu?{" "}
+                    <Link href="/opisz" className={linkClass}>Opisz problem</Link>, a poszukamy dalej.
                   </p>
-                )}
-              </li>
-            ))}
-          </ul>
+                </>
+              ) : (
+                <p>Biblioteka jest jeszcze pusta. Dane trafiają tu z pipeline&apos;u (data/README.md).</p>
+              )}
+            </div>
+          ) : (
+            <ul className="max-w-3xl border-t">
+              {innovations.map((i) => (
+                <li key={i.id} className="grid gap-2 border-b py-6">
+                  <h3 className="text-xl font-bold">
+                    <Link href={`/biblioteka/${i.slug ?? i.id}`} className={linkClass}>{i.title}</Link>
+                  </h3>
+                  <p className="flex flex-wrap gap-x-4 gap-y-1 text-base text-muted-foreground simple:hidden">
+                    {i.category && <span>{i.category}</span>}
+                    {i.video_url && (
+                      <span className="inline-flex items-center gap-1"><Play aria-hidden className="size-4" /> Z filmem</span>
+                    )}
+                    {i.synthetic && <span>Przykładowe dane</span>}
+                  </p>
+                  {/* Tryb prosty: streszczenie łatwe do czytania zamiast opisu (gdy jest). */}
+                  <p className={i.etr_summary ? "max-w-[68ch] simple:hidden" : "max-w-[68ch]"}>{i.solution}</p>
+                  {i.etr_summary && <p className="hidden max-w-[68ch] simple:block">{i.etr_summary}</p>}
+                  {i.tests_count > 0 && (
+                    <p className="text-base text-muted-foreground">
+                      Przetestowano {i.tests_count} {plural(i.tests_count, "raz", "razy", "razy")}
+                      {i.avg_rating != null && `, średnia ocena ${formatNumber(Number(i.avg_rating))} na 5`}.
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          </>
         )}
       </section>
     </div>

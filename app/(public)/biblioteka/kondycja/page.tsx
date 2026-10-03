@@ -6,20 +6,19 @@ import { NoDatabase } from "@/components/layout/no-database";
 import { Alert } from "@/components/ui/alert";
 import { innovationsForArea } from "@/lib/innovations";
 import {
-  CHALLENGE_MIN, CHALLENGE_TIE, CLASS_COUNT, KONDYCJA_AREAS, areaLabel, POPULATION_KEY, badness, classOf, compareToRegion, findArea, formatBare, formatValue,
+  CHALLENGE_MIN, CHALLENGE_TIE, CLASS_COUNT, KONDYCJA_AREAS, areaLabel, POPULATION_KEY, badness, classOf, compareToRegion, findArea, worseThanRegion, formatBare, formatValue,
   type KondycjaArea,
 } from "@/lib/kondycja";
 import { formatNumber } from "@/lib/pl";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getKondycjaData, longName, shortName, type PowiatyData } from "@/lib/powiaty";
 import { GROUP_LABELS } from "@/lib/taxonomy";
+import { LINK as linkClass, first } from "../shared";
 import { FocusHeading } from "./focus-heading";
 import { MAP_FILLS, PowiatyMap } from "./powiaty-map";
 
 export const metadata: Metadata = { title: "Kondycja Małopolski" };
 
-const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
-const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 const chipClass =
   "inline-flex min-h-12 max-w-full items-center gap-2 rounded-full py-2 [overflow-wrap:anywhere] border border-border-strong bg-background px-4 text-base hover:border-foreground aria-[current=true]:border-foreground aria-[current=true]:bg-foreground aria-[current=true]:font-bold aria-[current=true]:text-background";
 
@@ -187,9 +186,16 @@ async function PowiatCard({ data, powiat }: { data: PowiatyData; powiat: { id: s
   const facts = KONDYCJA_AREAS.map((a) => {
     const v = data.values[a.indicators[0].key]?.[powiat.id];
     const all = primaryValues(data, a);
-    return v?.value == null ? null : { a, value: v.value, unit: v.unit, b: badness(v.value, all, a.indicators[0].worse), compare: compareToRegion(v.value, all) };
+    const worse = a.indicators[0].worse;
+    return v?.value == null ? null : {
+      a, value: v.value, unit: v.unit,
+      b: badness(v.value, all, worse),
+      // „Wyzwanie” tylko, gdy wartość jest też wyraźnie gorsza od mediany — inaczej karta przeczyłaby sama sobie.
+      clearlyWorse: worseThanRegion(v.value, all, worse),
+      compare: compareToRegion(v.value, all),
+    };
   }).filter((f) => f != null);
-  const ranked = facts.filter((f) => f.b > CHALLENGE_MIN).sort((x, y) => y.b - x.b);
+  const ranked = facts.filter((f) => f.b > CHALLENGE_MIN && f.clearlyWorse).sort((x, y) => y.b - x.b);
   const challenges = ranked.filter((f, k) => k === 0 || (k === 1 && ranked[0].b - f.b <= CHALLENGE_TIE));
   const innovations = await Promise.all(challenges.map((c) => innovationsForArea(c.a.area, c.a.groups)));
 

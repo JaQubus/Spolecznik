@@ -9,20 +9,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getInnovation } from "@/lib/innovations";
 import { formatNumber, plural } from "@/lib/pl";
-import { GROUPS } from "@/lib/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { GROUP_LABELS } from "@/lib/taxonomy";
+import { ICON_LINK as linkClass, isGroup, safeDecode } from "../shared";
 import { LiteVideo } from "./video";
 
 const load = cache(getInnovation);
 
 export async function generateMetadata(props: PageProps<"/biblioteka/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
-  const innovation = isSupabaseConfigured() ? await load(decodeURIComponent(slug)) : null;
+  const innovation = isSupabaseConfigured() ? await load(safeDecode(slug)) : null;
   return { title: innovation?.title ?? "Nie znaleziono rozwiązania" };
 }
 
-const linkClass = "inline-flex items-center gap-2 font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
 /** Krok historii: numer w kółku (ozdoba), nagłówek, treść. Numer czyta czytnik z <ol>. */
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
@@ -59,10 +58,10 @@ function Labeled({ label, children }: { label: string; children: string | null }
 export default async function Page(props: PageProps<"/biblioteka/[slug]">) {
   const { slug } = await props.params;
   if (!isSupabaseConfigured()) return <NoDatabase />;
-  const i = await load(decodeURIComponent(slug));
+  const i = await load(safeDecode(slug));
   if (!i) notFound();
 
-  const groups = i.target_groups.filter((g): g is (typeof GROUPS)[number] => (GROUPS as readonly string[]).includes(g));
+  const groups = i.target_groups.filter(isGroup);
   const missing = <p className="text-muted-foreground">Karta tej innowacji nie opisuje jeszcze tego kroku.</p>;
 
   return (

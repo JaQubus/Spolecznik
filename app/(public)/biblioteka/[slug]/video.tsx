@@ -2,6 +2,7 @@
 
 import { ExternalLink, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { ICON_LINK as linkClass } from "../shared";
 
 type Embed = { provider: "YouTube" | "Vimeo"; src: string; thumbnail: string | null };
 
@@ -38,7 +39,6 @@ export function LiteVideo({ url, title }: { url: string; title: string }) {
   const frame = useRef<HTMLIFrameElement>(null);
   useEffect(() => { if (playing) frame.current?.focus(); }, [playing]);
 
-  const linkClass = "inline-flex items-center gap-2 font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
   if (!embed) {
     return (
       <a href={url} className={linkClass}>
