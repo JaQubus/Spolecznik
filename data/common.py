@@ -5,7 +5,12 @@ import time
 from pathlib import Path
 
 import httpx
+import truststore
 from dotenv import load_dotenv
+
+# Certyfikaty z systemu (Windows/macOS), nie tylko z certifi — inaczej HTTPS pada
+# za antywirusem albo proxy, które podmienia certyfikaty.
+truststore.inject_into_ssl()
 
 ROOT = Path(__file__).parent
 RAW = ROOT / "raw"    # surowy HTML/PDF — pobieramy raz, nie odpytujemy ROPS ponownie
