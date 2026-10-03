@@ -3,7 +3,8 @@
 Ludność ogółem, ludność wg wieku (udział 65+), zmiana ludności w 10 lat, a w gminy.wskazniki
 dodatkowe tematy mapy „Kondycja Małopolski” (EXTRA_VARS: migracje, przyrost naturalny, pomoc
 społeczna, bezrobocie) — każdy z ostatniego roku, dla którego BDL ma dane. Wskaźnik, którego nie da
-się pobrać, jest pomijany z ostrzeżeniem; reszta i ludność zapisują się normalnie.
+się pobrać, jest pomijany z ostrzeżeniem (przy timeoucie albo wyczerpanym limicie także kolejne);
+ludność i pobrane wskaźniki zapisują się normalnie.
 Identyfikatory jednostek BDL ≠ TERYT — mapujemy raz, przy pobieraniu.
 Nagłówek X-ClientId (zmienna BDL_CLIENT_ID) podnosi limity.
 Wynik: out/gminy.json.
@@ -91,7 +92,6 @@ class Bdl:
         return {r["id"]: {int(v["year"]): v["val"] for v in r["values"]} for r in rows}
 
 
-
 def latest_year(bdl: Bdl) -> int:
     """Ostatni rok, dla którego jest ludność ogółem (BDL publikuje z opóźnieniem)."""
     meta = bdl.get(f"/variables/{VAR_TOTAL}")
@@ -120,6 +120,11 @@ def fetch_extra(bdl: Bdl) -> dict[str, dict]:
         except httpx.HTTPStatusError as error:
             print(f"! {key}: BDL zwrócił {error.response.status_code} dla zmiennej {var_id} — pomijam")
             continue
+        except (httpx.HTTPError, RuntimeError) as error:
+            # Timeout albo wyczerpany limit zapytań: kolejne wskaźniki też by padły, więc kończymy tutaj,
+            # a ludność i to, co już pobrane, i tak się zapisze.
+            print(f"! {key}: {error} — pomijam ten i pozostałe wskaźniki")
+            break
         for uid, by_year in values.items():
             if uid[-1] in GMINA_KINDS and by_year.get(year) is not None:
                 row = out.setdefault(bdl_to_teryt(uid), {})
