@@ -19,7 +19,8 @@ export const CROSS = [
   "depopulacja_suburbanizacja", "wspolpraca_miedzysektorowa",
 ] as const;
 
-export const CARD_KINDS = ["innowacja", "potrzeba", "pomysl", "ekspert", "nabor"] as const;
+// biblioteka / obszar / material — karty Zasobnika wiedzy (migracja 0005), osobno od korpusu matchmakingu.
+export const CARD_KINDS = ["innowacja", "potrzeba", "pomysl", "ekspert", "nabor", "biblioteka", "obszar", "material"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
 export const NEED_STATUSES = [
@@ -52,6 +53,7 @@ export type RerankItem = z.infer<typeof RerankItem>;
 export const IntakeRequest = z.object({
   text: z.string().min(3).max(5000),
   gmina: z.string().optional(),
+  area: z.enum(MWS_AREAS).optional(), // obszar wybrany wcześniej, np. z „Biblioteki i wiedzy”
   previousCard: NeedCard.optional(), // przy odpowiedzi na pytanie doprecyzowujące
 });
 
@@ -128,6 +130,13 @@ export const TestRequest = z
   })
   .refine((t) => t.status !== "zakonczony" || t.rating != null, { path: ["rating"], message: "Wybierz ocenę od 1 do 5" });
 
+// /api/rozmowy: wiadomość autora w wątku zgłoszenia (wchodzi po kodzie, bez konta)
+export const ThreadPostRequest = z.object({
+  code: z.string().regex(STATUS_CODE),
+  body: z.string().trim().min(2, "Wpisz wiadomość").max(2000, "Wiadomość może mieć najwyżej 2000 znaków"),
+  expertId: z.uuid().optional(), // „Zapytaj eksperta” z wyników dopasowania
+});
+
 // /api/assistant: asystent Pracowni
 export const AssistantRequest = z.object({
   messages: z
@@ -181,7 +190,8 @@ export type InnovationMatch = RerankItem & {
 };
 
 export type MatchResponse = {
-  need: { id: string; statusCode: string; gmina: string | null };
+  /** accessKey: tajny klucz do rozmowy — tylko dla autora (ciasteczko + prywatny link). */
+  need: { id: string; statusCode: string; accessKey: string; gmina: string | null };
   matches: InnovationMatch[];
   isGap: boolean;
   similarNeeds: { count: number; gminy: string[] };

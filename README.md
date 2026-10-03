@@ -137,7 +137,7 @@ flowchart TD
 | Frontend | **Next.js (App Router) + TypeScript** | Jedno repo, jeden deploy, API w tym samym projekcie |
 | UI | **Tailwind CSS + shadcn/ui** (na Radix) | Gotowe dostępne komponenty: focus, ARIA, obsługa klawiatury |
 | Formularze | react-hook-form + zod | Te same schematy zod walidują formularze i odpowiedzi LLM |
-| Mapy | react-leaflet + GeoJSON gmin (PRG GUGiK uproszczony mapshaperem) | Lekkie, bez kluczy API |
+| Mapy | Własny SVG (`choropleth-map.tsx`) + ścieżki gmin z PRG GUGiK uproszczone w `data/gminy_geo.py` → `lib/gminy-shapes.json` | 183 gminy jako zwykłe linki w SVG: bez kafelków, bez kluczy API, bez biblioteki map |
 | Wykresy | Recharts | Szybkie, wystarczające |
 | Głos | Web Speech API: rozpoznawanie `pl-PL` (Chrome/Edge) + `speechSynthesis` do czytania na głos | Zero kosztu. W innych przeglądarkach fallback do pola tekstowego. |
 | LLM | **Groq** (`openai/gpt-oss-120b`, model rozumujący, `reasoning_effort: low`), wywołania `fetch` w `lib/groq.ts` i `data/common.py` | Tryb JSON + walidacja zod (`groqObject`). `gpt-oss-20b` odrzucony: w testach psuł polską gramatykę i lematy. Wszystkie zadania: intake, rerank, lematy, ETR, Q&A, asystent Pracowni, karta wdrożeniowa, wnioski. Modele `fast` / `quality` w `lib/llm.ts`. **Infrastruktura w USA — tylko demo na danych syntetycznych** (sekcja 10). |
@@ -363,7 +363,7 @@ sequenceDiagram
 | `needs` | status_code, author_id (nullable), contact_email (nullable), raw_text (RLS: autor i admin), card jsonb, teryt, status (`zgloszone` / `w_analizie` / `ekspert` / `odpowiedz` / `luka` / `zamkniete`), best_fit |
 | `matches` | need_id, kind, ref_id, fit, why, adapt, feedback |
 | `ideas` | author_id, fiszka jsonb, canvas jsonb, stage, status |
-| `calls` (nabory) | title, active, opens_at, closes_at, criteria jsonb, form_schema jsonb |
+| `calls` (nabory) | title, active, opens_at, closes_at, criteria jsonb, form_schema jsonb (`fields` dla generatora, `content` z treścią formularza /wniosek) |
 | `applications` | idea_id, call_id, draft jsonb, status |
 | `tests` | innovation_id, tester_id, teryt, status, rating, feedback, suggestions |
 | `threads`, `messages`, `thread_participants` | entity_kind, entity_id; treść; uczestnicy |
@@ -413,7 +413,7 @@ sequenceDiagram
 - Semantyczny HTML i landmarki, `lang="pl"`, link „Przejdź do treści”, widoczny focus, cała ścieżka główna obsługiwana klawiaturą.
 - Kontrast ≥ 4,5:1, powiększenie tekstu do 200% i układ przy szerokości 320 px bez poziomego przewijania.
 - Wyniki pojawiające się asynchronicznie ogłaszane przez `aria-live="polite"`. Etykiety i komunikaty błędów przy każdym polu. Brak limitów czasu.
-- Przełączniki w nagłówku: **większy tekst**, **wysoki kontrast**, **tryb prosty** (tekst łatwy do czytania), **czytaj na głos**.
+- Przełączniki w nagłówku: **większy tekst**, **wysoki kontrast**, **czytaj na głos**. Streszczenie łatwym językiem jest widoczne zawsze, bez osobnego trybu.
 - **„Opowiedz problem”**: duży przycisk mikrofonu. Rozpoznana transkrypcja jest widoczna i można ją poprawić przed wysłaniem.
 - Ocena gwiazdkami tylko jako opisane przyciski radiowe. Ikony zawsze z tekstem.
 - Weryfikacja:
@@ -460,7 +460,7 @@ sequenceDiagram
 |---|---|
 | 1. Dane / ML | Pipeline Pythona, lematy, SQL wyszukiwania, prompty intake i reranku, ewaluacja |
 | 2. Full-stack | Schemat, RLS, route handlers, Pracownia, Wdrożenie, powiadomienia, Panel |
-| 3. Frontend / dostępność | Ekrany ścieżki głównej, głos, tryb prosty, Wiedza (mapa, historie), audyt axe |
+| 3. Frontend / dostępność | Ekrany ścieżki głównej, głos, Wiedza (mapa, historie), audyt axe |
 | 4. Design / pitch | Makiety, treści i mikrokopie, dane syntetyczne (z osobą 1), scenariusz demo, deck, wideo, koszty |
 
 ---
@@ -480,7 +480,7 @@ sequenceDiagram
   - Rozmowy.
   - Mapa luk i trendy.
   - Generator wniosków.
-  - Wejście głosowe i tryb prosty.
+  - Wejście głosowe.
 - **Could**
   - Szkic wizualny pomysłu.
   - Partnerstwa (wątki grupowe gmin).
@@ -512,7 +512,7 @@ sequenceDiagram
 4. Jak działa dopasowanie + tabela trafności
 5. Siedem modułów na jednej osi (karta → widoki)
 6. Mapa luk: od danych do naborów
-7. Dostępność: głos, tryb prosty, wyniki audytu
+7. Dostępność: głos, tekst łatwy do czytania, wyniki audytu
 8. Architektura i bezpieczeństwo (UE, RLS, anonimizacja, wymienny LLM)
 9. Koszt utrzymania i zasoby
 10. Roadmapa wdrożenia i zespół
@@ -571,7 +571,7 @@ Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tok
 |---|---|---|
 | Stopień spełnienia | 40% | Wszystkie 7 modułów działa w jednej pętli (10 + 6 × 5). Dopasuj jest dopracowany i zmierzony. |
 | Potencjał wdrożeniowy | 20% | Otwarty stack, hosting w UE, koszt ok. 300–320 USD/mies., wymienny LLM, API i TERYT, szybka aktualizacja z Panelu |
-| Dostępność i intuicyjność | 20% | Głos, tryb prosty, kod statusu bez konta, wynik axe i Lighthouse, test z czytnikiem ekranu |
+| Dostępność i intuicyjność | 20% | Głos, tekst łatwy do czytania, kod statusu bez konta, wynik axe i Lighthouse, test z czytnikiem ekranu |
 | Atrakcyjność i pomysłowość | 10% | Mapa luk, kontekst gminy, matching w obie strony, historie w Bibliotece |
 | Jakość materiałów i MVP | 10% | Tabela trafności, spójny deck według pętli, wideo, README z architekturą |
 

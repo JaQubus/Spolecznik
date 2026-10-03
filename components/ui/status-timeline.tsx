@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { CheckIcon } from "@heroicons/react/24/outline";
 import { cn } from "cn";
 
 export type TimelineStep = { title: string; note?: string; state: "done" | "current" | "todo" };
@@ -31,7 +31,7 @@ export function StatusTimeline({ steps, className }: { steps: TimelineStep[]; cl
               s.state === "todo" && "border-border-strong bg-background"
             )}
           >
-            {s.state === "done" && <Check className="size-[18px]" strokeWidth={3} />}
+            {s.state === "done" && <CheckIcon className="size-[18px]" strokeWidth={3} />}
             {s.state === "current" && <span className="size-3 rounded-full bg-foreground" />}
           </span>
           <div>

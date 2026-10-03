@@ -1,6 +1,6 @@
 "use client";
 
-import { Accessibility, ChevronDown, ChevronRight, Menu, X } from "lucide-react";
+import { AdjustmentsHorizontalIcon, Bars3Icon, ChevronDownIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
@@ -13,6 +13,7 @@ const NAV = [
   { href: "/biblioteka", label: "Biblioteka i wiedza" },
   { href: "/pomysl", label: "Zgłoś pomysł" },
   { href: "/wdrozenie", label: "Jak to wdrożyć u nas?" },
+  { href: "/zapytaj", label: "Zapytaj eksperta" },
   { href: "/status", label: "Sprawdź status" },
 ];
 
@@ -47,7 +48,7 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="border-b">
+    <header className="border-b print:hidden">
       <div className="bg-secondary" onKeyDown={closeA11y}>
         <div className="mx-auto max-w-6xl px-4 md:px-5">
           <div className="flex justify-end py-2 md:hidden">
@@ -59,9 +60,9 @@ export function SiteHeader() {
               onClick={() => setA11yOpen((o) => !o)}
               className={disclosureButton}
             >
-              <Accessibility aria-hidden className="size-5" />
+              <AdjustmentsHorizontalIcon aria-hidden className="size-5" />
               Dostępność
-              <ChevronDown aria-hidden className={cn("size-5 transition-transform", a11yOpen && "rotate-180")} />
+              <ChevronDownIcon aria-hidden className={cn("size-5 transition-transform", a11yOpen && "rotate-180")} />
             </button>
           </div>
           <div id="ustawienia-dostepnosci" className={cn("pb-3 md:block md:py-1", a11yOpen ? "block" : "hidden")}>
@@ -85,7 +86,7 @@ export function SiteHeader() {
             onClick={() => setMenuOpen((o) => !o)}
             className={cn(disclosureButton, "lg:hidden")}
           >
-            {menuOpen ? <X aria-hidden className="size-5" /> : <Menu aria-hidden className="size-5" />}
+            {menuOpen ? <XMarkIcon aria-hidden className="size-5" /> : <Bars3Icon aria-hidden className="size-5" />}
             Menu
           </button>
         </div>
@@ -107,7 +108,7 @@ export function SiteHeader() {
                     className="flex min-h-14 items-center justify-between gap-4 px-4 text-lg hover:bg-secondary aria-[current=page]:font-bold aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-[0.45em] md:px-5 lg:min-h-12 lg:rounded-full lg:px-3 lg:whitespace-nowrap"
                   >
                     {n.label}
-                    <ChevronRight aria-hidden className="size-5 shrink-0 lg:hidden" />
+                    <ChevronRightIcon aria-hidden className="size-5 shrink-0 lg:hidden" />
                   </Link>
                 </li>
               );

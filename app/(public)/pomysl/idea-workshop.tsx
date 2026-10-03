@@ -44,6 +44,12 @@ export function IdeaWorkshop({
   const titleField = useRef<HTMLInputElement>(null);
   const errorBox = useRef<HTMLDivElement>(null);
   const doneHeading = useRef<HTMLHeadingElement>(null);
+  const applicationHref = `/wniosek?${new URLSearchParams({
+    tytul: fiszka.krotki_opis,
+    problem: fiszka.problem,
+    opis: fiszka.istota,
+    odbiorcy: fiszka.dla_kogo,
+  }).toString()}`;
 
   useEffect(() => { if (error) errorBox.current?.focus(); }, [error]);
   useEffect(() => { if (result) doneHeading.current?.focus(); }, [result]);
@@ -170,6 +176,10 @@ export function IdeaWorkshop({
       <div className="space-y-3">
         <p aria-live="polite" className="text-muted-foreground">{busy ? "Zapisuję pomysł…" : ""}</p>
         <Button type="button" onClick={submit} disabled={busy} className="w-full sm:w-auto">Zgłoś pomysł</Button>
+        <p className="max-w-2xl">
+          Chcesz od razu przygotować wniosek o grant?{" "}
+          <Link href={applicationHref} className={linkClass}>Przejdź do formularza — wstępnie uzupełnimy go tym pomysłem</Link>.
+        </p>
       </div>
     </div>
   );

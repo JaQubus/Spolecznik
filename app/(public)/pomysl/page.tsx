@@ -19,7 +19,14 @@ async function prefillFromNeed(code: string): Promise<Partial<Fiszka>> {
 }
 
 async function activeCalls(): Promise<ActiveCall[]> {
-  const { data } = await createAdminClient().from("calls").select("id, title, closes_at").eq("active", true).order("closes_at");
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await createAdminClient()
+    .from("calls")
+    .select("id, title, closes_at")
+    .eq("active", true)
+    .or(`opens_at.is.null,opens_at.lte.${today}`)
+    .or(`closes_at.is.null,closes_at.gte.${today}`)
+    .order("closes_at");
   return (data ?? []).map((c) => ({ id: c.id, title: c.title, closesAt: c.closes_at }));
 }
 

@@ -21,6 +21,9 @@ from pathlib import Path
 
 from common import OUT, ROOT, read_json, write_json
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 CSV_PATH = ROOT.parent / "dane" / "powiaty" / "wszystkie_powiaty.csv"
 MAPPING = read_json(ROOT / "powiaty_mapping.json")
 
@@ -92,11 +95,19 @@ def write_sql(rows: list[dict], path: Path) -> None:
 
 
 def load_db(rows: list[dict]) -> None:
-    import psycopg  # tylko tu: wariant --sql działa bez sterownika i bez bazy
-
     from common import db_url
 
-    with psycopg.connect(db_url()) as conn, conn.cursor() as cur:
+    try:
+        database_url = db_url()
+    except KeyError as error:
+        raise SystemExit(
+            "Brak SUPABASE_DB_URL w .env.local. "
+            "Dodaj connection string do bazy albo uruchom: python import_powiaty.py --sql"
+        ) from error
+
+    import psycopg  # tylko tu: wariant --sql działa bez sterownika i bez bazy
+
+    with psycopg.connect(database_url) as conn, conn.cursor() as cur:
         cur.executemany(UPSERT.format(values=", ".join(f"%({c})s" for c in COLUMNS)), rows)
         for year in sorted({r["rok"] for r in rows}):
             keep = [f"{r['powiat']}|{r['wskaznik']}" for r in rows if r["rok"] == year]

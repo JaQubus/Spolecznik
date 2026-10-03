@@ -67,7 +67,8 @@ def load_innovations(cur) -> dict[str, str]:
         ids[r["slug"]] = str(cur.fetchone()[0])
 
     # Korpus to dokładnie out/innovations.json — np. po przejściu z danych prawdziwych na mock.
-    cur.execute("delete from innovations where slug is null or not (slug = any(%s))", (list(ids),))
+    # Innowacje Zasobnika (corpus = 'biblioteka', migracja 0005) ładuje osobno supabase/seed_knowledge.sql.
+    cur.execute("delete from innovations where corpus = 'pipeline' and (slug is null or not (slug = any(%s)))", (list(ids),))
     cur.execute("delete from search_index where kind = 'innowacja' and not (ref_id = any(%s::uuid[]))", (list(ids.values()),))
 
     index_rows(cur, [{

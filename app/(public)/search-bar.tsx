@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useRef, useState } from "react";
 import { EMPTY_GMINA, GminaField } from "@/components/gmina-field";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ export function SearchBar({ gminy }: { gminy: GminaOption[] }) {
         </div>
         <FieldError id="problem-blad">{error}</FieldError>
         <div className="relative md:row-start-3 md:self-start">
-          <Search aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-6 -translate-y-1/2 text-muted-foreground" />
+          <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-6 -translate-y-1/2 text-muted-foreground" />
           <Input
             ref={problem}
             id="problem"

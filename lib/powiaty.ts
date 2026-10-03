@@ -1,55 +1,62 @@
 import "server-only";
-import { KONDYCJA_KEYS } from "./kondycja";
-import { createClient, isMissingTable } from "./supabase/server";
+import { createClient } from "./supabase/server";
 
-export type Powiat = { id: string; nazwa: string };
-export type Value = { value: number | null; unit: string };
-
-export type PowiatyData = {
-  year: number | null;
-  powiaty: Powiat[];
-  /** values[wskaźnik][powiat] */
-  values: Record<string, Record<string, Value>>;
+export type PowiatIndicator = {
+  wskaznik: string;
+  kategoria: string;
+  jednostka: string;
 };
 
-/** „powiat m. Kraków” → „Kraków”, „powiat bocheński” → „bocheński”. */
-export function shortName(nazwa: string): string {
-  return nazwa.replace(/^powiat\s+/, "").replace(/^m\.\s*/, "");
-}
+export type PowiatValue = PowiatIndicator & {
+  powiat: string;
+  nazwa: string;
+  opis: string | null;
+  rok: number;
+  wartosc: number | null;
+};
 
-/** „Kraków (miasto na prawach powiatu)”, „powiat bocheński”. */
-export function longName(nazwa: string): string {
-  return /^powiat\s+m\./.test(nazwa) ? `${shortName(nazwa)} (miasto na prawach powiatu)` : nazwa;
-}
-
-/** Wskaźniki Kondycji Małopolski z najnowszego roku w tabeli powiaty_wskazniki. */
-export async function getKondycjaData(): Promise<PowiatyData> {
+export async function listPowiatyIndicators(): Promise<PowiatIndicator[]> {
   const supabase = await createClient();
-  const { data: latest, error: yearError } = await supabase
-    .from("powiaty_wskazniki")
-    .select("rok")
-    .order("rok", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  // Bez migracji 0007 strona pokazuje „Brak danych o powiatach” zamiast błędu 500.
-  if (isMissingTable(yearError)) return { year: null, powiaty: [], values: {} };
-  if (yearError) throw yearError;
-  if (!latest) return { year: null, powiaty: [], values: {} };
+  // Supabase oddaje najwyżej max_rows wierszy (domyślnie 1000), a tabela ma ich ~2500 (22 powiaty × 112
+  // wskaźników × lata). Bez stronicowania połowa wskaźników po cichu znikała. Czytamy do pustej strony,
+  // więc działa przy każdym max_rows; kolejność jest pełna, żeby strony się nie nakładały.
+  const rows: PowiatIndicator[] = [];
+  for (let from = 0; ; ) {
+    const { data, error } = await supabase
+      .from("powiaty_wskazniki")
+      // Bez opisu (~500 znaków × 22 powiaty): opis wybranego wskaźnika przychodzi z listPowiatyValues.
+      .select("wskaznik, kategoria, jednostka")
+      .order("kategoria")
+      .order("wskaznik")
+      .order("powiat")
+      .order("rok")
+      .range(from, from + 999);
+    if (error) throw error;
+    if (!data?.length) break;
+    rows.push(...(data as PowiatIndicator[]));
+    from += data.length;
+  }
+  const seen = new Set<string>();
+  return rows.filter((row) => {
+    const key = `${row.kategoria}|${row.wskaznik}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
+export async function listPowiatyValues(indicator: string): Promise<PowiatValue[]> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("powiaty_wskazniki")
-    .select("powiat, nazwa, wskaznik, wartosc, jednostka")
-    .eq("rok", latest.rok)
-    .in("wskaznik", KONDYCJA_KEYS);
+    .select("powiat, nazwa, kategoria, wskaznik, opis, rok, wartosc, jednostka")
+    .eq("wskaznik", indicator)
+    .order("nazwa");
   if (error) throw error;
-
-  const names = new Map<string, string>();
-  const values: PowiatyData["values"] = {};
-  for (const r of data) {
-    names.set(r.powiat, r.nazwa);
-    (values[r.wskaznik] ??= {})[r.powiat] = { value: r.wartosc == null ? null : Number(r.wartosc), unit: r.jednostka };
+  const latest = new Map<string, PowiatValue>();
+  for (const row of data ?? []) {
+    const current = latest.get(row.powiat);
+    if (!current || row.rok > current.rok) latest.set(row.powiat, row as PowiatValue);
   }
-  const powiaty = [...names].map(([id, nazwa]) => ({ id, nazwa }))
-    .sort((a, b) => shortName(a.nazwa).localeCompare(shortName(b.nazwa), "pl"));
-  return { year: latest.rok, powiaty, values };
+  return [...latest.values()];
 }

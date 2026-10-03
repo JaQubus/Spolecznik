@@ -9,6 +9,7 @@ import { anonymize } from "@/lib/pii";
 import { NEED_STATUSES } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { needThread, postNeedMessage } from "@/lib/threads";
 
 export type ActionResult = { ok: boolean; message: string } | null;
 
@@ -17,7 +18,7 @@ const NOT_FOUND: ActionResult = { ok: false, message: "Nie znaleziono zgłoszeni
 
 /** Zapis zmiany statusu (albo samej wiadomości, gdy status bez zmian) + ślad w audit_log + powiadomienie autora, jeśli ma konto. */
 async function setStatus(
-  actorId: string,
+  actorId: string | null,
   needId: string,
   from: NeedStatus,
   authorId: string | null,
@@ -131,6 +132,41 @@ export async function assignExpert(_prev: ActionResult, formData: FormData): Pro
   }
   refresh();
   return { ok: true, message: `Przypisano eksperta: ${name}.` };
+}
+
+const ReplyInput = z.object({
+  needId: z.uuid(),
+  as: z.enum(["rops", "ekspert"]),
+  body: z.string().trim().min(2).max(2000),
+});
+
+/**
+ * Odpowiedź w rozmowie o zgłoszeniu. Eksperci są na razie tylko w indeksie (bez kont),
+ * więc w demo admin może napisać w imieniu eksperta wątku — podpis to jego nazwa.
+ */
+export async function replyInThread(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = ReplyInput.safeParse({ needId: formData.get("needId"), as: formData.get("as"), body: formData.get("body") });
+  if (!parsed.success) return { ok: false, message: "Wpisz wiadomość (od 2 do 2000 znaków)." };
+  const { needId, as, body } = parsed.data;
+
+  try {
+    const thread = await needThread({ needId });
+    if (!thread) return NOT_FOUND;
+    if (as === "ekspert" && !thread.expert) return { ok: false, message: "Ta rozmowa nie ma eksperta. Najpierw go przypisz." };
+    await postNeedMessage(thread, {
+      role: as,
+      name: as === "ekspert" ? thread.expert!.name : undefined,
+      // Bez anonymize(): odpowiedź ROPS może celowo podawać telefon albo adres instytucji.
+      body,
+      actorId: user.id,
+    });
+  } catch (e) {
+    console.error("[panel] rozmowa:", e);
+    return { ok: false, message: "Nie udało się wysłać. Spróbuj ponownie." };
+  }
+  refresh();
+  return { ok: true, message: "Wysłano. Zgłaszający zobaczy wiadomość po wpisaniu kodu." };
 }
 
 const NeedIdInput = z.object({ needId: z.uuid() });

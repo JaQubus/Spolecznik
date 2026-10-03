@@ -101,6 +101,8 @@ async function loadSource(kind: CardKind, refId: string): Promise<Source | null>
       if (!data) return null;
       return { title: data.title, body: join(data.title, data.description), teryt: null, active: data.active };
     }
+    default:
+      return null; // biblioteka, obszar, material: karty Zasobnika indeksuje lib/knowledge/indexing.ts
   }
 }
 

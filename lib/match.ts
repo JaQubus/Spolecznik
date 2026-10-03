@@ -7,6 +7,7 @@ import {
   type InnovationMatch, type MatchResponse, type NeedCard,
 } from "./schemas";
 import { keywordSearch, similarNeeds, upsertIndex } from "./search";
+import { newAccessKey } from "./need-access";
 import { newStatusCode } from "./status-code";
 import { createAdminClient } from "./supabase/admin";
 
@@ -149,13 +150,15 @@ export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promis
   ranked.sort((a, b) => b.fit - a.fit);
   const isGap = (ranked[0]?.fit ?? 0) < GAP_THRESHOLD;
 
-  // Zapis potrzeby z kodem zgłoszenia (ponowienie przy kolizji kodu)
+  // Zapis potrzeby z kodem zgłoszenia (ponowienie przy kolizji kodu) i skrótem klucza do rozmowy
+  const access = newAccessKey();
   let need: { id: string; status_code: string } | null = null;
   for (let attempt = 0; attempt < 3 && !need; attempt++) {
     const { data, error } = await supabase
       .from("needs")
       .insert({
         status_code: newStatusCode(),
+        access_hash: access.hash,
         raw_text: text,
         card,
         teryt: gminaRow?.teryt ?? null,
@@ -244,7 +247,7 @@ export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promis
   }
 
   return {
-    need: { id: need.id, statusCode: need.status_code, gmina: gminaRow?.nazwa ?? null },
+    need: { id: need.id, statusCode: need.status_code, accessKey: access.key, gmina: gminaRow?.nazwa ?? null },
     matches,
     isGap,
     similarNeeds: { count: otherGminy.size, gminy: [...otherGminy.values()] },
