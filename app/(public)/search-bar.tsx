@@ -31,13 +31,15 @@ export function SearchBar({ gminy }: { gminy: GminaOption[] }) {
         setError("Napisz w kilku słowach, jaki masz problem, np. „brak transportu dla seniorów”.");
         problem.current?.focus();
       }}
-      className="flex flex-col gap-4 md:flex-row md:items-end"
+      className="flex flex-col gap-4 md:grid md:grid-cols-[1fr_16rem_auto] md:gap-x-4 md:gap-y-2"
     >
-      <div className="flex flex-1 flex-col gap-2">
-        <Label htmlFor="problem">Jaki masz problem?</Label>
-        <FieldHint id="problem-pomoc">Np. samotność seniorów, brak opieki po szkole, dojazd do lekarza.</FieldHint>
+      <div className="flex flex-col gap-2 md:row-span-3 md:grid md:grid-rows-subgrid md:gap-y-2">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="problem">Jaki masz problem?</Label>
+          <FieldHint id="problem-pomoc">Np. samotność seniorów, brak opieki po szkole, dojazd do lekarza.</FieldHint>
+        </div>
         <FieldError id="problem-blad">{error}</FieldError>
-        <div className="relative">
+        <div className="relative md:row-start-3 md:self-start">
           <Search aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-6 -translate-y-1/2 text-muted-foreground" />
           <Input
             ref={problem}
@@ -51,9 +53,12 @@ export function SearchBar({ gminy }: { gminy: GminaOption[] }) {
           />
         </div>
       </div>
-      <div className="flex flex-col gap-2 md:w-64">
-        <Label htmlFor="gmina-start">Gmina</Label>
-        <FieldHint id="gmina-start-pomoc">Nieobowiązkowo.</FieldHint>
+      <div className="flex flex-col gap-2 md:row-span-3 md:grid md:grid-rows-subgrid md:gap-y-2">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="gmina-start">Gmina</Label>
+          <FieldHint id="gmina-start-pomoc">Nieobowiązkowo.</FieldHint>
+        </div>
+        <span aria-hidden className="hidden md:block" />
         <GminaField
           id="gmina-start"
           name="gmina"
@@ -65,7 +70,7 @@ export function SearchBar({ gminy }: { gminy: GminaOption[] }) {
         {/* Wyłączone pole nie trafia do adresu: bez wyboru zostaje samo ?gmina=. */}
         <input type="hidden" name="teryt" value={gmina.teryt ?? ""} disabled={!gmina.teryt} />
       </div>
-      <Button type="submit" className="w-full md:w-auto">Szukaj</Button>
+      <Button type="submit" className="w-full md:col-start-3 md:row-start-3 md:w-auto md:self-start">Szukaj</Button>
     </form>
   );
 }
