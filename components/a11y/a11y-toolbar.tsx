@@ -1,11 +1,12 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { AlignLeft, Contrast, Type } from "lucide-react";
 
 export const A11Y_OPTIONS = [
-  { key: "large", label: "Większy tekst" },
-  { key: "contrast", label: "Wysoki kontrast" },
-  { key: "simple", label: "Tryb prosty" },
+  { key: "large", label: "Większy tekst", Icon: Type },
+  { key: "contrast", label: "Wysoki kontrast", Icon: Contrast },
+  { key: "simple", label: "Tryb prosty", Icon: AlignLeft },
 ] as const;
 
 // Źródłem prawdy są klasy na <html> (np. a11y-simple); ustawia je też A11Y_INIT_SCRIPT przed hydracją.
@@ -27,15 +28,16 @@ export function A11yToolbar() {
   const classes = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   return (
-    <div role="group" aria-label="Ustawienia dostępności" className="flex flex-wrap gap-2">
-      {A11Y_OPTIONS.map(({ key, label }) => (
+    <div role="group" aria-label="Ustawienia dostępności" className="flex flex-wrap gap-1">
+      {A11Y_OPTIONS.map(({ key, label, Icon }) => (
         <button
           key={key}
           type="button"
           aria-pressed={classes.split(" ").includes(`a11y-${key}`)}
           onClick={() => toggle(key)}
-          className="rounded-md border px-3 py-1.5 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+          className="inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-base hover:bg-muted aria-pressed:bg-foreground aria-pressed:font-bold aria-pressed:text-background"
         >
+          <Icon aria-hidden className="size-5" />
           {label}
         </button>
       ))}
