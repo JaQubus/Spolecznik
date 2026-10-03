@@ -14,7 +14,7 @@ export type ActionResult = { ok: boolean; message: string } | null;
 const SAVE_FAILED: ActionResult = { ok: false, message: "Nie udało się zapisać. Spróbuj ponownie." };
 const NOT_FOUND: ActionResult = { ok: false, message: "Nie znaleziono zgłoszenia. Odśwież stronę." };
 
-/** Zapis zmiany statusu + ślad w audit_log + powiadomienie autora, jeśli ma konto. */
+/** Zapis zmiany statusu (albo samej wiadomości, gdy status bez zmian) + ślad w audit_log + powiadomienie autora, jeśli ma konto. */
 async function setStatus(
   actorId: string,
   needId: string,
@@ -31,7 +31,7 @@ async function setStatus(
   if (authorId) {
     const { error: nError } = await supabase.from("notifications").insert({
       user_id: authorId,
-      kind: "zmiana_statusu",
+      kind: from === patch.status ? "wiadomosc" : "zmiana_statusu",
       payload: { needId, status: patch.status },
     });
     if (nError) console.error("[panel] powiadomienie:", nError);
@@ -64,17 +64,27 @@ export async function updateNeedStatus(_prev: ActionResult, formData: FormData):
   if (!parsed.success) return { ok: false, message: "Wybierz nowy status." };
   const { needId, status, note } = parsed.data;
 
+  // Ten sam status + wiadomość = sama wiadomość dla zgłaszającego (np. poprawka albo bieżąca informacja).
+  let noteOnly: boolean;
   try {
     const need = await loadNeed(needId);
     if (!need) return NOT_FOUND;
-    if (need.status === status && !note) return { ok: true, message: "Status się nie zmienił." };
-    await setStatus(user.id, needId, need.status, need.author_id, { status }, "need.status", { note: note ?? null });
+    noteOnly = need.status === status;
+    if (noteOnly && !note) return { ok: false, message: "Wybierz inny status albo wpisz wiadomość." };
+    await setStatus(
+      user.id, needId, need.status, need.author_id, { status },
+      noteOnly ? "need.note" : "need.status",
+      { note: note ?? null },
+    );
   } catch (e) {
     console.error("[panel] status:", e);
     return SAVE_FAILED;
   }
   refresh();
-  return { ok: true, message: `Zapisano status: ${NEED_STATUS_LABELS[status]}.` };
+  return {
+    ok: true,
+    message: noteOnly ? "Zapisano wiadomość dla zgłaszającego." : `Zapisano status: ${NEED_STATUS_LABELS[status]}.`,
+  };
 }
 
 const AssignInput = z.object({ needId: z.uuid(), expertId: z.uuid() });

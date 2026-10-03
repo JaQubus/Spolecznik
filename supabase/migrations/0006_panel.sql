@@ -76,5 +76,7 @@ language sql stable as $$
 $$;
 
 -- Wywołuje tylko serwer (service_role) po sprawdzeniu roli admina.
+-- handle_new_user odpala wyłącznie trigger (security definer, więc zabieramy też jawne EXECUTE).
+revoke execute on function handle_new_user() from public, anon, authenticated;
 revoke execute on function need_triage(uuid[], float, float) from public, anon, authenticated;
 revoke execute on function need_neighbours(uuid, text, int) from public, anon, authenticated;

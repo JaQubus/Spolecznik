@@ -158,7 +158,7 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
           </fieldset>
           <div className="space-y-2">
             <Label htmlFor="note">Wiadomość dla zgłaszającego (nieobowiązkowa)</Label>
-            <FieldHint id="note-pomoc">Zobaczy ją na stronie statusu po wpisaniu kodu. Nie wpisuj danych osobowych.</FieldHint>
+            <FieldHint id="note-pomoc">Zobaczy ją na stronie statusu po wpisaniu kodu. Możesz ją wysłać bez zmiany statusu — zastąpi wtedy poprzednią wiadomość przy tym kroku. Nie wpisuj danych osobowych.</FieldHint>
             <Textarea id="note" name="note" maxLength={1000} aria-describedby="note-pomoc" className="max-w-xl min-h-24" />
           </div>
           <SubmitButton variant={canAssign ? "outline" : "default"}>Zapisz status</SubmitButton>
@@ -241,6 +241,7 @@ function describeChange(h: AuditRow): string {
   const to = d.to as keyof typeof NEED_STATUS_LABELS | undefined;
   const note = d.note ? ` — „${d.note}”` : "";
   if (h.action === "need.remove_pii") return "Usunięto dane osobowe z treści";
+  if (h.action === "need.note") return `Wiadomość dla zgłaszającego${note}`;
   if (to) return `Status: ${NEED_STATUS_LABELS[to]}${note}`;
   return h.action;
 }
