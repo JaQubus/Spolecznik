@@ -4,6 +4,7 @@ import { AssistantRequest, NOVELTY_MIN_SIMILARITY, type AssistantResponse } from
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit } from "@/lib/rate-limit";
+import { aiErrorResponse } from "@/lib/groq";
 
 /** Asystent Pracowni: pytania, nieoczywiste kierunki i sprawdzanie nowości tym samym silnikiem co Dopasuj. */
 export async function POST(request: Request) {
@@ -67,7 +68,6 @@ export async function POST(request: Request) {
     };
     return Response.json(response);
   } catch (e) {
-    console.error("[assistant]", e);
-    return Response.json({ error: "Asystent nie odpowiedział, spróbuj ponownie" }, { status: 500 });
+    return aiErrorResponse("assistant", e, "Asystent nie odpowiedział, spróbuj ponownie");
   }
 }
