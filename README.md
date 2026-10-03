@@ -87,7 +87,7 @@ flowchart LR
     PII[Anonimizacja PII]
     LLM[Warstwa LLM<br/>Haiku 4.5 / Sonnet 5.5]
   end
-  subgraph D["Supabase (Frankfurt)"]
+  subgraph D["Supabase (Irlandia)"]
     PG[(Postgres + pgvector<br/>indeks kart)]
     RT[Realtime<br/>wątki, powiadomienia]
     AU[Auth + RLS]
@@ -148,7 +148,7 @@ flowchart TD
 | E-mail | Resend | Powiadomienia i kody statusu |
 | Pipeline danych | Python (uv): Playwright, PyMuPDF, httpx, anthropic SDK, numpy, scikit-learn, psycopg | Twoja mocna strona; uruchamiany raz, offline |
 | Jakość | @axe-core/playwright, Lighthouse, eslint-plugin-jsx-a11y, opcjonalnie Sentry | Liczby do slajdu o dostępności |
-| Hosting | Vercel (`fra1`) + Supabase (`eu-central-1`) | Dane w UE |
+| Hosting | Vercel (`fra1`) + Supabase (`eu-west-1`) | Dane w UE |
 
 **Dlaczego bez osobnego backendu w FastAPI:** to jeden deploy mniej i mniej ruchomych części w 20 godzin. Python zostaje tylko offline (scraping, wzbogacanie, ewaluacja).
 
