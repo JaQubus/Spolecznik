@@ -24,7 +24,7 @@ const disclosureButton =
 
 /**
  * Nagłówek. Pasek dostępności jest zawsze na górze; na telefonie zwija się za przyciskiem „Dostępność”,
- * a nawigacja poniżej lg za przyciskiem „Bars3Icon”. Każdy panel otwiera się pod swoim przyciskiem,
+ * a nawigacja poniżej lg za przyciskiem „Menu”. Każdy panel otwiera się pod swoim przyciskiem,
  * więc naciśnięty przycisk się nie przesuwa, a kolejność Tab zgadza się z kolejnością na ekranie.
  */
 export function SiteHeader() {
@@ -86,7 +86,7 @@ export function SiteHeader() {
             className={cn(disclosureButton, "lg:hidden")}
           >
             {menuOpen ? <XMarkIcon aria-hidden className="size-5" /> : <Bars3Icon aria-hidden className="size-5" />}
-            Bars3Icon
+            Menu
           </button>
         </div>
         <nav

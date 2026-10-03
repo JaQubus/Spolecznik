@@ -7,7 +7,7 @@ create table areas (
   key               text primary key,             -- jak MWS_AREAS w lib/schemas.ts
   slug              text unique not null,         -- adres /biblioteka/obszar/[slug]
   name              text not null,
-  icon              text not null,                -- nazwa ikony Lucide
+  icon              text not null,                -- nazwa ikony Heroicons (UI wybiera ikonę po kluczu obszaru)
   lead              text not null,                -- jedno zdanie na kafel
   definition        text not null,                -- 2–3 zdania prostym językiem
   challenges        jsonb not null default '[]',  -- lista zdań

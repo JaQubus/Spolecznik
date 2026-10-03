@@ -308,7 +308,7 @@ def build_facts() -> list[dict]:
     return [{**f, "id": uid("fakt", f["area"], f["quote"]), "published": True, "sort": n} for n, f in enumerate(facts)]
 
 
-# ── SQL dla Supabase (migracja 0005_knowledge.sql musi być już zastosowana) ──
+# ── SQL dla Supabase (migracja 0010_knowledge.sql musi być już zastosowana) ──
 
 class Jsonb:
     """Wartość do kolumny jsonb (lista napisów domyślnie idzie jako text[])."""
