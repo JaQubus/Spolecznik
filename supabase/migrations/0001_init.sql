@@ -1,4 +1,4 @@
--- hubmi.pl: model danych (README, sekcje 5.3 i 7)
+-- Społecznik: model danych (README, sekcje 5.3 i 7)
 create extension if not exists vector;
 
 -- ── Użytkownicy ─────────────────────────────────────────────

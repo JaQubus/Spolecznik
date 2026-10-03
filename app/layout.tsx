@@ -10,7 +10,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "lat
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "latin-ext"] });
 
 export const metadata: Metadata = {
-  title: { default: "hubmi.pl", template: "%s · hubmi.pl" },
+  title: { default: "Społecznik", template: "%s · Społecznik" },
   description: "Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.",
 };
 
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <footer className="border-t px-4 py-6 text-center text-sm text-muted-foreground">
-          hubmi.pl · Małopolski Hub Innowacji Społecznych · dane demonstracyjne są syntetyczne
+          Społecznik · Małopolski Hub Innowacji Społecznych · dane demonstracyjne są syntetyczne
         </footer>
         <Toaster />
       </body>

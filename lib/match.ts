@@ -12,7 +12,7 @@ import { createAdminClient } from "./supabase/admin";
 type MatchInput = { card: NeedCard; text: string; gmina?: string };
 
 /**
- * hubmi.pl·Dopasuj (README 5.1, kroki 4–7): wyszukiwanie hybrydowe → rerank z kontekstem gminy →
+ * Społecznik·Dopasuj (README 5.1, kroki 4–7): wyszukiwanie hybrydowe → rerank z kontekstem gminy →
  * zapis potrzeby z kodem zgłoszenia → indeksowanie potrzeby, żeby kolejne zgłoszenia ją znalazły.
  */
 export async function runMatch({ card, text, gmina }: MatchInput): Promise<MatchResponse> {
