@@ -386,12 +386,19 @@ type Saved = {
   fromSaved: boolean;
   /** Pomysł z /pomysl, który różni się od zapisanego szkicu: pytamy, zamiast go po cichu pominąć. */
   pendingPrefill?: ApplicationPrefill;
+  /** Odcisk pomysłu, od którego szkic się zaczął (albo który użytkownik już raz odrzucił). */
+  source?: string;
 };
 
-/** Czy pola przenoszone z fiszki mają w szkicu inną treść niż w linku z /pomysl. */
+/** Ten sam pomysł z /pomysl daje ten sam klucz, niezależnie od późniejszych zmian w szkicu. */
+const prefillKey = (p: ApplicationPrefill) =>
+  JSON.stringify([p.tytul, p.problem, p.opis, p.odbiorcy].map((v) => v?.trim() ?? ""));
+
+/** Czy pomysł wnosi coś, czego w szkicu nie ma (puste pola pomysłu nie liczą się). */
 function prefillDiffers(app: Application, prefill: ApplicationPrefill, content: CallFormContent): boolean {
   const fromIdea = applicationFromPrefill(prefill, content);
-  return fromIdea.tytul !== app.tytul || Object.entries(fromIdea.opisy).some(([k, v]) => v && v !== app.opisy[k]);
+  return (!!fromIdea.tytul && fromIdea.tytul !== app.tytul.trim())
+    || Object.entries(fromIdea.opisy).some(([k, v]) => v && v !== app.opisy[k]?.trim());
 }
 
 function readSaved(callId: string, content: CallFormContent, prefill?: ApplicationPrefill): Saved {
@@ -401,12 +408,15 @@ function readSaved(callId: string, content: CallFormContent, prefill?: Applicati
       const step = Math.min(Math.max(Number(saved.step) || 0, 0), STEPS.length - 1);
       const reached = Math.min(Math.max(step, Number(saved.reached) || 0), STEPS.length - 1);
       const app = restore(saved.app, content, saved.declarations);
-      const pendingPrefill = prefill && prefillDiffers(app, prefill, content) ? prefill : undefined;
-      return { app, step, reached, fromSaved: true, pendingPrefill };
+      const source = typeof saved.source === "string" ? saved.source : undefined;
+      // Szkic zaczęty od tego samego pomysłu (a potem rozwinięty) nie wywołuje pytania po odświeżeniu.
+      const pendingPrefill = prefill && prefillKey(prefill) !== source && prefillDiffers(app, prefill, content) ? prefill : undefined;
+      return { app, step, reached, fromSaved: true, pendingPrefill, source };
     }
   } catch {}
   return {
     app: prefill ? applicationFromPrefill(prefill, content) : emptyApplication(content), step: 0, reached: 0, fromSaved: false,
+    source: prefill ? prefillKey(prefill) : undefined,
   };
 }
 
@@ -437,12 +447,14 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
   // Fokus na podsumowanie błędów tylko po „Dalej”, nie przy każdej poprawce pola.
   const focusSummary = useRef(false);
   const [pendingPrefill, setPendingPrefill] = useState(initial.pendingPrefill);
+  const [source, setSource] = useState(initial.source);
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     if (!dirty.current) return;
     const declarations = declarationFingerprints(content);
-    try { localStorage.setItem(storageKey(call.id), JSON.stringify({ app, step, reached, declarations })); } catch {}
-  }, [app, step, reached, call.id, content]);
+    try { localStorage.setItem(storageKey(call.id), JSON.stringify({ app, step, reached, declarations, source })); } catch {}
+  }, [app, step, reached, source, call.id, content]);
 
   // Po zmianie kroku fokus na nagłówek kroku, żeby czytnik ekranu zaczął od początku.
   useEffect(() => {
@@ -485,21 +497,41 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
     goTo(step + 1);
   }
 
+  /** Komunikat dla czytnika i fokus na nagłówek kroku: przycisk, który miał fokus, właśnie znika. */
+  function announce(message: string) {
+    setStatus(message);
+    setTimeout(() => heading.current?.focus(), 0);
+  }
+
   function applyPrefill() {
     if (!pendingPrefill) return;
     dirty.current = true;
     setApp(applicationFromPrefill(pendingPrefill, content));
+    setSource(prefillKey(pendingPrefill));
     setPendingPrefill(undefined);
     setReached(0);
     goTo(0);
+    announce(`Wczytano pomysł „${pendingPrefill.tytul?.trim() || "bez tytułu"}”. Poprzedni szkic został usunięty.`);
+  }
+
+  function keepDraft() {
+    if (!pendingPrefill) return;
+    dirty.current = true;
+    setSource(prefillKey(pendingPrefill)); // ten sam pomysł nie zapyta drugi raz
+    setPendingPrefill(undefined);
+    announce("Zostawiono zapisany szkic.");
   }
 
   function reset() {
-    dirty.current = true;
+    // Pusty formularz to brak szkicu: nic nie zapisujemy, więc kolejny pomysł z /pomysl wczyta się od razu.
+    try { localStorage.removeItem(storageKey(call.id)); } catch {}
+    dirty.current = false;
+    setSource(undefined);
     setApp(emptyApplication(content));
     setConfirmReset(false);
     setReached(0);
     goTo(0);
+    announce("Formularz wyczyszczony.");
   }
 
   const current = STEPS[step];
@@ -508,6 +540,7 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
   return (
     <FormCtx.Provider value={{ app, errors, content, update }}>
       <div className="grid gap-8">
+        <p role="status" className="sr-only">{status}</p>
         {pendingPrefill && (
           <Alert title="Masz zapisany szkic wniosku" className="print:hidden">
             <p>
@@ -516,7 +549,7 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
             </p>
             <div className="flex flex-wrap gap-3 pt-2">
               <Button type="button" variant="outline" size="sm" onClick={applyPrefill}>Zastąp szkic tym pomysłem</Button>
-              <Button type="button" variant="link" size="sm" onClick={() => setPendingPrefill(undefined)}>Zostaw szkic</Button>
+              <Button type="button" variant="link" size="sm" onClick={keepDraft}>Zostaw szkic</Button>
             </div>
           </Alert>
         )}

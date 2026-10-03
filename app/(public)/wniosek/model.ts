@@ -94,7 +94,9 @@ function fingerprint(items: string[]): string {
 
 /** Zapisywane obok szkicu, żeby wiedzieć, pod jaką treścią oświadczeń ktoś postawił znaczniki. */
 export function declarationFingerprints(content: CallFormContent): Record<DeclarationSet, string> {
-  return { A: fingerprint(content.declarations.A.items), B: fingerprint(content.declarations.B.items) };
+  // Wstęp (np. pouczenie o odpowiedzialności karnej) też jest częścią tego, co się potwierdza.
+  const { A, B } = content.declarations;
+  return { A: fingerprint([A.lead, ...A.items]), B: fingerprint([B.lead, ...B.items]) };
 }
 
 /**
@@ -187,8 +189,8 @@ const POSTAL_CODE = /^\d{2}-?\d{3}$/;
 
 /** „30070” → „30-070” w gotowym dokumencie; wszystko inne zostaje jak wpisano. */
 export function formatPostalCode(raw: string): string {
-  const s = raw.replace(/\s/g, "");
-  return /^\d{5}$/.test(s) ? `${s.slice(0, 2)}-${s.slice(2)}` : raw;
+  const d = raw.replace(/[\s-]/g, "");
+  return /^\d{5}$/.test(d) ? `${d.slice(0, 2)}-${d.slice(2)}` : raw;
 }
 const digits = (s: string) => s.replace(/\D/g, "");
 

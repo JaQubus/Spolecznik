@@ -60,7 +60,7 @@ export const CallFormSchema = z.object({
 });
 export type CallFormSchema = z.infer<typeof CallFormSchema>;
 
-/** Used only for legacy calls whose form_schema is null or an empty object. */
+/** Pola IWS 2.0 dla generatora, gdy nabór nie ma `fields` albo są błędne (parseCallFields). */
 export const FALLBACK_CALL_FORM: CallFormSchema = {
   fields: [
     { key: "1_tytul", label: "Tytuł innowacji", type: "text" },
@@ -89,5 +89,7 @@ export function parseCallFormSchema(value: unknown): CallFormSchema {
  */
 export function parseCallFields(value: unknown): CallFormSchema["fields"] {
   const parsed = CallFormSchema.pick({ fields: true }).safeParse(value);
-  return parsed.success ? parsed.data.fields : FALLBACK_CALL_FORM.fields;
+  if (parsed.success) return parsed.data.fields;
+  if (value != null && Object.keys(value).length) console.warn("[apply] Błędne form_schema.fields, używam wzoru IWS", parsed.error);
+  return FALLBACK_CALL_FORM.fields;
 }
