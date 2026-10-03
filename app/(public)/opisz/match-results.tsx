@@ -125,7 +125,7 @@ function StatusCode({ code }: { code: string }) {
   );
 }
 
-/** Wiersz ResultList: tytuł, dopasowanie słowami, uzasadnienie w <dl>, dwie akcje drugorzędne. */
+/** Wiersz ResultList: tytuł, dopasowanie słowami, uzasadnienie w <dl>, trzy akcje z README §5.1: jedna drugorzędna i dwie ciche. */
 function ResultRow({ match: m, statusCode }: { match: InnovationMatch; statusCode: string }) {
   return (
     <li className="grid gap-3 border-b py-8 first:pt-0">
@@ -152,10 +152,11 @@ function ResultRow({ match: m, statusCode }: { match: InnovationMatch; statusCod
           {m.avgRating != null && `, średnia ocena ${formatNumber(m.avgRating)} na 5`}.
         </p>
       )}
-      {/* Dwie akcje, drugorzędna i cicha: dziesięć wyników nie może dać dziesięciu zielonych przycisków. */}
+      {/* Jedna akcja z obrysem, reszta jako linki: dziesięć wyników nie może dać dziesięciu zielonych przycisków. */}
       <div className="mt-2 flex flex-wrap items-center gap-3">
         <Button asChild variant="outline"><Link href={`/wdrozenie?innowacja=${m.id}&potrzeba=${statusCode}`}>Jak to wdrożyć u nas?</Link></Button>
         <Button asChild variant="link"><Link href={`/przetestuj?innowacja=${m.id}`}>Chcę przetestować</Link></Button>
+        <Button asChild variant="link"><Link href={`/zapytaj?innowacja=${m.id}&potrzeba=${statusCode}`}>Zapytaj eksperta</Link></Button>
       </div>
       <FeedbackButtons matchId={m.matchId} />
     </li>
