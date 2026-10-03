@@ -5,13 +5,13 @@ import { ApplyRequest } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit } from "@/lib/rate-limit";
 
-/** Generator wnioskÃ³w: tylko przy aktywnym naborze. Szkic zapisujemy w applications. */
+/** Generator wniosków: tylko przy aktywnym naborze. Szkic zapisujemy w applications. */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "apply", 3);
   if (limited) return limited;
   const parsed = ApplyRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return Response.json({ error: "NieprawidÅ‚owe dane", issues: parsed.error.issues }, { status: 400 });
+    return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
   }
   const { ideaId, callId } = parsed.data;
   const supabase = createAdminClient();
@@ -23,13 +23,13 @@ export async function POST(request: Request) {
     ]);
     if (idea.error) throw idea.error;
     if (call.error) throw call.error;
-    if (!idea.data) return Response.json({ error: "Nie znaleziono pomysÅ‚u" }, { status: 404 });
+    if (!idea.data) return Response.json({ error: "Nie znaleziono pomysłu" }, { status: 404 });
     if (!call.data) return Response.json({ error: "Nie znaleziono naboru" }, { status: 404 });
     const today = new Date().toISOString().slice(0, 10);
     const outsideWindow =
       (call.data.opens_at && call.data.opens_at > today) ||
       (call.data.closes_at && call.data.closes_at < today);
-    if (!call.data.active || outsideWindow) return Response.json({ error: "Ten nabÃ³r nie jest aktywny" }, { status: 409 });
+    if (!call.data.active || outsideWindow) return Response.json({ error: "Ten nabór nie jest aktywny" }, { status: 409 });
 
     const formSchema = parseCallFormSchema(call.data.form_schema);
     const draft = await draftApplication({
@@ -49,6 +49,6 @@ export async function POST(request: Request) {
     return Response.json({ applicationId: application.id, draft });
   } catch (e) {
     console.error("[apply]", e);
-    return Response.json({ error: "Nie udaÅ‚o siÄ™ przygotowaÄ‡ szkicu wniosku" }, { status: 500 });
+    return Response.json({ error: "Nie udało się przygotować szkicu wniosku" }, { status: 500 });
   }
 }
