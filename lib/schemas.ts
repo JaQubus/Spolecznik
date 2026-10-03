@@ -112,6 +112,20 @@ export const IdeaRequest = z.object({
 });
 export type IdeaResponse = { ideaId: string; statusCode: string };
 
+// /api/tests: Próba — zgłoszenie testu albo ocena po teście (#19)
+export const TestRequest = z
+  .object({
+    innovationId: z.uuid(),
+    gmina: z.string().min(2).max(100),
+    status: z.enum(["planowany", "zakonczony"]),
+    testerOrg: z.string().max(200).optional(),
+    plannedFor: z.iso.date().optional(),
+    rating: z.number().int().min(1).max(5).optional(),
+    feedback: z.string().max(2000).optional(), // co działa
+    suggestions: z.string().max(2000).optional(), // co poprawić
+  })
+  .refine((t) => t.status !== "zakonczony" || t.rating != null, { path: ["rating"], message: "Wybierz ocenę od 1 do 5" });
+
 // /api/assistant: asystent Pracowni
 export const AssistantRequest = z.object({
   messages: z
