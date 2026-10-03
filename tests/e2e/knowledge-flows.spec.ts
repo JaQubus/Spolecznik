@@ -107,47 +107,33 @@ test("admin dodaje innowację, po chwili znajduje ją w wyszukiwarce, potem usuw
   await expect(page.getByText("Rekord został usunięty.")).toBeVisible();
 });
 
-test("mapa Małopolski: gminy i powiaty z prawdziwymi granicami, wybór z listy, tabela, bez naruszeń axe", async ({ page }) => {
-  await page.goto("/biblioteka");
-  const map = page.getByRole("region", { name: "Małopolska na mapie" });
-  await map.scrollIntoViewIfNeeded();
-  const svg = page.getByRole("img", { name: /Mapa Małopolski/ });
-  await expect(svg).toBeVisible();
-  await expect(svg.locator("g").first().locator("path")).toHaveCount(183);
+test("Kondycja Małopolski: kategorie wskaźników powiatów, top 5, karta powiatu, bez naruszeń axe", async ({ page }) => {
+  await page.goto("/biblioteka/kondycja");
+  const map = page.getByRole("group", { name: /^Mapa powiatów:/ });
+  await expect(map.getByRole("link")).toHaveCount(22);
 
-  // Kolory: wzrost liczby mieszkańców na czerwono, spadek na niebiesko (skala rozbieżna).
-  await page.getByLabel("Co pokazać").selectOption({ label: "Zmiana liczby mieszkańców w 10 lat" });
-  await expect(map.getByText(/^-15% i mniej$/)).toBeVisible();
+  // Kategorie z ikonami: Seniorzy i opieka → pierwszy wskaźnik kategorii, lista „Co pokazać” tylko z tej kategorii.
+  await page.getByRole("link", { name: /^Seniorzy i opieka \(\d+\)$/ }).click();
+  await expect(page.getByRole("link", { name: /^Seniorzy i opieka/ })).toHaveAttribute("aria-current", "true");
+  await expect(page).toHaveURL(/wskaznik=/);
 
-  // Góra i dół rankingu obok siebie; dla zmian — największe wzrosty i spadki.
-  await expect(map.getByRole("region", { name: "Najwięcej na plus" }).getByRole("listitem")).toHaveCount(5);
-  await expect(map.getByRole("region", { name: "Najwięcej na minus" }).getByText(/^−|^-/).first()).toBeVisible();
-  // Kategorie z ikonami: Seniorzy → udział 65+.
-  await map.getByText(/^Seniorzy i opieka/).click();
-  await expect(page.getByLabel("Co pokazać")).toHaveValue("udzial_65plus");
-  await expect(map.getByRole("region", { name: "5 gmin z najwyższą wartością" }).getByRole("listitem")).toHaveCount(5);
-  await expect(map.getByRole("region", { name: "5 gmin z najniższą wartością" }).getByRole("listitem")).toHaveCount(5);
+  // Skala rozbieżna: przyrost naturalny — niebiesko poniżej zera, czerwono od zera w górę.
+  await page.getByRole("link", { name: /^Ludność \(\d+\)$/ }).click();
+  await page.getByLabel("Co pokazać").selectOption({ label: "Przyrost naturalny" });
+  await expect(page.getByRole("heading", { level: 2, name: "Przyrost naturalny" })).toBeVisible();
+  await expect(page.getByRole("list", { name: "Legenda mapy" })).toContainText("0 i więcej");
 
-  // Klawiatura / czytnik ekranu: wyszukiwarka bez polskich znaków → podpowiedź → panel szczegółów (aria-live) i adres.
-  const search = page.getByRole("combobox", { name: "Znajdź gminę" });
-  await search.fill("zakop");
-  await expect(page.getByRole("option", { name: /Zakopane/ })).toBeVisible();
-  await search.press("Enter");
-  await expect(search).toHaveValue("Zakopane");
-  await expect(map.locator("div[aria-live=polite]")).toContainText("Zakopane");
-  await expect(map.locator("div[aria-live=polite]")).toContainText(/miejsce na 183 gmin/);
-  await expect(page).toHaveURL(/jednostka=1217011/);
+  // Pod mapą tabela z pierwszą piątką, od najwyższej wartości.
+  const top = page.getByRole("region", { name: "5 powiatów z najwyższą wartością" });
+  await expect(top.locator("tbody tr")).toHaveCount(5);
+  await expect(top.locator("tbody tr").first()).toContainText("1.");
 
-  // Przełącznik warstw: wybrana gmina przechodzi na swój powiat.
-  await page.getByText(/^Powiaty \(22\)$/).click();
-  await expect(svg.locator("g").first().locator("path")).toHaveCount(22);
-  await expect(map.locator("div[aria-live=polite]")).toContainText("powiat tatrzański");
+  // Klik w powiat na mapie otwiera jego kartę; pełna tabela ma 22 powiaty.
+  await map.getByRole("link", { name: /^powiat tatrzański:/ }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "powiat tatrzański" })).toBeFocused();
+  await expect(page.getByRole("region", { name: /Przyrost naturalny: 22 powiatów/ }).locator("tbody tr")).toHaveCount(22);
 
-  // Tabela z tymi samymi danymi co mapa.
-  await page.getByText(/^Pokaż dane w tabeli/).click();
-  await expect(page.getByRole("table", { name: /powiaty, od najwyższej wartości/ }).locator("tbody tr")).toHaveCount(22);
-
-  const { violations } = await new AxeBuilder({ page }).include("#mapa-naglowek").include("section[aria-labelledby=mapa-naglowek]")
+  const { violations } = await new AxeBuilder({ page }).include("main")
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).slice(0, 2)}`)).toEqual([]);
 });

@@ -2,30 +2,43 @@ import { ArrowLeftIcon, CheckIcon, ChevronRightIcon } from "@heroicons/react/24/
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cn } from "cn";
+import { MAP_CATEGORIES } from "@/components/knowledge/map-categories";
 import { NoDatabase } from "@/components/layout/no-database";
 import { Alert } from "@/components/ui/alert";
 import { innovationsForArea } from "@/lib/innovations";
 import {
-  CHALLENGE_MIN, CHALLENGE_TIE, CLASS_COUNT, KONDYCJA_AREAS, areaLabel, POPULATION_KEY, badness, classOf, compareToRegion, findArea, worseThanRegion, formatBare, formatValue,
-  type KondycjaArea,
+  CHALLENGE_MIN, CHALLENGE_TIE, KONDYCJA_AREAS, areaLabel, POPULATION_KEY, badness, compareToRegion, worseThanRegion, formatBare,
 } from "@/lib/kondycja";
+import { classify, ranked, withUnit, type MapData, type MapIndicator } from "@/lib/knowledge/map";
 import { formatNumber } from "@/lib/pl";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getKondycjaData, longName, shortName, type PowiatyData } from "@/lib/powiaty";
-import { GROUP_LABELS } from "@/lib/taxonomy";
+import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
+import mapJson from "@/public/mapa/malopolska.json";
 import { LINK as linkClass, first } from "../shared";
 import { FocusHeading } from "./focus-heading";
-import { MAP_FILLS, PowiatyMap } from "./powiaty-map";
+import { IndicatorSelect } from "./indicator-select";
+import { NO_DATA, PowiatyMap } from "./powiaty-map";
 
 export const metadata: Metadata = { title: "Kondycja Małopolski" };
+
+/** Wszystkie wskaźniki powiatów z IOSS (data/knowledge_map.py), pogrupowane w kategorie jak na mapie gmin. */
+const LAYER = (mapJson as unknown as MapData).layers.powiaty;
+const TOP = 5;
 
 const chipClass =
   "inline-flex min-h-12 max-w-full items-center gap-2 rounded-full py-2 [overflow-wrap:anywhere] border border-border-strong bg-background px-4 text-base hover:border-foreground aria-[current=true]:border-foreground aria-[current=true]:bg-foreground aria-[current=true]:font-bold aria-[current=true]:text-background";
 
-const href = (area: string, powiat?: string) => `/biblioteka/kondycja?obszar=${area}${powiat ? `&powiat=${powiat}#karta` : ""}`;
+const href = (indicator: string, powiat?: string) =>
+  `/biblioteka/kondycja?wskaznik=${indicator}${powiat ? `&powiat=${powiat}#karta` : ""}`;
+
+/** Wskaźnik z adresu; stare linki ?obszar= trafiają na pierwszy wskaźnik tego obszaru Mapy Wyzwań. */
+function findIndicator(key: string | undefined, area: string | undefined): MapIndicator {
+  return LAYER.indicators.find((i) => i.key === key) ?? LAYER.indicators.find((i) => area && i.area === area) ?? LAYER.indicators[0];
+}
 
 /** Wartości głównego wskaźnika obszaru we wszystkich powiatach (bez braków danych). */
-function primaryValues(data: PowiatyData, area: KondycjaArea): number[] {
+function primaryValues(data: PowiatyData, area: (typeof KONDYCJA_AREAS)[number]): number[] {
   return Object.values(data.values[area.indicators[0].key] ?? {})
     .map((v) => v.value)
     .filter((v): v is number => v != null);
@@ -33,35 +46,34 @@ function primaryValues(data: PowiatyData, area: KondycjaArea): number[] {
 
 export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
   const params = await props.searchParams;
-  const area = findArea(first(params.obszar));
+  const indicator = findIndicator(first(params.wskaznik), first(params.obszar));
   const connected = isSupabaseConfigured();
   const data: PowiatyData = connected ? await getKondycjaData() : { year: null, powiaty: [], values: {} };
-  const primary = area.indicators[0];
-  const all = primaryValues(data, area);
+  const selected = data.powiaty.find((p) => p.id === first(params.powiat)) ?? null;
 
+  // Powiaty z bazy (id jak w kształtach mapy) łączymy z jednostkami pliku mapy po pełnej nazwie.
+  const units = new Map(LAYER.units.map((u) => [u.name, u]));
+  const order = ranked(LAYER.units, indicator.key);
+  const values = order.map((u) => u.values[indicator.key] as number);
+  const classes = values.length ? classify(values, indicator) : [];
   const rows = data.powiaty.map((p) => {
-    const v = data.values[primary.key]?.[p.id];
-    const value = v?.value ?? null;
+    const unit = units.get(longName(p.nazwa));
+    const value = unit?.values[indicator.key] ?? null;
     return {
       ...p,
       value,
-      unit: v?.unit ?? "",
-      cls: value == null ? null : classOf(badness(value, all, primary.worse)),
-      sentence: value == null ? null : `${area.sentence(value)} ${compareToRegion(value, all)}`,
+      place: unit && value != null ? order.indexOf(unit) + 1 : null,
+      fill: value == null ? null : classes.find((c) => c.test(value))?.fill ?? null,
     };
   });
-  const selected = data.powiaty.find((p) => p.id === first(params.powiat)) ?? null;
+  const top = rows.filter((r) => r.place != null).sort((a, b) => a.place! - b.place!).slice(0, TOP);
+  const hasMissing = rows.some((r) => r.value == null);
+  const show = (v: number | null) =>
+    v == null ? "brak danych" : `${indicator.scale === "diverging" && v > 0 ? "+" : ""}${withUnit(v, indicator)}`;
 
-  // Legenda: zakres wartości w każdej klasie.
-  const legend = Array.from({ length: CLASS_COUNT }, (_, c) => {
-    const vs = rows.filter((r) => r.cls === c && r.value != null).map((r) => r.value as number);
-    if (!vs.length) return null;
-    const unit = rows.find((r) => r.unit)?.unit ?? "";
-    const lo = Math.min(...vs), hi = Math.max(...vs);
-    return { c, text: lo === hi ? formatBare(lo, unit) : `${formatBare(lo, "")}–${formatBare(hi, unit)}` };
-  }).filter((l) => l != null);
-
-  const label = areaLabel(area);
+  const categories = MAP_CATEGORIES.filter((c) => LAYER.indicators.some((i) => i.category === c.key));
+  const inCategory = LAYER.indicators.filter((i) => i.category === indicator.category);
+  const category = categories.find((c) => c.key === indicator.category);
 
   return (
     <div className="space-y-10">
@@ -73,7 +85,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
       <header className="space-y-3">
         <h1 className="text-4xl font-bold">Kondycja Małopolski</h1>
         <p className="max-w-2xl text-xl">
-          Wybierz temat, a zobaczysz, jak wygląda w każdym z 22 powiatów. Kliknij powiat, żeby zobaczyć jego najważniejsze liczby i pasujące rozwiązania.
+          Wybierz kategorię i wskaźnik, a zobaczysz, jak wygląda w każdym z 22 powiatów. Kliknij powiat, żeby zobaczyć jego najważniejsze liczby i pasujące rozwiązania.
         </p>
       </header>
 
@@ -85,88 +97,133 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
         </Alert>
       ) : (
         <>
-          <nav aria-labelledby="tematy" className="space-y-3">
-            <h2 id="tematy" className="text-lg font-bold">Temat</h2>
-            <ul className="flex flex-wrap gap-2">
-              {KONDYCJA_AREAS.map((a) => {
-                const current = a.area === area.area;
-                return (
-                  <li key={a.area} className="max-w-full">
-                    <Link href={href(a.area, selected?.id)} scroll={false} aria-current={current} className={chipClass}>
-                      {current && <CheckIcon aria-hidden className="size-5" />}
-                      {areaLabel(a)}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+          <div className="space-y-6">
+            <nav aria-labelledby="kategorie" className="space-y-3">
+              <h2 id="kategorie" className="text-lg font-bold">Kategoria</h2>
+              <ul className="flex flex-wrap gap-2">
+                {categories.map(({ key, label, Icon }) => {
+                  const current = key === indicator.category;
+                  const firstKey = LAYER.indicators.find((i) => i.category === key)!.key;
+                  const count = LAYER.indicators.filter((i) => i.category === key).length;
+                  return (
+                    <li key={key} className="max-w-full">
+                      <Link href={href(firstKey, selected?.id)} scroll={false} aria-current={current} className={chipClass}>
+                        {current ? <CheckIcon aria-hidden className="size-5" /> : <Icon aria-hidden className="size-5" />}
+                        {label} ({count})
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+            <IndicatorSelect key={indicator.key} options={inCategory} value={indicator.key} powiat={selected?.id ?? null} />
+          </div>
 
-          <section aria-labelledby="obszar" className="space-y-6">
+          <section aria-labelledby="wskaznik" className="space-y-6">
             <div className="space-y-2">
-              <h2 id="obszar" className="text-3xl font-bold break-words hyphens-auto">{label}</h2>
-              <p role="status" className="max-w-2xl text-lg">{area.intro} Dane za {data.year} rok.</p>
+              {category && <p className="text-base font-bold text-muted-foreground">{category.label}</p>}
+              <h2 id="wskaznik" className="text-3xl font-bold break-words hyphens-auto">{indicator.label}</h2>
+              <p role="status" className="max-w-2xl text-lg">{indicator.question} Dane za {indicator.source.year} rok.</p>
+              {indicator.area && (
+                <p>
+                  <Link href={`/biblioteka/obszar/${indicator.area.replace(/_/g, "-")}`} className={linkClass}>
+                    Zobacz rozwiązania: {AREA_LABELS[indicator.area]}
+                  </Link>
+                </p>
+              )}
             </div>
 
             <figure className="space-y-4">
               <a href="#tabela" className={cn(linkClass, "sr-only focus:not-sr-only")}>Pomiń mapę i przejdź do tabeli</a>
               <PowiatyMap
-                title={`Mapa powiatów: ${primary.label}`}
+                title={`Mapa powiatów: ${indicator.label}`}
                 selected={selected?.id ?? null}
                 items={rows.map((r) => ({
                   id: r.id,
                   label: shortName(r.nazwa),
-                  name: `${longName(r.nazwa)}: ${formatValue(r.value, r.unit)}. Pokaż kartę powiatu`,
-                  cls: r.cls,
-                  href: href(area.area, r.id),
+                  name: `${longName(r.nazwa)}: ${show(r.value)}. Pokaż kartę powiatu`,
+                  fill: r.fill,
+                  href: href(indicator.key, r.id),
                 }))}
               />
               <figcaption className="max-w-2xl space-y-3">
-                <p className="font-bold">{primary.label}</p>
                 <ul aria-label="Legenda mapy" className="flex flex-wrap gap-x-5 gap-y-2 text-base">
-                  {legend.map((l) => (
-                    <li key={l.c} className="inline-flex items-center gap-2">
-                      <span aria-hidden className="size-5 shrink-0 rounded-[4px] border border-border-strong" style={{ background: MAP_FILLS[l.c] }} />
-                      {l.text}
+                  {classes.map((c) => (
+                    <li key={c.label} className="inline-flex items-center gap-2">
+                      <span aria-hidden className="size-5 shrink-0 rounded-[4px] border border-border-strong" style={{ background: c.fill }} />
+                      {c.label}
                     </li>
                   ))}
+                  {hasMissing && (
+                    <li className="inline-flex items-center gap-2">
+                      <span aria-hidden className="size-5 shrink-0 rounded-[4px] border border-border-strong" style={{ background: NO_DATA }} />
+                      brak danych
+                    </li>
+                  )}
                 </ul>
                 <p className="text-base text-muted-foreground">
-                  Im ciemniejszy kolor, tym większe wyzwanie w porównaniu z innymi powiatami. Te same liczby są w tabeli poniżej.
+                  {indicator.scale === "diverging"
+                    ? "Niebieski to wartości poniżej zera, czerwony — od zera w górę. Im ciemniej, tym dalej od zera."
+                    : "Im ciemniejszy kolor, tym wyższa wartość."}{" "}
+                  Te same liczby są w tabelach poniżej.
                 </p>
               </figcaption>
             </figure>
+
+            <div className="space-y-3">
+              <h3 id="top" className="text-2xl font-bold">{TOP} powiatów z najwyższą wartością</h3>
+              <div role="region" aria-labelledby="top" tabIndex={0} className="max-w-2xl overflow-x-auto rounded-lg">
+                <table className="w-full border-collapse text-left text-base">
+                  <caption className="sr-only">{indicator.label}: {TOP} powiatów z najwyższą wartością</caption>
+                  <thead>
+                    <tr className="border-b-2 border-foreground align-bottom">
+                      <th scope="col" className="py-2 pr-4">Miejsce</th>
+                      <th scope="col" className="py-2 pr-4">Powiat</th>
+                      <th scope="col" className="py-2 text-right">Wartość</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {top.map((r) => (
+                      <tr key={r.id} className={cn("border-b", r.id === selected?.id && "bg-secondary")}>
+                        <td className="py-3 pr-4 font-bold tabular-nums">{r.place}.</td>
+                        <th scope="row" className="py-3 pr-4 font-normal">
+                          <Link href={href(indicator.key, r.id)} className={linkClass}>{longName(r.nazwa)}</Link>
+                        </th>
+                        <td className="py-3 text-right font-bold whitespace-nowrap tabular-nums">{show(r.value)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
             {selected && <PowiatCard data={data} powiat={selected} key={selected.id} />}
 
             <div id="tabela" tabIndex={-1} className="scroll-mt-4 space-y-3 outline-none">
               <h3 className="text-2xl font-bold">Dane w tabeli</h3>
-              {/* Szeroka tabela przewija się w poziomie we własnym obszarze (dozwolone przez SC 1.4.10), strona nie. */}
-              <div role="region" aria-labelledby="tabela-podpis" tabIndex={0} className="overflow-x-auto rounded-lg">
-                <table className="w-full min-w-[44rem] border-collapse text-left text-base">
+              <div role="region" aria-labelledby="tabela-podpis" tabIndex={0} className="max-w-2xl overflow-x-auto rounded-lg">
+                <table className="w-full border-collapse text-left text-base">
                   <caption id="tabela-podpis" className="pb-2 text-left text-muted-foreground">
-                    {label}: wskaźniki dla {rows.length} powiatów, {data.year} r. Źródło: Internetowy Obserwator Statystyk Społecznych ROPS.
+                    {indicator.label}: {rows.length} powiatów, {indicator.source.year} r. Źródło:{" "}
+                    <a href={indicator.source.url} className="underline decoration-1 underline-offset-4">{indicator.source.title}</a>.
                   </caption>
                   <thead>
                     <tr className="border-b-2 border-foreground align-bottom">
                       <th scope="col" className="py-2 pr-4">Powiat</th>
-                      {area.indicators.map((ind) => <th key={ind.key} scope="col" className="py-2 pr-4">{ind.label}</th>)}
-                      <th scope="col" className="py-2">Co to znaczy</th>
+                      <th scope="col" className="py-2 pr-4 text-right">Wartość</th>
+                      <th scope="col" className="py-2 text-right">Miejsce (1 = najwyższa wartość)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rows.map((r) => (
-                      <tr key={r.id} className={cn("border-b align-top", r.id === selected?.id && "bg-secondary")}>
+                      <tr key={r.id} className={cn("border-b", r.id === selected?.id && "bg-secondary")}>
                         <th scope="row" className="py-3 pr-4 font-normal">
-                          <Link href={href(area.area, r.id)} className={linkClass} aria-current={r.id === selected?.id || undefined}>
+                          <Link href={href(indicator.key, r.id)} className={linkClass} aria-current={r.id === selected?.id || undefined}>
                             {shortName(r.nazwa)}
                           </Link>
                         </th>
-                        {area.indicators.map((ind) => {
-                          const v = data.values[ind.key]?.[r.id];
-                          return <td key={ind.key} className="py-3 pr-4 whitespace-nowrap">{formatBare(v?.value ?? null, v?.unit ?? "")}</td>;
-                        })}
-                        <td className="py-3">{r.sentence ?? "Brak danych."}</td>
+                        <td className="py-3 pr-4 text-right whitespace-nowrap tabular-nums">{show(r.value)}</td>
+                        <td className="py-3 text-right tabular-nums">{r.place ?? "—"}</td>
                       </tr>
                     ))}
                   </tbody>

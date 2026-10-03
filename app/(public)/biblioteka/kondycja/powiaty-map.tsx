@@ -8,13 +8,12 @@ export type MapItem = {
   label: string;
   /** Pełna nazwa dostępna (np. „powiat bocheński: 23,3%. Pokaż kartę powiatu”). */
   name: string;
-  /** Klasa 0–4 (0 = najmniejsze wyzwanie) albo null, gdy brak danych. */
-  cls: number | null;
+  /** Kolor klasy z legendy (classify z lib/knowledge/map) albo null, gdy brak danych. */
+  fill: string | null;
   href: string;
 };
 
-// Sekwencyjna skala jednego odcienia (dataviz: niebieski 150→700), ciemniej = większe wyzwanie.
-export const MAP_FILLS = ["var(--map-1)", "var(--map-2)", "var(--map-3)", "var(--map-4)", "var(--map-5)"];
+export const NO_DATA = "var(--surface-sunken)";
 
 // Miasta na prawach powiatu leżą w środku powiatów ziemskich — rysujemy je na końcu, żeby były klikalne.
 const CITIES = new Set(["krakow", "nowysacz", "tarnow"]);
@@ -53,7 +52,7 @@ export function PowiatyMap({ items, selected, title }: { items: MapItem[]; selec
             <path
               d={s.d}
               fillRule="evenodd"
-              fill={item.cls == null ? "var(--surface-sunken)" : MAP_FILLS[item.cls]}
+              fill={item.fill ?? NO_DATA}
               stroke={isSelected ? "var(--ink)" : "var(--surface)"}
               strokeWidth={isSelected ? 4 : 1.5}
               strokeLinejoin="round"

@@ -1,13 +1,11 @@
 "use client";
 
-import {
-  AcademicCapIcon, BanknotesIcon, BookOpenIcon, BriefcaseIcon, BuildingOffice2Icon, CheckIcon, GlobeEuropeAfricaIcon, HeartIcon,
-  HomeIcon, LifebuoyIcon, PlusCircleIcon, UsersIcon,
-} from "@heroicons/react/24/outline";
+import { CheckIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
+import { MAP_CATEGORIES as CATEGORIES } from "@/components/knowledge/map-categories";
 import { UnitSearch } from "@/components/knowledge/unit-search";
 import { classify, fmt, NO_DATA_FILL, rank, ranked, withUnit, type LayerKey, type MapData, type MapUnit } from "@/lib/knowledge/map";
 import { AREA_LABELS } from "@/lib/taxonomy";
@@ -17,20 +15,6 @@ const link = "font-bold underline decoration-1 underline-offset-4 hover:decorati
 
 const TOP = 5;
 
-/** Kategorie wskaźników (klucze z data/map_indicators.py) — ikona zawsze obok nazwy. */
-const CATEGORIES: { key: string; label: string; Icon: typeof UsersIcon }[] = [
-  { key: "ludnosc", label: "Ludność", Icon: UsersIcon },
-  { key: "seniorzy", label: "Seniorzy i opieka", Icon: HeartIcon },
-  { key: "pomoc", label: "Pomoc społeczna", Icon: LifebuoyIcon },
-  { key: "placowki", label: "Placówki i kadra", Icon: BuildingOffice2Icon },
-  { key: "rodzina", label: "Rodzina i dzieci", Icon: HomeIcon },
-  { key: "praca", label: "Praca i gospodarka", Icon: BriefcaseIcon },
-  { key: "edukacja", label: "Edukacja", Icon: AcademicCapIcon },
-  { key: "zdrowie", label: "Zdrowie", Icon: PlusCircleIcon },
-  { key: "kultura", label: "Kultura i sport", Icon: BookOpenIcon },
-  { key: "finanse", label: "Budżety gmin", Icon: BanknotesIcon },
-  { key: "otoczenie", label: "Mieszkania i otoczenie", Icon: GlobeEuropeAfricaIcon },
-];
 const pill =
   "inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-full border border-border-strong bg-background px-4 text-lg hover:border-foreground has-checked:border-foreground has-checked:bg-foreground has-checked:font-bold has-checked:text-background has-focus-visible:outline-3 has-focus-visible:outline-offset-3 has-focus-visible:outline-ring";
 
