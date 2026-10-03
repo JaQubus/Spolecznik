@@ -1,15 +1,14 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { AlignLeft, Contrast, Type } from "lucide-react";
+import { Contrast, Type } from "lucide-react";
 
 export const A11Y_OPTIONS = [
   { key: "large", label: "Większy tekst", Icon: Type },
   { key: "contrast", label: "Wysoki kontrast", Icon: Contrast },
-  { key: "simple", label: "Tryb prosty", Icon: AlignLeft },
 ] as const;
 
-// Źródłem prawdy są klasy na <html> (np. a11y-simple); ustawia je też A11Y_INIT_SCRIPT przed hydracją.
+// Źródłem prawdy są klasy na <html> (np. a11y-large); ustawia je też A11Y_INIT_SCRIPT przed hydracją.
 function subscribe(onChange: () => void) {
   const observer = new MutationObserver(onChange);
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });

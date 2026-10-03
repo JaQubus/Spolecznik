@@ -104,16 +104,14 @@ export default async function Page(props: PageProps<"/biblioteka">) {
                   <h3 className="text-xl font-bold">
                     <Link href={`/biblioteka/${i.slug ?? i.id}`} className={linkClass}>{i.title}</Link>
                   </h3>
-                  <p className="flex flex-wrap gap-x-4 gap-y-1 text-base text-muted-foreground simple:hidden">
+                  <p className="flex flex-wrap gap-x-4 gap-y-1 text-base text-muted-foreground">
                     {i.category && <span>{i.category}</span>}
                     {i.video_url && (
                       <span className="inline-flex items-center gap-1"><Play aria-hidden className="size-4" /> Z filmem</span>
                     )}
                     {i.synthetic && <span>Przykładowe dane</span>}
                   </p>
-                  {/* Tryb prosty: streszczenie łatwe do czytania zamiast opisu (gdy jest). */}
-                  <p className={i.etr_summary ? "max-w-[68ch] simple:hidden" : "max-w-[68ch]"}>{i.solution}</p>
-                  {i.etr_summary && <p className="hidden max-w-[68ch] simple:block">{i.etr_summary}</p>}
+                  <p className="max-w-[68ch]">{i.solution}</p>
                   {i.tests_count > 0 && (
                     <p className="text-base text-muted-foreground">
                       Przetestowano {i.tests_count} {plural(i.tests_count, "raz", "razy", "razy")}

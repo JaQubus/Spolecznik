@@ -1,6 +1,6 @@
 # Applying it to VibeCorner
 
-How this system maps onto the repository's Next.js + Tailwind v4 + shadcn/ui ("new-york", neutral) setup. Paths are relative to the repo root. The repo's own conventions win where they exist: themes are classes on `<html>` (`.dark`, `.a11y-contrast`), settings are `a11y-large` / `a11y-simple`, and components stay in `components/ui/`.
+How this system maps onto the repository's Next.js + Tailwind v4 + shadcn/ui ("new-york", neutral) setup. Paths are relative to the repo root. The repo's own conventions win where they exist: themes are classes on `<html>` (`.dark`, `.a11y-contrast`), settings are `a11y-large`, and components stay in `components/ui/`.
 
 ## 1. `app/globals.css`: tokens
 
@@ -81,7 +81,7 @@ html.a11y-contrast {
 }
 ```
 
-Replace the base layer's `@apply border-border outline-ring/50;` with `@apply border-border;` (the half-opacity ring fails 1.4.11), keep the repo's `:focus-visible` rule but set `outline-offset: 3px`, and add `body { font-size: 1.125rem; line-height: 1.75rem; }`. Keep `html.a11y-large { font-size: 125%; }`; `a11y-simple` changes wording, not type size.
+Replace the base layer's `@apply border-border outline-ring/50;` with `@apply border-border;` (the half-opacity ring fails 1.4.11), keep the repo's `:focus-visible` rule but set `outline-offset: 3px`, and add `body { font-size: 1.125rem; line-height: 1.75rem; }`. Keep `html.a11y-large { font-size: 125%; }`.
 
 ## 2. `app/layout.tsx`: the font
 
@@ -127,7 +127,7 @@ Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(-
 | StatusTimeline | `components/ui/status-timeline.tsx` (ready for `/status/[kod]`) |
 | StoryTile | `StoryTiles` + `StoryTile` (`components/ui/story-tile.tsx`, ready for `/biblioteka`) |
 
-Tailwind extras in `globals.css`: `simple:` variant (applies under `html.a11y-simple`, e.g. `simple:hidden` on secondary metadata), `full-bleed` utility (cream band edge to edge inside `main` without horizontal scroll), colours `border-strong`, `brand-soft`, `danger-soft`.
+Tailwind extras in `globals.css`: `full-bleed` utility (cream band edge to edge inside `main` without horizontal scroll), colours `border-strong`, `brand-soft`, `danger-soft`.
 
 ## 6. Check
 

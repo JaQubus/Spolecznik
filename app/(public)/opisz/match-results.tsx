@@ -33,7 +33,7 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
           {isGap ? "Nie znaleźliśmy jeszcze gotowego rozwiązania" : `Znaleźliśmy ${n} ${plural(n, "rozwiązanie", "rozwiązania", "rozwiązań")}`}
         </h2>
         <p className="max-w-[68ch] text-lg"><strong>Zrozumieliśmy tak:</strong> {card.summary}</p>
-        <ul className="flex flex-wrap gap-2 simple:hidden" aria-label="Obszary">
+        <ul className="flex flex-wrap gap-2" aria-label="Obszary">
           {card.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
         </ul>
       </div>
@@ -136,7 +136,7 @@ function ResultRow({ match: m, statusCode }: { match: InnovationMatch; statusCod
           <span className="block h-full rounded-full bg-foreground" style={{ width: `${m.fit}%` }} />
         </span>
         <span><strong className="text-foreground">{fitLabel(m.fit)}</strong> · dopasowanie {m.fit} na 100</span>
-        {m.category && <Badge className="simple:hidden">{m.category}</Badge>}
+        {m.category && <Badge>{m.category}</Badge>}
       </div>
       {m.etrSummary && <p className="max-w-[68ch]">{m.etrSummary}</p>}
       <dl className="grid max-w-[68ch] gap-1">
@@ -146,7 +146,7 @@ function ResultRow({ match: m, statusCode }: { match: InnovationMatch; statusCod
         <dd>{m.adapt}</dd>
       </dl>
       {m.testsCount > 0 && (
-        <p className="text-base text-muted-foreground simple:hidden">
+        <p className="text-base text-muted-foreground">
           Przetestowano {m.testsCount} {plural(m.testsCount, "raz", "razy", "razy")}
           {m.avgRating != null && `, średnia ocena ${formatNumber(m.avgRating)} na 5`}.
         </p>
