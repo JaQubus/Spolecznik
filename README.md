@@ -363,7 +363,7 @@ sequenceDiagram
 | `needs` | status_code, author_id (nullable), contact_email (nullable), raw_text (RLS: autor i admin), card jsonb, teryt, status (`zgloszone` / `w_analizie` / `ekspert` / `odpowiedz` / `luka` / `zamkniete`), best_fit |
 | `matches` | need_id, kind, ref_id, fit, why, adapt, feedback |
 | `ideas` | author_id, fiszka jsonb, canvas jsonb, stage, status |
-| `calls` (nabory) | title, active, opens_at, closes_at, criteria jsonb, form_schema jsonb |
+| `calls` (nabory) | title, active, opens_at, closes_at, criteria jsonb, form_schema jsonb (`fields` dla generatora, `content` z treścią formularza /wniosek) |
 | `applications` | idea_id, call_id, draft jsonb, status |
 | `tests` | innovation_id, tester_id, teryt, status, rating, feedback, suggestions |
 | `threads`, `messages`, `thread_participants` | entity_kind, entity_id; treść; uczestnicy |

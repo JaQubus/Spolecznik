@@ -245,19 +245,9 @@ def make_needs(rng: random.Random, gminy: list[dict], used: set[str]) -> list[di
 
 
 def make_calls() -> list[dict]:
-    # Pola formularza jak we wniosku IWS 2.0 (dane/mock/wnioski_mock.json)
-    form_schema = {"fields": [
-        {"key": "1_tytul", "label": "Tytuł innowacji", "type": "text"},
-        {"key": "3_opis_innowacji", "label": "Opis innowacji", "type": "textarea"},
-        {"key": "4_innowacyjnosc", "label": "Na czym polega innowacyjność?", "type": "textarea"},
-        {"key": "5_diagnoza_problemu", "label": "Diagnoza problemu", "type": "textarea"},
-        {"key": "6_odbiorcy", "label": "Odbiorcy", "type": "textarea"},
-        {"key": "7_zmiana", "label": "Jaką zmianę przyniesie?", "type": "textarea"},
-        {"key": "8_wizja_przyszlosci", "label": "Kto i jak może to powielić?", "type": "textarea"},
-        {"key": "9_plan_dzialania", "label": "Plan działania i budżet", "type": "table"},
-        {"key": "10_wnioskowana_kwota_grantu", "label": "Wnioskowana kwota grantu (zł)", "type": "number"},
-        {"key": "11_zespol_projektowy", "label": "Zespół projektowy", "type": "textarea"},
-    ]}
+    # Formularz IWS 2.0: pola dla generatora (/api/apply) i pełna treść wzoru dla /wniosek.
+    # Jedno źródło: iws2_formularz.json. Zmiana treści = edycja form_schema w bazie albo tego pliku i ponowny seed.
+    form_schema = read_json(ROOT / "iws2_formularz.json")
     criteria = [
         {"name": "Innowacyjność", "max": 20},
         {"name": "Trafność diagnozy problemu", "max": 20},
