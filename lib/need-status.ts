@@ -18,6 +18,13 @@ export type StatusEvent = { to: NeedStatus; at: string; note?: string | null };
 
 const MAIN: NeedStatus[] = ["zgloszone", "w_analizie", "ekspert", "odpowiedz"];
 
+/** Co dzieje się na kroku, który jeszcze nie ma daty ani wiadomości od ROPS. */
+const DESCRIPTIONS: Partial<Record<NeedStatus, string>> = {
+  w_analizie: "Pracownik ROPS czyta zgłoszenie",
+  ekspert: "Ekspert dostaje zaproszenie do rozmowy",
+  odpowiedz: "Odpowiedź czeka w rozmowie",
+};
+
 /** Kroki osi czasu jak śledzenie paczki (StatusTimeline.md): Zgłoszone → W analizie → Przypisano eksperta → Odpowiedź. */
 export function needTimeline(createdAt: string, status: NeedStatus, events: StatusEvent[]): TimelineStep[] {
   const last = (s: NeedStatus) => events.findLast((e) => e.to === s);
@@ -36,7 +43,7 @@ export function needTimeline(createdAt: string, status: NeedStatus, events: Stat
 
   return path.map((s, i) => ({
     title: NEED_STATUS_LABELS[s],
-    note: i <= current ? note(s) : undefined,
+    note: (i <= current ? note(s) : undefined) ?? DESCRIPTIONS[s],
     state: i < current ? "done" : i === current ? "current" : "todo",
   }));
 }

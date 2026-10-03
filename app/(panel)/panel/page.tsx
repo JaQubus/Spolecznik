@@ -45,7 +45,7 @@ export default async function Page(props: PageProps<"/panel">) {
   if (error) throw error;
 
   const needs = (data ?? []) as unknown as NeedRow[];
-  const triage = await needTriage(needs.map((n) => n.id));
+  const triage = await needTriage(needs);
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const href = (p: number) => `/panel?status=${filter.key}${p > 1 ? `&strona=${p}` : ""}`;

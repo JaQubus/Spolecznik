@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GMINA_OPTIONS } from "@/lib/gminy";
 import { SearchBar } from "./search-bar";
 
 export default function Home() {
@@ -12,7 +13,7 @@ export default function Home() {
             Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.
           </p>
         </div>
-        <SearchBar />
+        <SearchBar gminy={GMINA_OPTIONS} />
       </section>
       <p className="mt-10">
         <Link href="/biblioteka" className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">

@@ -1,6 +1,7 @@
 import "server-only";
 import type { NeedStatus, StatusEvent } from "../need-status";
 import type { NeedCard } from "../schemas";
+import { keywordSearch, similarNeeds } from "../search";
 import { createAdminClient } from "../supabase/admin";
 
 export type NeedRow = {
@@ -20,38 +21,65 @@ export type NeedRow = {
 export const NEED_COLUMNS =
   "id, status_code, card, status, best_fit, raw_text, teryt, assigned_expert, synthetic, created_at, gminy(nazwa, powiat)";
 
+/** Próg duplikatu z README §6: zgodność słów kluczowych ≥ 90%. */
+export const DUPLICATE_MIN = 0.9;
+
 export type Triage = { duplicates: string[]; expertId: string | null; expertName: string | null };
 
-/** Duplikaty (podobieństwo ≥ 0,9) i sugerowany ekspert dla strony skrzynki — jedno zapytanie na stronę. */
-export async function needTriage(needIds: string[]): Promise<Map<string, Triage>> {
-  if (needIds.length === 0) return new Map();
-  const { data, error } = await createAdminClient().rpc("need_triage", { p_need_ids: needIds });
-  if (error) throw error;
-  return new Map(
-    (data ?? []).map((r: { need_id: string; duplicates: string[]; expert_id: string | null; expert_name: string | null }) => [
-      r.need_id,
-      { duplicates: r.duplicates ?? [], expertId: r.expert_id, expertName: r.expert_name },
-    ]),
-  );
+/**
+ * Duplikaty i sugerowany ekspert dla strony skrzynki, ze słów kluczowych karty (bez embeddingów, migracja 0005).
+ * Liczone przy odczycie, więc obejmują też zgłoszenia, które pojawiły się później.
+ */
+export async function needTriage(needs: Pick<NeedRow, "id" | "card">[]): Promise<Map<string, Triage>> {
+  try {
+    const rows = await Promise.all(needs.map(async (n): Promise<[string, Triage]> => {
+      const keywords = n.card.keywords ?? [];
+      const [dupes, experts] = await Promise.all([
+        similarNeeds(keywords, DUPLICATE_MIN),
+        keywordSearch("ekspert", keywords, 1),
+      ]);
+      return [n.id, {
+        duplicates: dupes.filter((d) => d.need_id !== n.id).map((d) => d.need_id),
+        expertId: experts[0]?.ref_id ?? null,
+        expertName: experts[0]?.title ?? null,
+      }];
+    }));
+    return new Map(rows);
+  } catch (e) {
+    console.error("[panel] triage:", e); // bez migracji 0005 skrzynka działa, tylko bez podpowiedzi
+    return new Map();
+  }
 }
 
 export type Neighbour = { ref_id: string; title: string; body: string; teryt: string | null; similarity: number };
 
-export async function needNeighbours(needId: string, kind: "potrzeba" | "ekspert", count = 5): Promise<Neighbour[]> {
-  const { data, error } = await createAdminClient().rpc("need_neighbours", { p_need_id: needId, p_kind: kind, p_count: count });
+/** Najbliższe karty danego rodzaju dla jednego zgłoszenia (szczegóły w Panelu). */
+export async function needNeighbours(
+  need: Pick<NeedRow, "id" | "card">, kind: "potrzeba" | "ekspert", count = 5,
+): Promise<Neighbour[]> {
+  const hits = (await keywordSearch(kind, need.card.keywords ?? [], count + 1))
+    .filter((h) => h.ref_id !== need.id)
+    .slice(0, count);
+  if (hits.length === 0) return [];
+  const { data, error } = await createAdminClient()
+    .from("search_index")
+    .select("ref_id, body")
+    .eq("kind", kind)
+    .in("ref_id", hits.map((h) => h.ref_id));
   if (error) throw error;
-  return (data ?? []) as Neighbour[];
+  const bodyById = new Map((data ?? []).map((r) => [r.ref_id as string, r.body as string]));
+  return hits.map((h) => ({ ref_id: h.ref_id, title: h.title, body: bodyById.get(h.ref_id) ?? "", teryt: h.teryt, similarity: h.similarity }));
 }
 
 export type AuditRow = { action: string; diff: Record<string, unknown> | null; created_at: string };
 
-/** Historia zmian jednego zgłoszenia, od najstarszej. */
-export async function needHistory(needId: string): Promise<AuditRow[]> {
+/** Historia zmian jednego zgłoszenia (albo pomysłu), od najstarszej. */
+export async function needHistory(id: string, entity: "need" | "idea" = "need"): Promise<AuditRow[]> {
   const { data, error } = await createAdminClient()
     .from("audit_log")
     .select("action, diff, created_at")
-    .eq("entity", "need")
-    .eq("entity_id", needId)
+    .eq("entity", entity)
+    .eq("entity_id", id)
     .order("created_at");
   if (error) throw error;
   return (data ?? []) as AuditRow[];

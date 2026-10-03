@@ -7,6 +7,7 @@ import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { logChange } from "@/lib/panel/needs";
 import { anonymize } from "@/lib/pii";
 import { NEED_STATUSES } from "@/lib/schemas";
+import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type ActionResult = { ok: boolean; message: string } | null;
@@ -28,6 +29,15 @@ async function setStatus(
   const { error } = await supabase.from("needs").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", needId);
   if (error) throw error;
   await logChange(actorId, action, "need", needId, { from, to: patch.status, ...diffExtra });
+  // Zamknięta potrzeba nie liczy się do „inne gminy zgłosiły podobny problem” ani do duplikatów.
+  if (from !== patch.status && (from === "zamkniete" || patch.status === "zamkniete")) {
+    const { error: iError } = await supabase
+      .from("search_index")
+      .update({ active: patch.status !== "zamkniete" })
+      .eq("kind", "potrzeba")
+      .eq("ref_id", needId);
+    if (iError) throw iError;
+  }
   if (authorId) {
     const { error: nError } = await supabase.from("notifications").insert({
       user_id: authorId,
@@ -146,4 +156,71 @@ export async function removePersonalData(_prev: ActionResult, formData: FormData
   }
   refresh();
   return { ok: true, message: "Usunięto rozpoznane dane osobowe z treści." };
+}
+
+const IdeaStatusInput = z.object({
+  ideaId: z.uuid(),
+  status: z.enum(NEED_STATUSES).exclude(["luka"]),
+});
+
+/** Status pomysłu; autor widzi go na /status/[kod]. */
+export async function updateIdeaStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = IdeaStatusInput.safeParse({ ideaId: formData.get("ideaId"), status: formData.get("status") });
+  if (!parsed.success) return { ok: false, message: "Wybierz nowy status." };
+  const { ideaId, status } = parsed.data;
+
+  try {
+    const supabase = createAdminClient();
+    const { data: before, error } = await supabase.from("ideas").select("status").eq("id", ideaId).maybeSingle();
+    if (error) throw error;
+    if (!before) return { ok: false, message: "Nie znaleziono pomysłu. Odśwież stronę." };
+    if (before.status === status) return { ok: false, message: "Wybierz inny status." };
+    const { error: updateError } = await supabase.from("ideas").update({ status }).eq("id", ideaId);
+    if (updateError) throw updateError;
+    await logChange(user.id, "idea.status", "idea", ideaId, { from: before.status, to: status });
+  } catch (e) {
+    console.error("[panel] status pomysłu:", e);
+    return SAVE_FAILED;
+  }
+  refresh();
+  return { ok: true, message: `Zapisano status: ${NEED_STATUS_LABELS[status]}.` };
+}
+
+/**
+ * Włącznik naboru. Przy otwarciu: autorzy pasujących pomysłów dostają powiadomienie
+ * (README §6, powiadomienia proaktywne).
+ */
+export async function setCallActive(formData: FormData) {
+  const user = await requireAdmin();
+  const id = String(formData.get("id"));
+  const active = formData.get("active") === "true";
+
+  const supabase = createAdminClient();
+  const { data: call, error } = await supabase.from("calls").update({ active }).eq("id", id).select("id, title").single();
+  if (error) throw error;
+  await Promise.all([
+    supabase.from("search_index").update({ active }).eq("kind", "nabor").eq("ref_id", id),
+    logChange(user.id, active ? "call.open" : "call.close", "call", id, { active }),
+  ]);
+
+  if (active) {
+    try {
+      const { data: indexed } = await supabase.from("search_index").select("lemmas").eq("kind", "nabor").eq("ref_id", id).maybeSingle();
+      const lemmas = ((indexed?.lemmas as string | undefined) ?? call.title.toLowerCase()).split(/\s+/).filter(Boolean);
+      const hits = (await keywordSearch("pomysl", lemmas, 30)).filter((h) => h.similarity >= 0.25);
+      if (hits.length) {
+        const { data: ideas } = await supabase.from("ideas").select("author_id").in("id", hits.map((h) => h.ref_id)).not("author_id", "is", null);
+        const authors = [...new Set((ideas ?? []).map((i) => i.author_id as string))];
+        if (authors.length) {
+          await supabase.from("notifications").insert(
+            authors.map((user_id) => ({ user_id, kind: "nowy_nabor", payload: { callId: call.id, title: call.title } })),
+          );
+        }
+      }
+    } catch (e) {
+      console.error("[panel] powiadomienia o naborze:", e);
+    }
+  }
+  refresh();
 }

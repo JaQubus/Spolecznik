@@ -70,6 +70,12 @@
   --flag-white: #ffffff;
   --flag-red: #dc143c;
   --shadow-overlay: 0 8px 28px rgba(34,34,34,0.16);
+  /* Kartogram (Kondycja Małopolski): jeden odcień, jasny → ciemny = mniejsze → większe wyzwanie. */
+  --map-1: #cde2fb;
+  --map-2: #86b6ef;
+  --map-3: #3987e5;
+  --map-4: #1c5cab;
+  --map-5: #0d366b;
 
   /* shadcn/ui aliases */
   --background: var(--surface);      --foreground: var(--ink);
@@ -118,6 +124,12 @@
   --flag-white: #ffffff;
   --flag-red: #dc143c;
   --shadow-overlay: 0 8px 28px rgba(0,0,0,0.55);
+  /* Na ciemnym tle małe wartości gasną w stronę tła, duże świecą. */
+  --map-1: #184f95;
+  --map-2: #256abf;
+  --map-3: #3987e5;
+  --map-4: #6da7ec;
+  --map-5: #b7d3f6;
 }
 
 @layer base {
@@ -169,9 +181,9 @@ html.a11y-simple body { font-size: 1.25rem; line-height: 2rem; }
 @custom-variant simple (&:where(.a11y-simple, .a11y-simple *));
 
 /* Pas na całą szerokość okna wewnątrz kontenera main, bez poziomego przewijania (cień nie zwiększa szerokości strony). */
+/* Tło do krawędzi ekranu tylko w poziomie. Bez clip-path, które ucinało rozwijane listy (podpowiedzi gmin) na dole pasa. */
 @utility full-bleed {
-  box-shadow: 0 0 0 100vmax var(--bleed, var(--surface-alt));
-  clip-path: inset(0 -100vmax);
+  border-image: conic-gradient(var(--bleed, var(--surface-alt)) 0 0) fill 0 / / 0 100vmax;
 }
 
 @keyframes mic-pulse {

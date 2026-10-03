@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS } from "@/lib/need-status";
-import { NEED_COLUMNS, needHistory, needNeighbours, type AuditRow, type NeedRow } from "@/lib/panel/needs";
+import { DUPLICATE_MIN, NEED_COLUMNS, needHistory, needNeighbours, type AuditRow, type NeedRow } from "@/lib/panel/needs";
 import { anonymize } from "@/lib/pii";
 import { formatDate } from "@/lib/pl";
 import { NEED_STATUSES } from "@/lib/schemas";
@@ -21,9 +21,6 @@ import { ActionForm, SubmitButton } from "../../action-form";
 import { assignExpert, removePersonalData, updateNeedStatus } from "../../actions";
 
 export const metadata = { title: "Zgłoszenie · Panel ROPS" };
-
-/** Próg duplikatu z README §6 (podobieństwo > 0,9). */
-const DUPLICATE_MIN = 0.9;
 
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 
@@ -41,8 +38,8 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
   const admin = createAdminClient();
   const [history, experts, neighbours, matches, assigned] = await Promise.all([
     needHistory(id),
-    needNeighbours(id, "ekspert", 3),
-    needNeighbours(id, "potrzeba", 5),
+    needNeighbours(need, "ekspert", 3),
+    needNeighbours(need, "potrzeba", 5),
     supabase.from("matches").select("ref_id, fit, why").eq("need_id", id).eq("kind", "innowacja").order("fit", { ascending: false }),
     need.assigned_expert
       ? admin.from("search_index").select("title").eq("kind", "ekspert").eq("ref_id", need.assigned_expert).maybeSingle()
@@ -119,7 +116,7 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
         <h2 id="ekspert" className="text-2xl font-bold">Ekspert</h2>
         {assignedName && <p>Przypisany ekspert: <strong>{assignedName}</strong></p>}
         {experts.length === 0 ? (
-          <p className="text-muted-foreground">Brak sugestii — to zgłoszenie nie ma jeszcze analizy w indeksie.</p>
+          <p className="text-muted-foreground">Brak sugestii — słowa kluczowe zgłoszenia nie pasują do żadnego eksperta.</p>
         ) : (
           <ul className="border-t">
             {experts.map((e, i) => (
@@ -127,7 +124,7 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
                 <div className="min-w-0 flex-1 basis-64">
                   <p className="font-bold">{e.title}{i === 0 && " (najlepiej pasuje)"}</p>
                   <p className="line-clamp-2 text-muted-foreground">{e.body}</p>
-                  <p className="text-base text-muted-foreground">Podobieństwo {Math.round(e.similarity * 100)} na 100</p>
+                  <p className="text-base text-muted-foreground">Zgodność słów kluczowych {Math.round(e.similarity * 100)} na 100</p>
                 </div>
                 {e.ref_id !== need.assigned_expert && (
                   <ActionForm action={assignExpert} className="space-y-2">
@@ -180,7 +177,7 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
                     {row && <><span className="font-mono tracking-wider">{row.status_code}</span>{" · "}</>}
                     {row?.gminy?.nazwa ?? "gmina nieznana"}
                     {row && ` · ${NEED_STATUS_LABELS[row.status]}`}
-                    {` · podobieństwo ${Math.round(d.similarity * 100)} na 100`}
+                    {` · zgodność słów kluczowych ${Math.round(d.similarity * 100)} na 100`}
                   </p>
                 </li>
               );
