@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronLeft, ChevronRight, Download, Plus, Printer, Trash2 } from "lucide-react";
+import { ArrowDownTrayIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, PrinterIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { cn } from "cn";
 import { Alert } from "@/components/ui/alert";
@@ -154,14 +154,14 @@ function GroupFields() {
           {app.partnerzy.length > 2 && (
             <Button type="button" variant="link" className="justify-self-start px-0"
               onClick={() => update("partnerzy", app.partnerzy.filter((_, j) => j !== i))}>
-              <Trash2 aria-hidden /> Usuń partnera {i + 1}
+              <TrashIcon aria-hidden /> Usuń partnera {i + 1}
             </Button>
           )}
         </fieldset>
       ))}
       {app.partnerzy.length < MAX_PARTNERS && (
         <Button type="button" variant="outline" className="justify-self-start" onClick={add}>
-          <Plus aria-hidden /> Dodaj partnera
+          <PlusIcon aria-hidden /> Dodaj partnera
         </Button>
       )}
       <fieldset className="grid gap-6 border-t pt-6">
@@ -202,13 +202,13 @@ function PlanRows({ path, legend, hint, example, termExample, required }: {
           {rows.length > 1 && (
             <Button type="button" variant="link" className="justify-self-start px-0"
               onClick={() => update(path, rows.filter((_, j) => j !== i))}>
-              <Trash2 aria-hidden /> Usuń działanie {i + 1}
+              <TrashIcon aria-hidden /> Usuń działanie {i + 1}
             </Button>
           )}
         </div>
       ))}
       <Button type="button" variant="outline" size="sm" className="justify-self-start" onClick={add}>
-        <Plus aria-hidden /> Dodaj działanie
+        <PlusIcon aria-hidden /> Dodaj działanie
       </Button>
     </fieldset>
   );
@@ -360,10 +360,10 @@ function FinishStep({ goTo }: { goTo: (step: number) => void }) {
         )}
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button type="button" variant={invalid === null ? "default" : "outline"} onClick={() => window.print()}>
-            <Printer aria-hidden /> Zapisz jako PDF lub wydrukuj
+            <PrinterIcon aria-hidden /> Zapisz jako PDF lub wydrukuj
           </Button>
           <Button type="button" variant="outline" onClick={downloadWord}>
-            <Download aria-hidden /> Pobierz plik Word
+            <ArrowDownTrayIcon aria-hidden /> Pobierz plik Word
           </Button>
         </div>
         <p className="text-base text-muted-foreground">
@@ -563,7 +563,7 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
                   {i <= reached && !isCurrent ? (
                     <button type="button" onClick={() => goTo(i)}
                       className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong px-4 text-base hover:border-foreground">
-                      {i < reached && <Check aria-hidden className="size-5" />}
+                      {i < reached && <CheckIcon aria-hidden className="size-5" />}
                       {label}
                     </button>
                   ) : (
@@ -651,12 +651,12 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
             <div className="flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:items-center print:hidden">
               {step > 0 && (
                 <Button type="button" variant="outline" onClick={() => goTo(step - 1)}>
-                  <ChevronLeft aria-hidden /> Wstecz
+                  <ChevronLeftIcon aria-hidden /> Wstecz
                 </Button>
               )}
               {current.id !== "gotowe" && (
                 <Button type="submit">
-                  {step === STEPS.length - 2 ? "Sprawdź wniosek" : "Dalej"} <ChevronRight aria-hidden />
+                  {step === STEPS.length - 2 ? "Sprawdź wniosek" : "Dalej"} <ChevronRightIcon aria-hidden />
                 </Button>
               )}
             </div>
@@ -673,7 +673,7 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
             </div>
           ) : (
             <Button type="button" variant="link" size="sm" className="justify-self-start px-0" onClick={() => setConfirmReset(true)}>
-              <Trash2 aria-hidden /> Wyczyść formularz
+              <TrashIcon aria-hidden /> Wyczyść formularz
             </Button>
           )}
         </div>

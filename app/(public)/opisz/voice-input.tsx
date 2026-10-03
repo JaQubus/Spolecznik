@@ -1,6 +1,6 @@
 "use client";
 
-import { MicIcon, SquareIcon } from "lucide-react";
+import { MicrophoneIcon, StopIcon } from "@heroicons/react/24/outline";
 import { useRef, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field";
@@ -79,8 +79,8 @@ export function VoiceInput({ onText, label = "Opowiedz problem" }: { onText: (ch
         className="aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:hover:bg-foreground motion-safe:aria-pressed:animate-[mic-pulse_1.4s_ease-in-out_infinite]"
       >
         {listening
-          ? <><SquareIcon aria-hidden /> Słucham… kliknij, by zakończyć</>
-          : <><MicIcon aria-hidden className="size-6" /> {label}</>}
+          ? <><StopIcon aria-hidden /> Słucham… kliknij, by zakończyć</>
+          : <><MicrophoneIcon aria-hidden className="size-6" /> {label}</>}
       </Button>
       <p aria-live="polite" className="min-h-7 text-base text-muted-foreground">
         {listening && (interim || "Słucham… Mów spokojnie, tekst pojawi się w polu poniżej.")}

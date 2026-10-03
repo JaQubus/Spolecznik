@@ -2,7 +2,7 @@
 
 import { useId, useMemo, useRef, useState } from "react";
 import { cn } from "cn";
-import { Info } from "lucide-react";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { Input } from "@/components/ui/input";
 import type { GminaOption } from "@/lib/gminy";
 
@@ -157,7 +157,7 @@ export function GminaField({ id, options, value, onValueChange, className, "aria
       <div aria-live="polite">
         {warning && (
           <p id={warningId} className="flex items-start gap-2 text-base">
-            <Info aria-hidden className="mt-0.5 size-5 shrink-0" />
+            <InformationCircleIcon aria-hidden className="mt-0.5 size-5 shrink-0" />
             <span><span className="sr-only">Uwaga: </span>{warning}</span>
           </p>
         )}

@@ -146,20 +146,6 @@ export const GMINA_TOPICS: [GminaTopic, ...GminaTopic[]] = [
     compare: regionWords,
     innovations: { area: "ubostwo", groups: ["rynek_pracy"], cross: [] },
   },
-  {
-    key: "przedszkola",
-    label: "Przedszkola",
-    intro: "Jaka część dzieci w wieku 3–5 lat chodzi do przedszkola albo innej formy wychowania przedszkolnego.",
-    column: "Dzieci 3–5 lat w przedszkolu (%)",
-    get: extra("przedszkola_proc"),
-    worse: "lower",
-    format: (v) => formatValue(v, "%"),
-    sentence: (v) =>
-      v >= 100 ? "Do przedszkoli w gminie chodzą wszystkie dzieci w wieku 3–5 lat, a do tego część dzieci z sąsiednich gmin."
-        : `${share(v, { one: "dziecko w wieku 3–5 lat", many: "dzieci w wieku 3–5 lat" })} chodzi do przedszkola.`,
-    compare: regionWords,
-    innovations: { area: "rodzina_piecza", groups: ["dzieci_mlodziez_rodzina"], cross: ["dostep_do_uslug"] },
-  },
 ];
 
 export function findGminaTopic(key: string | undefined): GminaTopic {

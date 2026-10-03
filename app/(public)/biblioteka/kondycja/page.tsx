@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cn } from "cn";
@@ -19,13 +19,13 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
     <div className="space-y-10">
       <p>
         <Link href="/biblioteka" className={cn(linkClass, "inline-flex items-center gap-2")}>
-          <ArrowLeft aria-hidden className="size-5" /> Biblioteka i wiedza
+          <ArrowLeftIcon aria-hidden className="size-5" /> Biblioteka i wiedza
         </Link>
       </p>
       <header className="space-y-3">
         <h1 className="text-4xl font-bold">Kondycja Małopolski</h1>
         <p className="max-w-2xl text-xl">
-          Wybierz poziom danych: mapa gmin pokazuje lokalny kontekst, a widok powiatów udostępnia bogatszy zestaw wskaźników społecznych z CSV.
+          Możesz sprawdzić każdą ze 183 gmin na mapie albo porównać 22 powiaty według ponad 100 wskaźników społecznych.
         </p>
       </header>
 

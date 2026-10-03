@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { ArrowLeftIcon, ArrowTopRightOnSquareIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { NoDatabase } from "@/components/layout/no-database";
@@ -39,7 +39,7 @@ export default async function Page() {
     <div className="space-y-10">
       <p>
         <Link href="/biblioteka" className={linkClass}>
-          <ArrowLeft aria-hidden className="size-5" /> Biblioteka i wiedza
+          <ArrowLeftIcon aria-hidden className="size-5" /> Biblioteka i wiedza
         </Link>
       </p>
       <header className="space-y-3">
@@ -64,7 +64,7 @@ export default async function Page() {
               <p className="max-w-[68ch]">{m.description}</p>
               <p className="mt-1">
                 <a href={m.url} className={linkClass}>
-                  {m.kind === "pdf" ? <FileText aria-hidden className="size-5" /> : <ExternalLink aria-hidden className="size-5" />}
+                  {m.kind === "pdf" ? <DocumentTextIcon aria-hidden className="size-5" /> : <ArrowTopRightOnSquareIcon aria-hidden className="size-5" />}
                   {m.kind === "pdf" ? "Otwórz PDF" : "Przejdź na stronę ROPS"}
                   <span className="sr-only">: {m.title}</span>
                 </a>

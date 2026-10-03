@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { CheckIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { cn } from "cn";
 import { Alert } from "@/components/ui/alert";
@@ -68,7 +68,7 @@ export async function GminyView({ topic: requested, selectedId }: { topic: Gmina
             return (
               <li key={t.key} className="max-w-full">
                 <Link href={gminyHref(t.key, selected?.teryt)} scroll={false} aria-current={current} className={chipClass}>
-                  {current && <Check aria-hidden className="size-5" />}
+                  {current && <CheckIcon aria-hidden className="size-5" />}
                   {t.label}
                 </Link>
               </li>
@@ -226,13 +226,10 @@ async function GminaCard({ gminy, gmina, topics }: { gminy: Gmina[]; gmina: Gmin
           ) : (
             <p>W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.</p>
           )}
-          {c.t.innovations.groups[0] && (
-            <p>
-              <Link href={`/biblioteka?dla=${c.t.innovations.groups[0]}#innowacje`} className={linkClass}>
-                Zobacz wszystkie rozwiązania w Bibliotece
-              </Link>
-            </p>
-          )}
+          {/* Karta pokazuje najwyżej 3 dopasowania; pełna lista jest w Bibliotece. */}
+          <p>
+            <Link href="/biblioteka#innowacje" className={linkClass}>Przeglądaj wszystkie rozwiązania w Bibliotece</Link>
+          </p>
         </div>
       ))}
 
