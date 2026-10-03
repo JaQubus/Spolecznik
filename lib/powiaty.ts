@@ -1,6 +1,6 @@
 import "server-only";
 import { KONDYCJA_KEYS } from "./kondycja";
-import { createClient } from "./supabase/server";
+import { createClient, isMissingTable } from "./supabase/server";
 
 export type Powiat = { id: string; nazwa: string };
 export type Value = { value: number | null; unit: string };
@@ -31,6 +31,8 @@ export async function getKondycjaData(): Promise<PowiatyData> {
     .order("rok", { ascending: false })
     .limit(1)
     .maybeSingle();
+  // Bez migracji 0005 strona pokazuje „Brak danych o powiatach” zamiast błędu 500.
+  if (isMissingTable(yearError)) return { year: null, powiaty: [], values: {} };
   if (yearError) throw yearError;
   if (!latest) return { year: null, powiaty: [], values: {} };
 

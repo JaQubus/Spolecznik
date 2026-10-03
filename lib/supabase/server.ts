@@ -6,6 +6,11 @@ export function isSupabaseConfigured(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY));
 }
 
+/** PostgREST nie zna tabeli — zwykle migracja nie została jeszcze uruchomiona. */
+export function isMissingTable(error: { code?: string } | null): boolean {
+  return error?.code === "PGRST205" || error?.code === "42P01";
+}
+
 /** Klient z sesją użytkownika (RLS) — dla Server Components, Server Actions i route handlers. */
 export async function createClient() {
   const cookieStore = await cookies();

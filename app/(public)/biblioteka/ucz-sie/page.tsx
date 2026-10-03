@@ -2,7 +2,7 @@ import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { NoDatabase } from "@/components/layout/no-database";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { createClient, isMissingTable, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Ucz się" };
 
@@ -26,6 +26,7 @@ async function listMaterials(): Promise<Material[]> {
     .select("id, title, description, audience, kind, url, publisher, year")
     .order("sort")
     .order("title");
+  if (isMissingTable(error)) return []; // migracja 0006 jeszcze nie uruchomiona
   if (error) throw error;
   return data as Material[];
 }
