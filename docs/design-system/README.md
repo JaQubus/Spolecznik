@@ -85,7 +85,7 @@ Measured pairs; each token's usage note lists the grounds it is safe on.
 
 ## Using it with Tailwind + shadcn/ui
 
-The exact edits for this codebase are in `applying-to-this-repo.md` (already applied on the `design-system` branch except the app-code items in its section 4). `reference.css` is the reference implementation of every component in plain CSS.
+The exact edits for this codebase are in `applying-to-this-repo.md` (all applied on the `design-system` branch; its section 5 lists where each component lives in the code). `reference.css` is the reference implementation of every component in plain CSS.
 
 The green is named `brand`, not `accent`, on purpose: shadcn already owns `--accent` (its hover ground). Load the font, paste this system's `tokens.css`, then point shadcn's variables at the tokens in `globals.css` (Tailwind v4):
 

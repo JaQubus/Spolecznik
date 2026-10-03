@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { CircleIcon } from "lucide-react"
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 
 function RadioGroup({
@@ -26,19 +25,30 @@ function RadioGroupItem({
     <RadioGroupPrimitive.Item
       data-slot="radio-group-item"
       className={cn(
-        "aspect-square size-4 shrink-0 rounded-full border border-input text-primary shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:ring-destructive/40",
+        "aspect-square size-[26px] shrink-0 rounded-full border border-border-strong bg-background hover:border-foreground data-[state=checked]:border-[8px] data-[state=checked]:border-foreground disabled:cursor-not-allowed disabled:bg-muted aria-invalid:border-2 aria-invalid:border-destructive",
         className
       )}
       {...props}
-    >
-      <RadioGroupPrimitive.Indicator
-        data-slot="radio-group-indicator"
-        className="relative flex items-center justify-center"
-      >
-        <CircleIcon className="absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 fill-primary" />
-      </RadioGroupPrimitive.Indicator>
-    </RadioGroupPrimitive.Item>
+    />
   )
 }
 
-export { RadioGroup, RadioGroupItem }
+/** Cały wiersz z etykietą jest polem trafienia, co najmniej 48px (Choice.md). Grupę owiń w fieldset z legend. */
+function RadioGroupOption({
+  id,
+  label,
+  hint,
+  ...props
+}: React.ComponentProps<typeof RadioGroupPrimitive.Item> & { id: string; label: React.ReactNode; hint?: React.ReactNode }) {
+  return (
+    <label htmlFor={id} className="flex min-h-12 cursor-pointer items-center gap-3">
+      <RadioGroupItem id={id} {...props} />
+      <span>
+        {label}
+        {hint && <span className="block text-base text-muted-foreground">{hint}</span>}
+      </span>
+    </label>
+  )
+}
+
+export { RadioGroup, RadioGroupItem, RadioGroupOption }

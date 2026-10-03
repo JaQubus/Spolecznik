@@ -28,14 +28,15 @@ export function A11yToolbar() {
   const classes = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   return (
-    <div role="group" aria-label="Ustawienia dostępności" className="flex flex-wrap gap-1">
+    <div role="group" aria-label="Ustawienia dostępności" className="flex flex-wrap gap-2 md:justify-end">
       {A11Y_OPTIONS.map(({ key, label, Icon }) => (
         <button
           key={key}
           type="button"
           aria-pressed={classes.split(" ").includes(`a11y-${key}`)}
           onClick={() => toggle(key)}
-          className="inline-flex min-h-12 items-center gap-2 rounded-full px-3 text-base hover:bg-muted aria-pressed:bg-foreground aria-pressed:font-bold aria-pressed:text-background"
+          // Obrys jak w filtrach (Chip.md): bez niego niewciśnięty przełącznik na dotyku wygląda jak zwykły tekst.
+          className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-background px-3 text-base hover:border-foreground aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:font-bold aria-pressed:text-background"
         >
           <Icon aria-hidden className="size-5" />
           {label}
