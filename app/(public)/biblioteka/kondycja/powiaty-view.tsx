@@ -2,12 +2,30 @@ import Link from "next/link";
 import { cn } from "cn";
 import { Alert } from "@/components/ui/alert";
 import { listPowiatyIndicators, listPowiatyValues } from "@/lib/powiaty";
+import { LINK as linkClass } from "../shared";
 
 const chipClass =
   "inline-flex min-h-11 max-w-full items-center rounded-full border border-border-strong bg-background px-4 py-2 text-base [overflow-wrap:anywhere] hover:border-foreground aria-[current=true]:border-foreground aria-[current=true]:bg-foreground aria-[current=true]:font-bold aria-[current=true]:text-background";
 
 const indicatorHref = (indicator: string) => `/biblioteka/kondycja?poziom=powiaty&wskaznik=${encodeURIComponent(indicator)}`;
 const categoryId = (category: string) => `powiaty-${category.toLowerCase().replace(/[^a-z0-9]+/gi, "-")}`;
+
+/** Wskaźnik pokazywany, gdy w adresie nie ma żadnego: najbliższy temu, czym zajmuje się ROPS. */
+const DEFAULT_INDICATOR = "Beneficjenci pomocy społecznej";
+
+/** Wynik powiatu na tle mediany Małopolski, słowami. ±5% mediany to „mniej więcej tyle samo”. */
+function compareToMedian(value: number | null, median: number | null) {
+  if (value == null || median == null) return "Brak danych do porównania.";
+  if (Math.abs(value - median) <= Math.abs(median) * 0.05) return "Mniej więcej tyle samo co w typowym powiecie Małopolski.";
+  return value > median ? "Więcej niż w większości powiatów Małopolski." : "Mniej niż w większości powiatów Małopolski.";
+}
+
+function medianOf(values: number[]) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
 
 function formatValue(value: number | null, unit: string) {
   if (value == null) return "brak danych";
@@ -23,8 +41,12 @@ export async function PowiatyView({ requested }: { requested?: string }) {
       </Alert>
     );
   }
-  const indicator = indicators.find((i) => i.wskaznik === requested) ?? indicators[0];
+  const indicator =
+    indicators.find((i) => i.wskaznik === requested) ??
+    indicators.find((i) => i.wskaznik === DEFAULT_INDICATOR) ??
+    indicators[0];
   const values = await listPowiatyValues(indicator.wskaznik);
+  const median = medianOf(values.map((v) => v.wartosc).filter((v): v is number => v != null));
   const categories = [...new Set(indicators.map((i) => i.kategoria))];
 
   return (
@@ -32,7 +54,7 @@ export async function PowiatyView({ requested }: { requested?: string }) {
       <div className="space-y-2">
         <h2 id="powiaty-temat" className="text-3xl font-bold">Kondycja powiatów</h2>
         <p className="max-w-2xl text-lg">
-          Dane dla 22 powiatów Małopolski. Ten widok pozostaje oddzielny od mapy gmin, bo wskaźniki powiatowe nie opisują każdej gminy osobno.
+          Wybierz wskaźnik, a zobaczysz, jak wypada każdy z 22 powiatów Małopolski na tle pozostałych.
         </p>
       </div>
       <nav aria-labelledby="powiaty-kategorie" className="space-y-3">
@@ -71,7 +93,7 @@ export async function PowiatyView({ requested }: { requested?: string }) {
               <tr className="border-b-2 border-foreground">
                 <th scope="col" className="py-2 pr-4">Powiat</th>
                 <th scope="col" className="py-2 pr-4">Wynik</th>
-                <th scope="col" className="py-2">Jak czytać wynik</th>
+                <th scope="col" className="py-2">Na tle Małopolski</th>
               </tr>
             </thead>
             <tbody>
@@ -79,13 +101,16 @@ export async function PowiatyView({ requested }: { requested?: string }) {
                 <tr key={row.powiat} className="border-b align-top">
                   <th scope="row" className="py-3 pr-4 font-normal">{row.nazwa}</th>
                   <td className="py-3 pr-4 whitespace-nowrap">{formatValue(row.wartosc, row.jednostka)}</td>
-                  <td className="py-3">{row.opis || `Wynik podany w jednostce: ${row.jednostka || "brak jednostki"}.`}</td>
+                  <td className="py-3">{compareToMedian(row.wartosc, median)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <p className={cn("text-base", "text-muted-foreground")}>Źródło: Internetowy Obserwator Statystyk Społecznych.</p>
+        <p className="text-lg">
+          <Link href="/biblioteka#innowacje" className={linkClass}>Zobacz sprawdzone rozwiązania w Bibliotece</Link>
+        </p>
       </div>
     </section>
   );

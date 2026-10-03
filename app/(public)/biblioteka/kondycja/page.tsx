@@ -25,7 +25,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
       <header className="space-y-3">
         <h1 className="text-4xl font-bold">Kondycja Małopolski</h1>
         <p className="max-w-2xl text-xl">
-          Wybierz poziom danych: mapa gmin pokazuje lokalny kontekst, a widok powiatów udostępnia bogatszy zestaw wskaźników społecznych z CSV.
+          Możesz sprawdzić każdą ze 183 gmin na mapie albo porównać 22 powiaty według ponad 100 wskaźników społecznych.
         </p>
       </header>
 
