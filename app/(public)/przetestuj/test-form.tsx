@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { EMPTY_GMINA, GminaField, type GminaValue } from "@/components/gmina-field";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import type { GminaOption } from "@/lib/gminy";
 
 type Status = "planowany" | "zakonczony";
 
@@ -28,14 +30,16 @@ type Errors = Partial<Record<"innovation" | "gmina" | "rating", string>>;
 
 export function TestForm({
   innovations,
+  gminy,
   initialInnovation,
 }: {
   innovations: { id: string; title: string; slug: string | null }[];
+  gminy: GminaOption[];
   initialInnovation: string;
 }) {
   const [innovationId, setInnovationId] = useState(initialInnovation);
   const [status, setStatus] = useState<Status>("planowany");
-  const [gmina, setGmina] = useState("");
+  const [gmina, setGmina] = useState<GminaValue>(EMPTY_GMINA);
   const [testerOrg, setTesterOrg] = useState("");
   const [plannedFor, setPlannedFor] = useState("");
   const [rating, setRating] = useState("");
@@ -58,7 +62,7 @@ export function TestForm({
     e.preventDefault();
     const next: Errors = {};
     if (!innovationId) next.innovation = "Wybierz rozwiązanie z listy.";
-    if (gmina.trim().length < 2) next.gmina = "Wpisz nazwę gminy, np. „Bobowa”.";
+    if (gmina.text.trim().length < 2) next.gmina = "Wpisz nazwę gminy, np. „Bobowa”.";
     if (status === "zakonczony" && !rating) next.rating = "Wybierz ocenę od 1 do 5.";
     setErrors(next);
     if (next.innovation) return innovationField.current?.focus();
@@ -73,7 +77,8 @@ export function TestForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           innovationId,
-          gmina: gmina.trim(),
+          gmina: gmina.text.trim(),
+          teryt: gmina.teryt ?? undefined,
           status,
           testerOrg: testerOrg || undefined,
           plannedFor: plannedFor || undefined,
@@ -145,12 +150,12 @@ export function TestForm({
       <div className="space-y-2">
         <Label htmlFor="gmina">Gmina, w której {status === "zakonczony" ? "był" : "będzie"} test</Label>
         <FieldError id="gmina-blad">{errors.gmina}</FieldError>
-        <Input
+        <GminaField
           ref={gminaField}
           id="gmina"
+          options={gminy}
           value={gmina}
-          onChange={(e) => setGmina(e.target.value)}
-          autoComplete="address-level2"
+          onValueChange={setGmina}
           aria-invalid={!!errors.gmina}
           aria-describedby={describe("gmina", false, errors.gmina)}
         />

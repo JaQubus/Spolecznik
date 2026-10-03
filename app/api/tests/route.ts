@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const t = parsed.data;
 
   try {
-    const gmina = await findGmina(t.gmina);
+    const gmina = await findGmina(t.gmina, t.teryt);
     if (!gmina) return Response.json({ error: "Nie znaleźliśmy gminy o tej nazwie" }, { status: 404 });
 
     const tester = await createClient()

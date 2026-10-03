@@ -118,6 +118,7 @@ export const TestRequest = z
   .object({
     innovationId: z.uuid(),
     gmina: z.string().min(2).max(100),
+    teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
     status: z.enum(["planowany", "zakonczony"]),
     testerOrg: z.string().max(200).optional(),
     plannedFor: z.iso.date().optional(),
@@ -144,6 +145,7 @@ export type AssistantResponse = {
 export const MiddlemanRequest = z.object({
   innovationId: z.uuid(),
   gmina: z.string().min(1).max(100),
+  teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
 });
 export const ImplementationCard = z.object({
   goal: z.string(),

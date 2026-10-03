@@ -1,3 +1,5 @@
+import { EMPTY_GMINA, type GminaValue } from "@/components/gmina-field";
+import { GMINA_OPTIONS } from "@/lib/gminy";
 import { innovationOptions } from "@/lib/library";
 import { STATUS_CODE } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -8,9 +10,10 @@ export const metadata = { title: "Jak to wdrożyć u nas?" };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Gmina z wcześniejszego zgłoszenia (?potrzeba=SPL-…), żeby nie wpisywać jej drugi raz. */
-async function gminaFromNeed(code: string): Promise<string> {
-  const { data } = await createAdminClient().from("needs").select("gminy(nazwa)").eq("status_code", code).maybeSingle();
-  return (data?.gminy as unknown as { nazwa: string } | null)?.nazwa ?? "";
+async function gminaFromNeed(code: string): Promise<GminaValue> {
+  const { data } = await createAdminClient().from("needs").select("teryt").eq("status_code", code).maybeSingle();
+  const option = data?.teryt ? GMINA_OPTIONS.find((g) => g.teryt === data.teryt) : undefined;
+  return option ? { text: option.nazwa, teryt: option.teryt } : EMPTY_GMINA;
 }
 
 export default async function Page(props: PageProps<"/wdrozenie">) {
@@ -20,7 +23,7 @@ export default async function Page(props: PageProps<"/wdrozenie">) {
 
   const [innovations, gmina] = await Promise.all([
     innovationOptions().catch(() => []),
-    STATUS_CODE.test(code) ? gminaFromNeed(code).catch(() => "") : Promise.resolve(""),
+    STATUS_CODE.test(code) ? gminaFromNeed(code).catch(() => EMPTY_GMINA) : Promise.resolve(EMPTY_GMINA),
   ]);
 
   return (
@@ -32,7 +35,12 @@ export default async function Page(props: PageProps<"/wdrozenie">) {
           i kto może pomóc. Wszystko, czego nie wiemy na pewno, oznaczymy jako założenie.
         </p>
       </div>
-      <ImplementationFlow innovations={innovations} initialInnovation={innovation} initialGmina={gmina} />
+      <ImplementationFlow
+        innovations={innovations}
+        gminy={GMINA_OPTIONS}
+        initialInnovation={innovation}
+        initialGmina={gmina}
+      />
     </section>
   );
 }

@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
   }
-  const { innovationId, gmina } = parsed.data;
+  const { innovationId, gmina, teryt } = parsed.data;
   const supabase = createAdminClient();
 
   try {
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
         .select("id, title, problem, solution, beneficiaries, who_can_use, evidence, how_to_use, components")
         .eq("id", innovationId)
         .maybeSingle(),
-      findGmina(gmina),
+      findGmina(gmina, teryt),
     ]);
     if (error) throw error;
     if (!innovation) return Response.json({ error: "Nie znaleziono innowacji" }, { status: 404 });

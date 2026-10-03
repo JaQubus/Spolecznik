@@ -1,3 +1,4 @@
+import { GMINA_OPTIONS } from "@/lib/gminy";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TestForm } from "./test-form";
 
@@ -25,7 +26,7 @@ export default async function Page(props: PageProps<"/przetestuj">) {
           więc łatwiej im zdecydować, czy warto spróbować.
         </p>
       </div>
-      <TestForm innovations={innovations} initialInnovation={innovation} />
+      <TestForm innovations={innovations} gminy={GMINA_OPTIONS} initialInnovation={innovation} />
     </section>
   );
 }

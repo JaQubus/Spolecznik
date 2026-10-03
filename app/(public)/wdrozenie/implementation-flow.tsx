@@ -3,11 +3,12 @@
 import { Printer } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { GminaField, type GminaValue } from "@/components/gmina-field";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { GminaOption } from "@/lib/gminy";
 import { formatNumber } from "@/lib/pl";
 import type { ImplementationCard } from "@/lib/schemas";
 
@@ -25,15 +26,17 @@ const zl = (n: number) => `${formatNumber(Math.round(n), 0)} zł`;
 
 export function ImplementationFlow({
   innovations,
+  gminy,
   initialInnovation,
   initialGmina,
 }: {
   innovations: { id: string; title: string }[];
+  gminy: GminaOption[];
   initialInnovation: string;
-  initialGmina: string;
+  initialGmina: GminaValue;
 }) {
   const [innovationId, setInnovationId] = useState(initialInnovation);
-  const [gmina, setGmina] = useState(initialGmina);
+  const [gmina, setGmina] = useState<GminaValue>(initialGmina);
   const [errors, setErrors] = useState<{ innovation?: string; gmina?: string }>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -50,7 +53,7 @@ export function ImplementationFlow({
     e.preventDefault();
     const next: typeof errors = {};
     if (!innovationId) next.innovation = "Wybierz rozwiązanie z listy.";
-    if (gmina.trim().length < 2) next.gmina = "Wpisz nazwę gminy, np. „Bobowa”.";
+    if (gmina.text.trim().length < 2) next.gmina = "Wpisz nazwę gminy, np. „Bobowa”.";
     setErrors(next);
     if (next.innovation) return innovationField.current?.focus();
     if (next.gmina) return gminaField.current?.focus();
@@ -61,7 +64,7 @@ export function ImplementationFlow({
       const res = await fetch("/api/middleman", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ innovationId, gmina: gmina.trim() }),
+        body: JSON.stringify({ innovationId, gmina: gmina.text.trim(), teryt: gmina.teryt ?? undefined }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Nie udało się przygotować karty");
@@ -162,12 +165,12 @@ export function ImplementationFlow({
         <Label htmlFor="gmina">Twoja gmina</Label>
         <FieldHint id="gmina-pomoc">Weźmiemy pod uwagę liczbę mieszkańców, seniorów i zmianę liczby ludności.</FieldHint>
         <FieldError id="gmina-blad">{errors.gmina}</FieldError>
-        <Input
+        <GminaField
           ref={gminaField}
           id="gmina"
+          options={gminy}
           value={gmina}
-          onChange={(e) => setGmina(e.target.value)}
-          autoComplete="address-level2"
+          onValueChange={setGmina}
           aria-invalid={!!errors.gmina}
           aria-describedby={errors.gmina ? "gmina-pomoc gmina-blad" : "gmina-pomoc"}
         />
