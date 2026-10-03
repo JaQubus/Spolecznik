@@ -16,7 +16,8 @@ import { DECLARATION_SUMMARY, DECLARATIONS, DESCRIPTION_SECTIONS, PLAN, TEAM } f
 import {
   type Application, type ApplicantType, type Errors, type PlanRow,
   MAX_PARTNERS, STEPS, declarationSets, emptyApplication, emptyPartner, emptyRow, fieldId,
-  firstInvalidStep, formatPLN, getAt, parseAmount, planTotal, restore, setAt, validateStep,
+  applicationFromPrefill, firstInvalidStep, formatPLN, getAt, parseAmount, planTotal, restore, setAt, validateStep,
+  type ApplicationPrefill,
 } from "./model";
 
 // Szkic zostaje tylko w tej przeglądarce: niczego nie wysyłamy na serwer, bo to dane osobowe wnioskodawcy.
@@ -305,10 +306,6 @@ function DeclarationsStep() {
             </Alert>
             <p className="max-w-[68ch] font-bold">{decl.lead}</p>
             <FieldError id={`${fieldId(`oswiadczenia.${set}`)}-blad`}>{error}</FieldError>
-            <Button type="button" variant="outline" size="sm" className="justify-self-start"
-              onClick={() => update(`oswiadczenia.${set}`, values.map(() => true))}>
-              <Check aria-hidden /> Zaznacz wszystkie
-            </Button>
             <div className="grid max-w-[68ch] gap-2">
               {decl.items.map((item, i) => (
                 <CheckboxOption
@@ -384,7 +381,7 @@ function FinishStep({ goTo }: { goTo: (step: number) => void }) {
 
 type Saved = { app: Application; step: number; reached: number };
 
-function readSaved(): Saved {
+function readSaved(prefill?: ApplicationPrefill): Saved {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
     if (saved) {
@@ -393,16 +390,16 @@ function readSaved(): Saved {
       return { app: restore(saved.app), step, reached };
     }
   } catch {}
-  return { app: emptyApplication(), step: 0, reached: 0 };
+  return { app: prefill ? applicationFromPrefill(prefill) : emptyApplication(), step: 0, reached: 0 };
 }
 
 const noSubscribe = () => () => {};
 
 /** localStorage nie istnieje na serwerze: formularz renderujemy dopiero w przeglądarce, od razu ze szkicem. */
-export function ApplicationForm() {
+export function ApplicationForm({ prefill }: { prefill?: ApplicationPrefill }) {
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
   if (!hydrated) return <p className="text-muted-foreground">Wczytuję formularz…</p>;
-  return <Form initial={readSaved()} />;
+  return <Form initial={readSaved(prefill)} />;
 }
 
 function Form({ initial }: { initial: Saved }) {

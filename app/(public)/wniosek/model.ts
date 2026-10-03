@@ -31,6 +31,13 @@ export type Application = {
   oswiadczenia: Record<DeclarationSet, boolean[]>;
 };
 
+export type ApplicationPrefill = {
+  tytul?: string;
+  problem?: string;
+  opis?: string;
+  odbiorcy?: string;
+};
+
 export const MAX_PARTNERS = 5;
 
 const emptyPerson = (): Person => ({ imie: "", nazwisko: "", adres: "", kod: "", miejscowosc: "", telefon: "", email: "" });
@@ -58,6 +65,15 @@ export function emptyApplication(): Application {
     zespol: "",
     oswiadczenia: { A: DECLARATIONS.A.items.map(() => false), B: DECLARATIONS.B.items.map(() => false) },
   };
+}
+
+export function applicationFromPrefill(prefill: ApplicationPrefill): Application {
+  const app = emptyApplication();
+  app.tytul = prefill.tytul?.trim() ?? "";
+  app.opisy.diagnoza = prefill.problem?.trim() ?? "";
+  app.opisy.opis = prefill.opis?.trim() ?? "";
+  app.opisy.odbiorcy = prefill.odbiorcy?.trim() ?? "";
+  return app;
 }
 
 /** Szkic z localStorage mógł powstać przy starszej wersji formularza: uzupełniamy brakujące pola pustymi. */

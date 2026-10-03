@@ -1,4 +1,3 @@
-import Link from "next/link";
 import canvasSchema from "@/data/out/canvas_schema.json";
 import { STATUS_CODE, type Fiszka } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -43,10 +42,6 @@ export default async function Page(props: PageProps<"/pomysl">) {
           {needCode
             ? "Dla tego problemu nie ma jeszcze gotowego rozwiązania. Opisz, jak można by go rozwiązać — część fiszki uzupełniliśmy za Ciebie."
             : "Masz pomysł, jak pomóc ludziom w swojej okolicy? Opisz go krótko. Nie podawaj nazwisk, telefonów ani adresów."}
-        </p>
-        <p className="max-w-2xl">
-          Pomysł jest już dopracowany i chcesz starać się o grant?{" "}
-          <Link href="/wniosek" className="font-bold underline underline-offset-4">Wypełnij wniosek krok po kroku</Link>.
         </p>
       </div>
       <IdeaWorkshop
