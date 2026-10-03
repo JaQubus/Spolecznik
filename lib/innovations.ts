@@ -68,9 +68,20 @@ export async function getInnovation(slugOrId: string): Promise<Innovation | null
 
 /** Innowacje dla obszaru Mapy Wyzwań: po obszarze (enrich.py) albo po pasujących grupach docelowych. */
 export async function innovationsForArea(area: (typeof MWS_AREAS)[number], groups: string[], limit = 3) {
+  return innovationsMatching({ area, groups }, limit);
+}
+
+/** Innowacje pasujące do któregokolwiek kryterium: obszar, grupa docelowa albo temat przekrojowy. */
+export async function innovationsMatching(
+  { area, groups = [], cross = [] }: { area?: (typeof MWS_AREAS)[number]; groups?: string[]; cross?: string[] },
+  limit = 3,
+) {
   const supabase = await createClient();
-  const filters = [`areas.cs.{${area}}`];
+  const filters: string[] = [];
+  if (area) filters.push(`areas.cs.{${area}}`);
   if (groups.length) filters.push(`target_groups.ov.{${groups.join(",")}}`);
+  if (cross.length) filters.push(`cross_topics.ov.{${cross.join(",")}}`);
+  if (!filters.length) return [];
   const { data, error } = await supabase
     .from("innovations")
     .select(LIST_COLUMNS)

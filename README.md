@@ -137,7 +137,7 @@ flowchart TD
 | Frontend | **Next.js (App Router) + TypeScript** | Jedno repo, jeden deploy, API w tym samym projekcie |
 | UI | **Tailwind CSS + shadcn/ui** (na Radix) | Gotowe dostępne komponenty: focus, ARIA, obsługa klawiatury |
 | Formularze | react-hook-form + zod | Te same schematy zod walidują formularze i odpowiedzi LLM |
-| Mapy | react-leaflet + GeoJSON gmin (PRG GUGiK uproszczony mapshaperem) | Lekkie, bez kluczy API |
+| Mapy | Własny SVG (`choropleth-map.tsx`) + ścieżki gmin z PRG GUGiK uproszczone w `data/gminy_geo.py` → `lib/gminy-shapes.json` | 183 gminy jako zwykłe linki w SVG: bez kafelków, bez kluczy API, bez biblioteki map |
 | Wykresy | Recharts | Szybkie, wystarczające |
 | Głos | Web Speech API: rozpoznawanie `pl-PL` (Chrome/Edge) + `speechSynthesis` do czytania na głos | Zero kosztu. W innych przeglądarkach fallback do pola tekstowego. |
 | LLM | **Groq** (`openai/gpt-oss-120b`, model rozumujący, `reasoning_effort: low`), wywołania `fetch` w `lib/groq.ts` i `data/common.py` | Tryb JSON + walidacja zod (`groqObject`). `gpt-oss-20b` odrzucony: w testach psuł polską gramatykę i lematy. Wszystkie zadania: intake, rerank, lematy, ETR, Q&A, asystent Pracowni, karta wdrożeniowa, wnioski. Modele `fast` / `quality` w `lib/llm.ts`. **Infrastruktura w USA — tylko demo na danych syntetycznych** (sekcja 10). |
@@ -363,7 +363,7 @@ sequenceDiagram
 | `needs` | status_code, author_id (nullable), contact_email (nullable), raw_text (RLS: autor i admin), card jsonb, teryt, status (`zgloszone` / `w_analizie` / `ekspert` / `odpowiedz` / `luka` / `zamkniete`), best_fit |
 | `matches` | need_id, kind, ref_id, fit, why, adapt, feedback |
 | `ideas` | author_id, fiszka jsonb, canvas jsonb, stage, status |
-| `calls` (nabory) | title, active, opens_at, closes_at, criteria jsonb, form_schema jsonb |
+| `calls` (nabory) | title, active, opens_at, closes_at, criteria jsonb, form_schema jsonb (`fields` dla generatora, `content` z treścią formularza /wniosek) |
 | `applications` | idea_id, call_id, draft jsonb, status |
 | `tests` | innovation_id, tester_id, teryt, status, rating, feedback, suggestions |
 | `threads`, `messages`, `thread_participants` | entity_kind, entity_id; treść; uczestnicy |

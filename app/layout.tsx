@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: A11Y_INIT_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col">
-        <span aria-hidden className="block h-1 border-t-2 border-[var(--flag-white)] bg-[var(--flag-red)]" />
+        <span aria-hidden className="block h-1 print:hidden border-t-2 border-[var(--flag-white)] bg-[var(--flag-red)]" />
         <a
           href="#tresc"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-foreground focus:px-4 focus:py-3 focus:font-bold focus:text-background"
@@ -37,10 +37,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Przejdź do treści
         </a>
         <SiteHeader />
-        <main id="tresc" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-5">
+        <main id="tresc" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-5 print:p-0">
           {children}
         </main>
-        <footer className="bg-secondary px-4 py-8 text-center text-base text-muted-foreground">
+        <footer className="bg-secondary print:hidden px-4 py-8 text-center text-base text-muted-foreground">
           Społecznik · Małopolski Hub Innowacji Społecznych · dane demonstracyjne są syntetyczne
         </footer>
         <Toaster />

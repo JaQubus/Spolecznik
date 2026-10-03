@@ -1,137 +1,155 @@
 /**
- * Kondycja Małopolski: które wskaźniki powiatów (tabela powiaty_wskazniki) opisują który obszar
- * Mapy Wyzwań i jak zamienić liczbę na zdanie prostym językiem. Zdania są liczone z danych
- * deterministycznie — bez LLM — więc zawsze zgadzają się z tabelą obok.
+ * Kondycja Małopolski: tematy dla 183 gmin (tabela gminy, dane BDL z data/bdl.py) i zamiana liczb
+ * na zdania prostym językiem. Zdania są liczone z danych deterministycznie — bez LLM — więc zawsze
+ * zgadzają się z tabelą obok.
  */
 import { formatNumber } from "./pl";
-import type { GROUPS, MWS_AREAS } from "./schemas";
-import { AREA_LABELS } from "./taxonomy";
+import type { CROSS, GROUPS, MWS_AREAS } from "./schemas";
 
 type Area = (typeof MWS_AREAS)[number];
 type Group = (typeof GROUPS)[number];
+type Cross = (typeof CROSS)[number];
 
-export type Indicator = {
-  /** Nazwa wskaźnika dokładnie jak w powiaty_wskazniki.wskaznik. */
+/** Która strona skali oznacza większe wyzwanie — od tego zależy kolor na mapie i „wyzwanie” w karcie. */
+export type Worse = "higher" | "lower";
+
+/** Temat nazywamy „wyzwaniem” gminy dopiero wtedy, gdy gmina wypada w nim gorzej niż połowa gmin. */
+export const CHALLENGE_MIN = 0.5;
+
+/** Liczby gminy: kolumny tabeli gminy + dodatkowe wskaźniki BDL w gminy.wskazniki (data/bdl.py). */
+export type GminaValues = {
+  udzial_65plus: number | null;
+  zmiana_ludnosci_10l: number | null;
+  wskazniki: Record<string, unknown>;
+};
+
+/** Wskaźnik z gminy.wskazniki jako liczba (jsonb może mieć null albo brak klucza). */
+const extra = (key: string) => (g: GminaValues): number | null => {
+  const v = g.wskazniki?.[key];
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+};
+
+const regionWords = (d: -1 | 0 | 1) =>
+  d === 0 ? "Podobnie jak w większości gmin Małopolski."
+    : d > 0 ? "To więcej niż w większości gmin Małopolski." : "To mniej niż w większości gmin Małopolski.";
+
+/** Porównanie dla wartości ze znakiem (+/−): „ubywa mniej” to co innego niż „przybywa mniej”. */
+const flowWords = (d: -1 | 0 | 1, v: number, how: string) =>
+  d === 0 ? "Podobnie jak w większości gmin Małopolski."
+    : d > 0 ? (v > 0 ? `Przybywa więcej mieszkańców${how} niż w większości gmin Małopolski.` : `Ubywa mniej mieszkańców${how} niż w większości gmin Małopolski.`)
+    : v < 0 ? `Ubywa więcej mieszkańców${how} niż w większości gmin Małopolski.` : `Przybywa mniej mieszkańców${how} niż w większości gmin Małopolski.`;
+
+const signed = (v: number, digits = 1) => `${v > 0 ? "+" : ""}${formatNumber(v, digits)}`;
+
+export type GminaTopic = {
   key: string;
-  /** Krótka etykieta prostym językiem (nagłówek kolumny). */
   label: string;
-  /** Która strona skali oznacza większe wyzwanie — od tego zależy kolor na mapie i „najgorszy obszar”. */
-  worse: "higher" | "lower";
-};
-
-export type KondycjaArea = {
-  area: Area;
-  /** Nazwa tematu, gdy dane pokrywają tylko część obszaru Mapy Wyzwań (domyślnie nazwa obszaru). */
-  label?: string;
-  /** Jedno zdanie o tym, co pokazują dane. */
   intro: string;
-  /** Pierwszy wskaźnik jest główny: koloruje mapę i daje zdanie o powiecie. */
-  indicators: [Indicator, ...Indicator[]];
-  /** Zdanie o powiecie z wartości głównego wskaźnika. */
-  sentence: (value: number) => string;
-  /** Grupy Biblioteki dla innowacji pasujących do obszaru (gdy innowacja nie ma jeszcze obszarów z enrich.py). */
-  groups: Group[];
+  /** Nagłówek kolumny w tabeli. */
+  column: string;
+  get: (g: GminaValues) => number | null;
+  worse: Worse;
+  format: (v: number) => string;
+  sentence: (v: number) => string;
+  /** Porównanie z medianą gmin; d jak w regionDirection. */
+  compare: (d: -1 | 0 | 1, v: number) => string;
+  /** Jakie innowacje podsunąć gminie, w której temat wypada źle. */
+  innovations: { area?: Area; groups: Group[]; cross: Cross[] };
 };
 
-const OPS = { one: "osoba, której pomaga ośrodek pomocy społecznej,", many: "osób, którym pomaga ośrodek pomocy społecznej," };
+/** „6”, a poniżej 1 „mniej niż 1” — do zdań typu „ubyło 6 na 100 mieszkańców”. */
+const rounded = (x: number) => (x < 1 ? "mniej niż 1" : formatNumber(Math.round(x), 0));
 
-export const KONDYCJA_AREAS: KondycjaArea[] = [
+export const GMINA_TOPICS: [GminaTopic, ...GminaTopic[]] = [
   {
-    area: "seniorzy",
-    intro: "Ilu jest seniorów i ile osób może się nimi opiekować w rodzinie.",
-    indicators: [
-      { key: "Ludność w wieku 60+", label: "Osoby w wieku 60+ (% mieszkańców)", worse: "higher" },
-      { key: "Wskaźnik/ indeks starości", label: "Osoby 65+ na 100 dzieci do 14 lat", worse: "higher" },
-      { key: "Potencjał pielęgnacyjny", label: "Kobiety 45–64 lata na 100 osób w wieku 80+ (możliwe opiekunki)", worse: "lower" },
-    ],
-    sentence: (v) => `${share(v, { one: "osoba", many: "osób" })} ma 60 lat lub więcej.`,
-    groups: ["seniorzy"],
+    key: "seniorzy",
+    label: "Seniorzy",
+    intro: "Jaka część mieszkańców gminy ma 65 lat lub więcej.",
+    column: "Osoby w wieku 65+ (% mieszkańców)",
+    get: (g) => g.udzial_65plus,
+    worse: "higher",
+    format: (v) => formatValue(v, "%"),
+    sentence: (v) => `${share(v, { one: "osoba", many: "osób" })} ma 65 lat lub więcej.`,
+    compare: regionWords,
+    innovations: { area: "seniorzy", groups: ["seniorzy"], cross: ["samotnosc"] },
   },
   {
-    area: "rodzina_piecza",
-    intro: "Ile dzieci wychowuje się poza domem rodzinnym i jak często rodziny potrzebują pomocy w wychowaniu.",
-    indicators: [
-      { key: "Intensywność pieczy zastępczej", label: "Dzieci w pieczy zastępczej na 1000 dzieci", worse: "higher" },
-      {
-        key: "Bezradność w sprawach opiekuńczo-wychowawczych i prowadzenia gosp. dom.",
-        label: "Pomoc OPS z powodu trudności w wychowaniu dzieci (% osób wspieranych)",
-        worse: "higher",
-      },
-    ],
-    sentence: (v) => `${perThousand(v)} na 1000 dzieci mieszka w pieczy zastępczej, czyli poza domem rodzinnym.`,
-    groups: ["dzieci_mlodziez_rodzina"],
-  },
-  {
-    area: "ubostwo",
-    intro: "Ilu mieszkańców korzysta z pomocy społecznej i jak wyglądają zarobki i bezrobocie.",
-    indicators: [
-      { key: "Beneficjenci pomocy społecznej", label: "Mieszkańcy korzystający z pomocy społecznej (%)", worse: "higher" },
-      { key: "Przeciętne wynagrodzenie w relacji do śr. krajowej", label: "Przeciętne wynagrodzenie (średnia w Polsce = 100)", worse: "lower" },
-      { key: "Stopa bezrobocia", label: "Stopa bezrobocia (%)", worse: "higher" },
-    ],
-    sentence: (v) => `${share(v, { one: "mieszkaniec", many: "mieszkańców", ord: "m" })} korzysta z pomocy społecznej.`,
-    groups: ["rynek_pracy"],
-  },
-  {
-    area: "niepelnosprawnosc",
-    intro: "Jak często ośrodki pomocy społecznej wspierają osoby z powodu niepełnosprawności.",
-    indicators: [
-      { key: "Niepełnosprawność", label: "Pomoc OPS z powodu niepełnosprawności (% osób wspieranych)", worse: "higher" },
-    ],
-    sentence: (v) => `${share(v, OPS)} dostaje wsparcie z powodu niepełnosprawności.`,
-    groups: ["ograniczona_mobilnosc", "niepelnosprawnosc_sensoryczna", "niepelnosprawnosc_intelektualna"],
-  },
-  {
-    area: "zdrowie",
-    intro: "Jak często powodem pomocy jest choroba i jak daleko jest do apteki.",
-    indicators: [
-      { key: "Długotrwała lub ciężka choroba", label: "Pomoc OPS z powodu długiej lub ciężkiej choroby (% osób wspieranych)", worse: "higher" },
-      { key: "Dostępność aptek", label: "Mieszkańcy na jedną aptekę", worse: "higher" },
-    ],
-    sentence: (v) => `${share(v, OPS)} dostaje wsparcie z powodu długiej lub ciężkiej choroby.`,
-    groups: ["zdrowie_medycyna"],
-  },
-  {
-    area: "zdrowie_psychiczne",
-    // Jedyny wskaźnik to alkoholizm, więc nie nazywamy tego „zdrowiem psychicznym” — to byłoby nadużycie.
-    label: "Uzależnienie od alkoholu",
+    key: "ludnosc",
+    label: "Zmiana liczby mieszkańców",
     intro:
-      "Jak często powodem pomocy jest uzależnienie od alkoholu. To tylko część obszaru „Zdrowie psychiczne” z Mapy Wyzwań: innych danych o zdrowiu psychicznym dla powiatów nie mamy.",
-    indicators: [
-      { key: "Alkoholizm", label: "Pomoc OPS z powodu uzależnienia od alkoholu (% osób wspieranych)", worse: "higher" },
-    ],
-    sentence: (v) => `${share(v, OPS)} dostaje wsparcie z powodu uzależnienia od alkoholu.`,
-    groups: ["zdrowie_medycyna"],
+      "Czy przez 10 lat mieszkańców przybyło, czy ubyło. Wyludnianie się gmin to jeden z tematów przekrojowych Mapy Wyzwań.",
+    column: "Zmiana liczby mieszkańców w 10 lat (%)",
+    get: (g) => g.zmiana_ludnosci_10l,
+    worse: "lower",
+    format: (v) => `${signed(v)}%`,
+    sentence: (v) =>
+      Math.abs(v) < 0.5 ? "Przez 10 lat liczba mieszkańców prawie się nie zmieniła."
+        : v < 0 ? `Przez 10 lat ubyło ${rounded(-v)} na 100 mieszkańców.`
+        : `Przez 10 lat przybyło ${rounded(v)} na 100 mieszkańców.`,
+    // „Więcej/mniej” zależy od znaku: -0,5% przy medianie -1% to wciąż ubywanie, tylko wolniejsze.
+    compare: (d, v) => flowWords(d, v, ""),
+    // Wyjeżdżają głównie młodzi za pracą, a zostającym brakuje usług — stąd rynek pracy i dostęp do usług.
+    innovations: { groups: ["rynek_pracy"], cross: ["depopulacja_suburbanizacja", "dostep_do_uslug"] },
   },
   {
-    area: "bezdomnosc",
-    intro: "Jak często powodem pomocy jest bezdomność.",
-    indicators: [
-      { key: "Bezdomność", label: "Pomoc OPS z powodu bezdomności (% osób wspieranych)", worse: "higher" },
-    ],
-    sentence: (v) => `${share(v, OPS)} dostaje wsparcie z powodu bezdomności.`,
-    groups: ["bezdomnosc"],
+    key: "przeprowadzki",
+    label: "Przeprowadzki",
+    intro: "Czy więcej osób się do gminy wprowadza, czy z niej wyprowadza (saldo migracji na 1000 mieszkańców w ciągu roku).",
+    column: "Saldo migracji na 1000 mieszkańców",
+    get: extra("saldo_migracji_1000"),
+    worse: "lower",
+    format: (v) => signed(v),
+    sentence: (v) =>
+      Math.abs(v) < 0.5 ? "Mniej więcej tyle samo osób się wprowadza, co wyprowadza."
+        : v < 0 ? `Więcej osób się wyprowadza, niż wprowadza: w rok ubywa tak ${rounded(-v)} na 1000 mieszkańców.`
+        : `Więcej osób się wprowadza, niż wyprowadza: w rok przybywa tak ${rounded(v)} na 1000 mieszkańców.`,
+    compare: (d, v) => flowWords(d, v, " przez przeprowadzki"),
+    innovations: { groups: ["rynek_pracy", "dzieci_mlodziez_rodzina"], cross: ["depopulacja_suburbanizacja"] },
+  },
+  {
+    key: "urodzenia",
+    label: "Urodzenia i zgony",
+    intro: "Czy w gminie rodzi się więcej dzieci, niż umiera osób (przyrost naturalny na 1000 mieszkańców w ciągu roku).",
+    column: "Przyrost naturalny na 1000 mieszkańców",
+    get: extra("przyrost_naturalny_1000"),
+    worse: "lower",
+    format: (v) => signed(v),
+    sentence: (v) =>
+      Math.abs(v) < 0.5 ? "Rodzi się mniej więcej tyle dzieci, ile umiera osób."
+        : v < 0 ? `Umiera więcej osób, niż rodzi się dzieci: w rok ubywa tak ${rounded(-v)} na 1000 mieszkańców.`
+        : `Rodzi się więcej dzieci, niż umiera osób: w rok przybywa tak ${rounded(v)} na 1000 mieszkańców.`,
+    compare: (d, v) => flowWords(d, v, " przez urodzenia i zgony"),
+    innovations: { area: "seniorzy", groups: ["dzieci_mlodziez_rodzina"], cross: [] },
+  },
+  {
+    key: "pomoc",
+    label: "Pomoc społeczna",
+    intro: "Ilu mieszkańców korzysta z pomocy ośrodka pomocy społecznej (na 10 tys. mieszkańców).",
+    column: "Osoby korzystające z pomocy społecznej na 10 tys. mieszkańców",
+    get: extra("pomoc_spoleczna_10k"),
+    worse: "higher",
+    format: (v) => formatNumber(v, 0),
+    sentence: (v) => `${share(v / 100, { one: "mieszkaniec", many: "mieszkańców", ord: "m" })} korzysta z pomocy społecznej.`,
+    compare: regionWords,
+    innovations: { area: "ubostwo", groups: ["rynek_pracy", "bezdomnosc"], cross: ["dostep_do_uslug"] },
+  },
+  {
+    key: "bezrobocie",
+    label: "Bezrobocie",
+    intro: "Jaka część osób w wieku produkcyjnym jest zarejestrowana w urzędzie pracy jako bezrobotna.",
+    column: "Bezrobotni zarejestrowani (% osób w wieku produkcyjnym)",
+    get: extra("bezrobocie_proc"),
+    worse: "higher",
+    format: (v) => formatValue(v, "%"),
+    sentence: (v) =>
+      `${v < 0.5 ? "Mniej niż 1" : formatNumber(Math.round(v), 0)} na 100 osób w wieku produkcyjnym to bezrobotni zarejestrowani w urzędzie pracy.`,
+    compare: regionWords,
+    innovations: { area: "ubostwo", groups: ["rynek_pracy"], cross: [] },
   },
 ];
 
-export function areaLabel(a: KondycjaArea): string {
-  return a.label ?? AREA_LABELS[a.area];
-}
-
-/**
- * Temat nazywamy „wyzwaniem” powiatu dopiero wtedy, gdy powiat wypada w nim gorzej niż połowa powiatów.
- * Drugi temat pokazujemy, gdy jest prawie tak samo źle jak pierwszy.
- */
-export const CHALLENGE_MIN = 0.5;
-export const CHALLENGE_TIE = 0.1;
-
-export const POPULATION_KEY = "Ludność ogółem";
-
-/** Wszystkie wskaźniki potrzebne na stronie (do jednego zapytania). */
-export const KONDYCJA_KEYS = [POPULATION_KEY, ...KONDYCJA_AREAS.flatMap((a) => a.indicators.map((i) => i.key))];
-
-export function findArea(area: string | undefined): KondycjaArea {
-  return KONDYCJA_AREAS.find((a) => a.area === area) ?? KONDYCJA_AREAS[0];
+export function findGminaTopic(key: string | undefined): GminaTopic {
+  return GMINA_TOPICS.find((t) => t.key === key) ?? GMINA_TOPICS[0];
 }
 
 // ── Liczby słowami ──────────────────────────────────────────
@@ -155,11 +173,7 @@ export function share(pct: number, who: { one: string; many: string; ord?: "f" |
   return `Mniej niż 1 na 100 ${who.many}`;
 }
 
-function perThousand(v: number): string {
-  return v < 1 ? "Mniej niż 1" : formatNumber(Math.round(v), 0);
-}
-
-/** Wartość z jednostką, po polsku: „23,3%”, „3566 mieszkańców na 1 aptekę”. */
+/** Wartość z jednostką, po polsku: „23,3%”, „28 187 osób”. */
 export function formatValue(value: number | null, unit: string): string {
   if (value == null) return "brak danych";
   const n = formatNumber(value, Math.abs(value) >= 100 ? 0 : 1);
@@ -168,12 +182,7 @@ export function formatValue(value: number | null, unit: string): string {
   return `${n} ${unit}`;
 }
 
-/** Wartość pod etykietą, która już mówi, w czym liczymy: zostaje tylko znak procentu. */
-export function formatBare(value: number | null, unit: string): string {
-  return formatValue(value, unit === "%" ? "%" : "");
-}
-
-// ── Porównania między powiatami ─────────────────────────────
+// ── Porównania między gminami ─────────────────────────────
 
 export function median(values: number[]): number {
   const s = [...values].sort((a, b) => a - b);
@@ -181,7 +190,7 @@ export function median(values: number[]): number {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-/** Wartość na tle mediany powiatów: 1 wyraźnie więcej, -1 wyraźnie mniej, 0 podobnie (różnica poniżej 5%). */
+/** Wartość na tle mediany gmin: 1 wyraźnie więcej, -1 wyraźnie mniej, 0 podobnie (różnica poniżej 5%). */
 export function regionDirection(value: number, values: number[]): -1 | 0 | 1 {
   const m = median(values);
   if (m === 0) return value > 0 ? 1 : value < 0 ? -1 : 0;
@@ -189,28 +198,29 @@ export function regionDirection(value: number, values: number[]): -1 | 0 | 1 {
   return value > m ? 1 : -1;
 }
 
-/** Porównanie z medianą powiatów prostymi słowami. */
-export function compareToRegion(value: number, values: number[]): string {
-  const d = regionDirection(value, values);
-  if (d === 0) return "Podobnie jak w większości powiatów Małopolski.";
-  return d > 0 ? "To więcej niż w większości powiatów Małopolski." : "To mniej niż w większości powiatów Małopolski.";
-}
-
 /** Czy wartość jest wyraźnie gorsza od mediany (ta sama miara co zdanie „więcej/mniej niż w większości”). */
-export function worseThanRegion(value: number, values: number[], worse: Indicator["worse"]): boolean {
+export function worseThanRegion(value: number, values: number[], worse: Worse): boolean {
   const d = regionDirection(value, values);
   return worse === "higher" ? d > 0 : d < 0;
 }
 
 /**
- * Jak bardzo wartość jest „wyzwaniem” na tle regionu: 0 = najlepiej, 1 = najgorzej wśród powiatów.
+ * Jak bardzo wartość jest „wyzwaniem” na tle regionu: 0 = najlepiej, 1 = najgorzej wśród gmin.
  * Remisy dostają średnią pozycję, żeby kolejność wierszy w bazie niczego nie zmieniała.
  */
-export function badness(value: number, values: number[], worse: Indicator["worse"]): number {
+export function badness(value: number, values: number[], worse: Worse): number {
   if (values.length < 2) return 0;
   const below = values.filter((v) => (worse === "higher" ? v < value : v > value)).length;
   const equal = values.filter((v) => v === value).length;
   return (below + (equal - 1) / 2) / (values.length - 1);
+}
+
+/** Zakres wartości w każdej klasie kartogramu — do legendy. */
+export function classRanges(rows: { cls: number | null; value: number | null }[]): { c: number; lo: number; hi: number }[] {
+  return Array.from({ length: CLASS_COUNT }, (_, c) => {
+    const vs = rows.filter((r) => r.cls === c && r.value != null).map((r) => r.value as number);
+    return vs.length ? { c, lo: Math.min(...vs), hi: Math.max(...vs) } : null;
+  }).filter((r) => r != null);
 }
 
 /** Pięć klas do kartogramu (0 = najmniejsze wyzwanie). */

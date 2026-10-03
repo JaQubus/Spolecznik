@@ -18,7 +18,7 @@ export function IndicatorSelect({ options, value, powiat }: {
         id="kondycja-wskaznik"
         defaultValue={value}
         onChange={(e) => {
-          const q = new URLSearchParams({ wskaznik: e.target.value, ...(powiat ? { powiat } : {}) });
+          const q = new URLSearchParams({ poziom: "powiaty", wskaznik: e.target.value, ...(powiat ? { powiat } : {}) });
           router.replace(`/biblioteka/kondycja?${q}`, { scroll: false });
         }}
       >

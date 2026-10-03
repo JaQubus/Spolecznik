@@ -50,10 +50,10 @@ export default async function Page(props: PageProps<"/biblioteka">) {
           <MapIcon aria-hidden className="size-10 shrink-0" />
           <span className="space-y-1">
             <span className="flex items-center gap-1 text-2xl font-bold underline decoration-1 underline-offset-4 group-hover:decoration-2">
-              Mapa powiatów
+              Mapa 183 gmin
               <ChevronRightIcon aria-hidden className="size-6 shrink-0" />
             </span>
-            <span className="block text-lg">Gdzie jest najwięcej seniorów i gdzie najczęściej potrzebna jest pomoc.</span>
+            <span className="block text-lg">Najważniejsze liczby o mieszkańcach każdej gminy Małopolski.</span>
           </span>
         </Link>
       </section>

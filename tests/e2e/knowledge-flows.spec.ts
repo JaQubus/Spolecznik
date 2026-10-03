@@ -109,13 +109,14 @@ test("admin dodaje innowację, po chwili znajduje ją w wyszukiwarce, potem usuw
 
 test("Kondycja Małopolski: kategorie wskaźników powiatów, top 5, karta powiatu, bez naruszeń axe", async ({ page }) => {
   await page.goto("/biblioteka/kondycja");
+  await page.getByRole("link", { name: "22 powiaty" }).click();
   const map = page.getByRole("group", { name: /^Mapa powiatów:/ });
   await expect(map.getByRole("link")).toHaveCount(22);
 
   // Kategorie z ikonami: Seniorzy i opieka → pierwszy wskaźnik kategorii, lista „Co pokazać” tylko z tej kategorii.
   await page.getByRole("link", { name: /^Seniorzy i opieka \(\d+\)$/ }).click();
   await expect(page.getByRole("link", { name: /^Seniorzy i opieka/ })).toHaveAttribute("aria-current", "true");
-  await expect(page).toHaveURL(/wskaznik=/);
+  await expect(page).toHaveURL(/poziom=powiaty&wskaznik=/);
 
   // Skala rozbieżna: przyrost naturalny — niebiesko poniżej zera, czerwono od zera w górę.
   await page.getByRole("link", { name: /^Ludność \(\d+\)$/ }).click();
