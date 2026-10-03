@@ -115,16 +115,33 @@ test("mapa Małopolski: gminy i powiaty z prawdziwymi granicami, wybór z listy,
   await expect(svg).toBeVisible();
   await expect(svg.locator("g").first().locator("path")).toHaveCount(183);
 
-  // Klawiatura / czytnik ekranu: wybór gminy z listy → panel szczegółów (aria-live) i adres do udostępnienia.
-  await page.getByLabel("Wybierz gminę").selectOption({ label: "Zakopane (gmina miejska, powiat tatrzański)" });
-  await expect(map.locator("[aria-live=polite]")).toContainText("Zakopane");
-  await expect(map.locator("[aria-live=polite]")).toContainText(/miejsce na 183 gmin/);
+  // Kolory: wzrost liczby mieszkańców na czerwono, spadek na niebiesko (skala rozbieżna).
+  await page.getByLabel("Co pokazać").selectOption({ label: "Zmiana liczby mieszkańców w 10 lat" });
+  await expect(map.getByText(/^-15% i mniej$/)).toBeVisible();
+
+  // Góra i dół rankingu obok siebie; dla zmian — największe wzrosty i spadki.
+  await expect(map.getByRole("region", { name: "Najwięcej na plus" }).getByRole("listitem")).toHaveCount(5);
+  await expect(map.getByRole("region", { name: "Najwięcej na minus" }).getByText(/^−|^-/).first()).toBeVisible();
+  // Kategorie z ikonami: Seniorzy → udział 65+.
+  await map.getByText(/^Seniorzy i opieka/).click();
+  await expect(page.getByLabel("Co pokazać")).toHaveValue("udzial_65plus");
+  await expect(map.getByRole("region", { name: "5 gmin z najwyższą wartością" }).getByRole("listitem")).toHaveCount(5);
+  await expect(map.getByRole("region", { name: "5 gmin z najniższą wartością" }).getByRole("listitem")).toHaveCount(5);
+
+  // Klawiatura / czytnik ekranu: wyszukiwarka bez polskich znaków → podpowiedź → panel szczegółów (aria-live) i adres.
+  const search = page.getByRole("combobox", { name: "Znajdź gminę" });
+  await search.fill("zakop");
+  await expect(page.getByRole("option", { name: /Zakopane/ })).toBeVisible();
+  await search.press("Enter");
+  await expect(search).toHaveValue("Zakopane");
+  await expect(map.locator("div[aria-live=polite]")).toContainText("Zakopane");
+  await expect(map.locator("div[aria-live=polite]")).toContainText(/miejsce na 183 gmin/);
   await expect(page).toHaveURL(/jednostka=1217011/);
 
   // Przełącznik warstw: wybrana gmina przechodzi na swój powiat.
   await page.getByText(/^Powiaty \(22\)$/).click();
   await expect(svg.locator("g").first().locator("path")).toHaveCount(22);
-  await expect(map.locator("[aria-live=polite]")).toContainText("powiat tatrzański");
+  await expect(map.locator("div[aria-live=polite]")).toContainText("powiat tatrzański");
 
   // Tabela z tymi samymi danymi co mapa.
   await page.getByText(/^Pokaż dane w tabeli/).click();

@@ -29,6 +29,7 @@ uv run scrape_knowledge.py     # Biblioteka ROPS (115 innowacji, filmy, paczki Z
 uv run knowledge_facts.py      # karty faktów: każdy cytat sprawdzany na podanej stronie PDF → out/knowledge/facts.json
 uv run knowledge_personas.py   # persony z Mapy Wyzwań + pasujące innowacje → out/knowledge/personas.json
 uv run knowledge_seed.py       # dane dla aplikacji → ../content/knowledge/*.json i ../supabase/seed_knowledge.sql
+uv run bdl_wskazniki.py        # dodatkowe wskaźniki gmin z BDL → out/gminy_wskazniki.json (bez klucza: limit 1000 zapytań / 12 h)
 uv run knowledge_map.py        # mapa: granice gmin z PRG (GUGiK, WFS) + BDL + IOSS → ../public/mapa/malopolska.json (wymaga mapshapera: npx mapshaper)
 ```
 
@@ -36,5 +37,5 @@ uv run knowledge_map.py        # mapa: granice gmin z PRG (GUGiK, WFS) + BDL + I
 - Sekcję „Autorzy” pomijamy (dane osobowe). Sekcje innowacji rozpoznajemy po treści nagłówka.
 - Obszary i typ innowacji przypisują reguły (`areas_auto`, `type_auto`); admin poprawia je w panelu.
 - Z bazą: migracja `0005_knowledge.sql`, potem `seed_knowledge.sql`, potem w panelu „Odśwież indeks wyszukiwarki”.
-- Mapa: 183 gminy z PRG upraszczane mapshaperem z zachowaniem topologii; powiaty i obrys województwa to scalone gminy, więc granice warstw się pokrywają. Plik ma ~140 kB (~47 kB po kompresji) i ładuje się, gdy mapa wchodzi na ekran.
+- Mapa: opisy i kategorie wskaźników są w `map_indicators.py` (powiaty: wszystkie wskaźniki z IOSS; gminy: 3 bazowe + `bdl_wskazniki.py`). 183 gminy z PRG upraszczane mapshaperem z zachowaniem topologii; powiaty i obrys województwa to scalone gminy, więc granice warstw się pokrywają. Plik ma ~140 kB (~47 kB po kompresji) i ładuje się, gdy mapa wchodzi na ekran.
 - `uv run` z instalacji snap potrafi przerywać dłuższe skrypty (kod 120) — wtedy `.venv/bin/python <skrypt>.py`.

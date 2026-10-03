@@ -1,24 +1,48 @@
 "use client";
 
-import { CheckIcon } from "@heroicons/react/24/outline";
+import {
+  AcademicCapIcon, BanknotesIcon, BookOpenIcon, BriefcaseIcon, BuildingOffice2Icon, CheckIcon, GlobeEuropeAfricaIcon, HeartIcon,
+  HomeIcon, LifebuoyIcon, PlusCircleIcon, UsersIcon,
+} from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
-import { classify, fmt, NO_DATA_FILL, rank, withUnit, type LayerKey, type MapData, type MapUnit } from "@/lib/knowledge/map";
+import { UnitSearch } from "@/components/knowledge/unit-search";
+import { classify, fmt, NO_DATA_FILL, rank, ranked, withUnit, type LayerKey, type MapData, type MapUnit } from "@/lib/knowledge/map";
 import { AREA_LABELS } from "@/lib/taxonomy";
 
 const LAYERS: LayerKey[] = ["gminy", "powiaty"];
 const link = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
-/** Pełna nazwa do list i podpowiedzi — w Małopolsce są pary gmin o tej samej nazwie (np. Bochnia miejska i wiejska). */
-const unitLabel = (u: MapUnit, layer: LayerKey) =>
-  layer === "gminy" ? `${u.name} (gmina ${u.kind ?? ""}, ${u.parent?.replace(/ \(miasto na prawach powiatu\)$/, "")})` : u.name;
+const TOP = 5;
+
+/** Kategorie wskaźników (klucze z data/map_indicators.py) — ikona zawsze obok nazwy. */
+const CATEGORIES: { key: string; label: string; Icon: typeof UsersIcon }[] = [
+  { key: "ludnosc", label: "Ludność", Icon: UsersIcon },
+  { key: "seniorzy", label: "Seniorzy i opieka", Icon: HeartIcon },
+  { key: "pomoc", label: "Pomoc społeczna", Icon: LifebuoyIcon },
+  { key: "placowki", label: "Placówki i kadra", Icon: BuildingOffice2Icon },
+  { key: "rodzina", label: "Rodzina i dzieci", Icon: HomeIcon },
+  { key: "praca", label: "Praca i gospodarka", Icon: BriefcaseIcon },
+  { key: "edukacja", label: "Edukacja", Icon: AcademicCapIcon },
+  { key: "zdrowie", label: "Zdrowie", Icon: PlusCircleIcon },
+  { key: "kultura", label: "Kultura i sport", Icon: BookOpenIcon },
+  { key: "finanse", label: "Budżety gmin", Icon: BanknotesIcon },
+  { key: "otoczenie", label: "Mieszkania i otoczenie", Icon: GlobeEuropeAfricaIcon },
+];
+const pill =
+  "inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-full border border-border-strong bg-background px-4 text-lg hover:border-foreground has-checked:border-foreground has-checked:bg-foreground has-checked:font-bold has-checked:text-background has-focus-visible:outline-3 has-focus-visible:outline-offset-3 has-focus-visible:outline-ring";
+
+/** Druga linijka przy nazwie gminy — w Małopolsce są pary gmin o tej samej nazwie (np. Bochnia miejska i wiejska). */
+const gminaDetails = (u: MapUnit) =>
+  u.parent ? `gmina ${u.kind ?? ""}, ${u.parent.replace(/ \(miasto na prawach powiatu\)$/, "")}` : null;
+const noDetails = () => null;
 
 /**
  * Mapa Małopolski z prawdziwymi granicami gmin i powiatów (PRG, GUGiK) i danymi BDL / IOSS.
  * Mysz i dotyk: najechanie pokazuje wartość, kliknięcie wybiera. Klawiatura i czytnik ekranu: lista
- * „Wybierz gminę”, panel szczegółów (aria-live) i tabela z tymi samymi danymi — mapa nie jest jedyną drogą.
+ * „Znajdź gminę”, panel szczegółów (aria-live), pierwsza piątka i tabela z tymi samymi danymi — mapa nie jest jedyną drogą.
  */
 export function RegionMap({ initialLayer, initialIndicator, initialUnit }: {
   initialLayer: LayerKey; initialIndicator?: string; initialUnit?: string;
@@ -74,9 +98,15 @@ export function RegionMap({ initialLayer, initialIndicator, initialUnit }: {
     window.history.replaceState(window.history.state, "", url);
   }, [data, layerKey, indicator, selected]);
 
+  const categories = layer ? CATEGORIES.filter((c) => layer.indicators.some((i) => i.category === c.key)) : [];
+  const inCategory = layer && indicator ? layer.indicators.filter((i) => i.category === indicator.category) : [];
+
   function switchLayer(next: LayerKey) {
     setLayerKey(next);
-    setIndicatorKey(undefined);
+    // Ten sam wskaźnik w drugiej warstwie, a jeśli go tam nie ma — pierwszy z tej samej kategorii.
+    const target = data?.layers[next].indicators;
+    const same = target?.find((i) => i.key === indicator?.key) ?? target?.find((i) => i.category === indicator?.category);
+    setIndicatorKey(same?.key);
     // Wybrana gmina → jej powiat (pierwsze 4 cyfry TERYT); z powiatu do gmin wybór znika.
     setSelected(next === "powiaty" && selected ? selected.slice(0, 4) : undefined);
   }
@@ -86,6 +116,26 @@ export function RegionMap({ initialLayer, initialIndicator, initialUnit }: {
     if (r) setHover({ id, x: e.clientX - r.left, y: e.clientY - r.top });
   }
 
+  // Obok siebie: góra i dół rankingu. Dla zmian — największe wzrosty i największe spadki (tylko z właściwym znakiem).
+  const all = layer && indicator ? ranked(layer.units, indicator.key) : [];
+  const diverging = indicator?.scale === "diverging";
+  const valueOf = (u: MapUnit) => u.values[indicator?.key ?? ""] as number;
+  const of = layerKey === "gminy" ? "gmin" : "powiatów";
+  const extremes = [
+    {
+      id: "mapa-top-gora",
+      title: diverging ? "Najwięcej na plus" : `${TOP} ${of} z najwyższą wartością`,
+      units: (diverging ? all.filter((u) => valueOf(u) > 0) : all).slice(0, TOP),
+    },
+    {
+      id: "mapa-top-dol",
+      title: diverging ? "Najwięcej na minus" : `${TOP} ${of} z najniższą wartością`,
+      units: (diverging ? all.filter((u) => valueOf(u) < 0) : all).slice(-TOP).reverse(),
+    },
+  ];
+  // Wspólna skala pasków dla obu list (od zera do największej wartości bezwzględnej), żeby dało się je porównać.
+  const barMax = Math.max(0, ...extremes.flatMap((l) => l.units.map((u) => Math.abs(valueOf(u)))));
+  const barWidth = (v: number) => (barMax > 0 ? Math.max(4, (Math.abs(v) / barMax) * 100) : 0);
   const place = unit && indicator && layer ? rank(layer.units, indicator.key, unit.id) : null;
   const value = unit && indicator ? unit.values[indicator.key] : null;
 
@@ -94,7 +144,7 @@ export function RegionMap({ initialLayer, initialIndicator, initialUnit }: {
       <div className="space-y-2">
         <h2 id="mapa-naglowek" className="text-3xl font-bold">Małopolska na mapie</h2>
         <p className="max-w-[44rem] text-lg">
-          Zobacz, jak żyje się w Twojej gminie i powiecie. Najedź na mapę albo wybierz miejsce z listy.
+          Zobacz, jak żyje się w Twojej gminie i powiecie. Najedź na mapę albo wpisz nazwę miejsca.
         </p>
       </div>
 
@@ -113,7 +163,7 @@ export function RegionMap({ initialLayer, initialIndicator, initialUnit }: {
                 {LAYERS.map((k) => (
                   <label
                     key={k}
-                    className="inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-full border border-border-strong bg-background px-4 text-lg hover:border-foreground has-checked:border-foreground has-checked:bg-foreground has-checked:font-bold has-checked:text-background has-focus-visible:outline-3 has-focus-visible:outline-offset-3 has-focus-visible:outline-ring"
+                    className={pill}
                   >
                     <input type="radio" name="mapa-warstwa" value={k} checked={layerKey === k} onChange={() => switchLayer(k)} className="sr-only" />
                     {layerKey === k && <CheckIcon aria-hidden className="size-5" />}
@@ -122,19 +172,47 @@ export function RegionMap({ initialLayer, initialIndicator, initialUnit }: {
                 ))}
               </div>
             </fieldset>
-            <div className="flex flex-1 flex-col gap-2">
-              <Label htmlFor="mapa-wskaznik">Co pokazać</Label>
-              <NativeSelect id="mapa-wskaznik" value={indicator.key} onChange={(e) => setIndicatorKey(e.target.value)}>
-                {layer.indicators.map((i) => <option key={i.key} value={i.key}>{i.label}</option>)}
-              </NativeSelect>
+            <div className="flex-1">
+              <UnitSearch
+                key={layerKey}
+                id="mapa-jednostka"
+                label={layerKey === "gminy" ? "Znajdź gminę" : "Znajdź powiat"}
+                units={layer.units}
+                describe={layerKey === "gminy" ? gminaDetails : noDetails}
+                selected={selected}
+                onSelect={setSelected}
+              />
             </div>
-            <div className="flex flex-1 flex-col gap-2">
-              <Label htmlFor="mapa-jednostka">{layerKey === "gminy" ? "Wybierz gminę" : "Wybierz powiat"}</Label>
-              <NativeSelect id="mapa-jednostka" value={selected ?? ""} onChange={(e) => setSelected(e.target.value || undefined)}>
-                <option value="">{layerKey === "gminy" ? "Wszystkie gminy" : "Wszystkie powiaty"}</option>
-                {layer.units.map((u) => <option key={u.id} value={u.id}>{unitLabel(u, layerKey)}</option>)}
-              </NativeSelect>
+          </div>
+
+          <fieldset className="space-y-2">
+            <legend className="text-lg font-bold">Kategoria</legend>
+            <div className="flex flex-wrap gap-2">
+              {categories.map(({ key, label, Icon }) => {
+                const count = layer.indicators.filter((i) => i.category === key).length;
+                return (
+                  <label key={key} className={pill}>
+                    <input
+                      type="radio"
+                      name="mapa-kategoria"
+                      value={key}
+                      checked={indicator.category === key}
+                      onChange={() => setIndicatorKey(layer.indicators.find((i) => i.category === key)?.key)}
+                      className="sr-only"
+                    />
+                    {indicator.category === key ? <CheckIcon aria-hidden className="size-5" /> : <Icon aria-hidden className="size-5" />}
+                    {label} ({count})
+                  </label>
+                );
+              })}
             </div>
+          </fieldset>
+
+          <div className="flex max-w-xl flex-col gap-2">
+            <Label htmlFor="mapa-wskaznik">Co pokazać</Label>
+            <NativeSelect id="mapa-wskaznik" value={indicator.key} onChange={(e) => setIndicatorKey(e.target.value)}>
+              {inCategory.map((i) => <option key={i.key} value={i.key}>{i.label}</option>)}
+            </NativeSelect>
           </div>
 
           <p className="text-lg"><strong>{indicator.question}</strong></p>
@@ -240,7 +318,7 @@ export function RegionMap({ initialLayer, initialIndicator, initialUnit }: {
                     </button>
                   </div>
                 ) : (
-                  <p>Kliknij {layerKey === "gminy" ? "gminę" : "powiat"} na mapie albo wybierz z listy powyżej, żeby zobaczyć szczegóły.</p>
+                  <p>Kliknij {layerKey === "gminy" ? "gminę" : "powiat"} na mapie albo wpisz nazwę powyżej, żeby zobaczyć szczegóły.</p>
                 )}
               </div>
 
@@ -265,6 +343,46 @@ export function RegionMap({ initialLayer, initialIndicator, initialUnit }: {
               </div>
             </div>
           </div>
+
+          <section aria-labelledby="mapa-top" className="space-y-4">
+            <h3 id="mapa-top" className="text-xl font-bold">Na górze i na dole rankingu: {indicator.label.toLowerCase()}</h3>
+            <div className="grid gap-8 md:grid-cols-2">
+              {extremes.map((list) => (
+                <section key={list.id} aria-labelledby={list.id} className="min-w-0 space-y-2">
+                  <h4 id={list.id} className="text-lg font-bold">{list.title}</h4>
+                  {list.units.length === 0 && <p className="text-base text-muted-foreground">Żadna wartość nie jest {list.id.endsWith("dol") ? "ujemna" : "dodatnia"}.</p>}
+                  <ol className="border-t border-border">
+                    {list.units.map((u, i) => {
+                      const v = u.values[indicator.key] as number;
+                      return (
+                        <li key={u.id} className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 border-b border-border py-3">
+                          <span aria-hidden className="text-xl font-bold tabular-nums">{i + 1}.</span>
+                          <span className="min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => setSelected(u.id)}
+                              className="min-h-12 text-left text-lg font-bold underline decoration-1 underline-offset-4 hover:decoration-2"
+                            >
+                              {u.name}
+                            </button>
+                            {layerKey === "gminy" && <span className="block text-base text-muted-foreground">{gminaDetails(u)}</span>}
+                          </span>
+                          <span className="text-lg font-bold tabular-nums">
+                            {indicator.scale === "diverging" && v > 0 && "+"}{withUnit(v, indicator)}
+                          </span>
+                          {/* Pasek tylko ilustruje proporcje (aria-hidden); wartość jest obok jako tekst. */}
+                          <span aria-hidden className="col-start-2 col-end-4 block h-2 overflow-hidden rounded-full bg-muted">
+                            <span className="block h-full rounded-full" style={{ width: `${barWidth(v)}%`, background: fillOf(u) }} />
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </section>
+              ))}
+            </div>
+            <p className="text-base text-muted-foreground">Kliknij nazwę, żeby pokazać ją na mapie. Pełny ranking jest w tabeli poniżej.</p>
+          </section>
 
           <p className="text-base text-muted-foreground">
             Granice:{" "}

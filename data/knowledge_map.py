@@ -6,8 +6,10 @@ Pobieramy 183 gminy województwa (TERYT 12*), upraszczamy je mapshaperem z zacho
 przez scalenie gmin — więc granice warstw pokrywają się co do punktu.
 
 Dane:
-- gminy: GUS, Bank Danych Lokalnych (out/gminy.json z bdl.py) — ludność, udział 65+, zmiana ludności w 10 lat,
-- powiaty: Internetowy Obserwator Statystyk Społecznych ROPS (../dane/powiaty, 2024).
+- gminy: GUS, Bank Danych Lokalnych — ludność, udział 65+, zmiana ludności w 10 lat (out/gminy.json z bdl.py)
+  i dodatkowe wskaźniki z out/gminy_wskazniki.json (bdl_wskazniki.py; bez tego pliku mapa ma tylko trzy bazowe),
+- powiaty: Internetowy Obserwator Statystyk Społecznych ROPS (../dane/powiaty, 2024) — wszystkie wskaźniki.
+Opisy i kategorie wskaźników: map_indicators.py.
 
 Wynik: ../public/mapa/malopolska.json — ścieżki SVG gotowe do narysowania (viewBox w metrach
 przeskalowanych do 1000 px szerokości) i wartości wskaźników. Pobiera go przeglądarka, gdy mapa
@@ -27,6 +29,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from common import ROOT, write_json
+from map_indicators import GMINA_INDICATORS, POWIAT_INDICATORS, POWIAT_SKIPPED, check
 from scrape_knowledge import fetch
 
 WFS = "https://mapy.geoportal.gov.pl/wss/service/PZGIK/PRG/WFS/AdministrativeBoundaries"
@@ -41,34 +44,6 @@ LABELS = {"1261011": "Kraków", "1263011": "Tarnów", "1262011": "Nowy Sącz", "
 PRG_SOURCE = {"title": "Państwowy Rejestr Granic (GUGiK)", "url": "https://www.geoportal.gov.pl/pl/dane/panstwowy-rejestr-granic-prg/"}
 BDL_SOURCE = {"title": "GUS, Bank Danych Lokalnych", "url": "https://bdl.stat.gov.pl/"}
 IOSS_SOURCE = {"title": "Internetowy Obserwator Statystyk Społecznych ROPS", "url": "https://obserwator.rops.krakow.pl/"}
-
-# Wskaźniki: klucz → opis prostym językiem. `scale`: sequential (więcej = ciemniej) albo diverging (spadek / wzrost).
-GMINA_INDICATORS = [
-    dict(key="udzial_65plus", label="Osoby w wieku 65+", unit="%", decimals=1, scale="sequential", area="seniorzy",
-         question="Jaka część mieszkańców ma 65 lat lub więcej?"),
-    dict(key="zmiana_ludnosci_10l", label="Zmiana liczby mieszkańców w 10 lat", unit="%", decimals=1, scale="diverging", area=None,
-         question="Czy mieszkańców przybywa, czy ubywa? Ujemna liczba to spadek."),
-    dict(key="ludnosc", label="Liczba mieszkańców", unit="osób", decimals=0, scale="sequential", area=None,
-         question="Ile osób mieszka w gminie?"),
-]
-POWIAT_INDICATORS = [
-    dict(key="65plus", csv="Ludność w wieku 65+/ Współczynnik starości demograficznej", label="Osoby w wieku 65+", unit="%",
-         decimals=1, scale="sequential", area="seniorzy", question="Jaka część mieszkańców ma 65 lat lub więcej?"),
-    dict(key="beneficjenci", csv="Beneficjenci pomocy społecznej", label="Mieszkańcy korzystający z pomocy społecznej", unit="%",
-         decimals=2, scale="sequential", area="ubostwo", question="Jaka część mieszkańców dostaje pomoc społeczną?"),
-    dict(key="ubostwo", csv="Ubóstwo", label="Pomoc z powodu ubóstwa", unit="% klientów", decimals=1, scale="sequential",
-         area="ubostwo", question="Jaka część osób korzystających z pomocy społecznej dostaje ją z powodu ubóstwa?"),
-    dict(key="niepelnosprawnosc", csv="Niepełnosprawność", label="Pomoc z powodu niepełnosprawności", unit="% klientów",
-         decimals=1, scale="sequential", area="niepelnosprawnosc",
-         question="Jaka część osób korzystających z pomocy społecznej dostaje ją z powodu niepełnosprawności?"),
-    dict(key="piecza", csv="Intensywność pieczy zastępczej", label="Dzieci w pieczy zastępczej", unit="na 1000 dzieci",
-         decimals=1, scale="sequential", area="rodzina_piecza", question="Ile dzieci na 1000 wychowuje się w pieczy zastępczej?"),
-    dict(key="bezdomnosc", csv="Bezdomność", label="Pomoc z powodu bezdomności", unit="% klientów", decimals=2,
-         scale="sequential", area="bezdomnosc", question="Jaka część osób korzystających z pomocy społecznej jest w kryzysie bezdomności?"),
-    dict(key="pracownik_socjalny", csv="Liczba mieszkańców na 1 pracownika socjalnego", label="Mieszkańcy na 1 pracownika socjalnego",
-         unit="osób", decimals=0, scale="sequential", area=None, question="Na ilu mieszkańców przypada jeden pracownik socjalny?"),
-]
-
 
 # ── Granice z PRG ───────────────────────────────────────────
 
@@ -183,28 +158,58 @@ def polygons(geometry: dict):
 
 # ── Dane ────────────────────────────────────────────────────
 
-def gmina_values() -> tuple[dict, int]:
+def gmina_values() -> tuple[dict, list[dict]]:
+    """Wartości po TERYT i lista wskaźników (z rokiem danych) — bazowe z bdl.py plus dodatkowe z bdl_wskazniki.py."""
     rows = json.loads((ROOT / "out" / "gminy.json").read_text(encoding="utf-8"))
     year = max(r["wskazniki"].get("rok", 0) for r in rows)
-    return {r["teryt"]: {"name": r["nazwa"], "type": r["typ"], **{i["key"]: r.get(i["key"]) for i in GMINA_INDICATORS}} for r in rows}, year
+    values = {r["teryt"]: {"name": r["nazwa"], "type": r["typ"], **{i["key"]: r.get(i["key"]) for i in GMINA_INDICATORS}} for r in rows}
+    indicators = [{**i, "year": year} for i in GMINA_INDICATORS]
+    extra_path = ROOT / "out" / "gminy_wskazniki.json"
+    if extra_path.exists():
+        extra = json.loads(extra_path.read_text(encoding="utf-8"))
+        base_keys = {i["key"] for i in GMINA_INDICATORS}
+        for i in extra["indicators"]:
+            if i["key"] not in base_keys:
+                indicators.append(i)
+        for teryt, v in values.items():
+            for i in extra["indicators"]:
+                v.setdefault(i["key"], extra["values"].get(teryt, {}).get(i["key"]))
+    else:
+        print("Brak out/gminy_wskazniki.json — gminy tylko z trzema wskaźnikami (uruchom bdl_wskazniki.py)", file=sys.stderr)
+    check(indicators)
+    return values, indicators
 
 
-def powiat_values(names: dict[str, str]) -> tuple[dict, int]:
+def powiat_values(names: dict[str, str]) -> tuple[dict, list[dict]]:
     rows = list(csv.DictReader(open(ROOT.parent / "dane" / "powiaty" / "wszystkie_powiaty.csv", encoding="utf-8-sig")))
     norm = lambda s: s.lower().replace("powiat ", "").replace("m. ", "").replace(" (miasto na prawach powiatu)", "").strip()
     by_name = {norm(n): code for code, n in names.items()}
+    by_csv = {i["csv"]: i for i in POWIAT_INDICATORS}
+    unmapped = {r["wskaznik"] for r in rows} - by_csv.keys() - POWIAT_SKIPPED.keys()
+    if unmapped:
+        sys.exit(f"Wskaźniki IOSS bez opisu w map_indicators.py: {sorted(unmapped)}")
     out: dict[str, dict] = {code: {} for code in names}
-    years = set()
+    years: dict[str, int] = {}
     for r in rows:
-        ind = next((i for i in POWIAT_INDICATORS if i["csv"] == r["wskaznik"]), None)
+        ind = by_csv.get(r["wskaznik"])
         code = by_name.get(norm(r["powiat"]))
-        if ind and code and r["wartosc"]:
-            out[code][ind["key"]] = float(r["wartosc"])
-            years.add(int(r["rok"]))
-    missing = [names[c] for c, v in out.items() if len(v) < len(POWIAT_INDICATORS)]
+        if not (ind and code and r["wartosc"]):
+            continue
+        v = float(r["wartosc"])
+        # „Mieszkańcy na 1 miejsce w kinie” = 0 znaczy „nie ma kina”, a nie „najlepszy dostęp”.
+        out[code][ind["key"]] = None if ind["zero_is_null"] and v == 0 else v
+        years[ind["key"]] = max(years.get(ind["key"], 0), int(r["rok"]))
+    missing = [names[c] for c, v in out.items() if len(v) < 0.9 * len(POWIAT_INDICATORS)]
     if missing:
         sys.exit(f"Brak wskaźników IOSS dla: {missing}")
-    return out, max(years)
+    check(POWIAT_INDICATORS)
+    return out, [{**i, "year": years[i["key"]]} for i in POWIAT_INDICATORS]
+
+
+def public(i: dict, source: dict) -> dict:
+    """Opis wskaźnika do pliku dla przeglądarki: bez pól roboczych, ze źródłem i rokiem danych."""
+    hidden = {"csv", "zero_is_null", "year", "bdl"}
+    return {k: v for k, v in i.items() if k not in hidden} | {"source": {**source, "year": i["year"]}}
 
 
 def main() -> None:
@@ -224,8 +229,8 @@ def main() -> None:
         woj = json.loads((tmp / "wojewodztwo.json").read_text())
 
     proj = Projector(woj)
-    g_values, g_year = gmina_values()
-    p_values, p_year = powiat_values(names)
+    g_values, g_indicators = gmina_values()
+    p_values, p_indicators = powiat_values(names)
     missing = [f["properties"]["name"] for f in gminy["features"] if f["properties"]["id"] not in g_values]
     if missing:
         sys.exit(f"Gminy z PRG bez danych BDL: {missing}")
@@ -245,9 +250,9 @@ def main() -> None:
                     "parent": names[f["properties"]["powiat"]],
                     "kind": g_values[f["properties"]["id"]]["type"],
                     "d": proj.path(f["geometry"]),
-                    "values": {i["key"]: g_values[f["properties"]["id"]][i["key"]] for i in GMINA_INDICATORS},
+                    "values": {i["key"]: g_values[f["properties"]["id"]].get(i["key"]) for i in g_indicators},
                 } for f in gminy["features"]), key=lambda u: u["name"]),
-                "indicators": [{**{k: v for k, v in i.items()}, "source": {**BDL_SOURCE, "year": g_year}} for i in GMINA_INDICATORS],
+                "indicators": [public(i, BDL_SOURCE) for i in g_indicators],
             },
             "powiaty": {
                 "label": "Powiaty",
@@ -257,9 +262,9 @@ def main() -> None:
                     "parent": None,
                     "kind": None,
                     "d": proj.path(f["geometry"]),
-                    "values": p_values[f["properties"]["powiat"]],
+                    "values": {i["key"]: p_values[f["properties"]["powiat"]].get(i["key"]) for i in p_indicators},
                 } for f in powiaty["features"]), key=lambda u: u["name"]),
-                "indicators": [{k: v for k, v in i.items() if k != "csv"} | {"source": {**IOSS_SOURCE, "year": p_year}} for i in POWIAT_INDICATORS],
+                "indicators": [public(i, IOSS_SOURCE) for i in p_indicators],
             },
         },
     }
