@@ -1,6 +1,7 @@
 import { runMatch } from "@/lib/match";
 import { MatchRequest } from "@/lib/schemas";
 import { rateLimit } from "@/lib/rate-limit";
+import { aiErrorResponse } from "@/lib/groq";
 
 export async function POST(request: Request) {
   const limited = rateLimit(request, "match", 6);
@@ -12,7 +13,6 @@ export async function POST(request: Request) {
   try {
     return Response.json(await runMatch(parsed.data));
   } catch (e) {
-    console.error("[match]", e);
-    return Response.json({ error: "Nie udało się wyszukać rozwiązań" }, { status: 500 });
+    return aiErrorResponse("match", e, "Nie udało się wyszukać rozwiązań");
   }
 }

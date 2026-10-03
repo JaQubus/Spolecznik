@@ -1,6 +1,7 @@
 import { reindexCard } from "@/lib/index-card";
 import { IndexCardRequest } from "@/lib/schemas";
 import { rateLimit } from "@/lib/rate-limit";
+import { aiErrorResponse } from "@/lib/groq";
 
 /** Reindeks karty po zapisie w Panelu albo Pracowni (README 5.3). */
 export async function POST(request: Request) {
@@ -17,7 +18,6 @@ export async function POST(request: Request) {
     }
     return Response.json({ ok: true });
   } catch (e) {
-    console.error("[index-card]", e);
-    return Response.json({ error: "Nie udało się zaktualizować indeksu" }, { status: 500 });
+    return aiErrorResponse("index-card", e, "Nie udało się zaktualizować indeksu");
   }
 }
