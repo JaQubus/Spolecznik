@@ -94,11 +94,23 @@ export type AskResponse = {
 // Pracownia: fiszka pomysłu (ideas.fiszka). Klucze jak w data/out/synthetic.json.
 export const Fiszka = z.object({
   krotki_opis: z.string().min(1).max(500),
+  problem: z.string().max(3000).default(""),
   istota: z.string().max(3000).default(""),
   dla_kogo: z.string().max(1000).default(""),
   etap: z.string().max(200).default(""),
 });
 export type Fiszka = z.infer<typeof Fiszka>;
+
+/** Kod zgłoszenia z lib/status-code.ts (bez 0, 1, I, O). */
+export const STATUS_CODE = /^SPL-[2-9A-HJ-NP-Z]{4}$/;
+
+// /api/ideas: zgłoszenie pomysłu z Pracowni
+export const IdeaRequest = z.object({
+  fiszka: Fiszka,
+  canvas: z.record(z.string(), z.string().max(3000)).default({}),
+  needCode: z.string().regex(STATUS_CODE).optional(), // pomysł z luki: /pomysl?potrzeba=SPL-…
+});
+export type IdeaResponse = { ideaId: string; statusCode: string };
 
 // /api/assistant: asystent Pracowni
 export const AssistantRequest = z.object({
@@ -110,7 +122,7 @@ export const AssistantRequest = z.object({
 });
 export type AssistantResponse = {
   reply: string;
-  similar: { kind: "innowacja" | "pomysl"; id: string; title: string; similarity: number }[];
+  similar: { kind: "innowacja" | "pomysl"; id: string; title: string; similarity: number; slug: string | null }[];
 };
 
 // /api/middleman: karta wdrożeniowa
