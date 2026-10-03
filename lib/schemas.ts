@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CallFormSchema } from "./call-schema";
 
 // Oś 1: obszary Mapy Wyzwań Społecznych
 export const MWS_AREAS = [
@@ -163,6 +164,16 @@ export type ImplementationCard = z.infer<typeof ImplementationCard>;
 
 // /api/apply: szkic wniosku do aktywnego naboru
 export const ApplyRequest = z.object({ ideaId: z.uuid(), callId: z.uuid() });
+export const ManualApplicationDraftRequest = z.object({
+  applicationId: z.uuid().optional(),
+  callId: z.uuid(),
+  draft: z.object({
+    app: z.record(z.string(), z.unknown()),
+    formSchema: CallFormSchema,
+  }),
+  step: z.number().int().min(0).max(20),
+  reached: z.number().int().min(0).max(20),
+});
 export const ApplicationDraft = z.object({
   sections: z.array(z.object({ field: z.string(), label: z.string(), content: z.string() })).min(1),
   checklist: z.array(z.object({ criterion: z.string(), met: z.boolean(), note: z.string() })),

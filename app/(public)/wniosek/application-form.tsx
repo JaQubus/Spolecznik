@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplicationDocument, WORD_CSS } from "./application-document";
 import { DECLARATION_SUMMARY, DECLARATIONS, DESCRIPTION_SECTIONS, PLAN, TEAM } from "./form-content";
+import type { CallFormSchema } from "@/lib/call-schema";
 import {
   type Application, type ApplicantType, type Errors, type PlanRow,
   MAX_PARTNERS, STEPS, declarationSets, emptyApplication, emptyPartner, emptyRow, fieldId,
@@ -20,7 +21,7 @@ import {
   type ApplicationPrefill,
 } from "./model";
 
-// Szkic zostaje tylko w tej przeglądarce: niczego nie wysyłamy na serwer, bo to dane osobowe wnioskodawcy.
+// localStorage pozostaje szybką kopią UX; właściwy szkic zapisujemy przez /api/wniosek/draft.
 const STORAGE_KEY = "wniosek-iws2";
 
 type Ctx = { app: Application; errors: Errors; update: (path: string, value: unknown) => void };
@@ -396,13 +397,19 @@ function readSaved(prefill?: ApplicationPrefill): Saved {
 const noSubscribe = () => () => {};
 
 /** localStorage nie istnieje na serwerze: formularz renderujemy dopiero w przeglądarce, od razu ze szkicem. */
-export function ApplicationForm({ prefill }: { prefill?: ApplicationPrefill }) {
+export function ApplicationForm({ call, prefill }: {
+  call: { id: string; title: string; formSchema: CallFormSchema };
+  prefill?: ApplicationPrefill;
+}) {
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
   if (!hydrated) return <p className="text-muted-foreground">Wczytuję formularz…</p>;
-  return <Form initial={readSaved(prefill)} />;
+  return <Form initial={readSaved(prefill)} call={call} />;
 }
 
-function Form({ initial }: { initial: Saved }) {
+function Form({ initial, call }: {
+  initial: Saved;
+  call: { id: string; title: string; formSchema: CallFormSchema };
+}) {
   const [app, setApp] = useState(initial.app);
   const [step, setStep] = useState(initial.step);
   const [reached, setReached] = useState(initial.reached);
@@ -411,10 +418,33 @@ function Form({ initial }: { initial: Saved }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const summary = useRef<HTMLDivElement>(null);
   const moved = useRef(false);
+  const applicationId = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ app, step, reached })); } catch {}
-  }, [app, step, reached]);
+    try {
+      applicationId.current ??= localStorage.getItem(`wniosek-application-${call.id}`) ?? undefined;
+    } catch {}
+    const timer = window.setTimeout(() => {
+      void fetch("/api/wniosek/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          applicationId: applicationId.current,
+          callId: call.id,
+          draft: { app, formSchema: call.formSchema },
+          step,
+          reached,
+        }),
+      }).then((response) => response.ok ? response.json() : null).then((result) => {
+        if (result?.applicationId) {
+          applicationId.current = result.applicationId;
+          try { localStorage.setItem(`wniosek-application-${call.id}`, result.applicationId); } catch {}
+        }
+      }).catch(() => {});
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [app, step, reached, call.id, call.formSchema]);
 
   // Po zmianie kroku fokus na nagłówek kroku, żeby czytnik ekranu zaczął od początku.
   useEffect(() => {
@@ -573,7 +603,7 @@ function Form({ initial }: { initial: Saved }) {
         </div>
 
         <div className="grid gap-2 text-base text-muted-foreground print:hidden">
-          <p>Wszystko, co wpiszesz, zapisuje się tylko w tej przeglądarce. Niczego nie wysyłamy. Możesz przerwać i wrócić później.</p>
+          <p>Wpisy są zapisywane na serwerze jako szkic oraz lokalnie w tej przeglądarce. Możesz przerwać i wrócić później.</p>
           {confirmReset ? (
             <div role="group" aria-label="Potwierdź wyczyszczenie" className="flex flex-wrap items-center gap-3">
               <span>Usunąć wszystko, co wpisano?</span>
