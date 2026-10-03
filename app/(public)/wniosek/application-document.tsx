@@ -1,4 +1,4 @@
-import { CALL, DECLARATIONS, DESCRIPTION_SECTIONS, PLAN, RODO_CLAUSES, TEAM } from "./form-content";
+import type { CallFormContent } from "@/lib/call-schema";
 import {
   type Application, type Contact, type Entity, type Person, type PlanRow,
   declarationSets, filledRows, formatPLN, parseAmount, planTotal,
@@ -109,14 +109,15 @@ function signers(app: Application): string[] {
   return app.partnerzy.map((p) => (p.rodzaj === "osoba" ? name(p.osoba) : `${p.podmiot.reprezentant.imieNazwisko}, ${p.podmiot.nazwa}`));
 }
 
-export function ApplicationDocument({ app }: { app: Application }) {
+export function ApplicationDocument({ app, content }: { app: Application; content: CallFormContent }) {
+  const { plan, team, declarations } = content;
   const total = planTotal(app);
   const amount = parseAmount(app.kwota);
   return (
     <article className="doc" aria-label="Wypełniony formularz aplikacyjny">
-      <p className="doc-right">{CALL.attachment}</p>
+      <p className="doc-right">{content.attachment}</p>
       <h2 className="doc-title">Formularz aplikacyjny</h2>
-      <p className="doc-text">{CALL.intro}</p>
+      <p className="doc-text">{content.intro}</p>
 
       <ol className="doc-sections">
         <li>
@@ -149,31 +150,31 @@ export function ApplicationDocument({ app }: { app: Application }) {
           )}
         </li>
 
-        {DESCRIPTION_SECTIONS.map((s) => (
+        {content.sections.map((s) => (
           <li key={s.key}>
             <h3>{s.title}</h3>
-            <Paragraphs text={app.opisy[s.key]} />
+            <Paragraphs text={app.opisy[s.key] ?? ""} />
           </li>
         ))}
 
         <li>
           <h3>Plan działania i koszty</h3>
-          <p className="doc-text">{PLAN.intro}</p>
-          <PlanTable caption={`${PLAN.preparation.title} (${PLAN.preparation.limit})`} groups={[{ rows: app.przygotowanie }]} />
+          <p className="doc-text">{plan.intro}</p>
+          <PlanTable caption={`${plan.preparation.title} (${plan.preparation.limit})`} groups={[{ rows: app.przygotowanie }]} />
           <PlanTable
-            caption={`${PLAN.testing.title} (${PLAN.testing.limit})`}
+            caption={`${plan.testing.title} (${plan.testing.limit})`}
             groups={[{ label: "Faza I testu", rows: app.faza1 }, { label: "Faza II testu", rows: app.faza2 }]}
           />
           <p className="doc-text">Suma kosztów z planu działania: <strong>{formatPLN(total)}</strong></p>
         </li>
 
         <li>
-          <h3>{PLAN.amount.title}</h3>
+          <h3>{plan.amount.title}</h3>
           <p className="doc-text"><strong>{amount === null ? app.kwota || "—" : formatPLN(amount)}</strong></p>
         </li>
 
         <li>
-          <h3>{TEAM.title}</h3>
+          <h3>{team.title}</h3>
           <Paragraphs text={app.zespol} />
         </li>
 
@@ -181,10 +182,10 @@ export function ApplicationDocument({ app }: { app: Application }) {
           <h3>Oświadczenia</h3>
           {declarationSets(app).map((set) => (
             <div key={set}>
-              <p className="doc-sub">{DECLARATIONS[set].title}</p>
-              <p className="doc-text">{DECLARATIONS[set].lead}</p>
+              <p className="doc-sub">{declarations[set].title}</p>
+              <p className="doc-text">{declarations[set].lead}</p>
               <ul className="doc-checks">
-                {DECLARATIONS[set].items.map((item, i) => (
+                {declarations[set].items.map((item, i) => (
                   <li key={i}>
                     <span aria-hidden>{app.oswiadczenia[set][i] ? "☒" : "☐"}</span>{" "}
                     <span className="sr-only">{app.oswiadczenia[set][i] ? "Zaznaczone: " : "Niezaznaczone: "}</span>
@@ -208,7 +209,7 @@ export function ApplicationDocument({ app }: { app: Application }) {
         ))}
       </div>
 
-      {RODO_CLAUSES.map((c) => (
+      {content.rodo.map((c) => (
         <section key={c.title} className="doc-clause">
           <h3>{c.title}</h3>
           {c.paragraphs.map((p, i) => <p key={i} className="doc-small">{p}</p>)}

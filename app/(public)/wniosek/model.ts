@@ -1,5 +1,7 @@
-import type { DeclarationSet, DescriptionKey } from "./form-content";
-import { DESCRIPTION_SECTIONS, DECLARATIONS } from "./form-content";
+import type { CallFormContent } from "@/lib/call-schema";
+
+/** A: osoba fizyczna, B: reprezentant podmiotu (treść w `content.declarations`). */
+export type DeclarationSet = "A" | "B";
 
 export type ApplicantType = "osoba" | "podmiot" | "grupa";
 
@@ -22,7 +24,8 @@ export type Application = {
   podmiot: Entity;
   partnerzy: Partner[];
   reprezentantGrupy: { imieNazwisko: string; telefon: string; email: string };
-  opisy: Record<DescriptionKey, string>;
+  /** Klucz = `key` punktu opisowego z treści naboru. */
+  opisy: Record<string, string>;
   przygotowanie: PlanRow[];
   faza1: PlanRow[];
   faza2: PlanRow[];
@@ -49,7 +52,7 @@ const emptyEntity = (): Entity => ({
 export const emptyPartner = (): Partner => ({ rodzaj: "osoba", osoba: emptyPerson(), podmiot: emptyEntity() });
 export const emptyRow = (): PlanRow => ({ dzialanie: "", termin: "", koszt: "" });
 
-export function emptyApplication(): Application {
+export function emptyApplication(content: CallFormContent): Application {
   return {
     tytul: "",
     typ: "osoba",
@@ -57,28 +60,31 @@ export function emptyApplication(): Application {
     podmiot: emptyEntity(),
     partnerzy: [emptyPartner(), emptyPartner()],
     reprezentantGrupy: { imieNazwisko: "", telefon: "", email: "" },
-    opisy: Object.fromEntries(DESCRIPTION_SECTIONS.map((s) => [s.key, ""])) as Record<DescriptionKey, string>,
+    opisy: Object.fromEntries(content.sections.map((s) => [s.key, ""])),
     przygotowanie: [emptyRow()],
     faza1: [emptyRow()],
     faza2: [emptyRow()],
     kwota: "",
     zespol: "",
-    oswiadczenia: { A: DECLARATIONS.A.items.map(() => false), B: DECLARATIONS.B.items.map(() => false) },
+    oswiadczenia: { A: content.declarations.A.items.map(() => false), B: content.declarations.B.items.map(() => false) },
   };
 }
 
-export function applicationFromPrefill(prefill: ApplicationPrefill): Application {
-  const app = emptyApplication();
+/** Fiszka → punkty opisowe. Nabór bez punktu o danym kluczu po prostu go pomija. */
+const PREFILL_SECTIONS = { problem: "diagnoza", opis: "opis", odbiorcy: "odbiorcy" } as const;
+
+export function applicationFromPrefill(prefill: ApplicationPrefill, content: CallFormContent): Application {
+  const app = emptyApplication(content);
   app.tytul = prefill.tytul?.trim() ?? "";
-  app.opisy.diagnoza = prefill.problem?.trim() ?? "";
-  app.opisy.opis = prefill.opis?.trim() ?? "";
-  app.opisy.odbiorcy = prefill.odbiorcy?.trim() ?? "";
+  for (const [field, key] of Object.entries(PREFILL_SECTIONS)) {
+    if (Object.hasOwn(app.opisy, key)) app.opisy[key] = prefill[field as keyof typeof PREFILL_SECTIONS]?.trim() ?? "";
+  }
   return app;
 }
 
-/** Szkic z localStorage mógł powstać przy starszej wersji formularza: uzupełniamy brakujące pola pustymi. */
-export function restore(saved: unknown): Application {
-  const base = emptyApplication();
+/** Szkic z localStorage mógł powstać przy starszej wersji treści naboru: uzupełniamy brakujące pola pustymi. */
+export function restore(saved: unknown, content: CallFormContent): Application {
+  const base = emptyApplication(content);
   if (!saved || typeof saved !== "object") return base;
   const merge = (a: unknown, b: unknown): unknown => {
     if (Array.isArray(a)) return Array.isArray(b) ? b : a;
@@ -91,7 +97,7 @@ export function restore(saved: unknown): Application {
   const app = merge(base, saved) as Application;
   // Liczba oświadczeń musi się zgadzać z treścią, inaczej odznaczamy wszystko.
   for (const set of ["A", "B"] as const) {
-    if (app.oswiadczenia[set].length !== DECLARATIONS[set].items.length) app.oswiadczenia[set] = base.oswiadczenia[set];
+    if (app.oswiadczenia[set].length !== content.declarations[set].items.length) app.oswiadczenia[set] = base.oswiadczenia[set];
   }
   return app;
 }
@@ -218,7 +224,7 @@ function checkRows(e: Errors, app: Application, key: "przygotowanie" | "faza1" |
   if (atLeastOne && !any) e[`${key}.0.dzialanie`] = atLeastOne;
 }
 
-export function validateStep(step: number, app: Application): Errors {
+export function validateStep(step: number, app: Application, content: CallFormContent): Errors {
   const e: Errors = {};
   switch (STEPS[step].id) {
     case "pomysl":
@@ -236,7 +242,7 @@ export function validateStep(step: number, app: Application): Errors {
       }
       break;
     case "opis":
-      for (const s of DESCRIPTION_SECTIONS) required(e, app, `opisy.${s.key}`, `Uzupełnij punkt „${s.title}”.`);
+      for (const s of content.sections) required(e, app, `opisy.${s.key}`, `Uzupełnij punkt „${s.title}”.`);
       break;
     case "plan": {
       checkRows(e, app, "przygotowanie", "Dodaj co najmniej jedno działanie przygotowawcze.");
@@ -259,7 +265,7 @@ export function validateStep(step: number, app: Application): Errors {
 }
 
 /** Pierwszy krok z błędami, żeby przed pobraniem odesłać tam użytkownika. */
-export function firstInvalidStep(app: Application): number | null {
-  for (let i = 0; i < STEPS.length - 1; i++) if (Object.keys(validateStep(i, app)).length) return i;
+export function firstInvalidStep(app: Application, content: CallFormContent): number | null {
+  for (let i = 0; i < STEPS.length - 1; i++) if (Object.keys(validateStep(i, app, content)).length) return i;
   return null;
 }

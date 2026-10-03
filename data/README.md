@@ -21,6 +21,7 @@ uv run gminy_geo.py        # kształty 183 gmin z WFS PRG GUGiK → ../lib/gminy
 ```
 
 - Przed `embed.py` w Supabase muszą być migracje `0001`–`0006`; przed `import_powiaty.py` także `0007`, a lista „Ucz się” to migracja `0008` (materiały są w tabeli `materials`, nowy materiał = nowy wiersz).
+- Formularz `/wniosek` (pytania, oświadczenia, klauzule RODO) czyta treść z `calls.form_schema.content`. Źródło dla naborów demo: `iws2_formularz.json`, wstawiany przez `seed_synthetic.py` + `embed.py`. Poprawka w treści = edycja `form_schema` w bazie (np. Table Editor Supabase), bez wdrożenia; kształt sprawdza `lib/call-schema.ts`. Aktywny nabór bez `content` pokazuje „Formularz jeszcze nie jest gotowy”. Szkice z `/wniosek` wymagają migracji `0010`.
 - `embed.py` jest idempotentny: innowacje upsertuje po slugu (usuwa te spoza `out/innovations.json`), dane syntetyczne kasuje i wstawia od nowa.
 - Wyniki LLM są cache'owane (`out/enriched.json`, `raw/*_cache.json`), więc ponowne uruchomienie płaci tylko za zmiany.
 - Wszystko, co pochodzi z mocka albo z `seed_synthetic.py`, ma `synthetic = true`.

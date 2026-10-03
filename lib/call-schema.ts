@@ -6,7 +6,58 @@ export const CallFormField = z.object({
   type: z.enum(["text", "textarea", "number", "table"]),
 });
 
-export const CallFormSchema = z.object({ fields: z.array(CallFormField).min(1) });
+const text = z.string().min(1);
+
+/** Punkt opisowy wzoru. `questions` to pytania z wzoru, `tip` to podpowiedź prostym językiem. */
+const DescriptionSection = z.object({
+  key: text,
+  n: z.number().int().positive(),
+  title: text,
+  tip: text,
+  questions: z.array(text),
+});
+
+const PlanPeriod = z.object({ title: text, limit: text, questions: text, example: text, termExample: text });
+
+const DeclarationSet = z.object({
+  title: text,
+  lead: text,
+  items: z.array(text).min(1),
+  /** Streszczenie prostym językiem, pokazywane obok pełnej treści, nie zamiast niej. */
+  summary: z.array(text),
+});
+
+/**
+ * Treść wzoru wniosku dla /wniosek: pytania, oświadczenia i klauzule RODO danego naboru.
+ * Struktura formularza (kroki, dane wnioskodawcy, tabela planu) jest w kodzie, tekst jest tutaj,
+ * więc nowy nabór albo poprawka w oświadczeniu to zmiana `calls.form_schema`, nie wdrożenie.
+ */
+export const CallFormContent = z.object({
+  attachment: text,
+  intro: text,
+  sections: z.array(DescriptionSection).min(1).refine(
+    (sections) => new Set(sections.map((s) => s.key)).size === sections.length,
+    "Klucze punktów opisowych muszą być unikalne",
+  ),
+  plan: z.object({
+    intro: text,
+    preparation: PlanPeriod,
+    testing: PlanPeriod,
+    amount: z.object({ title: text, questions: text }),
+  }),
+  team: DescriptionSection.omit({ key: true }),
+  /** A: osoba fizyczna, B: reprezentant podmiotu. */
+  declarations: z.object({ A: DeclarationSet, B: DeclarationSet }),
+  rodo: z.array(z.object({ title: text, paragraphs: z.array(text).min(1) })),
+});
+export type CallFormContent = z.infer<typeof CallFormContent>;
+
+export const CallFormSchema = z.object({
+  /** Pola dla generatora szkicu z fiszki (/api/apply). */
+  fields: z.array(CallFormField).min(1),
+  /** Treść formularza /wniosek. Bez niej nabór nie ma formularza do wypełnienia. */
+  content: CallFormContent.optional(),
+});
 export type CallFormSchema = z.infer<typeof CallFormSchema>;
 
 /** Used only for legacy calls whose form_schema is null or an empty object. */

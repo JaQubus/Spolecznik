@@ -12,8 +12,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplicationDocument, WORD_CSS } from "./application-document";
-import { DECLARATION_SUMMARY, DECLARATIONS, DESCRIPTION_SECTIONS, PLAN, TEAM } from "./form-content";
-import type { CallFormSchema } from "@/lib/call-schema";
+import type { CallFormContent, CallFormSchema } from "@/lib/call-schema";
 import {
   type Application, type ApplicantType, type Errors, type PlanRow,
   MAX_PARTNERS, STEPS, declarationSets, emptyApplication, emptyPartner, emptyRow, fieldId,
@@ -22,9 +21,10 @@ import {
 } from "./model";
 
 // localStorage pozostaje szybką kopią UX; właściwy szkic zapisujemy przez /api/wniosek/draft.
-const STORAGE_KEY = "wniosek-iws2";
+// Klucz per nabór: szkic jednego naboru nie pasuje do treści innego.
+const storageKey = (callId: string) => `wniosek-${callId}`;
 
-type Ctx = { app: Application; errors: Errors; update: (path: string, value: unknown) => void };
+type Ctx = { app: Application; errors: Errors; content: CallFormContent; update: (path: string, value: unknown) => void };
 const FormCtx = createContext<Ctx | null>(null);
 const useForm = () => useContext(FormCtx)!;
 
@@ -215,28 +215,28 @@ function PlanRows({ path, legend, hint, example, termExample, required }: {
 }
 
 function PlanStep() {
-  const { app, update } = useForm();
+  const { app, update, content: { plan } } = useForm();
   const total = planTotal(app);
   const amount = parseAmount(app.kwota);
   const differs = amount !== null && total > 0 && Math.abs(amount - total) >= 0.01;
   return (
     <div className="grid gap-10">
-      <p className="max-w-[68ch]">{PLAN.intro} Wpisuj kwoty w złotych. Sumę policzymy za Ciebie.</p>
+      <p className="max-w-[68ch]">{plan.intro} Wpisuj kwoty w złotych. Sumę policzymy za Ciebie.</p>
       <section className="grid gap-6">
-        <h3 className="text-2xl font-bold">{PLAN.preparation.title}: {PLAN.preparation.limit}</h3>
-        <FieldHint>{PLAN.preparation.questions}</FieldHint>
-        <PlanRows path="przygotowanie" legend="Działania przygotowawcze" example={PLAN.preparation.example} termExample={PLAN.preparation.termExample} required />
+        <h3 className="text-2xl font-bold">{plan.preparation.title}: {plan.preparation.limit}</h3>
+        <FieldHint>{plan.preparation.questions}</FieldHint>
+        <PlanRows path="przygotowanie" legend="Działania przygotowawcze" example={plan.preparation.example} termExample={plan.preparation.termExample} required />
       </section>
       <section className="grid gap-6">
-        <h3 className="text-2xl font-bold">{PLAN.testing.title}: {PLAN.testing.limit}</h3>
-        <FieldHint>{PLAN.testing.questions}</FieldHint>
-        <PlanRows path="faza1" legend="Faza I testu" example={PLAN.testing.example} termExample={PLAN.testing.termExample} required />
-        <PlanRows path="faza2" legend="Faza II testu" example={PLAN.testing.example} termExample={PLAN.testing.termExample} />
+        <h3 className="text-2xl font-bold">{plan.testing.title}: {plan.testing.limit}</h3>
+        <FieldHint>{plan.testing.questions}</FieldHint>
+        <PlanRows path="faza1" legend="Faza I testu" example={plan.testing.example} termExample={plan.testing.termExample} required />
+        <PlanRows path="faza2" legend="Faza II testu" example={plan.testing.example} termExample={plan.testing.termExample} />
       </section>
       <section className="grid gap-4 border-t pt-6">
-        <h3 className="text-2xl font-bold">{PLAN.amount.title}</h3>
+        <h3 className="text-2xl font-bold">{plan.amount.title}</h3>
         <p aria-live="polite" className="text-lg">Suma kosztów z planu: <strong>{formatPLN(total)}</strong></p>
-        <TextField path="kwota" label="Jakiej kwoty grantu potrzebujesz (zł)?" hint={PLAN.amount.questions} inputMode="decimal" className="max-w-md" />
+        <TextField path="kwota" label="Jakiej kwoty grantu potrzebujesz (zł)?" hint={plan.amount.questions} inputMode="decimal" className="max-w-md" />
         {differs && (
           <div aria-live="polite" className="space-y-2">
             <p>Ta kwota różni się od sumy z planu o {formatPLN(Math.abs(amount - total))}. Sprawdź, czy tak ma być.</p>
@@ -285,7 +285,7 @@ function DescribedTextarea({ path, n, title, tip, questions }: { path: string; n
 // ---- Oświadczenia
 
 function DeclarationsStep() {
-  const { app, errors, update } = useForm();
+  const { app, errors, update, content } = useForm();
   const sets = declarationSets(app);
   return (
     <div className="grid gap-10">
@@ -295,14 +295,14 @@ function DeclarationsStep() {
         </p>
       )}
       {sets.map((set) => {
-        const decl = DECLARATIONS[set];
+        const decl = content.declarations[set];
         const values = app.oswiadczenia[set];
         const error = errors[`oswiadczenia.${set}`];
         return (
           <fieldset key={set} className="grid gap-4" aria-describedby={error ? `${fieldId(`oswiadczenia.${set}`)}-blad` : undefined}>
             <legend className="mb-2 text-2xl font-bold">{decl.title}</legend>
             <Alert title="W skrócie: co potwierdzasz">
-              <ul className="list-disc space-y-1 pl-6">{DECLARATION_SUMMARY[set].map((s) => <li key={s}>{s}</li>)}</ul>
+              <ul className="list-disc space-y-1 pl-6">{decl.summary.map((s) => <li key={s}>{s}</li>)}</ul>
               <p className="pt-1">Pełna treść jest poniżej. Zaznacz tylko to, co jest prawdą: za fałszywe oświadczenie grozi kara.</p>
             </Alert>
             <p className="max-w-[68ch] font-bold">{decl.lead}</p>
@@ -333,9 +333,9 @@ function slug(s: string) {
 }
 
 function FinishStep({ goTo }: { goTo: (step: number) => void }) {
-  const { app } = useForm();
+  const { app, content } = useForm();
   const doc = useRef<HTMLDivElement>(null);
-  const invalid = firstInvalidStep(app);
+  const invalid = firstInvalidStep(app, content);
 
   function downloadWord() {
     const html = `<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>${app.tytul}</title><style>${WORD_CSS}</style></head><body>${doc.current?.innerHTML ?? ""}</body></html>`;
@@ -372,7 +372,7 @@ function FinishStep({ goTo }: { goTo: (step: number) => void }) {
         <h3 className="pt-4 text-2xl font-bold">Podgląd wniosku</h3>
       </div>
       <div ref={doc} className="max-w-[52rem] rounded-[16px] border border-border-strong bg-background p-5 sm:p-10 print:max-w-none print:rounded-none print:border-0 print:p-0">
-        <ApplicationDocument app={app} />
+        <ApplicationDocument app={app} content={content} />
       </div>
     </div>
   );
@@ -382,34 +382,31 @@ function FinishStep({ goTo }: { goTo: (step: number) => void }) {
 
 type Saved = { app: Application; step: number; reached: number };
 
-function readSaved(prefill?: ApplicationPrefill): Saved {
+function readSaved(callId: string, content: CallFormContent, prefill?: ApplicationPrefill): Saved {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
+    const saved = JSON.parse(localStorage.getItem(storageKey(callId)) ?? "null");
     if (saved) {
       const step = Math.min(Math.max(Number(saved.step) || 0, 0), STEPS.length - 1);
       const reached = Math.min(Math.max(step, Number(saved.reached) || 0), STEPS.length - 1);
-      return { app: restore(saved.app), step, reached };
+      return { app: restore(saved.app, content), step, reached };
     }
   } catch {}
-  return { app: prefill ? applicationFromPrefill(prefill) : emptyApplication(), step: 0, reached: 0 };
+  return { app: prefill ? applicationFromPrefill(prefill, content) : emptyApplication(content), step: 0, reached: 0 };
 }
+
+type Call = { id: string; title: string; formSchema: CallFormSchema; content: CallFormContent };
 
 const noSubscribe = () => () => {};
 
 /** localStorage nie istnieje na serwerze: formularz renderujemy dopiero w przeglądarce, od razu ze szkicem. */
-export function ApplicationForm({ call, prefill }: {
-  call: { id: string; title: string; formSchema: CallFormSchema };
-  prefill?: ApplicationPrefill;
-}) {
+export function ApplicationForm({ call, prefill }: { call: Call; prefill?: ApplicationPrefill }) {
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
   if (!hydrated) return <p className="text-muted-foreground">Wczytuję formularz…</p>;
-  return <Form initial={readSaved(prefill)} call={call} />;
+  return <Form initial={readSaved(call.id, call.content, prefill)} call={call} />;
 }
 
-function Form({ initial, call }: {
-  initial: Saved;
-  call: { id: string; title: string; formSchema: CallFormSchema };
-}) {
+function Form({ initial, call }: { initial: Saved; call: Call }) {
+  const { content } = call;
   const [app, setApp] = useState(initial.app);
   const [step, setStep] = useState(initial.step);
   const [reached, setReached] = useState(initial.reached);
@@ -421,7 +418,7 @@ function Form({ initial, call }: {
   const applicationId = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ app, step, reached })); } catch {}
+    try { localStorage.setItem(storageKey(call.id), JSON.stringify({ app, step, reached })); } catch {}
     try {
       applicationId.current ??= localStorage.getItem(`wniosek-application-${call.id}`) ?? undefined;
     } catch {}
@@ -432,7 +429,8 @@ function Form({ initial, call }: {
         body: JSON.stringify({
           applicationId: applicationId.current,
           callId: call.id,
-          draft: { app, formSchema: call.formSchema },
+          // Same pola wystarczą do odtworzenia szkicu; treść naboru jest w calls.form_schema.
+          draft: { app, formSchema: { fields: call.formSchema.fields } },
           step,
           reached,
         }),
@@ -444,7 +442,7 @@ function Form({ initial, call }: {
       }).catch(() => {});
     }, 700);
     return () => window.clearTimeout(timer);
-  }, [app, step, reached, call.id, call.formSchema]);
+  }, [app, step, reached, call.id, call.formSchema.fields]);
 
   // Po zmianie kroku fokus na nagłówek kroku, żeby czytnik ekranu zaczął od początku.
   useEffect(() => {
@@ -474,13 +472,13 @@ function Form({ initial, call }: {
   }
 
   function next() {
-    const e = validateStep(step, app);
+    const e = validateStep(step, app, content);
     if (Object.keys(e).length) return setErrors(e);
     goTo(step + 1);
   }
 
   function reset() {
-    setApp(emptyApplication());
+    setApp(emptyApplication(content));
     setConfirmReset(false);
     setReached(0);
     goTo(0);
@@ -490,7 +488,7 @@ function Form({ initial, call }: {
   const errorList = Object.entries(errors);
 
   return (
-    <FormCtx.Provider value={{ app, errors, update }}>
+    <FormCtx.Provider value={{ app, errors, content, update }}>
       <div className="grid gap-8">
         <nav aria-label="Kroki wniosku" className="print:hidden">
           <ol className="flex flex-wrap gap-2">
@@ -570,7 +568,7 @@ function Form({ initial, call }: {
                   <p className="max-w-[68ch]">
                     Odpowiedz własnymi słowami. Pod każdym polem są pytania ze wzoru wniosku: nie musisz odpowiadać na wszystkie po kolei, ale komisja będzie ich szukać.
                   </p>
-                  {DESCRIPTION_SECTIONS.map((s) => (
+                  {content.sections.map((s) => (
                     <DescribedTextarea key={s.key} path={`opisy.${s.key}`} n={s.n} title={s.title} tip={s.tip} questions={s.questions} />
                   ))}
                 </>
@@ -579,7 +577,7 @@ function Form({ initial, call }: {
               {current.id === "plan" && <PlanStep />}
 
               {current.id === "zespol" && (
-                <DescribedTextarea path="zespol" n={TEAM.n} title={TEAM.title} tip={TEAM.tip} questions={TEAM.questions} />
+                <DescribedTextarea path="zespol" {...content.team} />
               )}
 
               {current.id === "oswiadczenia" && <DeclarationsStep />}
