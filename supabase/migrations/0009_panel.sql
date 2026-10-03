@@ -21,3 +21,8 @@ alter table needs add column if not exists updated_at timestamptz not null defau
 -- Historia zmian jednego zgłoszenia (Panel i oś czasu na /status/[kod]).
 create index if not exists audit_log_entity on audit_log (entity, entity_id, created_at);
 create index if not exists needs_status_created on needs (status, created_at desc);
+
+-- Pozostałości wersji z embeddingami (wcześniejsze 0005_doc_search i 0006_panel) — zastąpione przez 0005_keyword_search.
+drop function if exists need_triage(uuid[], float, float);
+drop function if exists need_neighbours(uuid, text, int);
+drop function if exists match_doc_chunks(vector, int);
