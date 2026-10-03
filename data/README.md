@@ -16,6 +16,7 @@ uv run eval.py             # hit@3, MRR@5, wykrywanie luk                (GROQ_A
 uv run seed_innovations.py # szybki seed Biblioteki z out/innovations.json, bez kluczy API (SUPABASE_DB_URL)
 uv run import_powiaty.py   # 22 powiaty × 112 wskaźników → powiaty_wskazniki (SUPABASE_DB_URL)
 uv run import_powiaty.py --sql  # to samo jako out/powiaty.sql do wklejenia w SQL Editor Supabase
+uv run powiaty_geo.py       # kształty 22 powiatów z WFS PRG GUGiK → ../lib/powiaty-shapes.json
 uv run gminy_geo.py        # kształty 183 gmin z WFS PRG GUGiK → ../lib/gminy-shapes.json (mapa w Kondycji Małopolski)
 ```
 

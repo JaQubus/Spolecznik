@@ -38,13 +38,17 @@ export async function POST(request: Request) {
   try {
     const [idea, call] = await Promise.all([
       supabase.from("ideas").select("id, fiszka, canvas").eq("id", ideaId).maybeSingle(),
-      supabase.from("calls").select("id, title, description, active, criteria, form_schema").eq("id", callId).maybeSingle(),
+      supabase.from("calls").select("id, title, description, active, opens_at, closes_at, criteria, form_schema").eq("id", callId).maybeSingle(),
     ]);
     if (idea.error) throw idea.error;
     if (call.error) throw call.error;
     if (!idea.data) return Response.json({ error: "Nie znaleziono pomysłu" }, { status: 404 });
     if (!call.data) return Response.json({ error: "Nie znaleziono naboru" }, { status: 404 });
-    if (!call.data.active) return Response.json({ error: "Ten nabór nie jest aktywny" }, { status: 409 });
+    const today = new Date().toISOString().slice(0, 10);
+    const outsideWindow =
+      (call.data.opens_at && call.data.opens_at > today) ||
+      (call.data.closes_at && call.data.closes_at < today);
+    if (!call.data.active || outsideWindow) return Response.json({ error: "Ten nabór nie jest aktywny" }, { status: 409 });
 
     const formSchema = FormSchema.safeParse(call.data.form_schema);
     const draft = await draftApplication({
