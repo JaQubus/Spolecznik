@@ -36,7 +36,7 @@ Keep the three `@import`s, `@custom-variant dark` and the `@theme inline` block,
   --destructive: var(--danger);
   --border: var(--divider);          --input: var(--border-strong);
   --ring: var(--focus);
-  --radius: 1rem;
+  --radius: 0.5rem; /* rounded-lg = 8px = radius-sm (text inputs) */
 }
 
 .dark {
@@ -85,7 +85,7 @@ Replace the base layer's `@apply border-border outline-ring/50;` with `@apply bo
 
 ## 2. `app/layout.tsx`: the font
 
-Swap `Geist` / `Geist_Mono` for `Atkinson_Hyperlegible_Next` and `Atkinson_Hyperlegible_Mono` from `next/font/google`, both with `subsets: ["latin", "latin-ext"]`, variables `--font-atkinson` and `--font-atkinson-mono`, weights `["400", "700"]` (mono `["500"]`). If the installed Next version doesn't export those names yet, load the Google Fonts URL from `components/bundle.css` with a `<link>` instead.
+Swap `Geist` / `Geist_Mono` for `Atkinson_Hyperlegible_Next` and `Atkinson_Hyperlegible_Mono` from `next/font/google`, both with `subsets: ["latin", "latin-ext"]`, variables `--font-atkinson` and `--font-atkinson-mono`, weights `["400", "700"]` (mono `["500"]`). If the installed Next version doesn't export those names yet, put `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@500&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,700;1,400&display=swap">` in `<head>` instead and point `--font-sans` / `--font-mono` at those family names.
 
 Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(--on-ink)]` (not `bg-primary`: it's not a primary action), add the flag band as the first child of `<body>` (`<span aria-hidden className="block h-1 border-t-2 border-[var(--flag-white)] bg-[var(--flag-red)]" />`), and give the footer `bg-[var(--surface-alt)] border-0 text-base` (16px floor).
 
@@ -105,7 +105,7 @@ Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(-
 ## 4. App code
 
 - `app/(public)/opisz/match-results.tsx` builds results from `Card`. Rebuild it as the **ResultList** pattern: an `<ol>` with rows split by `border-b border-border py-8`, no Card. Per row, "Jak to wdrożyć u nas?" is `variant="outline"` and "Chcę przetestować" is `variant="link"`, so ten results don't produce ten green buttons.
-- The amber notice (`bg-amber-50 border-amber-500 text-amber-950`) and `border-dashed` boxes in `match-results.tsx` / `describe-flow.tsx` → **Alert** (info: `bg-secondary rounded-2xl p-5`, an icon, no border). There's no yellow in the system.
+- The amber notice (`bg-amber-50 border-amber-500 text-amber-950`) and `border-dashed` boxes in `match-results.tsx` / `describe-flow.tsx` → **Alert** (info: `bg-secondary rounded-[16px] p-5`, an icon, no border). There's no yellow in the system.
 - `components/a11y/a11y-toolbar.tsx`: buttons → `rounded-full min-h-12 px-3 text-base border-0 hover:bg-muted aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:font-bold`, plus a Lucide icon each (`Type`, `Contrast`, `AlignLeft`); put the group in a `bg-secondary` strip above the header row. Add "Czytaj na głos" (`Volume2`, `speechSynthesis`) when it's built.
 - `components/layout/site-header.tsx`: links → `rounded-full px-4 min-h-12 inline-flex items-center hover:bg-secondary no-underline`, current page `aria-current="page"` + `font-bold underline underline-offset-8`; wordmark `hubmi<span className="font-normal text-muted-foreground">.pl</span>`. Five nav items don't fit under 1024px: fold them behind a "Menu" button there. Under 768px the toolbar folds behind a "Dostępność" button and must open below the header row (render it after the row, or `flex-col` + `order-2` / `md:order-none`), so the pressed button doesn't jump.
 - The home search: two normal shadcn `Input`s (label above, hint below the label, no placeholder) and one `Button` in a `flex flex-col md:flex-row md:items-end gap-4` form, sitting on a `bg-secondary` hero band so the white inputs stand out. No pill-shaped or fill-only fields.
