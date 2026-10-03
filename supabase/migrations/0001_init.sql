@@ -257,7 +257,7 @@ create policy "publiczny odczyt" on tests       for select using (true);
 create policy "publiczny odczyt" on doc_chunks  for select using (true);
 
 create policy "własny profil" on profiles for select using (id = auth.uid() or is_admin());
-create policy "własny profil" on profiles for update using (id = auth.uid());
+create policy "edycja własnego profilu" on profiles for update using (id = auth.uid());
 
 create policy "autor lub admin" on needs   for select using (author_id = auth.uid() or is_admin());
 create policy "autor lub admin" on ideas   for select using (author_id = auth.uid() or is_admin());
@@ -266,15 +266,15 @@ create policy "admin"           on audit_log for select using (is_admin());
 
 create policy "uczestnik wątku" on threads for select using (
   is_admin() or exists (select 1 from thread_participants p where p.thread_id = id and p.user_id = auth.uid()));
-create policy "uczestnik wątku" on messages for select using (
+create policy "odczyt: uczestnik wątku" on messages for select using (
   is_admin() or exists (select 1 from thread_participants p where p.thread_id = messages.thread_id and p.user_id = auth.uid()));
-create policy "uczestnik wątku" on messages for insert with check (
+create policy "pisanie: uczestnik wątku" on messages for insert with check (
   author_id = auth.uid() and exists (select 1 from thread_participants p where p.thread_id = messages.thread_id and p.user_id = auth.uid()));
 create policy "własne" on thread_participants for select using (user_id = auth.uid() or is_admin());
 
 create policy "własne powiadomienia" on notifications for select using (
   user_id = auth.uid() or (role = 'admin' and is_admin()));
-create policy "własne powiadomienia" on notifications for update using (user_id = auth.uid());
+create policy "oznaczanie przeczytanych" on notifications for update using (user_id = auth.uid());
 
 -- Realtime dla wątków i dzwonka
 alter publication supabase_realtime add table messages, notifications;

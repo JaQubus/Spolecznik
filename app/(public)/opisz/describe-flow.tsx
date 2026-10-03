@@ -1,25 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { NeedCard, RerankItem } from "@/lib/schemas";
-import { AREA_LABELS } from "@/lib/taxonomy";
+import type { MatchResponse, NeedCard } from "@/lib/schemas";
+import { MatchResults } from "./match-results";
+import { VoiceInput } from "./voice-input";
 
 type Step =
   | { kind: "input" }
   | { kind: "followUp"; card: NeedCard }
-  | { kind: "results"; card: NeedCard; matches: RerankItem[]; isGap: boolean };
+  | { kind: "results"; card: NeedCard; result: MatchResponse };
+
+type IntakeResponse = { card: NeedCard; needsFollowUp: boolean; piiFound: boolean };
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(`Błąd ${res.status}`);
-  return res.json();
+  const json = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(json?.error ?? `Błąd ${res.status}`);
+  return json as T;
 }
+
+const appendText = (prev: string, chunk: string) => (prev ? `${prev.trimEnd()} ${chunk}` : chunk);
 
 export function DescribeFlow() {
   const [step, setStep] = useState<Step>({ kind: "input" });
@@ -29,52 +33,88 @@ export function DescribeFlow() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState("");
-
-  async function match(card: NeedCard) {
-    setStatus("Szukam rozwiązań…");
-    const r = await post<{ matches: RerankItem[]; isGap: boolean }>("/api/match", { card });
-    setStep({ kind: "results", card, matches: r.matches, isGap: r.isGap });
-    setStatus(r.isGap ? "Nie znaleziono pasującego rozwiązania." : `Znaleziono ${r.matches.length} rozwiązań.`);
-  }
+  const [piiFound, setPiiFound] = useState(false);
 
   async function run(fn: () => Promise<void>) {
     setBusy(true);
     setError(null);
-    try { await fn(); } catch { setError("Coś poszło nie tak. Spróbuj ponownie za chwilę."); }
-    finally { setBusy(false); }
+    try {
+      await fn();
+    } catch (e) {
+      setError(`${e instanceof Error ? e.message : "Coś poszło nie tak"}. Spróbuj ponownie za chwilę.`);
+      setStatus("");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function match(card: NeedCard, rawText: string) {
+    setStatus("Szukam rozwiązań. To może potrwać kilkanaście sekund.");
+    const result = await post<MatchResponse>("/api/match", { card, text: rawText, gmina: gmina || undefined });
+    setStep({ kind: "results", card, result });
+    setStatus("");
   }
 
   const submit = () => run(async () => {
-    setStatus("Analizuję opis…");
-    const r = await post<{ card: NeedCard; needsFollowUp: boolean }>("/api/intake", { text, gmina: gmina || undefined });
+    setStatus("Czytam opis…");
+    const r = await post<IntakeResponse>("/api/intake", { text, gmina: gmina || undefined });
+    setPiiFound(r.piiFound);
     if (r.needsFollowUp) {
       setStep({ kind: "followUp", card: r.card });
-      setStatus("Mamy jedno pytanie.");
-    } else await match(r.card);
+      setStatus("Mamy jedno pytanie, żeby lepiej dopasować rozwiązania.");
+    } else {
+      await match(r.card, text);
+    }
   });
 
   const submitAnswer = (card: NeedCard) => run(async () => {
-    const r = await post<{ card: NeedCard }>("/api/intake", { text: answer, previousCard: card });
-    await match(r.card);
+    setStatus("Czytam odpowiedź…");
+    const r = await post<IntakeResponse>("/api/intake", { text: answer, previousCard: card });
+    await match(r.card, `${text}\n\nDoprecyzowanie: ${answer}`);
   });
+
+  function reset() {
+    setStep({ kind: "input" });
+    setText("");
+    setAnswer("");
+    setPiiFound(false);
+  }
 
   return (
     <div className="space-y-6">
-      <p aria-live="polite" className="sr-only">{status}</p>
-      {error && <p role="alert" className="font-medium text-destructive">{error}</p>}
+      <p aria-live="polite" className={busy ? "text-lg font-medium" : "sr-only"}>{status}</p>
+      {error && <p role="alert" className="text-lg font-medium text-destructive">{error}</p>}
+      {piiFound && step.kind !== "input" && (
+        <p className="rounded-md border border-amber-500 bg-amber-50 p-3 text-amber-950">
+          W opisie były dane osobowe (np. telefon lub adres). Ukryliśmy je, zanim tekst trafił do analizy.
+        </p>
+      )}
 
       {step.kind === "input" && (
-        <form className="max-w-2xl space-y-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+        <form className="max-w-2xl space-y-5" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+          <VoiceInput onText={(chunk) => setText((t) => appendText(t, chunk))} />
           <div className="space-y-2">
             <Label htmlFor="opis" className="text-lg">Na czym polega problem?</Label>
-            {/* TODO: przycisk mikrofonu (Web Speech API, pl-PL) */}
-            <Textarea id="opis" required minLength={3} rows={6} value={text} onChange={(e) => setText(e.target.value)} className="text-lg" />
+            <p id="opis-pomoc" className="text-muted-foreground">
+              Kogo dotyczy, gdzie, co już próbowaliście. Wystarczy kilka zdań.
+            </p>
+            <Textarea
+              id="opis"
+              aria-describedby="opis-pomoc"
+              required
+              minLength={3}
+              maxLength={5000}
+              rows={6}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              className="text-lg"
+            />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="gmina">Gmina (nieobowiązkowo)</Label>
-            <Input id="gmina" value={gmina} onChange={(e) => setGmina(e.target.value)} />
+            <Label htmlFor="gmina" className="text-lg">Gmina (nieobowiązkowo)</Label>
+            <Input id="gmina" autoComplete="address-level2" value={gmina} onChange={(e) => setGmina(e.target.value)} className="max-w-sm text-lg" />
           </div>
-          <Button type="submit" size="lg" disabled={busy} className="h-12 px-8 text-lg">
+          <Button type="submit" size="lg" disabled={busy || text.trim().length < 3} className="h-12 px-8 text-lg">
             {busy ? "Szukam…" : "Znajdź rozwiązania"}
           </Button>
         </form>
@@ -83,44 +123,18 @@ export function DescribeFlow() {
       {step.kind === "followUp" && (
         <form className="max-w-2xl space-y-4" onSubmit={(e) => { e.preventDefault(); submitAnswer(step.card); }}>
           <Label htmlFor="odp" className="text-lg">{step.card.followUp}</Label>
+          <VoiceInput label="Odpowiedz głosem" onText={(chunk) => setAnswer((a) => appendText(a, chunk))} />
           <Textarea id="odp" required rows={3} value={answer} onChange={(e) => setAnswer(e.target.value)} className="text-lg" />
-          <Button type="submit" size="lg" disabled={busy}>{busy ? "Szukam…" : "Dalej"}</Button>
+          <div className="flex flex-wrap gap-3">
+            <Button type="submit" size="lg" disabled={busy || !answer.trim()}>{busy ? "Szukam…" : "Dalej"}</Button>
+            <Button type="button" size="lg" variant="ghost" disabled={busy} onClick={() => run(() => match(step.card, text))}>
+              Pomiń pytanie
+            </Button>
+          </div>
         </form>
       )}
 
-      {step.kind === "results" && (
-        <div className="space-y-4">
-          <p className="text-lg"><strong>Zrozumieliśmy tak:</strong> {step.card.summary}</p>
-          <div className="flex flex-wrap gap-2">
-            {step.card.areas.map((a) => <Badge key={a} variant="secondary">{AREA_LABELS[a]}</Badge>)}
-          </div>
-          {step.isGap ? (
-            <Card>
-              <CardHeader><CardTitle>Nie znaleźliśmy jeszcze rozwiązania</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <p>To ważna informacja — zapisaliśmy ją na mapie potrzeb. Masz pomysł, jak to rozwiązać?</p>
-                <Button asChild><a href="/pomysl">Zgłoś pomysł</a></Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <ol className="space-y-4">
-              {step.matches.map((m) => (
-                <li key={m.id}>
-                  <Card>
-                    <CardHeader><CardTitle>Dopasowanie: {m.fit}/100</CardTitle></CardHeader>
-                    <CardContent className="space-y-2">
-                      <p><strong>Dlaczego pasuje:</strong> {m.why}</p>
-                      <p><strong>Co dostosować u Ciebie:</strong> {m.adapt}</p>
-                      {/* TODO: tytuł innowacji, przyciski Wdrożenie / Przetestuj / Ekspert / 👍👎 */}
-                    </CardContent>
-                  </Card>
-                </li>
-              ))}
-            </ol>
-          )}
-          <Button variant="outline" onClick={() => { setStep({ kind: "input" }); setAnswer(""); }}>Opisz inny problem</Button>
-        </div>
-      )}
+      {step.kind === "results" && <MatchResults card={step.card} result={step.result} onReset={reset} />}
     </div>
   );
 }

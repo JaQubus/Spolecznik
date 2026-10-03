@@ -57,10 +57,42 @@ export const IntakeRequest = z.object({
 
 export const MatchRequest = z.object({
   card: NeedCard,
-  teryt: z.string().nullable().optional(),
+  text: z.string().min(3).max(10000), // oryginalny opis (+ odpowiedź na dopytanie) — tylko do needs.raw_text
+  gmina: z.string().max(100).optional(), // to, co użytkownik wpisał w pole „Gmina”
 });
+
+export const FeedbackRequest = z.object({
+  matchId: z.uuid(),
+  value: z.union([z.literal(1), z.literal(-1), z.literal(0)]), // 0 = cofnięcie oceny
+});
+
+// Odpowiedź /api/match — wspólny typ dla serwera i klienta.
+export type InnovationMatch = RerankItem & {
+  matchId: string;
+  title: string;
+  slug: string | null;
+  category: string | null;
+  etrSummary: string | null;
+  testsCount: number;
+  avgRating: number | null;
+};
+
+export type MatchResponse = {
+  need: { id: string; statusCode: string; gmina: string | null };
+  matches: InnovationMatch[];
+  isGap: boolean;
+  similarNeeds: { count: number; gminy: string[] };
+  experts: { id: string; name: string; description: string }[];
+  calls: { id: string; title: string; closesAt: string | null }[];
+};
 
 /** Próg, poniżej którego potrzeba trafia na mapę luk. */
 export const GAP_THRESHOLD = 50;
 /** Próg, poniżej którego dopytujemy zamiast szukać. */
 export const CLARITY_THRESHOLD = 0.6;
+/**
+ * Progi podobieństwa cosinusowego (text-embedding-3-small). Do dostrojenia na eval.py:
+ * eksperci i nabory nie przechodzą przez rerank, więc odcinamy je samym podobieństwem.
+ */
+export const RELATED_MIN_SIMILARITY = 0.35;
+export const SIMILAR_NEED_MIN_SIMILARITY = 0.55;
