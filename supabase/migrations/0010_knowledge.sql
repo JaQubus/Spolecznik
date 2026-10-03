@@ -45,7 +45,7 @@ create table facts (
 create index on facts (area_key, sort);
 
 -- ── Materiały edukacyjne ───────────────────────────────────
-create table materials (
+create table knowledge_materials (  -- „materials” zajęła migracja 0008 (Ucz się)
   id          uuid primary key default gen_random_uuid(),
   kind        text not null check (kind in ('raport','poradnik','film','kanwa','publikacja')),
   title       text not null,
@@ -61,7 +61,7 @@ create table materials (
   synthetic   boolean not null default false,
   updated_at  timestamptz not null default now()
 );
-create index on materials using gin (areas);
+create index on knowledge_materials using gin (areas);
 
 -- ── Innowacje: pola historii, filmu i publikacji ───────────
 -- corpus odróżnia innowacje pipeline'u matchmakingu (data/embed.py) od Biblioteki ROPS w Zasobniku,
@@ -140,11 +140,11 @@ revoke execute on function need_trends(text), needs_by_powiat(), rising_keywords
 -- ── RLS ────────────────────────────────────────────────────
 alter table areas     enable row level security;
 alter table facts     enable row level security;
-alter table materials enable row level security;
+alter table knowledge_materials enable row level security;
 
 create policy "publiczny odczyt opublikowanych" on areas     for select using (published or is_admin());
 create policy "publiczny odczyt opublikowanych" on facts     for select using (published or is_admin());
-create policy "publiczny odczyt opublikowanych" on materials for select using (published or is_admin());
+create policy "publiczny odczyt opublikowanych" on knowledge_materials for select using (published or is_admin());
 
 drop policy "publiczny odczyt" on innovations;
 create policy "publiczny odczyt opublikowanych" on innovations for select using (published or is_admin());

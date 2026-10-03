@@ -2,7 +2,6 @@ import { ArrowDownTrayIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIco
 import type { Metadata } from "next";
 import Form from "next/form";
 import { AreaTrendCharts, AreaTrendTable } from "@/components/knowledge/trend-charts";
-import { PanelNav } from "@/components/layout/panel-nav";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -17,14 +16,13 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
 
 /** Widok tylko dla administratora: zgłoszone potrzeby zagregowane w obszarach, powiatach i słowach. */
 export default async function Page(props: PageProps<"/panel/trendy">) {
-  const viewer = await requireAdmin("/panel/trendy");
+  await requireAdmin("/panel/trendy");
   const bucket = parseBucket(first((await props.searchParams).okres));
   const t = await getTrends(bucket);
   const maxPowiat = Math.max(1, ...t.byPowiat.map((p) => p.needs));
 
   return (
     <section className="space-y-12">
-      <PanelNav current="/panel/trendy" viewer={viewer} />
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Trendy potrzeb</h1>
         <p className="max-w-[44rem] text-lg">

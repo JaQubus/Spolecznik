@@ -9,7 +9,7 @@ Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
 
 - **Nazwa:** **Społecznik**. Hasło: *Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.*
 - **Idea:** każda potrzeba, innowacja, pomysł, ekspert i nabór to „karta”. Jeden silnik dopasowań (wyszukiwanie hybrydowe + rerank LLM z uzasadnieniem) splata karty ze sobą. Siedem modułów z briefu to widoki i akcje na tym samym grafie, a nie siedem osobnych aplikacji.
-- **Stack:** Next.js + TypeScript + Tailwind + shadcn/ui (Vercel) · Supabase (Postgres + pgvector + Auth + Realtime + Storage) · Claude Haiku 4.5 i Sonnet 5.5 przez Vercel AI SDK · Python (Playwright, PyMuPDF) do jednorazowego pipeline'u danych · API BDL GUS do profili gmin.
+- **Stack:** Next.js + TypeScript + Tailwind + shadcn/ui (Vercel) · Supabase (Postgres + Auth + Realtime + Storage) · cały AI na Groq (`openai/gpt-oss-120b`) za wymiennym interfejsem `lib/llm.ts` · Python (Playwright, PyMuPDF) do jednorazowego pipeline'u danych · API BDL GUS do profili gmin.
 - **Co jest nowe:**
   1. mapa luk innowacyjnych (potrzeby bez rozwiązań → kierunki naborów),
   2. dopasowanie z kontekstem terytorialnym gminy,
@@ -85,10 +85,10 @@ flowchart LR
   subgraph A["Next.js na Vercel (region fra1)"]
     API[Route handlers api]
     PII[Anonimizacja PII]
-    LLM[Warstwa LLM<br/>Haiku 4.5 / Sonnet 5.5]
+    LLM[Warstwa LLM<br/>Groq: GPT-OSS 120B]
   end
   subgraph D["Supabase (Irlandia)"]
-    PG[(Postgres + pgvector<br/>indeks kart)]
+    PG[(Postgres<br/>indeks kart po lematach)]
     RT[Realtime<br/>wątki, powiadomienia]
     AU[Auth + RLS]
     ST[Storage<br/>PDF, wnioski]
@@ -97,7 +97,7 @@ flowchart LR
     SC[Playwright: Biblioteka]
     PD[PyMuPDF: Mapa Wyzwań, raporty, canvas]
     BD[API BDL: profile gmin]
-    EN[Wzbogacanie LLM + embeddingi]
+    EN[Wzbogacanie LLM: lematy, tagi, ETR]
   end
   K --> API
   API --> PII --> LLM
@@ -140,13 +140,11 @@ flowchart TD
 | Mapy | react-leaflet + GeoJSON gmin (PRG GUGiK uproszczony mapshaperem) | Lekkie, bez kluczy API |
 | Wykresy | Recharts | Szybkie, wystarczające |
 | Głos | Web Speech API: rozpoznawanie `pl-PL` (Chrome/Edge) + `speechSynthesis` do czytania na głos | Zero kosztu. W innych przeglądarkach fallback do pola tekstowego. |
-| AI SDK | **Vercel AI SDK** (`ai`, `@ai-sdk/anthropic`) | Streaming, `generateObject` ze schematem zod, `useChat` dla asystenta |
-| LLM (szybki) | **Claude Haiku 4.5** (`claude-haiku-4-5-20251001`) | Intake, triage, streszczenia w tekście łatwym do czytania, Q&A |
-| LLM (jakość) | **Claude Sonnet 5.5** (`claude-sonnet-5-5`) | Rerank z uzasadnieniem, asystent Pracowni, karta wdrożeniowa, wnioski |
-| Embeddingi | `text-embedding-3-small` (OpenAI) albo Voyage, czyli to, do czego macie klucz | Ten sam model dla korpusu i zapytań. Wymiar 1536 w schemacie poniżej dopasujcie do modelu. |
-| Baza | **Supabase**: Postgres + pgvector, Auth, RLS, Realtime, Storage, Database Webhooks | Jedna usługa zamiast pięciu. Open source, więc da się postawić on-prem w produkcji. |
+| LLM | **Groq** (`openai/gpt-oss-120b`, model rozumujący, `reasoning_effort: low`), wywołania `fetch` w `lib/groq.ts` i `data/common.py` | Tryb JSON + walidacja zod (`groqObject`). `gpt-oss-20b` odrzucony: w testach psuł polską gramatykę i lematy. Wszystkie zadania: intake, rerank, lematy, ETR, Q&A, asystent Pracowni, karta wdrożeniowa, wnioski. Modele `fast` / `quality` w `lib/llm.ts`. **Infrastruktura w USA — tylko demo na danych syntetycznych** (sekcja 10). |
+| Embeddingi | **Brak.** Groq nie ma modeli embeddingów, a cały AI idzie przez Groq (jeden klucz) | Wyszukiwanie po lematach z LLM (migracja `0005_keyword_search.sql`), znaczenie ocenia rerank. Kolumny `embedding` zostają puste na wypadek dostawcy embeddingów. |
+| Baza | **Supabase**: Postgres (pełnotekstowe `simple`), Auth, RLS, Realtime, Storage, Database Webhooks | Jedna usługa zamiast pięciu. Open source, więc da się postawić on-prem w produkcji. |
 | E-mail | Resend | Powiadomienia i kody statusu |
-| Pipeline danych | Python (uv): Playwright, PyMuPDF, httpx, anthropic SDK, numpy, scikit-learn, psycopg | Twoja mocna strona; uruchamiany raz, offline |
+| Pipeline danych | Python (uv): Playwright, PyMuPDF, httpx (Groq), numpy, scikit-learn, psycopg | Twoja mocna strona; uruchamiany raz, offline |
 | Jakość | @axe-core/playwright, Lighthouse, eslint-plugin-jsx-a11y, opcjonalnie Sentry | Liczby do slajdu o dostępności |
 | Hosting | Vercel (`fra1`) + Supabase (`eu-west-1`) | Dane w UE |
 
@@ -178,11 +176,11 @@ spolecznik/
 
 1. **Wejście.** Użytkownik pisze albo mówi swoimi słowami („Opowiedz problem”).
 2. **Anonimizacja.** Regexy usuwają PESEL, telefony, e-maile i adresy, zanim tekst trafi do LLM.
-3. **Intake (Haiku).** Tekst zamienia się w *kartę potrzeby* (schemat w 5.2).
+3. **Intake (LLM).** Tekst zamienia się w *kartę potrzeby* (schemat w 5.2).
    - Jeśli `clarity < 0.6`, system zadaje maksymalnie 1–2 pytania doprecyzowujące, zamiast zwracać słabe wyniki.
-4. **Wyszukiwanie hybrydowe (SQL).** Jednocześnie po embeddingu streszczenia i po słowach kluczowych w formie podstawowej, połączone przez RRF.
+4. **Wyszukiwanie po lematach (SQL, `keyword_search`).** Po słowach kluczowych w formie podstawowej; wynik to część słów zapytania, które pasują do karty. Lista dla reranku jest dopełniana innowacjami z tych samych obszarów, bo bez embeddingów słowa mogą się minąć („samotność” vs „izolacja”).
    - Osobne zapytanie dla każdego typu karty: innowacje (top 15), podobne potrzeby, eksperci, aktywne nabory.
-5. **Rerank z uzasadnieniem (Sonnet).** Model dostaje kartę potrzeby, profil gminy z BDL i 15 kandydatów. Zwraca 3–5 z polami: `fit` (0–100), „dlaczego pasuje” i „co dostosować u Ciebie”.
+5. **Rerank z uzasadnieniem (LLM).** Model dostaje kartę potrzeby, profil gminy z BDL i 15 kandydatów. Zwraca 3–5 z polami: `fit` (0–100), „dlaczego pasuje” i „co dostosować u Ciebie”.
 6. **Wynik.** Karty rozwiązań z przyciskami:
    - **[Jak to wdrożyć u nas?]** → Wdrożenie
    - **[Chcę przetestować]** → Próba
@@ -217,7 +215,9 @@ export const NeedCard = z.object({
 });
 ```
 
-### 5.3 Jeden indeks dla wszystkich kart + wyszukiwanie hybrydowe
+### 5.3 Jeden indeks dla wszystkich kart + wyszukiwanie po lematach
+
+> **Stan obecny:** bez embeddingów (Groq ich nie ma). Działa `keyword_search` i `similar_needs_kw` z migracji `0005_keyword_search.sql`. Poniższy `hybrid_search` z embeddingami to pierwotny projekt — zostaje w bazie na wypadek dostawcy embeddingów.
 
 **Trik na polską fleksję:** słowa kluczowe w formie podstawowej generuje LLM w obu miejscach:
 - przy indeksowaniu (offline, dla każdej karty),
@@ -278,11 +278,11 @@ $$;
 
 Wywołanie z Next.js: `supabase.rpc('hybrid_search', { p_kind: 'innowacja', p_keywords, p_embedding, p_count: 15 })`.
 
-**Aktualizacja indeksu:** każdy zapis karty w domenie (nowa innowacja, potrzeba, pomysł) wywołuje `/api/index-card`. Ten endpoint liczy lematy (Haiku), tagi obu osi i embedding, a potem robi upsert do `search_index`.
+**Aktualizacja indeksu:** każdy zapis karty w domenie (nowa innowacja, potrzeba, pomysł) wywołuje `/api/index-card`. Ten endpoint liczy lematy i tagi obu osi (LLM), a potem robi upsert do `search_index`.
 
 To spełnia wymóg „szybkiej aktualizacji danych”: admin edytuje innowację w Panelu i po kilku sekundach jest ona wyszukiwalna.
 
-### 5.4 Zasady rerankera (prompt Sonneta)
+### 5.4 Zasady rerankera (prompt)
 
 - Wybiera **wyłącznie** spośród podanych kandydatów (ID w tagach). Serwer odrzuca każde ID spoza listy, więc nie ma zmyślonych innowacji.
 - Zwraca maksymalnie 5 pozycji. Pusta lista jest poprawną odpowiedzią i oznacza lukę.
@@ -306,11 +306,9 @@ Robimy to w `data/eval.py`.
 - MRR@5,
 - trafność wykrywania luk.
 
-**Cztery konfiguracje do porównania:**
+**Konfiguracje do porównania** (bez embeddingów):
 - sam BM25 na lematach,
-- same embeddingi,
-- hybryda,
-- hybryda + rerank.
+- BM25 + rerank (Groq).
 
 Wynik idzie na slajd jako tabela. Kryterium „trafność dopasowania” zostaje dzięki temu poparte liczbą, a nie tylko demem.
 
@@ -324,7 +322,7 @@ Punktacja: 10% za moduł obligatoryjny i +5% za każdy kolejny. Sześć dodatkow
 |---|---|---|---|
 | **Wiedza** (Zasobnik) | **Biblioteka jako historie w 4 krokach:** Problem → Rozwiązanie → Skąd wiemy, że działa → Jak skorzystać (mapuje się 1:1 na sekcje stron ROPS). Filtry „dla kogo” z ikonami, wideo, jeśli jest. **Kondycja Małopolski:** mapa gmin z BDL z podpisami prostym językiem („co czwarta osoba ma 65+ lat”). **Zapytaj Bibliotekę:** Q&A po raportach z odnośnikami do stron PDF. Przy każdej innowacji gotowe streszczenie w tekście łatwym do czytania. | Ten sam korpus co Dopasuj | 3 h |
 | **Panel** (admin) | Skrzynka nowych zgłoszeń z triage AI: obszar, duplikaty (podobieństwo > 0,9), sugerowany ekspert, ostrzeżenie o danych osobowych. CRUD innowacji z automatycznym reindeksem. Włącznik naborów. **Trendy:** potrzeby wg obszaru × powiatu × czasu, klastry z etykietami LLM. **Mapa luk.** Eksport CSV, log zmian. | Widzi wszystkie karty | 3 h |
-| **Pracownia** (Kreator) | **Fiszka** (krótki opis, istota, dla kogo, etap) dostępna zawsze. **Canvas** INNO AGH jako formularz z JSON. **Asystent** (Sonnet): zadaje pytania, podsuwa nieoczywiste kierunki i **sprawdza nowość** tym samym silnikiem („Podobne już istnieje: X. Czym się różnisz?”). **Generator wniosków** widoczny tylko przy aktywnym naborze: szablon naboru (pola i kryteria w JSON) + fiszka + canvas → szkic wniosku z checklistą kryteriów; eksport przez druk do PDF. *Could:* szkic wizualny pomysłu. | Luka → fiszka wstępnie wypełniona; fiszka indeksowana, więc kolejne potrzeby trafiają też na pomysły w toku | 3,5 h |
+| **Pracownia** (Kreator) | **Fiszka** (krótki opis, istota, dla kogo, etap) dostępna zawsze. **Canvas** INNO AGH jako formularz z JSON. **Asystent** (LLM): zadaje pytania, podsuwa nieoczywiste kierunki i **sprawdza nowość** tym samym silnikiem („Podobne już istnieje: X. Czym się różnisz?”). **Generator wniosków** widoczny tylko przy aktywnym naborze: szablon naboru (pola i kryteria w JSON) + fiszka + canvas → szkic wniosku z checklistą kryteriów; eksport przez druk do PDF. *Could:* szkic wizualny pomysłu. | Luka → fiszka wstępnie wypełniona; fiszka indeksowana, więc kolejne potrzeby trafiają też na pomysły w toku | 3,5 h |
 | **Wdrożenie** (Middleman) | JST wybiera innowację i swoją gminę → **karta wdrożeniowa**: cel, odbiorcy w tej gminie (liczby z BDL), forma usługi (np. w ramach Centrum Usług Społecznych), kroki, kadra i zasoby, widełki kosztów oznaczone jako szacunek, partnerzy z bazy, ryzyka, wskaźniki sukcesu. Wyłącznie na podstawie karty innowacji i profilu gminy; założenia są jawnie oznaczone. | Z wyniku Dopasuj; partnerzy z indeksu ekspertów | 2 h |
 | **Próba** (Tester) | „Chcę przetestować” (kto, gdzie, kiedy) → po teście ocena 1–5 (przyciski radiowe, nie gwiazdki) + co działa i co poprawić. Na karcie innowacji widać np. „Przetestowano w 4 gminach, średnio 4,3”. | Feedback trafia do Biblioteki, rankingu i autora | 1,5 h |
 | **Rozmowy** (Komunikacja) | Wątki przypięte do kart (potrzeba, pomysł, innowacja) na Supabase Realtime. „Zapytaj eksperta” z podpowiedzią eksperta z indeksu. **Partnerstwa:** jednym kliknięciem wątek grupowy gmin z podobnym problemem (za zgodą). „Zapytaj ROPS”: AI odpowiada z Zasobnika jako pierwsza linia i przekazuje sprawę człowiekowi. | Każda karta ma swój wątek | 2,5 h |
@@ -370,7 +368,7 @@ sequenceDiagram
 | `tests` | innovation_id, tester_id, teryt, status, rating, feedback, suggestions |
 | `threads`, `messages`, `thread_participants` | entity_kind, entity_id; treść; uczestnicy |
 | `notifications` | user_id albo role, kind, payload, read_at |
-| `doc_chunks` | doc_title, year, url, page, text, embedding (RAG raportów) |
+| `doc_chunks` | doc_title, year, url, page, text, fts (Q&A po raportach: wyszukiwanie po prefiksach słów) |
 | `search_index` | wspólny indeks kart (sekcja 5.3) |
 | `audit_log` | kto, co, kiedy (zmiany w Panelu) |
 
@@ -395,10 +393,10 @@ sequenceDiagram
    - Warto zarejestrować darmowy `X-ClientId`, bo bez niego limity są niższe.
    - BDL ma własne identyfikatory jednostek, inne niż TERYT. Zmapujcie je na kody TERYT raz, przy pobieraniu.
    - Plan B: „Portret gminy” z IOSS w XLS.
-4. **`enrich.py`** (Haiku, równolegle)
+4. **`enrich.py`** (Groq, równolegle)
    - Dla każdej innowacji: tagi obu osi, tematy przekrojowe, 10–20 lematów, streszczenie w tekście łatwym do czytania.
    - Dla raportów: 3–5 „faktów o Małopolsce” na raport, z numerem strony.
-5. **`embed.py`** — embeddingi i upsert do `innovations`, `search_index`, `doc_chunks`.
+5. **`embed.py`** — upsert do `innovations`, `search_index`, `doc_chunks` (nazwa historyczna; embeddingów już nie liczy).
 6. **`seed_synthetic.py`** — dane demo, **wyraźnie oznaczone jako syntetyczne**:
    - ok. 200 potrzeb rozłożonych po gminach zgodnie z profilami BDL (więcej samotności seniorów tam, gdzie gmina się wyludnia, więcej braku żłobków w gminach podkrakowskich);
    - 10 ekspertów;
@@ -431,12 +429,12 @@ sequenceDiagram
 
 - **Demo bez prawdziwych danych osobowych.** Wszystkie potrzeby, osoby i nabory są syntetyczne i oznaczone. Brief wprost tego wymaga.
 - **Anonimizacja przed LLM** (regexy plus instrukcja dla modelu). Do indeksu i statystyk trafia tylko zanonimizowane streszczenie. Surowy tekst widzą wyłącznie autor i admin (RLS).
+- **LLM w demo poza UE.** Groq przetwarza zapytania w USA i nie ma dziś regionu w UE. Dlatego w demo wysyłamy do niego wyłącznie zanonimizowany tekst danych syntetycznych. Przed pierwszymi prawdziwymi danymi mieszkańców LLM przechodzi na endpoint w UE (punkt „Produkcja” niżej) — to zmiana w `lib/llm.ts` i jednej zmiennej środowiskowej.
 - **RLS na każdej tabeli.** Klucz `service_role` używany tylko po stronie serwera.
 - **Ochrona przed prompt injection:** tekst użytkownika jako dane, wyjścia walidowane schematami zod, ID walidowane względem listy kandydatów.
 - **Limit zapytań** na endpointach AI.
 - **Produkcja:**
-  - hosting w UE;
-  - warstwa LLM ukryta za interfejsem `lib/llm.ts`, wymienna na Claude przez regionalne endpointy w UE (Bedrock lub Google Cloud, z dopłatą 10%) albo na model hostowany lokalnie (np. Bielik);
+  - hosting w UE, także LLM: warstwa LLM ukryta za interfejsem `lib/llm.ts` przechodzi z Groq na Claude przez regionalne endpointy w UE (Bedrock lub Google Cloud, z dopłatą 10%) albo na model hostowany lokalnie (np. Bielik);
   - umowa powierzenia danych, ocena skutków dla ochrony danych (DPIA), log audytowy.
 
 ---
@@ -460,7 +458,7 @@ sequenceDiagram
 
 | Osoba | Odpowiada za |
 |---|---|
-| 1. Dane / ML | Pipeline Pythona, lematy i embeddingi, SQL hybrydy, prompty intake i reranku, ewaluacja |
+| 1. Dane / ML | Pipeline Pythona, lematy, SQL wyszukiwania, prompty intake i reranku, ewaluacja |
 | 2. Full-stack | Schemat, RLS, route handlers, Pracownia, Wdrożenie, powiadomienia, Panel |
 | 3. Frontend / dostępność | Ekrany ścieżki głównej, głos, tryb prosty, Wiedza (mapa, historie), audyt axe |
 | 4. Design / pitch | Makiety, treści i mikrokopie, dane syntetyczne (z osobą 1), scenariusz demo, deck, wideo, koszty |
@@ -528,7 +526,11 @@ sequenceDiagram
 - 400 sesji asystenta, karty wdrożeniowej lub generatora wniosków,
 - 2 000 pytań do Zasobnika.
 
-Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tokenów (wejście / wyjście), Claude Sonnet 5.5 to 2 / 10 USD, Batch API daje −50%.
+**Który LLM liczymy:** demo działa na Groq (`openai/gpt-oss-120b`, 0,15 / 0,60 USD za mln tokenów — przy założeniach poniżej to ok. 15–20 USD/mies.). Infrastruktura Groq jest jednak w USA, a produkcja z danymi mieszkańców wymaga LLM w UE (sekcja 10), więc koszt liczymy dla wariantu produkcyjnego: Claude przez regionalny endpoint w UE.
+
+**Limity Groq w demo:** darmowy plan daje dla `gpt-oss-120b` 30 zapytań i 8 tys. tokenów na minutę. Jedno pełne dopasowanie (intake + rerank) na obecnym korpusie z mocka to ok. 4–5 tys. tokenów, czyli 1–2 dopasowania na minutę. Na prezentację z kilkoma osobami naraz potrzebny jest plan Developer (250 tys. tokenów na minutę, płatność za zużycie).
+
+Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tokenów (wejście / wyjście), Claude Sonnet 5.5 to 2 / 10 USD, endpoint regionalny w UE +10%, Batch API daje −50%.
 
 | Pozycja | Wyliczenie | USD / mies. |
 |---|---|---|
@@ -537,12 +539,11 @@ Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tok
 | Asystent / Wdrożenie / wnioski (Sonnet) | 30 tys. we + 5 tys. wy ≈ 0,11 USD × 400 | 44 |
 | Zapytaj Bibliotekę (Haiku) | 6 tys. we + 0,5 tys. wy ≈ 0,0085 USD × 2 000 | 17 |
 | Zadania nocne (Batch API): trendy, wzbogacanie nowych kart | ryczałt | 5 |
-| **Suma LLM** | 132 USD × 1,5 zapasu (polski tekst daje więcej tokenów, ponowienia) | **≈ 200** |
-| Embeddingi | korpus + zapytania | < 1 |
+| **Suma LLM** | 132 USD × 1,5 zapasu (polski tekst daje więcej tokenów, ponowienia) × 1,1 (region UE) | **≈ 220** |
 | Supabase Pro + compute Small + projekt testowy | 25 + 5 + 10 | 40 |
 | Vercel Pro (1 miejsce) | | 20 |
 | E-mail transakcyjny | | ≈ 20 |
-| **Razem** | | **≈ 280–300 USD/mies. (≈ 3,5 tys. USD/rok)** |
+| **Razem** | | **≈ 300–320 USD/mies. (≈ 3,8 tys. USD/rok)** |
 
 **Zasoby ludzkie:**
 - ok. 0,2 etatu programisty: aktualizacje, monitoring, bezpieczeństwo;
@@ -569,7 +570,7 @@ Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tok
 | Kryterium | Waga | Czym punktujemy |
 |---|---|---|
 | Stopień spełnienia | 40% | Wszystkie 7 modułów działa w jednej pętli (10 + 6 × 5). Dopasuj jest dopracowany i zmierzony. |
-| Potencjał wdrożeniowy | 20% | Otwarty stack, hosting w UE, koszt ok. 300 USD/mies., wymienny LLM, API i TERYT, szybka aktualizacja z Panelu |
+| Potencjał wdrożeniowy | 20% | Otwarty stack, hosting w UE, koszt ok. 300–320 USD/mies., wymienny LLM, API i TERYT, szybka aktualizacja z Panelu |
 | Dostępność i intuicyjność | 20% | Głos, tryb prosty, kod statusu bez konta, wynik axe i Lighthouse, test z czytnikiem ekranu |
 | Atrakcyjność i pomysłowość | 10% | Mapa luk, kontekst gminy, matching w obie strony, historie w Bibliotece |
 | Jakość materiałów i MVP | 10% | Tabela trafności, spójny deck według pętli, wideo, README z architekturą |
@@ -583,7 +584,7 @@ Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tok
 | Strona ROPS blokuje scraping | Playwright → eksport od mentorów ROPS → ręczny zapis stron |
 | Wi-Fi lub opóźnienia LLM na scenie | Streaming odpowiedzi, cache odpowiedzi dla ścieżki demo, nagrane wideo zapasowe |
 | Halucynacje | Tylko kandydaci z bazy, walidacja ID, „nie znalazłem” jako poprawny wynik (luka) |
-| Polska fleksja psuje słowa kluczowe | Lematy z LLM po obu stronach + embeddingi |
+| Polska fleksja psuje słowa kluczowe | Lematy z LLM po obu stronach (z potocznymi synonimami), dopełnianie kandydatów po obszarach, rerank LLM |
 | Za szeroki zakres | MoSCoW, freeze o 9:30, „cienkie wycinki” modułów |
 | Dane osobowe w zgłoszeniach | Syntetyka w demo, anonimizacja, RLS |
 
@@ -609,5 +610,6 @@ Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tok
 - [HackYeah 2026 — niezbędnik informacyjny (harmonogram)](https://www.tauronarenakrakow.pl/hackyeah-2026-niezbednik-informacyjny/)
 - [HackYeah — Master Guide (terminy z 2025 r.)](https://hackyeah.pl/pl/your-master-guide-to-the-largest-hackathon-in-europe/)
 - [Cennik Claude API](https://platform.claude.com/docs/en/about-claude/pricing)
+- [Groq — modele, ceny i limity](https://console.groq.com/docs/models)
 - [Cennik Supabase 2026 (zestawienie)](https://www.jetadmin.io/blog/supabase-pricing-2026-guide-to-plans-limits-and-real-world-costs/)
 - [Cennik Vercel 2026 (zestawienie)](https://temps.sh/blog/vercel-pricing-2026-pro-plan-explained)

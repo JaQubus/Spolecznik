@@ -51,3 +51,5 @@ __pycache__/
 /.data/
 /test-results/
 /playwright-report/
+# wynik import_powiaty.py (duży; do bazy idzie out/powiaty.sql albo import bezpośredni)
+data/out/powiaty.json

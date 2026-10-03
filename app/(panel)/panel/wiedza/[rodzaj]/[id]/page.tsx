@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/knowledge/breadcrumbs";
-import { PanelNav } from "@/components/layout/panel-nav";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
@@ -25,7 +24,7 @@ export default async function Page(props: PageProps<"/panel/wiedza/[rodzaj]/[id]
   const { rodzaj, id } = await props.params;
   if (!(rodzaj in KINDS)) notFound();
   const kind = rodzaj as keyof typeof KINDS;
-  const viewer = await requireAdmin(`/panel/wiedza/${kind}/${id}`);
+  await requireAdmin(`/panel/wiedza/${kind}/${id}`);
   const isNew = id === "nowy";
   const saved = !!(await props.searchParams).zapisano;
   const all = { all: true };
@@ -45,7 +44,6 @@ export default async function Page(props: PageProps<"/panel/wiedza/[rodzaj]/[id]
 
   return (
     <section className="space-y-8">
-      <PanelNav current="/panel/wiedza" viewer={viewer} />
       <Breadcrumbs items={[{ href: `/panel/wiedza?rodzaj=${kind}`, label: KINDS[kind].list }, { label: title }]} />
       <h1 className="text-3xl font-bold">{title}</h1>
       {saved && (

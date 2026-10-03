@@ -61,12 +61,115 @@ export const MatchRequest = z.object({
   card: NeedCard,
   text: z.string().min(3).max(10000), // oryginalny opis (+ odpowiedź na dopytanie) — tylko do needs.raw_text
   gmina: z.string().max(100).optional(), // to, co użytkownik wpisał w pole „Gmina”
+  teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi — rozstrzyga np. Bochnię miejską i wiejską
 });
 
 export const FeedbackRequest = z.object({
   matchId: z.uuid(),
   value: z.union([z.literal(1), z.literal(-1), z.literal(0)]), // 0 = cofnięcie oceny
 });
+
+// /api/index-card: lematy i tagi obu osi dla karty w indeksie (README 5.3)
+export const IndexCardRequest = z.object({
+  kind: z.enum(CARD_KINDS),
+  refId: z.uuid(),
+});
+export const CardTags = z.object({
+  lemmas: z.array(z.string()).min(3).max(20), // FORMY PODSTAWOWE, jak keywords w NeedCard
+  areas: z.array(z.enum(MWS_AREAS)).max(3),
+  groups: z.array(z.enum(GROUPS)).max(3),
+});
+export type CardTags = z.infer<typeof CardTags>;
+
+// /api/ask: Zapytaj Bibliotekę (RAG po doc_chunks)
+export const AskRequest = z.object({ question: z.string().min(3).max(1000) });
+export const AskAnswer = z.object({
+  answered: z.boolean(), // false, gdy fragmenty raportów nie zawierają odpowiedzi
+  answer: z.string(),
+  sources: z.array(z.number().int()).max(5), // numery fragmentów z <fragment n="…">
+});
+export type AskResponse = {
+  answered: boolean;
+  answer: string;
+  sources: { docTitle: string; year: number | null; url: string | null; page: number | null }[];
+};
+
+// Pracownia: fiszka pomysłu (ideas.fiszka). Klucze jak w data/out/synthetic.json.
+export const Fiszka = z.object({
+  krotki_opis: z.string().min(1).max(500),
+  problem: z.string().max(3000).default(""),
+  istota: z.string().max(3000).default(""),
+  dla_kogo: z.string().max(1000).default(""),
+  etap: z.string().max(200).default(""),
+});
+export type Fiszka = z.infer<typeof Fiszka>;
+
+/** Kod zgłoszenia z lib/status-code.ts (bez 0, 1, I, O). */
+export const STATUS_CODE = /^SPL-[2-9A-HJ-NP-Z]{4}$/;
+
+// /api/ideas: zgłoszenie pomysłu z Pracowni
+export const IdeaRequest = z.object({
+  fiszka: Fiszka,
+  canvas: z.record(z.string(), z.string().max(3000)).default({}),
+  needCode: z.string().regex(STATUS_CODE).optional(), // pomysł z luki: /pomysl?potrzeba=SPL-…
+});
+export type IdeaResponse = { ideaId: string; statusCode: string };
+
+// /api/tests: Próba — zgłoszenie testu albo ocena po teście (#19)
+export const TestRequest = z
+  .object({
+    innovationId: z.uuid(),
+    gmina: z.string().min(2).max(100),
+    teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
+    status: z.enum(["planowany", "zakonczony"]),
+    testerOrg: z.string().max(200).optional(),
+    plannedFor: z.iso.date().optional(),
+    rating: z.number().int().min(1).max(5).optional(),
+    feedback: z.string().max(2000).optional(), // co działa
+    suggestions: z.string().max(2000).optional(), // co poprawić
+  })
+  .refine((t) => t.status !== "zakonczony" || t.rating != null, { path: ["rating"], message: "Wybierz ocenę od 1 do 5" });
+
+// /api/assistant: asystent Pracowni
+export const AssistantRequest = z.object({
+  messages: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) }))
+    .min(1)
+    .max(30),
+  fiszka: Fiszka.optional(),
+});
+export type AssistantResponse = {
+  reply: string;
+  similar: { kind: "innowacja" | "pomysl"; id: string; title: string; similarity: number; slug: string | null }[];
+};
+
+// /api/middleman: karta wdrożeniowa
+export const MiddlemanRequest = z.object({
+  innovationId: z.uuid(),
+  gmina: z.string().min(1).max(100),
+  teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
+});
+export const ImplementationCard = z.object({
+  goal: z.string(),
+  audience: z.string(), // odbiorcy w tej gminie, z liczbami z profilu BDL
+  serviceForm: z.string(), // np. w ramach Centrum Usług Społecznych
+  steps: z.array(z.string()).min(3).max(10),
+  staffAndResources: z.string(),
+  costEstimate: z.object({ minPln: z.number(), maxPln: z.number(), basis: z.string() }), // zawsze szacunek
+  partners: z.array(z.object({ id: z.string(), role: z.string() })).max(5),
+  risks: z.array(z.string()).max(6),
+  successIndicators: z.array(z.string()).max(6),
+  assumptions: z.array(z.string()), // jawnie oznaczone założenia
+});
+export type ImplementationCard = z.infer<typeof ImplementationCard>;
+
+// /api/apply: szkic wniosku do aktywnego naboru
+export const ApplyRequest = z.object({ ideaId: z.uuid(), callId: z.uuid() });
+export const ApplicationDraft = z.object({
+  sections: z.array(z.object({ field: z.string(), label: z.string(), content: z.string() })).min(1),
+  checklist: z.array(z.object({ criterion: z.string(), met: z.boolean(), note: z.string() })),
+});
+export type ApplicationDraft = z.infer<typeof ApplicationDraft>;
 
 // Odpowiedź /api/match — wspólny typ dla serwera i klienta.
 export type InnovationMatch = RerankItem & {
@@ -93,8 +196,10 @@ export const GAP_THRESHOLD = 50;
 /** Próg, poniżej którego dopytujemy zamiast szukać. */
 export const CLARITY_THRESHOLD = 0.6;
 /**
- * Progi podobieństwa cosinusowego (text-embedding-3-small). Do dostrojenia na eval.py:
- * eksperci i nabory nie przechodzą przez rerank, więc odcinamy je samym podobieństwem.
+ * Progi podobieństwa = jaka część słów kluczowych zapytania pasuje do karty (keyword_search, 0–1).
+ * Eksperci i nabory nie przechodzą przez rerank, więc odcinamy je samym progiem. Do dostrojenia na eval.py.
  */
-export const RELATED_MIN_SIMILARITY = 0.35;
-export const SIMILAR_NEED_MIN_SIMILARITY = 0.55;
+export const RELATED_MIN_SIMILARITY = 0.25;
+export const SIMILAR_NEED_MIN_SIMILARITY = 0.5;
+/** Od tego podobieństwa asystent Pracowni mówi „podobne już istnieje”. */
+export const NOVELTY_MIN_SIMILARITY = 0.5;

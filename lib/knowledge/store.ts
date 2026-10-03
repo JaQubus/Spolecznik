@@ -56,10 +56,9 @@ export function queries(store: KnowledgeStore) {
       return filterMaterials(visible(await store.materials(), o), f).sort((a, b) => a.sort - b.sort);
     },
     async innovations(f?: InnovationFilter, o?: ReadOptions) {
-      // Najpierw wybrane do upowszechniania i z filmem — najlepiej opisane; dalej alfabetycznie.
+      // Najpierw wybrane do upowszechniania (najlepiej opisane); dalej alfabetycznie. Film nie wpływa na kolejność.
       return filterInnovations(visible(await store.innovations(), o), f).sort((a, b) =>
         Number(b.dissemination) - Number(a.dissemination) ||
-        Number(!!b.video) - Number(!!a.video) ||
         a.title.localeCompare(b.title, "pl"));
     },
     async innovation(slugOrId: string, o?: ReadOptions) {

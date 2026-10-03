@@ -7,7 +7,7 @@ import {
 import { fileStore } from "./file-store";
 import { StoreError, type Entity, type EntityKind, type KnowledgeStore } from "./store";
 
-const TABLES = { obszar: "areas", fakt: "facts", material: "materials", innowacja: "innovations" } as const;
+const TABLES = { obszar: "areas", fakt: "facts", material: "knowledge_materials", innowacja: "innovations" } as const;
 
 async function select<T>(table: string, map: (r: Record<string, unknown>) => T, filter?: [string, string]): Promise<T[]> {
   let q = createAdminClient().from(table).select("*");
@@ -26,7 +26,7 @@ export const supabaseStore: KnowledgeStore = {
   mode: "baza",
   areas: () => select("areas", areaFromRow),
   facts: () => select("facts", factFromRow),
-  materials: () => select("materials", materialFromRow),
+  materials: () => select(TABLES.material, materialFromRow),
   innovations: () => select("innovations", innovationFromRow, ["corpus", "biblioteka"]),
   // Persony z Mapy Wyzwań to treść statyczna — zawsze z plików.
   personas: () => fileStore.personas(),

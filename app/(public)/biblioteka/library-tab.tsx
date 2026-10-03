@@ -12,7 +12,7 @@ import { plural } from "@/lib/pl";
 import { GROUPS, MWS_AREAS } from "@/lib/schemas";
 import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 
-export type LibraryParams = { area?: AreaKey; group?: GroupKey; types: InnovationType[]; video: boolean; limit: number };
+export type LibraryParams = { area?: AreaKey; group?: GroupKey; types: InnovationType[]; limit: number };
 
 const PAGE = 24;
 
@@ -25,7 +25,6 @@ export function parseLibraryParams(sp: Record<string, string | string[] | undefi
     area: (MWS_AREAS as readonly string[]).includes(area) ? (area as AreaKey) : undefined,
     group: (GROUPS as readonly string[]).includes(group) ? (group as GroupKey) : undefined,
     types: many("typ").filter((t): t is InnovationType => (INNOVATION_TYPES as readonly string[]).includes(t)),
-    video: one("film") === "1",
     limit: Math.min(200, Math.max(PAGE, Number(one("ile")) || PAGE)),
   };
 }
@@ -35,14 +34,13 @@ function moreHref(p: LibraryParams): string {
   if (p.area) q.set("obszar", p.area);
   if (p.group) q.set("dla", p.group);
   p.types.forEach((t) => q.append("typ", t));
-  if (p.video) q.set("film", "1");
   q.set("ile", String(p.limit + PAGE));
   return `/biblioteka?${q}#lista-innowacji`;
 }
 
 /** Biblioteka innowacji: filtry jako zwykłe pola formularza, licznik wyników w role="status". */
 export async function LibraryTab({ params: p }: { params: LibraryParams }) {
-  const items = await knowledge.innovations({ area: p.area, group: p.group, types: p.types, hasVideo: p.video });
+  const items = await knowledge.innovations({ area: p.area, group: p.group, types: p.types });
   const shown = items.slice(0, p.limit);
   const n = items.length;
 
@@ -79,7 +77,6 @@ export async function LibraryTab({ params: p }: { params: LibraryParams }) {
             ))}
           </div>
         </fieldset>
-        <CheckboxField name="film" value="1" label="Tylko z filmem" defaultChecked={p.video} />
         <div className="flex flex-wrap items-center gap-4">
           <Button type="submit" variant="outline">Pokaż wyniki</Button>
           <Link href="/biblioteka?tab=library#dzialy" scroll={false} className="inline-flex min-h-12 items-center underline decoration-1 underline-offset-4 hover:decoration-2">

@@ -350,7 +350,7 @@ def sql(areas, facts, materials, innovations) -> str:
             "source_publisher": f["source_publisher"], "source_url": f["source_url"], "source_year": f["source_year"],
             "source_page": f["source_page"], "quote": f["quote"], "is_example": f["is_example"], "sort": f["sort"], "published": True}))
     for m in materials:
-        lines.append(upsert("materials", "id", {k: m.get(k) for k in (
+        lines.append(upsert("knowledge_materials", "id", {k: m.get(k) for k in (
             "id", "kind", "title", "description", "url", "format", "size_bytes", "language", "areas", "year", "sort", "published")}))
     for i in innovations:
         lines.append(upsert("innovations", "slug", {

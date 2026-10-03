@@ -1,12 +1,13 @@
+import { ChevronRightIcon, MapIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GROUP_ICONS } from "@/components/knowledge/icons";
-import { RegionMap } from "@/components/knowledge/region-map";
 import { AreaTiles } from "@/components/knowledge/tiles";
 import { knowledge } from "@/lib/knowledge";
 import { searchKnowledge } from "@/lib/knowledge/search";
 import { GROUPS } from "@/lib/schemas";
 import { GROUP_LABELS } from "@/lib/taxonomy";
+import { AskLibrary } from "./ask-library";
 import { ChallengesTab } from "./challenges-tab";
 import { LibraryTab, parseLibraryParams } from "./library-tab";
 import { MaterialsTab, parseMaterialParams } from "./materials-tab";
@@ -49,11 +50,20 @@ export default async function Page(props: PageProps<"/biblioteka">) {
         <AreaTiles areas={areas} />
       </section>
 
-      <RegionMap
-        initialLayer={first(sp.mapa) === "powiaty" ? "powiaty" : "gminy"}
-        initialIndicator={first(sp.wskaznik) || undefined}
-        initialUnit={first(sp.jednostka) || undefined}
-      />
+      {/* Mapa jest na osobnej stronie, tak jak w main (Kondycja Małopolski). */}
+      <section aria-labelledby="kondycja" className="space-y-3">
+        <h2 id="kondycja" className="text-3xl font-bold">Kondycja Małopolski</h2>
+        <Link href="/biblioteka/kondycja" className="group flex max-w-2xl gap-4 rounded-[16px] py-2">
+          <MapIcon aria-hidden className="size-10 shrink-0" />
+          <span className="space-y-1">
+            <span className="flex items-center gap-1 text-2xl font-bold underline decoration-1 underline-offset-4 group-hover:decoration-2">
+              Mapa powiatów
+              <ChevronRightIcon aria-hidden className="size-6 shrink-0" />
+            </span>
+            <span className="block text-lg">Gdzie jest najwięcej seniorów i gdzie najczęściej potrzebna jest pomoc.</span>
+          </span>
+        </Link>
+      </section>
 
       <section aria-labelledby="dla-kogo" className="space-y-6">
         <h2 id="dla-kogo" className="text-3xl font-bold">Szukam rozwiązania dla…</h2>
@@ -81,6 +91,12 @@ export default async function Page(props: PageProps<"/biblioteka">) {
         {tab === "materials" && <MaterialsTab params={parseMaterialParams(sp)} />}
         {tab === "challenges" && <ChallengesTab />}
       </div>
+
+      <section id="zapytaj" aria-labelledby="zapytaj-tytul" className="scroll-mt-4 space-y-4">
+        <h2 id="zapytaj-tytul" className="text-3xl font-bold">Zapytaj Bibliotekę</h2>
+        <p className="max-w-2xl text-lg">Zadaj pytanie o sytuację w Małopolsce albo o innowacje społeczne.</p>
+        <AskLibrary />
+      </section>
     </div>
   );
 }

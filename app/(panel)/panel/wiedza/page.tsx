@@ -2,7 +2,6 @@ import { ArrowPathIcon, PlusIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cn } from "cn";
-import { PanelNav } from "@/components/layout/panel-nav";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
@@ -35,7 +34,7 @@ const editLink = (kind: Tab, id: string, title: string) => (
 );
 
 export default async function Page(props: PageProps<"/panel/wiedza">) {
-  const viewer = await requireAdmin("/panel/wiedza");
+  await requireAdmin("/panel/wiedza");
   const sp = await props.searchParams;
   const tab: Tab = TABS.find((t) => t.key === first(sp.rodzaj))?.key ?? "innowacja";
   const current = TABS.find((t) => t.key === tab)!;
@@ -49,7 +48,6 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
 
   return (
     <section className="space-y-10">
-      <PanelNav current="/panel/wiedza" viewer={viewer} />
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Zarządzaj wiedzą</h1>
         <p className="max-w-[44rem] text-lg">
