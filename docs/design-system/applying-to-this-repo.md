@@ -104,7 +104,7 @@ Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(-
 
 ## 4. App code
 
-- `app/(public)/opisz/match-results.tsx` builds results from `Card`. Rebuild it as the **ResultList** pattern: an `<ol>` with rows split by `border-b border-border py-8`, no Card. Per row, "Jak to wdrożyć u nas?" is `variant="outline"` and "Chcę przetestować" is `variant="link"`, so ten results don't produce ten green buttons.
+- Done: `app/(public)/opisz/match-results.tsx` no longer uses `Card`; it is the **ResultList** pattern: an `<ol>` with rows split by `border-b border-border py-8`, no Card. Per row, "Jak to wdrożyć u nas?" is `variant="outline"` and "Chcę przetestować" is `variant="link"`, so ten results don't produce ten green buttons.
 - The amber notice (`bg-amber-50 border-amber-500 text-amber-950`) and `border-dashed` boxes in `match-results.tsx` / `describe-flow.tsx` → **Alert** (info: `bg-secondary rounded-[16px] p-5`, an icon, no border). There's no yellow in the system.
 - `components/a11y/a11y-toolbar.tsx`: buttons → `rounded-full min-h-12 px-3 text-base border-0 hover:bg-muted aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:font-bold`, plus a Lucide icon each (`Type`, `Contrast`, `AlignLeft`); put the group in a `bg-secondary` strip above the header row. Add "Czytaj na głos" (`Volume2`, `speechSynthesis`) when it's built.
 - `components/layout/site-header.tsx`: links → `rounded-full px-4 min-h-12 inline-flex items-center hover:bg-secondary no-underline`, current page `aria-current="page"` + `font-bold underline underline-offset-8`; wordmark `hubmi<span className="font-normal text-muted-foreground">.pl</span>`. Five nav items don't fit under 1024px: fold them behind a "Menu" button there. Under 768px the toolbar folds behind a "Dostępność" button and must open below the header row (render it after the row, or `flex-col` + `order-2` / `md:order-none`), so the pressed button doesn't jump.
@@ -112,6 +112,23 @@ Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(-
 - `text-sm` appears in a few places; the floor is `text-base` (16px).
 - `text-muted-foreground` is safe on every surface (5.3:1+).
 
-## 5. Check
+## 5. Where the components live
+
+| Spec | Code |
+|---|---|
+| Header | `components/layout/site-header.tsx` (client: `usePathname` for `aria-current`, the two disclosure buttons), toggles in `components/a11y/a11y-toolbar.tsx` |
+| SearchBar | `app/(public)/search-bar.tsx`; GETs `/opisz?opis=…&gmina=…`, which starts the search at once and clears the URL |
+| TextField | `Label` + `FieldHint` + `FieldError` (`components/ui/field.tsx`) + `Input` / `Textarea`; react-hook-form's `FormMessage` renders `FieldError` |
+| Alert | `components/ui/alert.tsx` (`tone`: info, success, error) |
+| ResultList | `ResultRow` in `app/(public)/opisz/match-results.tsx` |
+| VoiceInput | `app/(public)/opisz/voice-input.tsx` |
+| Chip | static: `Badge`; filter: `FilterChip` (`components/ui/chip.tsx`) |
+| Choice | `RadioGroup` + `RadioGroupOption` (`components/ui/radio-group.tsx`) |
+| StatusTimeline | `components/ui/status-timeline.tsx` (ready for `/status/[kod]`) |
+| StoryTile | `StoryTiles` + `StoryTile` (`components/ui/story-tile.tsx`, ready for `/biblioteka`) |
+
+Tailwind extras in `globals.css`: `simple:` variant (applies under `html.a11y-simple`, e.g. `simple:hidden` on secondary metadata), `full-bleed` utility (cream band edge to edge inside `main` without horizontal scroll), colours `border-strong`, `brand-soft`, `danger-soft`.
+
+## 6. Check
 
 `pnpm dlx @axe-core/cli` or Playwright + `@axe-core/playwright` on `/`, `/opisz`, `/biblioteka`, `/status/HUB-XXXX`, `/panel`, with `.dark` and `.a11y-contrast` toggled.

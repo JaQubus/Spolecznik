@@ -3,9 +3,9 @@
 import { ThumbsDownIcon, ThumbsUpIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { formatDate, formatNumber, plural } from "@/lib/pl";
 import type { InnovationMatch, MatchResponse, NeedCard } from "@/lib/schemas";
 import { AREA_LABELS } from "@/lib/taxonomy";
@@ -16,69 +16,69 @@ function fitLabel(fit: number): string {
   return "Może pasować";
 }
 
+const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
+
 export function MatchResults({ card, result, onReset }: { card: NeedCard; result: MatchResponse; onReset: () => void }) {
   const heading = useRef<HTMLHeadingElement>(null);
-  // Po pojawieniu się wyników przenosimy fokus na nagłówek — czytnik ekranu od razu je odczyta.
+  // Po pojawieniu się wyników przenosimy fokus na nagłówek — czytnik ekranu od razu odczyta ich liczbę.
   useEffect(() => heading.current?.focus(), []);
 
   const { need, matches, isGap, similarNeeds, experts, calls } = result;
   const n = matches.length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <div className="space-y-3">
         <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold outline-none">
           {isGap ? "Nie znaleźliśmy jeszcze gotowego rozwiązania" : `Znaleźliśmy ${n} ${plural(n, "rozwiązanie", "rozwiązania", "rozwiązań")}`}
         </h2>
-        <p className="text-lg"><strong>Zrozumieliśmy tak:</strong> {card.summary}</p>
-        <ul className="flex flex-wrap gap-2" aria-label="Obszary">
-          {card.areas.map((a) => <li key={a}><Badge variant="secondary">{AREA_LABELS[a]}</Badge></li>)}
+        <p className="max-w-[68ch] text-lg"><strong>Zrozumieliśmy tak:</strong> {card.summary}</p>
+        <ul className="flex flex-wrap gap-2 simple:hidden" aria-label="Obszary">
+          {card.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
         </ul>
       </div>
 
-      <StatusCodeBox code={need.statusCode} />
+      <StatusCode code={need.statusCode} />
 
       {isGap ? (
-        <Card className="border-2 border-primary">
-          <CardHeader><h3 className="text-xl font-semibold">To ważna informacja</h3></CardHeader>
-          <CardContent className="space-y-3 text-lg">
+        // Luka: komunikat + jedyny zielony przycisk na ekranie (ResultList.md).
+        <div className="space-y-4">
+          <Alert title="To ważna informacja">
             <p>
               W bibliotece nie ma jeszcze rozwiązania, które dobrze pasuje do tego problemu.
               Zapisaliśmy go na mapie potrzeb Małopolski — dzięki temu ROPS wie, gdzie szukać nowych pomysłów.
             </p>
             <p>Masz pomysł, jak to rozwiązać? Pomożemy go opisać.</p>
-          </CardContent>
-          <CardFooter>
-            <Button asChild size="lg"><Link href={`/pomysl?potrzeba=${need.statusCode}`}>Zgłoś pomysł</Link></Button>
-          </CardFooter>
-        </Card>
+          </Alert>
+          <Button asChild className="w-full sm:w-auto"><Link href={`/pomysl?potrzeba=${need.statusCode}`}>Zgłoś pomysł</Link></Button>
+        </div>
       ) : (
-        <ol className="space-y-4">
-          {matches.map((m) => <li key={m.matchId}><MatchCard match={m} statusCode={need.statusCode} /></li>)}
+        <ol className="max-w-3xl">
+          {matches.map((m) => <ResultRow key={m.matchId} match={m} statusCode={need.statusCode} />)}
         </ol>
       )}
 
       {similarNeeds.count > 0 && (
-        <section aria-labelledby="podobne" className="rounded-lg border bg-muted/40 p-5">
-          <h2 id="podobne" className="flex items-center gap-2 text-xl font-semibold">
-            <UsersIcon aria-hidden className="size-5" />
+        <section aria-labelledby="podobne" className="max-w-3xl space-y-3">
+          <h2 id="podobne" className="flex items-center gap-2 text-xl font-bold">
+            <UsersIcon aria-hidden className="size-6 shrink-0" />
             {similarNeeds.count} {plural(similarNeeds.count, "inna gmina zgłosiła", "inne gminy zgłosiły", "innych gmin zgłosiło")} podobny problem
           </h2>
-          <p className="mt-2">{similarNeeds.gminy.slice(0, 6).join(", ")}{similarNeeds.gminy.length > 6 ? " i inne" : ""}.</p>
-          <p className="mt-1 text-muted-foreground">Razem łatwiej znaleźć rozwiązanie i pieniądze na nie.</p>
-          <Button asChild variant="outline" className="mt-3">
+          <p>{similarNeeds.gminy.slice(0, 6).join(", ")}{similarNeeds.gminy.length > 6 ? " i inne" : ""}.</p>
+          <p className="text-muted-foreground">Razem łatwiej znaleźć rozwiązanie i pieniądze na nie.</p>
+          <Button asChild variant="outline">
             <Link href={`/zapytaj?potrzeba=${need.statusCode}&partnerstwo=1`}>Połącz się z tymi gminami</Link>
           </Button>
         </section>
       )}
 
       {calls.length > 0 && (
-        <section aria-labelledby="nabory" className="space-y-3">
-          <h2 id="nabory" className="text-xl font-semibold">Otwarte nabory, które mogą pasować</h2>
-          <ul className="space-y-2">
+        <section aria-labelledby="nabory" className="max-w-3xl space-y-3">
+          <h2 id="nabory" className="text-xl font-bold">Otwarte nabory, które mogą pasować</h2>
+          <ul className="divide-y border-y">
             {calls.map((c) => (
-              <li key={c.id} className="rounded-lg border p-4">
-                <p className="font-medium">{c.title}</p>
+              <li key={c.id} className="py-4">
+                <p className="font-bold">{c.title}</p>
                 {c.closesAt && <p className="text-muted-foreground">Wnioski do {formatDate(c.closesAt)}</p>}
               </li>
             ))}
@@ -87,16 +87,16 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
       )}
 
       {experts.length > 0 && (
-        <section aria-labelledby="eksperci" className="space-y-3">
-          <h2 id="eksperci" className="text-xl font-semibold">Eksperci, którzy mogą pomóc</h2>
-          <ul className="space-y-2">
+        <section aria-labelledby="eksperci" className="max-w-3xl space-y-3">
+          <h2 id="eksperci" className="text-xl font-bold">Eksperci, którzy mogą pomóc</h2>
+          <ul className="divide-y border-y">
             {experts.map((e) => (
-              <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
-                <div>
-                  <p className="font-medium">{e.name}</p>
+              <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+                <div className="min-w-0 flex-1 basis-64">
+                  <p className="font-bold">{e.name}</p>
                   <p className="line-clamp-2 text-muted-foreground">{e.description}</p>
                 </div>
-                <Button asChild variant="outline">
+                <Button asChild variant="outline" size="sm">
                   <Link href={`/zapytaj?ekspert=${e.id}&potrzeba=${need.statusCode}`}>Zapytaj eksperta</Link>
                 </Button>
               </li>
@@ -105,56 +105,60 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
         </section>
       )}
 
-      <Button variant="outline" size="lg" onClick={onReset}>Opisz inny problem</Button>
+      <Button variant="outline" onClick={onReset}>Opisz inny problem</Button>
     </div>
   );
 }
 
-function StatusCodeBox({ code }: { code: string }) {
+/** Kod zgłoszenia w stylu „kod do przepisania” (Atkinson Mono) na kremowym tle, bez ramki. */
+function StatusCode({ code }: { code: string }) {
   return (
-    <div className="rounded-lg border-2 border-dashed p-4">
+    <div className="max-w-[44rem] space-y-1 rounded-[16px] bg-secondary px-5 py-4">
       <p className="text-lg">
         Twój kod zgłoszenia: <strong className="font-mono text-2xl tracking-wider whitespace-nowrap">{code}</strong>
       </p>
-      <p className="text-muted-foreground">
+      <p>
         Zapisz go. Po tym kodzie sprawdzisz, co dzieje się z Twoim zgłoszeniem — bez zakładania konta.{" "}
-        <Link href={`/status/${code}`} className="underline underline-offset-4">Sprawdź status</Link>
+        <Link href={`/status/${code}`} className={linkClass}>Sprawdź status</Link>
       </p>
     </div>
   );
 }
 
-function MatchCard({ match: m, statusCode }: { match: InnovationMatch; statusCode: string }) {
-  const titleId = `m-${m.matchId}`;
+/** Wiersz ResultList: tytuł, dopasowanie słowami, uzasadnienie w <dl>, dwie akcje drugorzędne. */
+function ResultRow({ match: m, statusCode }: { match: InnovationMatch; statusCode: string }) {
   return (
-    <Card aria-labelledby={titleId}>
-      <CardHeader className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge>{fitLabel(m.fit)} · {m.fit}/100</Badge>
-          {m.category && <Badge variant="outline">{m.category}</Badge>}
-        </div>
-        <h3 id={titleId} className="text-xl leading-snug font-semibold">{m.title}</h3>
-      </CardHeader>
-      <CardContent className="space-y-2 text-base">
-        {m.etrSummary && <p>{m.etrSummary}</p>}
-        <p><strong>Dlaczego pasuje:</strong> {m.why}</p>
-        <p><strong>Co dostosować u Ciebie:</strong> {m.adapt}</p>
-        {m.testsCount > 0 && (
-          <p className="text-muted-foreground">
-            Przetestowano {m.testsCount} {plural(m.testsCount, "raz", "razy", "razy")}
-            {m.avgRating != null && `, średnia ocena ${formatNumber(m.avgRating)} na 5`}.
-          </p>
-        )}
-      </CardContent>
-      <CardFooter className="flex flex-col items-start gap-4">
-        <div className="flex flex-wrap gap-2">
-          <Button asChild><Link href={`/wdrozenie?innowacja=${m.id}&potrzeba=${statusCode}`}>Jak to wdrożyć u nas?</Link></Button>
-          <Button asChild variant="outline"><Link href={`/przetestuj?innowacja=${m.id}`}>Chcę przetestować</Link></Button>
-          <Button asChild variant="outline"><Link href={`/zapytaj?innowacja=${m.id}&potrzeba=${statusCode}`}>Zapytaj eksperta</Link></Button>
-        </div>
-        <FeedbackButtons matchId={m.matchId} />
-      </CardFooter>
-    </Card>
+    <li className="grid gap-3 border-b py-8 first:pt-0">
+      <h3 className="text-xl font-bold">{m.title}</h3>
+      <div className="flex flex-wrap items-center gap-3 text-base text-muted-foreground">
+        {/* Pasek jest ozdobą; liczba jest zawsze napisana słowami. */}
+        <span aria-hidden className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
+          <span className="block h-full rounded-full bg-foreground" style={{ width: `${m.fit}%` }} />
+        </span>
+        <span><strong className="text-foreground">{fitLabel(m.fit)}</strong> · dopasowanie {m.fit} na 100</span>
+        {m.category && <Badge className="simple:hidden">{m.category}</Badge>}
+      </div>
+      {/* W trybie prostym streszczenie łatwe do czytania jest głównym tekstem. */}
+      {m.etrSummary && <p className="max-w-[68ch] simple:text-xl">{m.etrSummary}</p>}
+      <dl className="grid max-w-[68ch] gap-1">
+        <dt className="mt-2 font-bold">Dlaczego pasuje</dt>
+        <dd>{m.why}</dd>
+        <dt className="mt-2 font-bold">Co dostosować u Ciebie</dt>
+        <dd>{m.adapt}</dd>
+      </dl>
+      {m.testsCount > 0 && (
+        <p className="text-base text-muted-foreground simple:hidden">
+          Przetestowano {m.testsCount} {plural(m.testsCount, "raz", "razy", "razy")}
+          {m.avgRating != null && `, średnia ocena ${formatNumber(m.avgRating)} na 5`}.
+        </p>
+      )}
+      {/* Dwie akcje, drugorzędna i cicha: dziesięć wyników nie może dać dziesięciu zielonych przycisków. */}
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <Button asChild variant="outline"><Link href={`/wdrozenie?innowacja=${m.id}&potrzeba=${statusCode}`}>Jak to wdrożyć u nas?</Link></Button>
+        <Button asChild variant="link"><Link href={`/przetestuj?innowacja=${m.id}`}>Chcę przetestować</Link></Button>
+      </div>
+      <FeedbackButtons matchId={m.matchId} />
+    </li>
   );
 }
 
@@ -175,16 +179,18 @@ function FeedbackButtons({ matchId }: { matchId: string }) {
     if (!res?.ok) { setValue(prev); setError(true); }
   }
 
+  // Wciśnięty = wypełnienie kolorem tekstu (jak filtry), nie zieleń.
+  const toggle = "aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:hover:bg-foreground";
   return (
     <div role="group" aria-label="Czy to rozwiązanie jest pomocne?" className="flex flex-wrap items-center gap-2">
-      <span className="text-muted-foreground">Czy to pomocne?</span>
-      <Button type="button" size="sm" variant={value === 1 ? "default" : "ghost"} aria-pressed={value === 1} onClick={() => send(1)}>
+      <span className="text-base text-muted-foreground">Czy to pomocne?</span>
+      <Button type="button" size="sm" variant="outline" aria-pressed={value === 1} onClick={() => send(1)} className={toggle}>
         <ThumbsUpIcon aria-hidden /> Tak
       </Button>
-      <Button type="button" size="sm" variant={value === -1 ? "default" : "ghost"} aria-pressed={value === -1} onClick={() => send(-1)}>
+      <Button type="button" size="sm" variant="outline" aria-pressed={value === -1} onClick={() => send(-1)} className={toggle}>
         <ThumbsDownIcon aria-hidden /> Nie
       </Button>
-      <span aria-live="polite" className="text-sm">
+      <span aria-live="polite" className="text-base">
         {error ? "Nie udało się zapisać oceny." : value !== 0 ? "Dziękujemy za ocenę." : ""}
       </span>
     </div>

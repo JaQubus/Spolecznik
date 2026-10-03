@@ -7,6 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-border-strong: var(--border-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-danger-soft: var(--danger-soft);
   --font-sans: var(--font-atkinson);
   --font-mono: var(--font-atkinson-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -152,12 +155,39 @@ html.a11y-contrast {
   --shadow-overlay: 0 0 0 2px #000000;
 }
 
+/* Tryb prosty: tekst co najmniej 20px i luźniejsze wiersze. Nadpisujemy zmienne Tailwinda, bo text-base/text-lg
+   ich używają, więc działa to także na tekstach z jawnym rozmiarem, a nie tylko na dziedziczonych z body. */
+html.a11y-simple {
+  --text-base: 1.25rem;
+  --text-base--line-height: 2rem;
+  --text-lg: 1.375rem;
+  --text-lg--line-height: 2.125rem;
+}
 html.a11y-simple body { font-size: 1.25rem; line-height: 2rem; }
+
+/* simple:hidden chowa metadane drugorzędne w trybie prostym */
+@custom-variant simple (&:where(.a11y-simple, .a11y-simple *));
+
+/* Pas na całą szerokość okna wewnątrz kontenera main, bez poziomego przewijania (cień nie zwiększa szerokości strony). */
+@utility full-bleed {
+  box-shadow: 0 0 0 100vmax var(--bleed, var(--surface-alt));
+  clip-path: inset(0 -100vmax);
+}
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ink) 35%, transparent); }
+  50% { box-shadow: 0 0 0 10px transparent; }
+}
 
 @layer base {
   :focus-visible {
     outline: 3px solid var(--ring);
     outline-offset: 3px;
+  }
+  /* Preflight Tailwinda v4 daje przyciskom cursor: default. */
+  button:not(:disabled, [aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }

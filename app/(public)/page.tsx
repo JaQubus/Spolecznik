@@ -1,21 +1,24 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { SearchBar } from "./search-bar";
 
 export default function Home() {
   return (
-    <section className="flex flex-col items-start gap-6 py-12">
-      <h1 className="text-4xl font-bold sm:text-5xl">Społecznik</h1>
-      <p className="max-w-2xl text-xl">
-        Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.
+    <>
+      {/* Kremowy pas pod nagłówkiem: białe pola na kremowym tle najlepiej odróżniają się od strony. */}
+      <section className="full-bleed -mt-8 space-y-8 bg-secondary py-12 md:py-16">
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold sm:text-5xl">Społecznik</h1>
+          <p className="max-w-2xl text-xl">
+            Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.
+          </p>
+        </div>
+        <SearchBar />
+      </section>
+      <p className="mt-10">
+        <Link href="/biblioteka" className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+          Zobacz bibliotekę rozwiązań
+        </Link>
       </p>
-      <div className="flex flex-wrap gap-3">
-        <Button asChild size="lg" className="h-14 px-8 text-lg">
-          <Link href="/opisz">Opisz problem</Link>
-        </Button>
-        <Button asChild size="lg" variant="outline" className="h-14 px-8 text-lg">
-          <Link href="/biblioteka">Zobacz bibliotekę rozwiązań</Link>
-        </Button>
-      </div>
-    </section>
+    </>
   );
 }
