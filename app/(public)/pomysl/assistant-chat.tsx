@@ -1,6 +1,6 @@
 "use client";
 
-import { Send } from "lucide-react";
+import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -103,7 +103,7 @@ export function AssistantChat({ fiszka }: { fiszka: () => Fiszka | undefined }) 
           aria-describedby="asystent-pomoc"
         />
         <div className="flex flex-wrap gap-3">
-          <Button type="submit" variant="outline" disabled={busy}><Send aria-hidden /> Wyślij</Button>
+          <Button type="submit" variant="outline" disabled={busy}><PaperAirplaneIcon aria-hidden className="size-4" /> Wyślij</Button>
           {messages.length === 0 && (
             <Button type="button" variant="link" disabled={busy} onClick={() => send("Czy podobne rozwiązanie już istnieje? Czym mój pomysł może się wyróżnić?")}>
               Sprawdź, czy to coś nowego

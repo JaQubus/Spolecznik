@@ -70,6 +70,9 @@
   --flag-white: #ffffff;
   --flag-red: #dc143c;
   --shadow-overlay: 0 8px 28px rgba(34,34,34,0.16);
+  /* Mapa: czerwony = więcej / wzrost, niebieski = spadek; 1 = najbliżej zera. Walidator dataviz --ordinal. */
+  --map-red-1: #f29aa4; --map-red-2: #e86a7c; --map-red-3: #d23f5c; --map-red-4: #a81a42; --map-red-5: #720530;
+  --map-blue-1: #89bde3; --map-blue-2: #5a90c8; --map-blue-3: #3763a3; --map-blue-4: #1d3d70;
   /* Kartogram (Kondycja Małopolski): jeden odcień, jasny → ciemny = mniejsze → większe wyzwanie. */
   --map-1: #cde2fb;
   --map-2: #86b6ef;
@@ -124,6 +127,9 @@
   --flag-white: #ffffff;
   --flag-red: #dc143c;
   --shadow-overlay: 0 8px 28px rgba(0,0,0,0.55);
+  /* W ciemnym trybie wartość bliska zera ginie w tle, skrajna świeci najmocniej. */
+  --map-red-1: #7f2b3c; --map-red-2: #a6344c; --map-red-3: #cc4964; --map-red-4: #ea768e; --map-red-5: #ffb0bd;
+  --map-blue-1: #2f5878; --map-blue-2: #4a7fab; --map-blue-3: #79acd6; --map-blue-4: #b3d6f2;
   /* Na ciemnym tle małe wartości gasną w stronę tła, duże świecą. */
   --map-1: #184f95;
   --map-2: #256abf;
@@ -165,6 +171,9 @@ html.a11y-contrast {
   --flag-white: #ffffff;
   --flag-red: #dc143c;
   --shadow-overlay: 0 0 0 2px #000000;
+  /* białe tło jak w trybie jasnym, więc te same kolory mapy (wygrywają też z .dark) */
+  --map-red-1: #f29aa4; --map-red-2: #e86a7c; --map-red-3: #d23f5c; --map-red-4: #a81a42; --map-red-5: #720530;
+  --map-blue-1: #89bde3; --map-blue-2: #5a90c8; --map-blue-3: #3763a3; --map-blue-4: #1d3d70;
 }
 
 /* Pas na całą szerokość okna wewnątrz kontenera main, bez poziomego przewijania (cień nie zwiększa szerokości strony). */

@@ -17,7 +17,7 @@ const NOT_FOUND: ActionResult = { ok: false, message: "Nie znaleziono zgłoszeni
 
 /** Zapis zmiany statusu (albo samej wiadomości, gdy status bez zmian) + ślad w audit_log + powiadomienie autora, jeśli ma konto. */
 async function setStatus(
-  actorId: string,
+  actorId: string | null,
   needId: string,
   from: NeedStatus,
   authorId: string | null,

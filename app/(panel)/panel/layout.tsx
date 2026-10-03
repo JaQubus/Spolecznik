@@ -9,7 +9,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
     <div className="space-y-8">
       <div className="space-y-4 rounded-[16px] bg-secondary px-5 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-base"><strong>Panel ROPS</strong> · zalogowano jako {user.email}</p>
+          <p className="text-base"><strong>Panel ROPS</strong> · zalogowano jako {user.label}</p>
           <form action={signOut}>
             <Button type="submit" variant="outline" size="sm">Wyloguj się</Button>
           </form>

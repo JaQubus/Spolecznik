@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Play } from "lucide-react";
+import { ArrowTopRightOnSquareIcon, PlayIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 import { ICON_LINK as linkClass } from "../shared";
 
@@ -42,7 +42,7 @@ export function LiteVideo({ url, title }: { url: string; title: string }) {
   if (!embed) {
     return (
       <a href={url} className={linkClass}>
-        <ExternalLink aria-hidden className="size-5" /> Obejrzyj film: {title}
+        <ArrowTopRightOnSquareIcon aria-hidden className="size-5" /> Obejrzyj film: {title}
       </a>
     );
   }
@@ -70,7 +70,7 @@ export function LiteVideo({ url, title }: { url: string; title: string }) {
               <img src={embed.thumbnail} alt="" className="absolute inset-0 size-full object-cover opacity-80" />
             )}
             <span className="relative inline-flex min-h-14 items-center gap-3 rounded-full bg-background px-6 text-lg font-bold text-foreground group-hover:bg-secondary">
-              <Play aria-hidden className="size-6 fill-current" />
+              <PlayIcon aria-hidden className="size-6 fill-current" />
               Odtwórz film<span className="sr-only">: {title}</span>
             </span>
           </button>

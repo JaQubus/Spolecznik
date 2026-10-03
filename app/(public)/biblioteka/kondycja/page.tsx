@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, ChevronRight } from "lucide-react";
+import { ArrowLeftIcon, CheckIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cn } from "cn";
@@ -67,7 +67,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
     <div className="space-y-10">
       <p>
         <Link href="/biblioteka" className={cn(linkClass, "inline-flex items-center gap-2")}>
-          <ArrowLeft aria-hidden className="size-5" /> Biblioteka i wiedza
+          <ArrowLeftIcon aria-hidden className="size-5" /> Biblioteka i wiedza
         </Link>
       </p>
       <header className="space-y-3">
@@ -93,7 +93,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
                 return (
                   <li key={a.area} className="max-w-full">
                     <Link href={href(a.area, selected?.id)} scroll={false} aria-current={current} className={chipClass}>
-                      {current && <Check aria-hidden className="size-5" />}
+                      {current && <CheckIcon aria-hidden className="size-5" />}
                       {areaLabel(a)}
                     </Link>
                   </li>
@@ -254,7 +254,7 @@ async function PowiatCard({ data, powiat }: { data: PowiatyData; powiat: { id: s
             <p>
               <Link href={`/biblioteka?dla=${c.a.groups[0]}#innowacje`} className={cn(linkClass, "inline-flex items-center gap-1")}>
                 Wszystkie rozwiązania: {GROUP_LABELS[c.a.groups[0]].toLowerCase()}
-                <ChevronRight aria-hidden className="size-5" />
+                <ChevronRightIcon aria-hidden className="size-5" />
               </Link>
             </p>
           )}

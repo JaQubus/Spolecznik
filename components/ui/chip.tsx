@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { CheckIcon } from "@heroicons/react/24/outline";
 import { cn } from "cn";
 
 /**
@@ -21,7 +21,7 @@ export function FilterChip({
       )}
       {...props}
     >
-      {pressed && <Check aria-hidden className="size-5" />}
+      {pressed && <CheckIcon aria-hidden className="size-5" />}
       {children}
     </button>
   );

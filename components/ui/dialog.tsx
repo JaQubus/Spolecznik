@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { XIcon } from "lucide-react"
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
@@ -72,7 +72,7 @@ function DialogContent({
             data-slot="dialog-close"
             className="absolute top-3 right-3 inline-flex min-h-12 items-center gap-2 rounded-full px-4 text-base font-bold underline underline-offset-4 hover:bg-muted disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5"
           >
-            <XIcon aria-hidden />
+            <XMarkIcon aria-hidden />
             Zamknij
           </DialogPrimitive.Close>
         )}
