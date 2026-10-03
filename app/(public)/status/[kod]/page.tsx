@@ -149,9 +149,11 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         </div>
       )}
 
-      {withExpert && (
+      {report.kind === "potrzeba" && !closed && (
         <Button asChild variant="outline">
-          <Link href={`/zapytaj?potrzeba=${code}`}>Przejdź do rozmowy z ekspertem</Link>
+          <Link href={`/zapytaj?potrzeba=${code}`}>
+            {withExpert ? "Przejdź do rozmowy z ekspertem" : "Napisz do ROPS w sprawie zgłoszenia"}
+          </Link>
         </Button>
       )}
     </section>
