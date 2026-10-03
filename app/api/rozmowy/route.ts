@@ -1,22 +1,33 @@
 import { anonymize } from "@/lib/pii";
 import { rateLimit } from "@/lib/rate-limit";
 import { STATUS_CODE, ThreadPostRequest } from "@/lib/schemas";
-import { expertName, needThread, postNeedMessage, type NeedThread } from "@/lib/threads";
+import { canOpen, expertName, needThread, postNeedMessage, type NeedThread } from "@/lib/threads";
 
-/** Tylko to, co może zobaczyć posiadacz kodu: bez id autora i bez id zgłoszenia. */
+const NOT_FOUND = "Nie znaleźliśmy zgłoszenia o tym kodzie";
+const PRIVATE = "Ta rozmowa jest prywatna. Otwórz ją na urządzeniu, z którego wysłano zgłoszenie, albo prywatnym linkiem";
+
+/** Tylko to, co widzi autor: bez id zgłoszenia, id autora i skrótu klucza. */
 function view(t: NeedThread) {
   return { threadId: t.threadId, status: t.status, expert: t.expert, messages: t.messages };
 }
 
-/** Wątek zgłoszenia po kodzie SPL-…. Limit chroni przed zgadywaniem kodów. */
+/**
+ * Wątek tylko dla przeglądarki z kluczem (ciasteczko httpOnly, lib/need-access.ts).
+ * Brak zgłoszenia i brak klucza dają tę samą odpowiedź, żeby po odpowiedzi nie dało się sprawdzać, które kody istnieją.
+ */
+async function authorized(code: string): Promise<NeedThread | null> {
+  const thread = await needThread({ code });
+  return thread && (await canOpen(thread)) ? thread : null;
+}
+
 export async function GET(request: Request) {
   const limited = rateLimit(request, "rozmowy-odczyt", 60);
   if (limited) return limited;
   const code = new URL(request.url).searchParams.get("kod")?.trim().toUpperCase() ?? "";
   if (!STATUS_CODE.test(code)) return Response.json({ error: "Nieprawidłowy kod zgłoszenia" }, { status: 400 });
   try {
-    const thread = await needThread({ code });
-    if (!thread) return Response.json({ error: "Nie znaleźliśmy zgłoszenia o tym kodzie" }, { status: 404 });
+    const thread = await authorized(code);
+    if (!thread) return Response.json({ error: `${NOT_FOUND}. ${PRIVATE}` }, { status: 404 });
     return Response.json(view(thread));
   } catch (e) {
     console.error("[rozmowy]", e);
@@ -35,8 +46,8 @@ export async function POST(request: Request) {
   const { code, body, expertId } = parsed.data;
 
   try {
-    const thread = await needThread({ code });
-    if (!thread) return Response.json({ error: "Nie znaleźliśmy zgłoszenia o tym kodzie" }, { status: 404 });
+    const thread = await authorized(code);
+    if (!thread) return Response.json({ error: `${NOT_FOUND}. ${PRIVATE}` }, { status: 404 });
     if (thread.status === "zamkniete") {
       return Response.json({ error: "To zgłoszenie jest zamknięte. Jeśli problem wrócił, opisz go jeszcze raz" }, { status: 409 });
     }

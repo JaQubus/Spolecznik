@@ -15,6 +15,9 @@ export const ROLE_LABELS: Record<AuthorRole, string> = {
 /** Kanał Realtime Broadcast wątku. Id wątku znają tylko posiadacz kodu i admin, więc kanał jest publiczny. */
 export const channelName = (threadId: string) => `rozmowa:${threadId}`;
 
+/** Prywatny link do rozmowy: otwiera ją na innym urządzeniu (app/r/[kod]/[klucz]). */
+export const privateLinkPath = (code: string, key: string) => `/r/${code}/${key}`;
+
 /** Zdarzenie na kanale: sam sygnał, bez treści — klient pobiera wątek przez API. */
 export const NEW_MESSAGE_EVENT = "nowa";
 

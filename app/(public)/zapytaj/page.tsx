@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { NoDatabase } from "@/components/layout/no-database";
+import { PrivateLink } from "@/components/rozmowa/private-link";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { FieldError, FieldHint } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { rememberedKey } from "@/lib/need-access";
+import { NEED_STATUS_LABELS } from "@/lib/need-status";
+import { formatDate } from "@/lib/pl";
 import { STATUS_CODE } from "@/lib/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
-import { expertName, needThread, type NeedThread } from "@/lib/threads";
+import { canOpen, expertName, needThread, rememberedThreads, type MyNeed, type NeedThread } from "@/lib/threads";
 import { Conversation } from "./conversation";
 
 export const metadata = { title: "Zapytaj eksperta" };
@@ -19,16 +20,24 @@ export default async function Page(props: PageProps<"/zapytaj">) {
   const params = await props.searchParams;
   const raw = typeof params.potrzeba === "string" ? params.potrzeba.trim().toUpperCase() : "";
   const askedExpert = typeof params.ekspert === "string" && UUID.test(params.ekspert) ? params.ekspert : undefined;
+  const badLink = params.link === "nieaktualny";
 
-  if (!STATUS_CODE.test(raw)) return <EnterCode invalid={raw.length > 0} />;
   if (!isSupabaseConfigured()) return <NoDatabase />;
 
   let thread: NeedThread | null = null;
+  let mine: MyNeed[] = [];
+  let key: string | null = null;
   let chosenName: string | null = null;
   try {
-    thread = await needThread({ code: raw });
-    // Ekspert z wyników dopasowania — tylko podpowiedź, dopóki ROPS nie przypisze kogoś w Panelu.
-    if (thread && !thread.expert && askedExpert) chosenName = await expertName(askedExpert);
+    if (STATUS_CODE.test(raw)) {
+      const found = await needThread({ code: raw });
+      // Brak zgłoszenia i brak klucza wyglądają tak samo — po stronie nie da się sprawdzać, które kody istnieją.
+      thread = found && (await canOpen(found)) ? found : null;
+      key = thread ? await rememberedKey(thread.code) : null;
+      // Ekspert z wyników dopasowania — tylko podpowiedź, dopóki ROPS nie przypisze kogoś w Panelu.
+      if (thread && !thread.expert && askedExpert) chosenName = await expertName(askedExpert);
+    }
+    if (!thread) mine = await rememberedThreads();
   } catch (e) {
     console.error("[zapytaj]", e);
     return (
@@ -41,18 +50,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
     );
   }
 
-  if (!thread) {
-    return (
-      <section className="max-w-2xl space-y-6">
-        <h1 className="text-3xl font-bold">Nie znaleźliśmy tego zgłoszenia</h1>
-        <p className="text-lg">
-          Nie ma zgłoszenia o kodzie <strong className="font-mono tracking-wider">{raw}</strong>. Sprawdź, czy kod jest
-          przepisany dokładnie.
-        </p>
-        <Button asChild variant="outline"><Link href="/zapytaj">Wpisz kod jeszcze raz</Link></Button>
-      </section>
-    );
-  }
+  if (!thread || !key) return <MyConversations mine={mine} askedCode={raw} badLink={badLink} />;
 
   const expert = thread.expert?.name ?? chosenName;
 
@@ -81,42 +79,73 @@ export default async function Page(props: PageProps<"/zapytaj">) {
         closed={thread.status === "zamkniete"}
         initial={{ threadId: thread.threadId, messages: thread.messages }}
       />
+
+      <PrivateLink code={thread.code} accessKey={key} />
     </section>
   );
 }
 
-/** Rozmowa jest przypięta do zgłoszenia, więc najpierw kod — bez zakładania konta. */
-function EnterCode({ invalid }: { invalid: boolean }) {
+/**
+ * Bez kodu albo bez klucza: zgłoszenia zapamiętane w tej przeglądarce.
+ * Sam kod nie otwiera rozmowy — da się go zgadnąć — więc odsyłamy do prywatnego linku albo strony statusu.
+ */
+function MyConversations({ mine, askedCode, badLink }: { mine: MyNeed[]; askedCode: string; badLink: boolean }) {
   return (
-    <section className="max-w-2xl space-y-6">
-      <h1 className="text-3xl font-bold">Zapytaj eksperta</h1>
-      <p className="text-lg">
-        Rozmowa z ekspertem i pracownikiem ROPS jest przypięta do Twojego zgłoszenia. Wpisz jego kod — ten sam, którym
-        sprawdzasz status.
-      </p>
-      <form action="/zapytaj" className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="potrzeba">Kod zgłoszenia</Label>
-          <FieldHint id="potrzeba-pomoc">Ma postać SPL- i cztery znaki, np. SPL-4K7Q.</FieldHint>
-          <FieldError id="potrzeba-blad">
-            {invalid && "To nie wygląda na kod zgłoszenia. Wpisz SPL- i cztery znaki, np. SPL-4K7Q."}
-          </FieldError>
-          <Input
-            id="potrzeba"
-            name="potrzeba"
-            autoComplete="off"
-            autoCapitalize="characters"
-            spellCheck={false}
-            aria-invalid={invalid}
-            aria-describedby={invalid ? "potrzeba-pomoc potrzeba-blad" : "potrzeba-pomoc"}
-            className="max-w-xs font-mono tracking-wider"
-          />
-        </div>
-        <Button type="submit" className="w-full sm:w-auto">Przejdź do rozmowy</Button>
-      </form>
+    <section className="max-w-3xl space-y-8">
+      <div className="space-y-4">
+        <h1 className="text-3xl font-bold">Zapytaj eksperta</h1>
+        <p className="text-lg">
+          Rozmowa z ekspertem i pracownikiem ROPS jest przypięta do Twojego zgłoszenia i widzisz ją tylko Ty.
+        </p>
+      </div>
+
+      {badLink && (
+        <Alert tone="error" title="Ten link nie działa">
+          <p>Sprawdź, czy link jest skopiowany w całości. Jeśli tak, otwórz rozmowę na urządzeniu, z którego wysłano zgłoszenie.</p>
+        </Alert>
+      )}
+      {askedCode && !badLink && (
+        <Alert title="Nie możemy otworzyć tej rozmowy na tym urządzeniu">
+          <p>
+            Rozmowę o zgłoszeniu <span className="font-mono tracking-wider">{askedCode}</span> otworzysz na urządzeniu,
+            z którego je wysłano, albo prywatnym linkiem. Sam kod pokazuje tylko{" "}
+            {STATUS_CODE.test(askedCode)
+              ? <Link href={`/status/${askedCode}`} className={linkClass}>status zgłoszenia</Link>
+              : "status zgłoszenia"}
+            .
+          </p>
+        </Alert>
+      )}
+
+      <section aria-labelledby="moje" className="space-y-3">
+        <h2 id="moje" className="text-2xl font-bold">Twoje zgłoszenia na tym urządzeniu</h2>
+        {mine.length === 0 ? (
+          <p className="text-muted-foreground">
+            Ta przeglądarka nie pamięta żadnego zgłoszenia. Jeśli masz prywatny link do rozmowy, po prostu go otwórz.
+          </p>
+        ) : (
+          <ul className="border-t">
+            {mine.map((n) => (
+              <li key={n.code} className="flex flex-wrap items-center justify-between gap-3 border-b py-4">
+                <div className="min-w-0 flex-1 basis-64 space-y-1">
+                  <p>
+                    <span className="font-mono font-bold tracking-wider">{n.code}</span>
+                    <span className="text-muted-foreground"> · {formatDate(n.createdAt)} · {NEED_STATUS_LABELS[n.status]}</span>
+                  </p>
+                  {n.summary && <p className="line-clamp-2">{n.summary}</p>}
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/zapytaj?potrzeba=${n.code}`} aria-label={`Otwórz rozmowę o zgłoszeniu ${n.code}`}>Otwórz rozmowę</Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <p>
-        Nie masz kodu? <Link href="/opisz" className={linkClass}>Opisz problem</Link> — kod dostaniesz od razu po
-        wysłaniu.
+        Nie masz jeszcze zgłoszenia? <Link href="/opisz" className={linkClass}>Opisz problem</Link> — rozmowa będzie
+        czekać tutaj.
       </p>
     </section>
   );

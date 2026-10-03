@@ -188,7 +188,8 @@ export type InnovationMatch = RerankItem & {
 };
 
 export type MatchResponse = {
-  need: { id: string; statusCode: string; gmina: string | null };
+  /** accessKey: tajny klucz do rozmowy — tylko dla autora (ciasteczko + prywatny link). */
+  need: { id: string; statusCode: string; accessKey: string; gmina: string | null };
   matches: InnovationMatch[];
   isGap: boolean;
   similarNeeds: { count: number; gminy: string[] };

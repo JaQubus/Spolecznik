@@ -1,4 +1,5 @@
 import "server-only";
+import { keyMatches, rememberedKey, rememberedNeeds } from "./need-access";
 import type { NeedStatus } from "./need-status";
 import { logChange } from "./panel/needs";
 import { createAdminClient } from "./supabase/admin";
@@ -11,6 +12,8 @@ export type NeedThread = {
   code: string;
   status: NeedStatus;
   authorId: string | null;
+  /** Skrót klucza do rozmowy (lib/need-access.ts). Nigdy nie wysyłamy go do przeglądarki. */
+  accessHash: string | null;
   threadId: string | null;
   /** Ekspert wątku: wybrany przez autora („Zapytaj eksperta”) albo przypisany w Panelu. */
   expert: { id: string; name: string } | null;
@@ -47,10 +50,10 @@ async function loadMessages(threadId: string): Promise<ThreadMessage[]> {
   }));
 }
 
-/** Wątek zgłoszenia po kodzie albo po id (Panel). Tylko pola bezpieczne dla posiadacza kodu. */
+/** Wątek zgłoszenia po kodzie albo po id (Panel). Przed pokazaniem autorowi sprawdź klucz: canOpen(). */
 export async function needThread(by: { code: string } | { needId: string }): Promise<NeedThread | null> {
   const supabase = createAdminClient();
-  const query = supabase.from("needs").select("id, status_code, status, author_id, assigned_expert");
+  const query = supabase.from("needs").select("id, status_code, status, author_id, access_hash, assigned_expert");
   const { data: need, error } = await ("code" in by ? query.eq("status_code", by.code) : query.eq("id", by.needId)).maybeSingle();
   if (error) throw error;
   if (!need) return null;
@@ -73,10 +76,35 @@ export async function needThread(by: { code: string } | { needId: string }): Pro
     code: need.status_code,
     status: need.status,
     authorId: need.author_id,
+    accessHash: need.access_hash,
     threadId: thread?.id ?? null,
     expert: expertId && name ? { id: expertId, name } : null,
     messages,
   };
+}
+
+/** Czy ta przeglądarka ma klucz do rozmowy (ciasteczko z wysłania zgłoszenia albo z prywatnego linku). */
+export async function canOpen(t: NeedThread): Promise<boolean> {
+  return keyMatches(t.accessHash, await rememberedKey(t.code));
+}
+
+export type MyNeed = { code: string; status: NeedStatus; summary: string; createdAt: string };
+
+/** „Twoje zgłoszenia na tym urządzeniu”: pary kod–klucz z ciasteczka, sprawdzone z bazą, najnowsze pierwsze. */
+export async function rememberedThreads(): Promise<MyNeed[]> {
+  const remembered = await rememberedNeeds();
+  if (remembered.length === 0) return [];
+  const { data, error } = await createAdminClient()
+    .from("needs")
+    .select("status_code, status, card, created_at, access_hash")
+    .in("status_code", remembered.map((r) => r.code));
+  if (error) throw error;
+  const byCode = new Map((data ?? []).map((n) => [n.status_code as string, n]));
+  return remembered.flatMap(({ code, key }) => {
+    const n = byCode.get(code);
+    if (!n || !keyMatches(n.access_hash, key)) return [];
+    return [{ code, status: n.status, summary: (n.card as { summary?: string }).summary ?? "", createdAt: n.created_at }];
+  });
 }
 
 /** Zakłada wątek przy pierwszej wiadomości. Ekspert wybrany przez autora zostaje zapamiętany w wątku. */

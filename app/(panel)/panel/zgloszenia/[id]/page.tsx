@@ -172,7 +172,8 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
             <div className="space-y-2">
               <Label htmlFor="reply">Odpowiedź</Label>
               <FieldHint id="reply-pomoc">
-                Pierwsza odpowiedź zmienia status na „{NEED_STATUS_LABELS.odpowiedz}”. Nie wpisuj danych osobowych.
+                Pierwsza odpowiedź zmienia status na „{NEED_STATUS_LABELS.odpowiedz}”. Kontakt do instytucji możesz podać;
+                nie wpisuj danych osobowych zgłaszającego ani innych osób.
               </FieldHint>
               <Textarea id="reply" name="body" required minLength={2} maxLength={2000} aria-describedby="reply-pomoc" className="min-h-24" />
             </div>

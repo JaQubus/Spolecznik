@@ -3,6 +3,7 @@
 import { ThumbsDownIcon, ThumbsUpIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { PrivateLink } from "@/components/rozmowa/private-link";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
         </ul>
       </div>
 
-      <StatusCode code={need.statusCode} />
+      <StatusCode code={need.statusCode} accessKey={need.accessKey} />
 
       {isGap ? (
         // Luka: komunikat + jedyny zielony przycisk na ekranie (ResultList.md).
@@ -111,16 +112,23 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
 }
 
 /** Kod zgłoszenia w stylu „kod do przepisania” (Atkinson Mono) na kremowym tle, bez ramki. */
-function StatusCode({ code }: { code: string }) {
+function StatusCode({ code, accessKey }: { code: string; accessKey: string }) {
   return (
-    <div className="max-w-[44rem] space-y-1 rounded-[16px] bg-secondary px-5 py-4">
-      <p className="text-lg">
-        Twój kod zgłoszenia: <strong className="font-mono text-2xl tracking-wider whitespace-nowrap">{code}</strong>
-      </p>
-      <p>
-        Zapisz go. Po tym kodzie sprawdzisz, co dzieje się z Twoim zgłoszeniem — bez zakładania konta.{" "}
-        <Link href={`/status/${code}`} className={linkClass}>Sprawdź status</Link>
-      </p>
+    <div className="max-w-[44rem] space-y-4 rounded-[16px] bg-secondary px-5 py-4">
+      <div className="space-y-1">
+        <p className="text-lg">
+          Twój kod zgłoszenia: <strong className="font-mono text-2xl tracking-wider whitespace-nowrap">{code}</strong>
+        </p>
+        <p>
+          Zapisz go. Po tym kodzie sprawdzisz, co dzieje się z Twoim zgłoszeniem — bez zakładania konta.{" "}
+          <Link href={`/status/${code}`} className={linkClass}>Sprawdź status</Link>
+        </p>
+        <p>
+          Rozmowa z ekspertem jest prywatna. Ta przeglądarka ją zapamięta — znajdziesz ją w{" "}
+          <Link href="/zapytaj" className={linkClass}>Zapytaj eksperta</Link>.
+        </p>
+      </div>
+      <PrivateLink code={code} accessKey={accessKey} />
     </div>
   );
 }

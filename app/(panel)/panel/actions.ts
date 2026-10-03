@@ -157,7 +157,8 @@ export async function replyInThread(_prev: ActionResult, formData: FormData): Pr
     await postNeedMessage(thread, {
       role: as,
       name: as === "ekspert" ? thread.expert!.name : undefined,
-      body: anonymize(body).text,
+      // Bez anonymize(): odpowiedź ROPS może celowo podawać telefon albo adres instytucji.
+      body,
       actorId: user.id,
     });
   } catch (e) {
