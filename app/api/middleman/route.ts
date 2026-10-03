@@ -1,7 +1,7 @@
 import { describeGmina, findGmina } from "@/lib/gminy";
 import { implementationCard } from "@/lib/llm";
 import { MiddlemanRequest, RELATED_MIN_SIMILARITY } from "@/lib/schemas";
-import { embedText, hybridSearch } from "@/lib/search";
+import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Karta wdrożeniowa: innowacja z Biblioteki + profil gminy z BDL + partnerzy z indeksu ekspertów. */
@@ -37,7 +37,12 @@ export async function POST(request: Request) {
       innovation.components && `Składowe: ${innovation.components}`,
     ].filter(Boolean).join("\n");
 
-    const expertHits = (await hybridSearch("ekspert", [], await embedText(innovationText), 5))
+    // Partnerzy: eksperci, którzy dzielą lematy z innowacją (te same, po których szuka Dopasuj).
+    const { data: indexed, error: indexError } = await supabase
+      .from("search_index").select("lemmas").eq("kind", "innowacja").eq("ref_id", innovationId).maybeSingle();
+    if (indexError) throw indexError;
+    const lemmas = ((indexed?.lemmas as string | undefined) ?? innovation.title.toLowerCase()).split(/\s+/).filter(Boolean);
+    const expertHits = (await keywordSearch("ekspert", lemmas, 5))
       .filter((h) => h.similarity >= RELATED_MIN_SIMILARITY);
     const { data: experts, error: expertsError } = expertHits.length
       ? await supabase.from("search_index").select("ref_id, title, body")

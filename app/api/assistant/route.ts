@@ -1,7 +1,7 @@
-import { assistantReply, type SimilarItem } from "@/lib/llm";
+import { assistantReply, tagCard, type SimilarItem } from "@/lib/llm";
 import { anonymize } from "@/lib/pii";
 import { AssistantRequest, NOVELTY_MIN_SIMILARITY, type AssistantResponse } from "@/lib/schemas";
-import { embedText, hybridSearch } from "@/lib/search";
+import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Asystent Pracowni: pytania, nieoczywiste kierunki i sprawdzanie nowości tym samym silnikiem co Dopasuj. */
@@ -12,21 +12,21 @@ export async function POST(request: Request) {
   }
   const messages = parsed.data.messages.map((m) => ({ ...m, content: anonymize(m.content).text }));
   const fiszka = parsed.data.fiszka && {
-    summary: anonymize(parsed.data.fiszka.summary).text,
-    essence: anonymize(parsed.data.fiszka.essence).text,
-    audience: anonymize(parsed.data.fiszka.audience).text,
-    stage: parsed.data.fiszka.stage,
+    krotki_opis: anonymize(parsed.data.fiszka.krotki_opis).text,
+    istota: anonymize(parsed.data.fiszka.istota).text,
+    dla_kogo: anonymize(parsed.data.fiszka.dla_kogo).text,
+    etap: parsed.data.fiszka.etap,
   };
 
   try {
-    // Nowość sprawdzamy po fiszce, a bez niej po wiadomościach autora.
+    // Nowość sprawdzamy po fiszce, a bez niej po wiadomościach autora — po lematach, jak Dopasuj.
     const ideaText = fiszka
-      ? `${fiszka.summary}\n${fiszka.essence}\n${fiszka.audience}`
+      ? `${fiszka.istota}\n${fiszka.dla_kogo}`
       : messages.filter((m) => m.role === "user").map((m) => m.content).join("\n");
-    const embedding = await embedText(ideaText);
+    const { lemmas } = await tagCard(fiszka?.krotki_opis ?? "Pomysł", ideaText);
     const [innovationHits, ideaHits] = await Promise.all([
-      hybridSearch("innowacja", [], embedding, 3),
-      hybridSearch("pomysl", [], embedding, 3),
+      keywordSearch("innowacja", lemmas, 3),
+      keywordSearch("pomysl", lemmas, 3),
     ]);
     const hits = [
       ...innovationHits.map((h) => ({ ...h, kind: "innowacja" as const })),

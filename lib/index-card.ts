@@ -2,7 +2,7 @@ import "server-only";
 import { tagCard } from "./llm";
 import { anonymize } from "./pii";
 import { Fiszka, NeedCard, type CardKind } from "./schemas";
-import { embedText, upsertIndex } from "./search";
+import { upsertIndex } from "./search";
 import { createAdminClient } from "./supabase/admin";
 
 type Source = {
@@ -69,8 +69,8 @@ async function loadSource(kind: CardKind, refId: string): Promise<Source | null>
       if (!data) return null;
       const fiszka = Fiszka.parse(data.fiszka);
       return {
-        title: anonymize(fiszka.summary).text.slice(0, 140),
-        body: anonymize(join(fiszka.summary, fiszka.essence, fiszka.audience)).text,
+        title: anonymize(fiszka.krotki_opis).text.slice(0, 140),
+        body: anonymize(join(fiszka.krotki_opis, fiszka.istota, fiszka.dla_kogo)).text,
         teryt: null,
         active: data.status !== "zamkniete",
       };
@@ -105,18 +105,14 @@ async function loadSource(kind: CardKind, refId: string): Promise<Source | null>
 }
 
 /**
- * Reindeks karty po zapisie (README 5.3): lematy i tagi (LLM), embedding, upsert do search_index.
+ * Reindeks karty po zapisie (README 5.3): lematy i tagi (LLM), upsert do search_index.
  * Zwraca false, gdy karty nie ma w bazie.
  */
 export async function reindexCard(kind: CardKind, refId: string): Promise<boolean> {
   const source = await loadSource(kind, refId);
   if (!source) return false;
 
-  const needsTags = !source.lemmas || !source.areas;
-  const [tags, embedding] = await Promise.all([
-    needsTags ? tagCard(source.title, source.body) : null,
-    embedText(source.body || source.title),
-  ]);
+  const tags = !source.lemmas || !source.areas ? await tagCard(source.title, source.body) : null;
 
   await upsertIndex({
     kind,
@@ -128,7 +124,6 @@ export async function reindexCard(kind: CardKind, refId: string): Promise<boolea
     targetGroups: source.groups ?? tags?.groups ?? [],
     teryt: source.teryt,
     active: source.active,
-    embedding,
   });
   return true;
 }

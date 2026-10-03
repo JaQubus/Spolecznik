@@ -3,11 +3,12 @@
 Wejście: golden_set.jsonl, linia = {"query": "...", "relevant": ["slug", ...]}
 (pusta lista relevant = oczekiwana luka).
 Metryki: hit@3, MRR@5, trafność wykrywania luk.
-Konfiguracje: BM25 na lematach, same embeddingi, hybryda, hybryda + rerank.
+Konfiguracje: BM25 na lematach, BM25 + rerank. Bez embeddingów — cały AI idzie przez Groq,
+który nie ma modeli embeddingów.
 
 Liczy offline na out/innovations.json + out/enriched.json (bez bazy), odtwarzając produkcyjny
-przepływ: intake (Groq, jak lib/llm.ts) → słowa kluczowe + embedding (jak lib/match.ts) →
-RRF z k=50 i top 30 z każdej listy (jak hybrid_search) → rerank (Groq, jak lib/llm.ts).
+przepływ: intake (Groq, jak lib/llm.ts) → słowa kluczowe (jak keyword_search) → top 15 dopełnione
+innowacjami z tych samych obszarów (jak lib/match.ts) → rerank (Groq, jak lib/llm.ts).
 Prompty są kopią tych z lib/llm.ts — po zmianie tam zaktualizuj je tutaj.
 
 Uruchomienie: uv run eval.py [--no-rerank]"""
@@ -19,15 +20,11 @@ import re
 import sys
 from collections import Counter
 
-import numpy as np
-
 from common import CROSS, AREAS, GROUPS, GROQ_QUALITY, OUT, RAW, ROOT, innovation_text, read_json, taxonomy_prompt, write_json
-from embed import Embedder
 from enrich import call_tool
 
 GAP_THRESHOLD = 50   # lib/schemas.ts
-RRF_K = 50           # hybrid_search p_rrf_k
-CANDIDATES = 15      # lib/match.ts: hybridSearch("innowacja", …, 15)
+CANDIDATES = 15      # lib/match.ts: CANDIDATES
 INTAKE_CACHE = RAW / "eval_intake_cache.json"
 
 INTAKE_SYSTEM = f"""Jesteś asystentem Małopolskiego Hubu Innowacji Społecznych.
@@ -113,12 +110,11 @@ class Bm25:
         return [i for _, i in sorted(scores, reverse=True)]
 
 
-def rrf(*rankings: list[int], limit: int) -> list[int]:
-    score: Counter = Counter()
-    for ranking in rankings:
-        for r, i in enumerate(ranking[: CANDIDATES * 2], 1):
-            score[i] += 1 / (RRF_K + r)
-    return [i for i, _ in score.most_common(limit)]
+def candidates(ranked: list[int], areas: list[str], doc_areas: list[set[str]]) -> list[int]:
+    """Top z wyszukiwania po lematach, dopełnione innowacjami z tych samych obszarów (jak lib/match.ts)."""
+    out = ranked[:CANDIDATES]
+    fill = [i for i, a in enumerate(doc_areas) if i not in out and a & set(areas)]
+    return out + fill[: CANDIDATES - len(out)]
 
 
 def metrics(ranked: list[str], relevant: list[str]) -> tuple[float, float]:
@@ -138,9 +134,8 @@ def intake_all(queries: list[str]) -> dict[str, dict]:
 
 
 def main() -> None:
-    missing = [k for k in ("GROQ_API_KEY", "OPENAI_API_KEY") if not os.environ.get(k)]
-    if missing:
-        sys.exit(f"Brak w ../.env.local: {', '.join(missing)}")
+    if not os.environ.get("GROQ_API_KEY"):
+        sys.exit("Brak GROQ_API_KEY w ../.env.local")
     use_rerank = "--no-rerank" not in sys.argv
 
     gold = [json.loads(l) for l in (ROOT / "golden_set.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
@@ -153,41 +148,35 @@ def main() -> None:
     if unknown:
         sys.exit(f"golden_set.jsonl odwołuje się do innowacji spoza korpusu: {sorted(unknown)}")
 
-    emb = Embedder()
     texts = [innovation_text(i) for i in innovations]
-    doc_vecs = np.array(emb.embed(texts))
-    doc_vecs /= np.linalg.norm(doc_vecs, axis=1, keepdims=True)
+    doc_areas = [set(enriched.get(i["slug"], {}).get("areas", [])) for i in innovations]
     bm25 = Bm25([tokens(i["title"] + " " + " ".join(enriched.get(i["slug"], {}).get("lemmas", []))) for i in innovations])
 
     cards = intake_all([g["query"] for g in gold])
-    q_texts = [f"{cards[g['query']]['summary']}\n{', '.join(cards[g['query']]['keywords'])}" for g in gold]
-    q_vecs = np.array(emb.embed(q_texts))
-    q_vecs /= np.linalg.norm(q_vecs, axis=1, keepdims=True)
 
-    configs = ["BM25 (lematy)", "embeddingi", "hybryda"] + (["hybryda + rerank"] if use_rerank else [])
+    configs = ["BM25 (lematy)"] + (["BM25 + rerank"] if use_rerank else [])
     scores = {c: [] for c in configs}
     gap_hits, per_query = [], []
-    for g, qv in zip(gold, q_vecs):
+    for g in gold:
         card = cards[g["query"]]
         kw = [t for k in card["keywords"] for t in tokens(k)]
         r_bm = bm25.rank(kw)
-        r_emb = list(np.argsort(-(doc_vecs @ qv)))
-        r_hyb = rrf(r_bm, r_emb, limit=CANDIDATES)
-        ranked = {"BM25 (lematy)": r_bm, "embeddingi": r_emb, "hybryda": r_hyb}
+        ranked = {"BM25 (lematy)": r_bm}
         row = {"query": g["query"], "relevant": g["relevant"], "keywords": card["keywords"]}
 
         if use_rerank:
+            pool = candidates(r_bm, card.get("areas", []), doc_areas)
             cands = "\n".join(f'<kandydat id="{slugs[i]}"><tytul>{innovations[i]["title"]}</tytul>{texts[i]}</kandydat>'
-                              for i in r_hyb)
+                              for i in pool)
             out = call_tool(RERANK_SYSTEM, RERANK_TOOL,
                             f"<potrzeba>{json.dumps(card, ensure_ascii=False)}</potrzeba>\n<gmina>brak danych</gmina>\n<kandydaci>\n{cands}\n</kandydaci>",
                             model=GROQ_QUALITY)
-            allowed = {slugs[i] for i in r_hyb}
+            allowed = {slugs[i] for i in pool}
             items = sorted((x for x in out["items"] if x["id"] in allowed), key=lambda x: -x["fit"])
             is_gap = (items[0]["fit"] if items else 0) < GAP_THRESHOLD
             gap_hits.append(is_gap == (not g["relevant"]))
             row.update(rerank=[(x["id"], x["fit"]) for x in items], predicted_gap=is_gap)
-            ranked["hybryda + rerank"] = [x["id"] for x in items if x["fit"] >= GAP_THRESHOLD]
+            ranked["BM25 + rerank"] = [x["id"] for x in items if x["fit"] >= GAP_THRESHOLD]
 
         if g["relevant"]:  # hit@3 i MRR liczymy tylko dla zapytań, na które jest odpowiedź
             for c in configs:

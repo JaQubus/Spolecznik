@@ -91,12 +91,12 @@ export type AskResponse = {
   sources: { docTitle: string; year: number | null; url: string | null; page: number | null }[];
 };
 
-// Pracownia: fiszka pomysłu (ideas.fiszka)
+// Pracownia: fiszka pomysłu (ideas.fiszka). Klucze jak w data/out/synthetic.json.
 export const Fiszka = z.object({
-  summary: z.string().min(1).max(500), // krótki opis
-  essence: z.string().max(3000).default(""), // istota
-  audience: z.string().max(1000).default(""), // dla kogo
-  stage: z.string().max(200).default(""), // etap
+  krotki_opis: z.string().min(1).max(500),
+  istota: z.string().max(3000).default(""),
+  dla_kogo: z.string().max(1000).default(""),
+  etap: z.string().max(200).default(""),
 });
 export type Fiszka = z.infer<typeof Fiszka>;
 
@@ -165,10 +165,10 @@ export const GAP_THRESHOLD = 50;
 /** Próg, poniżej którego dopytujemy zamiast szukać. */
 export const CLARITY_THRESHOLD = 0.6;
 /**
- * Progi podobieństwa cosinusowego (text-embedding-3-small). Do dostrojenia na eval.py:
- * eksperci i nabory nie przechodzą przez rerank, więc odcinamy je samym podobieństwem.
+ * Progi podobieństwa = jaka część słów kluczowych zapytania pasuje do karty (keyword_search, 0–1).
+ * Eksperci i nabory nie przechodzą przez rerank, więc odcinamy je samym progiem. Do dostrojenia na eval.py.
  */
-export const RELATED_MIN_SIMILARITY = 0.35;
-export const SIMILAR_NEED_MIN_SIMILARITY = 0.55;
+export const RELATED_MIN_SIMILARITY = 0.25;
+export const SIMILAR_NEED_MIN_SIMILARITY = 0.5;
 /** Od tego podobieństwa asystent Pracowni mówi „podobne już istnieje”. */
 export const NOVELTY_MIN_SIMILARITY = 0.5;

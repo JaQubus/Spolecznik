@@ -1,7 +1,7 @@
-import { answerFromReports } from "@/lib/llm";
+import { answerFromReports, tagCard } from "@/lib/llm";
 import { anonymize } from "@/lib/pii";
 import { AskRequest, type AskResponse } from "@/lib/schemas";
-import { embedText, searchDocChunks } from "@/lib/search";
+import { searchDocChunks } from "@/lib/search";
 
 const NO_ANSWER = "Raporty w Bibliotece nie zawierają odpowiedzi na to pytanie.";
 
@@ -14,7 +14,9 @@ export async function POST(request: Request) {
   const question = anonymize(parsed.data.question).text;
 
   try {
-    const hits = await searchDocChunks(await embedText(question), 6);
+    // Słowa kluczowe pytania (z potocznymi synonimami) z LLM, potem wyszukiwanie po prefiksach w raportach.
+    const { lemmas } = await tagCard("Pytanie do raportów", question);
+    const hits = await searchDocChunks(lemmas, 6);
     if (hits.length === 0) {
       return Response.json({ answered: false, answer: NO_ANSWER, sources: [] } satisfies AskResponse);
     }

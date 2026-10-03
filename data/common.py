@@ -15,7 +15,6 @@ load_dotenv(ROOT.parent / ".env.local")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_FAST = "openai/gpt-oss-120b"     # jak models.fast w lib/llm.ts (20b psuł polskie lematy)
 GROQ_QUALITY = "openai/gpt-oss-120b"  # jak models.quality w lib/llm.ts
-EMBEDDING_MODEL = "text-embedding-3-small"  # wymiar 1536, jak w migracji
 
 
 # Taksonomia dwuosiowa — kopia lib/taxonomy.ts (klucze muszą się zgadzać z lib/schemas.ts).

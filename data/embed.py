@@ -1,71 +1,40 @@
-"""Embeddingi i upsert do innovations, search_index, doc_chunks (README sekcja 8.5).
+"""Ładowanie do Supabase: innovations, search_index, doc_chunks (README sekcja 8.5).
 
 Wejście (z poprzednich kroków): out/gminy.json, out/innovations.json, out/enriched.json,
 out/pdf_sections.json, out/synthetic.json, out/doc_chunks.json.
-Ładuje do Supabase przez SUPABASE_DB_URL (wymaga migracji 0001–0003).
+Ładuje do Supabase przez SUPABASE_DB_URL (wymaga migracji 0001–0005).
+Bez embeddingów: cały AI idzie przez Groq, który nie ma modeli embeddingów. Wyszukiwanie działa
+po lematach (kolumna fts), kolumny embedding zostają puste.
 
 Skrypt jest idempotentny: innowacje upsertuje po slugu (i usuwa te spoza korpusu),
-a dane syntetyczne kasuje i wstawia od nowa. Embeddingi są cache'owane w raw/embeddings_cache.json,
-więc ponowne uruchomienie nie płaci drugi raz za ten sam tekst.
+a dane syntetyczne kasuje i wstawia od nowa.
 
 Uruchomienie: uv run embed.py"""
-import hashlib
 import os
 import sys
 import uuid
 
 import psycopg
-from openai import OpenAI
 from psycopg.types.json import Jsonb
 
-from common import EMBEDDING_MODEL, OUT, RAW, db_url, innovation_text, read_json, write_json
+from common import OUT, db_url, innovation_text, read_json
 
-BATCH = 100
-CACHE_PATH = RAW / "embeddings_cache.json"
 EXPERT_NS = uuid.UUID("5f0c8a52-3c43-4d8e-9a39-6f1f3b7f2a10")  # stałe ref_id ekspertów między uruchomieniami
 
 
-class Embedder:
-    def __init__(self) -> None:
-        self.client = OpenAI(max_retries=5)
-        self.cache: dict[str, list[float]] = read_json(CACHE_PATH) if CACHE_PATH.exists() else {}
-
-    @staticmethod
-    def key(text: str) -> str:
-        return hashlib.sha1(f"{EMBEDDING_MODEL}\n{text}".encode()).hexdigest()
-
-    def embed(self, texts: list[str]) -> list[list[float]]:
-        missing = list(dict.fromkeys(t for t in texts if self.key(t) not in self.cache))
-        for i in range(0, len(missing), BATCH):
-            batch = missing[i:i + BATCH]
-            resp = self.client.embeddings.create(model=EMBEDDING_MODEL, input=batch)
-            for text, item in zip(batch, resp.data):
-                self.cache[self.key(text)] = item.embedding
-            print(f"  embeddingi: {min(i + BATCH, len(missing))}/{len(missing)} nowych", flush=True)
-        if missing:
-            write_json(CACHE_PATH, self.cache)
-        return [self.cache[self.key(t)] for t in texts]
-
-
-def vec(v: list[float]) -> str:
-    return "[" + ",".join(f"{x:.7f}" for x in v) + "]"
-
-
-def index_rows(cur, rows: list[dict], embeddings: list[list[float]]) -> None:
+def index_rows(cur, rows: list[dict]) -> None:
     """Upsert do search_index — te same kolumny co lib/search.ts upsertIndex."""
     cur.executemany(
-        """insert into search_index (kind, ref_id, title, body, lemmas, areas, target_groups, teryt, active, embedding)
+        """insert into search_index (kind, ref_id, title, body, lemmas, areas, target_groups, teryt, active)
            values (%(kind)s, %(ref_id)s, %(title)s, %(body)s, %(lemmas)s, %(areas)s, %(target_groups)s, %(teryt)s,
-                   %(active)s, %(embedding)s::vector)
+                   %(active)s)
            on conflict (kind, ref_id) do update set
              title = excluded.title, body = excluded.body, lemmas = excluded.lemmas, areas = excluded.areas,
-             target_groups = excluded.target_groups, teryt = excluded.teryt, active = excluded.active,
-             embedding = excluded.embedding""",
+             target_groups = excluded.target_groups, teryt = excluded.teryt, active = excluded.active""",
         [{
             "teryt": None, "active": True, "areas": [], "target_groups": [], **r,
             "lemmas": " ".join(dict.fromkeys(l.strip().lower() for l in r.get("lemmas", []) if l.strip())),
-            "embedding": vec(e),
-        } for r, e in zip(rows, embeddings)],
+        } for r in rows],
     )
 
 
@@ -83,7 +52,7 @@ def load_gminy(cur) -> set[str]:
     return {g["teryt"] for g in gminy}
 
 
-def load_innovations(cur, emb: Embedder) -> dict[str, str]:
+def load_innovations(cur) -> dict[str, str]:
     innovations = read_json(OUT / "innovations.json")
     enriched = read_json(OUT / "enriched.json") if (OUT / "enriched.json").exists() else {}
     pdf = read_json(OUT / "pdf_sections.json") if (OUT / "pdf_sections.json").exists() else {}
@@ -135,16 +104,15 @@ def load_innovations(cur, emb: Embedder) -> dict[str, str]:
     cur.execute("delete from innovations where slug is null or not (slug = any(%s))", (list(ids),))
     cur.execute("delete from search_index where kind = 'innowacja' and not (ref_id = any(%s::uuid[]))", (list(ids.values()),))
 
-    texts = [innovation_text(i) for i in innovations]
     index_rows(cur, [{
-        "kind": "innowacja", "ref_id": ids[i["slug"]], "title": i["title"], "body": t,
+        "kind": "innowacja", "ref_id": ids[i["slug"]], "title": i["title"], "body": innovation_text(i),
         "lemmas": r["lemmas"], "areas": r["areas"], "target_groups": r["target_groups"],
-    } for i, r, t in zip(innovations, rows, texts)], emb.embed(texts))
+    } for i, r in zip(innovations, rows)])
     print(f"innowacje: {len(rows)} (syntetyczne: {sum(r['synthetic'] for r in rows)})")
     return ids
 
 
-def load_synthetic(cur, emb: Embedder, innovation_ids: dict[str, str], teryts: set[str]) -> None:
+def load_synthetic(cur, innovation_ids: dict[str, str], teryts: set[str]) -> None:
     path = OUT / "synthetic.json"
     if not path.exists():
         print("! brak out/synthetic.json — pomijam dane demo (uruchom seed_synthetic.py)")
@@ -162,7 +130,7 @@ def load_synthetic(cur, emb: Embedder, innovation_ids: dict[str, str], teryts: s
     cur.execute("delete from search_index where kind = 'ekspert'")  # wszyscy eksperci w indeksie są demo
     cur.execute("delete from tests where synthetic")
 
-    # Potrzeby — embedding z tego samego tekstu co lib/match.ts, żeby similar_needs było spójne.
+    # Potrzeby — lematy z karty, jak w lib/match.ts, żeby similar_needs_kw było spójne.
     needs = [n for n in data["needs"] if n["teryt"] in teryts]
     need_ids = []
     for n in needs:
@@ -172,22 +140,20 @@ def load_synthetic(cur, emb: Embedder, innovation_ids: dict[str, str], teryts: s
             (n["status_code"], Jsonb(n["card"]), n["teryt"], n["status"], n["best_fit"], n["created_at"]),
         )
         need_ids.append(str(cur.fetchone()[0]))
-    texts = [f"{n['card']['summary']}\n{', '.join(n['card']['keywords'])}" for n in needs]
     index_rows(cur, [{
         "kind": "potrzeba", "ref_id": nid, "title": n["card"]["summary"][:140], "body": n["card"]["summary"],
         "lemmas": n["card"]["keywords"], "areas": n["card"]["areas"], "target_groups": n["card"]["groups"],
         "teryt": n["teryt"],
         # Zamknięte zgłoszenia nie liczą się do „inne gminy zgłosiły podobny problem”.
         "active": n["status"] != "zamkniete",
-    } for n, nid in zip(needs, need_ids)], emb.embed(texts))
+    } for n, nid in zip(needs, need_ids)])
 
     # Eksperci — tylko w indeksie (lib/match.ts czyta imię z title i opis z body).
     experts = data["experts"]
-    texts = [f"{x['name']}\n{x['description']}\n{', '.join(x['lemmas'])}" for x in experts]
     index_rows(cur, [{
         "kind": "ekspert", "ref_id": str(uuid.uuid5(EXPERT_NS, x["name"])), "title": x["name"],
         "body": x["description"], "lemmas": x["lemmas"], "areas": x["areas"], "target_groups": x["groups"],
-    } for x in experts], emb.embed(texts))
+    } for x in experts])
 
     # Nabory
     call_rows = []
@@ -199,11 +165,10 @@ def load_synthetic(cur, emb: Embedder, innovation_ids: dict[str, str], teryts: s
              Jsonb(c["criteria"]), Jsonb(c["form_schema"])),
         )
         call_rows.append((str(cur.fetchone()[0]), c))
-    texts = [f"{c['title']}\n{c['description']}" for _, c in call_rows]
     index_rows(cur, [{
         "kind": "nabor", "ref_id": cid, "title": c["title"], "body": c["description"],
         "lemmas": c["lemmas"], "areas": c["areas"], "active": c["active"],
-    } for cid, c in call_rows], emb.embed(texts))
+    } for cid, c in call_rows])
 
     # Pomysły (Pracownia sprawdza nowość tym samym indeksem)
     idea_rows = []
@@ -214,11 +179,10 @@ def load_synthetic(cur, emb: Embedder, innovation_ids: dict[str, str], teryts: s
             (idea["status_code"], Jsonb(idea["fiszka"]), idea["stage"], idea["status"], idea["created_at"]),
         )
         idea_rows.append((str(cur.fetchone()[0]), idea))
-    texts = [f"{i['fiszka']['krotki_opis']}\n{i['fiszka']['istota']}" for _, i in idea_rows]
     index_rows(cur, [{
         "kind": "pomysl", "ref_id": iid, "title": i["fiszka"]["krotki_opis"], "body": i["fiszka"]["istota"],
         "lemmas": i["fiszka"]["krotki_opis"].lower().split(),
-    } for iid, i in idea_rows], emb.embed(texts))
+    } for iid, i in idea_rows])
 
     # Testy + przeliczenie „Przetestowano w N gminach, średnio X” na kartach innowacji
     tests = [t for t in data["tests"] if t["innovation_slug"] in innovation_ids and t["teryt"] in teryts]
@@ -242,32 +206,29 @@ def load_synthetic(cur, emb: Embedder, innovation_ids: dict[str, str], teryts: s
           f"{len(idea_rows)} pomysłów, {len(tests)} testów")
 
 
-def load_doc_chunks(cur, emb: Embedder) -> None:
+def load_doc_chunks(cur) -> None:
     path = OUT / "doc_chunks.json"
     chunks = read_json(path) if path.exists() else []
     if not chunks:
         print("doc_chunks: brak fragmentów raportów — pomijam (PDF-y do raw/docs, potem parse_pdfs.py)")
         return
-    embeddings = emb.embed([f"{c['doc_title']}\n{c['text']}" for c in chunks])
     cur.execute("delete from doc_chunks")
     cur.executemany(
-        "insert into doc_chunks (doc_title, year, url, page, text, embedding) values (%s, %s, %s, %s, %s, %s::vector)",
-        [(c["doc_title"], c["year"], c["url"], c["page"], c["text"], vec(e)) for c, e in zip(chunks, embeddings)],
+        "insert into doc_chunks (doc_title, year, url, page, text) values (%s, %s, %s, %s, %s)",
+        [(c["doc_title"], c["year"], c["url"], c["page"], c["text"]) for c in chunks],
     )
     print(f"doc_chunks: {len(chunks)}")
 
 
 def main() -> None:
-    missing = [k for k in ("OPENAI_API_KEY", "SUPABASE_DB_URL") if not os.environ.get(k)]
-    if missing:
-        sys.exit(f"Brak w ../.env.local: {', '.join(missing)}")
-    emb = Embedder()
+    if not os.environ.get("SUPABASE_DB_URL"):
+        sys.exit("Brak SUPABASE_DB_URL w ../.env.local")
     # Jedna transakcja: w razie błędu baza zostaje w poprzednim, spójnym stanie.
     with psycopg.connect(db_url()) as conn, conn.cursor() as cur:
         teryts = load_gminy(cur)
-        ids = load_innovations(cur, emb)
-        load_synthetic(cur, emb, ids, teryts)
-        load_doc_chunks(cur, emb)
+        ids = load_innovations(cur)
+        load_synthetic(cur, ids, teryts)
+        load_doc_chunks(cur)
     print("Gotowe.")
 
 
