@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
@@ -192,6 +193,42 @@ export async function removePersonalData(_prev: ActionResult, formData: FormData
   }
   refresh();
   return { ok: true, message: "Usunięto rozpoznane dane osobowe z treści." };
+}
+
+const DeleteInput = z.object({ needId: z.uuid(), confirm: z.literal("on") });
+
+/**
+ * Trwale usuwa zgłoszenie (np. testowe) razem z rozmową, wpisem w indeksie i powiadomieniami.
+ * Dopasowania znikają kaskadowo; pomysły zbudowane na zgłoszeniu zostają, tylko bez powiązania.
+ */
+export async function deleteNeed(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = DeleteInput.safeParse({ needId: formData.get("needId"), confirm: formData.get("confirm") });
+  if (!parsed.success) return { ok: false, message: "Zaznacz, że rozumiesz, że usunięcia nie można cofnąć." };
+  const { needId } = parsed.data;
+
+  try {
+    const supabase = createAdminClient();
+    const { data: need, error } = await supabase.from("needs").select("status_code").eq("id", needId).maybeSingle();
+    if (error) throw error;
+    if (!need) return NOT_FOUND;
+    // Najpierw to, co wskazuje na zgłoszenie bez klucza obcego (albo bez kaskady).
+    const cleanup = await Promise.all([
+      supabase.from("ideas").update({ need_id: null }).eq("need_id", needId),
+      supabase.from("threads").delete().eq("entity_kind", "potrzeba").eq("entity_id", needId),
+      supabase.from("search_index").delete().eq("kind", "potrzeba").eq("ref_id", needId),
+      supabase.from("notifications").delete().eq("payload->>needId", needId),
+    ]);
+    const cleanupError = cleanup.find((r) => r.error)?.error;
+    if (cleanupError) throw cleanupError;
+    const { error: dError } = await supabase.from("needs").delete().eq("id", needId);
+    if (dError) throw dError;
+    await logChange(user.id, "need.delete", "need", needId, { code: need.status_code });
+  } catch (e) {
+    console.error("[panel] usuwanie zgłoszenia:", e);
+    return { ok: false, message: "Nie udało się usunąć. Spróbuj ponownie." };
+  }
+  redirect("/panel?usunieto=1");
 }
 
 const IdeaStatusInput = z.object({

@@ -1,5 +1,6 @@
 import { DocumentDuplicateIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
@@ -53,6 +54,7 @@ export default async function Page(props: PageProps<"/panel">) {
   return (
     <section className="space-y-6">
       <h1 className="text-3xl font-bold">Zgłoszenia</h1>
+      {params.usunieto && <Alert tone="success" title="Usunięto">Zgłoszenie zostało usunięte.</Alert>}
 
       <nav aria-label="Filtruj zgłoszenia">
         <ul className="flex flex-wrap gap-2">

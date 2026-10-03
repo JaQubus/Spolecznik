@@ -1,9 +1,10 @@
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { CheckboxField } from "@/components/ui/checkbox-field";
 import { FieldHint } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
@@ -20,7 +21,7 @@ import { AREA_LABELS, CROSS_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { MessageList } from "@/components/rozmowa/message-list";
 import { needThread } from "@/lib/threads";
 import { ActionForm, SubmitButton } from "../../action-form";
-import { assignExpert, removePersonalData, replyInThread, updateNeedStatus } from "../../actions";
+import { assignExpert, deleteNeed, removePersonalData, replyInThread, updateNeedStatus } from "../../actions";
 import { ThreadLive } from "./thread-live";
 
 export const metadata = { title: "Zgłoszenie · Panel ROPS" };
@@ -257,6 +258,22 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
             ))}
           </ol>
         )}
+      </section>
+
+      <section aria-labelledby="usun" className="max-w-2xl space-y-3 border-t pt-8">
+        <h2 id="usun" className="text-2xl font-bold">Usuń zgłoszenie</h2>
+        <p>
+          Usunięcia nie można cofnąć. Znikną też rozmowa, dopasowania i powiadomienia, a kod{" "}
+          <span className="font-mono tracking-wider">{need.status_code}</span> przestanie działać. Używaj do zgłoszeń testowych
+          i spamu — prawdziwe zgłoszenie lepiej zamknąć.
+        </p>
+        <ActionForm action={deleteNeed} className="space-y-4">
+          <input type="hidden" name="needId" value={need.id} />
+          <CheckboxField name="confirm" required label="Rozumiem, że zgłoszenie zostanie usunięte na zawsze" />
+          <SubmitButton variant="outline" pendingText="Usuwanie…">
+            <TrashIcon aria-hidden className="size-5" /> Usuń zgłoszenie
+          </SubmitButton>
+        </ActionForm>
       </section>
     </article>
   );
