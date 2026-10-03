@@ -1,0 +1,2381 @@
+[
+  {
+    "teryt": "1201011",
+    "bdl_id": "011212001011",
+    "nazwa": "Bochnia",
+    "powiat": "bocheński",
+    "typ": "miejska",
+    "ludnosc": 28187,
+    "udzial_65plus": 22.5,
+    "zmiana_ludnosci_10l": -6.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1201022",
+    "bdl_id": "011212001022",
+    "nazwa": "Bochnia",
+    "powiat": "bocheński",
+    "typ": "wiejska",
+    "ludnosc": 20945,
+    "udzial_65plus": 17.2,
+    "zmiana_ludnosci_10l": 7.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1201032",
+    "bdl_id": "011212001032",
+    "nazwa": "Drwinia",
+    "powiat": "bocheński",
+    "typ": "wiejska",
+    "ludnosc": 6240,
+    "udzial_65plus": 19.0,
+    "zmiana_ludnosci_10l": -4.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1201042",
+    "bdl_id": "011212001042",
+    "nazwa": "Lipnica Murowana",
+    "powiat": "bocheński",
+    "typ": "wiejska",
+    "ludnosc": 5489,
+    "udzial_65plus": 15.8,
+    "zmiana_ludnosci_10l": -2.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1201052",
+    "bdl_id": "011212001052",
+    "nazwa": "Łapanów",
+    "powiat": "bocheński",
+    "typ": "wiejska",
+    "ludnosc": 8693,
+    "udzial_65plus": 15.1,
+    "zmiana_ludnosci_10l": 9.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1201063",
+    "bdl_id": "011212001063",
+    "nazwa": "Nowy Wiśnicz",
+    "powiat": "bocheński",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 14522,
+    "udzial_65plus": 16.1,
+    "zmiana_ludnosci_10l": 5.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1201072",
+    "bdl_id": "011212001072",
+    "nazwa": "Rzezawa",
+    "powiat": "bocheński",
+    "typ": "wiejska",
+    "ludnosc": 11600,
+    "udzial_65plus": 15.9,
+    "zmiana_ludnosci_10l": 4.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1201082",
+    "bdl_id": "011212001082",
+    "nazwa": "Trzciana",
+    "powiat": "bocheński",
+    "typ": "wiejska",
+    "ludnosc": 5711,
+    "udzial_65plus": 16.1,
+    "zmiana_ludnosci_10l": 5.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1201092",
+    "bdl_id": "011212001092",
+    "nazwa": "Żegocina",
+    "powiat": "bocheński",
+    "typ": "wiejska",
+    "ludnosc": 5539,
+    "udzial_65plus": 16.7,
+    "zmiana_ludnosci_10l": 2.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1202012",
+    "bdl_id": "011212402012",
+    "nazwa": "Borzęcin",
+    "powiat": "brzeski",
+    "typ": "wiejska",
+    "ludnosc": 8057,
+    "udzial_65plus": 18.4,
+    "zmiana_ludnosci_10l": -4.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1202023",
+    "bdl_id": "011212402023",
+    "nazwa": "Brzesko",
+    "powiat": "brzeski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 35120,
+    "udzial_65plus": 19.7,
+    "zmiana_ludnosci_10l": -3.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1202033",
+    "bdl_id": "011212402033",
+    "nazwa": "Czchów",
+    "powiat": "brzeski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 9588,
+    "udzial_65plus": 17.4,
+    "zmiana_ludnosci_10l": -2.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1202042",
+    "bdl_id": "011212402042",
+    "nazwa": "Dębno",
+    "powiat": "brzeski",
+    "typ": "wiejska",
+    "ludnosc": 14458,
+    "udzial_65plus": 17.3,
+    "zmiana_ludnosci_10l": -1.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1202052",
+    "bdl_id": "011212402052",
+    "nazwa": "Gnojnik",
+    "powiat": "brzeski",
+    "typ": "wiejska",
+    "ludnosc": 8075,
+    "udzial_65plus": 15.5,
+    "zmiana_ludnosci_10l": 2.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1202062",
+    "bdl_id": "011212402062",
+    "nazwa": "Iwkowa",
+    "powiat": "brzeski",
+    "typ": "wiejska",
+    "ludnosc": 6661,
+    "udzial_65plus": 16.4,
+    "zmiana_ludnosci_10l": 5.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1202072",
+    "bdl_id": "011212402072",
+    "nazwa": "Szczurowa",
+    "powiat": "brzeski",
+    "typ": "wiejska",
+    "ludnosc": 8983,
+    "udzial_65plus": 19.7,
+    "zmiana_ludnosci_10l": -7.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1203013",
+    "bdl_id": "011212303013",
+    "nazwa": "Alwernia",
+    "powiat": "chrzanowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 12160,
+    "udzial_65plus": 21.1,
+    "zmiana_ludnosci_10l": -4.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1203022",
+    "bdl_id": "011212303022",
+    "nazwa": "Babice",
+    "powiat": "chrzanowski",
+    "typ": "wiejska",
+    "ludnosc": 8961,
+    "udzial_65plus": 20.9,
+    "zmiana_ludnosci_10l": -1.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1203033",
+    "bdl_id": "011212303033",
+    "nazwa": "Chrzanów",
+    "powiat": "chrzanowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 43122,
+    "udzial_65plus": 25.9,
+    "zmiana_ludnosci_10l": -9.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1203043",
+    "bdl_id": "011212303043",
+    "nazwa": "Libiąż",
+    "powiat": "chrzanowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 20715,
+    "udzial_65plus": 22.3,
+    "zmiana_ludnosci_10l": -8.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1203053",
+    "bdl_id": "011212303053",
+    "nazwa": "Trzebinia",
+    "powiat": "chrzanowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 31823,
+    "udzial_65plus": 23.5,
+    "zmiana_ludnosci_10l": -7.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1204012",
+    "bdl_id": "011212404012",
+    "nazwa": "Bolesław",
+    "powiat": "dąbrowski",
+    "typ": "wiejska",
+    "ludnosc": 2614,
+    "udzial_65plus": 19.1,
+    "zmiana_ludnosci_10l": -5.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1204023",
+    "bdl_id": "011212404023",
+    "nazwa": "Dąbrowa Tarnowska",
+    "powiat": "dąbrowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 20817,
+    "udzial_65plus": 19.3,
+    "zmiana_ludnosci_10l": -1.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1204032",
+    "bdl_id": "011212404032",
+    "nazwa": "Gręboszów",
+    "powiat": "dąbrowski",
+    "typ": "wiejska",
+    "ludnosc": 3112,
+    "udzial_65plus": 23.8,
+    "zmiana_ludnosci_10l": -8.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1204042",
+    "bdl_id": "011212404042",
+    "nazwa": "Mędrzechów",
+    "powiat": "dąbrowski",
+    "typ": "wiejska",
+    "ludnosc": 3199,
+    "udzial_65plus": 19.8,
+    "zmiana_ludnosci_10l": -9.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1204052",
+    "bdl_id": "011212404052",
+    "nazwa": "Olesno",
+    "powiat": "dąbrowski",
+    "typ": "wiejska",
+    "ludnosc": 7595,
+    "udzial_65plus": 18.2,
+    "zmiana_ludnosci_10l": -4.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1204062",
+    "bdl_id": "011212404062",
+    "nazwa": "Radgoszcz",
+    "powiat": "dąbrowski",
+    "typ": "wiejska",
+    "ludnosc": 7366,
+    "udzial_65plus": 16.5,
+    "zmiana_ludnosci_10l": -0.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1204073",
+    "bdl_id": "011212404073",
+    "nazwa": "Szczucin",
+    "powiat": "dąbrowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 12272,
+    "udzial_65plus": 18.1,
+    "zmiana_ludnosci_10l": -7.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205011",
+    "bdl_id": "011212205011",
+    "nazwa": "Gorlice",
+    "powiat": "gorlicki",
+    "typ": "miejska",
+    "ludnosc": 24825,
+    "udzial_65plus": 27.0,
+    "zmiana_ludnosci_10l": -11.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205023",
+    "bdl_id": "011212205023",
+    "nazwa": "Biecz",
+    "powiat": "gorlicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 15827,
+    "udzial_65plus": 20.3,
+    "zmiana_ludnosci_10l": -6.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205033",
+    "bdl_id": "011212205033",
+    "nazwa": "Bobowa",
+    "powiat": "gorlicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 9499,
+    "udzial_65plus": 15.3,
+    "zmiana_ludnosci_10l": -2.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205042",
+    "bdl_id": "011212205042",
+    "nazwa": "Gorlice",
+    "powiat": "gorlicki",
+    "typ": "wiejska",
+    "ludnosc": 16829,
+    "udzial_65plus": 18.8,
+    "zmiana_ludnosci_10l": -1.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205052",
+    "bdl_id": "011212205052",
+    "nazwa": "Lipinki",
+    "powiat": "gorlicki",
+    "typ": "wiejska",
+    "ludnosc": 6617,
+    "udzial_65plus": 18.9,
+    "zmiana_ludnosci_10l": -2.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205062",
+    "bdl_id": "011212205062",
+    "nazwa": "Łużna",
+    "powiat": "gorlicki",
+    "typ": "wiejska",
+    "ludnosc": 8233,
+    "udzial_65plus": 16.3,
+    "zmiana_ludnosci_10l": -2.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205072",
+    "bdl_id": "011212205072",
+    "nazwa": "Moszczenica",
+    "powiat": "gorlicki",
+    "typ": "wiejska",
+    "ludnosc": 4893,
+    "udzial_65plus": 16.0,
+    "zmiana_ludnosci_10l": -0.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205082",
+    "bdl_id": "011212205082",
+    "nazwa": "Ropa",
+    "powiat": "gorlicki",
+    "typ": "wiejska",
+    "ludnosc": 5502,
+    "udzial_65plus": 15.2,
+    "zmiana_ludnosci_10l": 2.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205092",
+    "bdl_id": "011212205092",
+    "nazwa": "Sękowa",
+    "powiat": "gorlicki",
+    "typ": "wiejska",
+    "ludnosc": 4858,
+    "udzial_65plus": 18.5,
+    "zmiana_ludnosci_10l": -2.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1205102",
+    "bdl_id": "011212205102",
+    "nazwa": "Uście Gorlickie",
+    "powiat": "gorlicki",
+    "typ": "wiejska",
+    "ludnosc": 6642,
+    "udzial_65plus": 16.8,
+    "zmiana_ludnosci_10l": -2.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206012",
+    "bdl_id": "011212006012",
+    "nazwa": "Czernichów",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 15507,
+    "udzial_65plus": 17.1,
+    "zmiana_ludnosci_10l": 8.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206022",
+    "bdl_id": "011212006022",
+    "nazwa": "Igołomia-Wawrzeńczyce",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 7809,
+    "udzial_65plus": 20.5,
+    "zmiana_ludnosci_10l": 1.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206032",
+    "bdl_id": "011212006032",
+    "nazwa": "Iwanowice",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 9859,
+    "udzial_65plus": 17.9,
+    "zmiana_ludnosci_10l": 9.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206042",
+    "bdl_id": "011212006042",
+    "nazwa": "Jerzmanowice-Przeginia",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 11094,
+    "udzial_65plus": 19.3,
+    "zmiana_ludnosci_10l": 2.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206052",
+    "bdl_id": "011212006052",
+    "nazwa": "Kocmyrzów-Luborzyca",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 18779,
+    "udzial_65plus": 15.7,
+    "zmiana_ludnosci_10l": 25.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206063",
+    "bdl_id": "011212006063",
+    "nazwa": "Krzeszowice",
+    "powiat": "krakowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 31661,
+    "udzial_65plus": 22.6,
+    "zmiana_ludnosci_10l": -2.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206072",
+    "bdl_id": "011212006072",
+    "nazwa": "Liszki",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 18832,
+    "udzial_65plus": 16.8,
+    "zmiana_ludnosci_10l": 12.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206082",
+    "bdl_id": "011212006082",
+    "nazwa": "Michałowice",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 13692,
+    "udzial_65plus": 14.2,
+    "zmiana_ludnosci_10l": 37.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206092",
+    "bdl_id": "011212006092",
+    "nazwa": "Mogilany",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 16594,
+    "udzial_65plus": 14.7,
+    "zmiana_ludnosci_10l": 22.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206103",
+    "bdl_id": "011212006103",
+    "nazwa": "Skała",
+    "powiat": "krakowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 10860,
+    "udzial_65plus": 18.9,
+    "zmiana_ludnosci_10l": 3.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206113",
+    "bdl_id": "011212006113",
+    "nazwa": "Skawina",
+    "powiat": "krakowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 43944,
+    "udzial_65plus": 19.8,
+    "zmiana_ludnosci_10l": 1.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206123",
+    "bdl_id": "011212006123",
+    "nazwa": "Słomniki",
+    "powiat": "krakowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 13620,
+    "udzial_65plus": 20.3,
+    "zmiana_ludnosci_10l": -0.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206132",
+    "bdl_id": "011212006132",
+    "nazwa": "Sułoszowa",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 5584,
+    "udzial_65plus": 20.3,
+    "zmiana_ludnosci_10l": -4.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206143",
+    "bdl_id": "011212006143",
+    "nazwa": "Świątniki Górne",
+    "powiat": "krakowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 11165,
+    "udzial_65plus": 16.1,
+    "zmiana_ludnosci_10l": 14.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206152",
+    "bdl_id": "011212006152",
+    "nazwa": "Wielka Wieś",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 17589,
+    "udzial_65plus": 13.3,
+    "zmiana_ludnosci_10l": 56.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206162",
+    "bdl_id": "011212006162",
+    "nazwa": "Zabierzów",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 30041,
+    "udzial_65plus": 18.5,
+    "zmiana_ludnosci_10l": 17.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1206172",
+    "bdl_id": "011212006172",
+    "nazwa": "Zielonki",
+    "powiat": "krakowski",
+    "typ": "wiejska",
+    "ludnosc": 28255,
+    "udzial_65plus": 14.2,
+    "zmiana_ludnosci_10l": 32.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207011",
+    "bdl_id": "011212207011",
+    "nazwa": "Limanowa",
+    "powiat": "limanowski",
+    "typ": "miejska",
+    "ludnosc": 14224,
+    "udzial_65plus": 20.9,
+    "zmiana_ludnosci_10l": -6.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207021",
+    "bdl_id": "011212207021",
+    "nazwa": "Mszana Dolna",
+    "powiat": "limanowski",
+    "typ": "miejska",
+    "ludnosc": 7808,
+    "udzial_65plus": 19.1,
+    "zmiana_ludnosci_10l": -1.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207032",
+    "bdl_id": "011212207032",
+    "nazwa": "Dobra",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 10123,
+    "udzial_65plus": 16.7,
+    "zmiana_ludnosci_10l": 2.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207042",
+    "bdl_id": "011212207042",
+    "nazwa": "Jodłownik",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 8777,
+    "udzial_65plus": 15.9,
+    "zmiana_ludnosci_10l": 3.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207052",
+    "bdl_id": "011212207052",
+    "nazwa": "Kamienica",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 5948,
+    "udzial_65plus": 14.7,
+    "zmiana_ludnosci_10l": -23.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207062",
+    "bdl_id": "011212207062",
+    "nazwa": "Laskowa",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 8115,
+    "udzial_65plus": 14.5,
+    "zmiana_ludnosci_10l": 1.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207072",
+    "bdl_id": "011212207072",
+    "nazwa": "Limanowa",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 26193,
+    "udzial_65plus": 14.0,
+    "zmiana_ludnosci_10l": 5.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207082",
+    "bdl_id": "011212207082",
+    "nazwa": "Łukowica",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 10236,
+    "udzial_65plus": 14.6,
+    "zmiana_ludnosci_10l": 3.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207092",
+    "bdl_id": "011212207092",
+    "nazwa": "Mszana Dolna",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 17608,
+    "udzial_65plus": 14.5,
+    "zmiana_ludnosci_10l": 0.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207102",
+    "bdl_id": "011212207102",
+    "nazwa": "Niedźwiedź",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 7298,
+    "udzial_65plus": 14.1,
+    "zmiana_ludnosci_10l": 0.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207112",
+    "bdl_id": "011212207112",
+    "nazwa": "Słopnice",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 7054,
+    "udzial_65plus": 11.8,
+    "zmiana_ludnosci_10l": 7.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207122",
+    "bdl_id": "011212207122",
+    "nazwa": "Tymbark",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 6297,
+    "udzial_65plus": 16.1,
+    "zmiana_ludnosci_10l": -2.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1207132",
+    "bdl_id": "011212207132",
+    "nazwa": "Szczawa",
+    "powiat": "limanowski",
+    "typ": "wiejska",
+    "ludnosc": 1799,
+    "udzial_65plus": 14.8,
+    "zmiana_ludnosci_10l": null,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1208012",
+    "bdl_id": "011212008012",
+    "nazwa": "Charsznica",
+    "powiat": "miechowski",
+    "typ": "wiejska",
+    "ludnosc": 6954,
+    "udzial_65plus": 24.0,
+    "zmiana_ludnosci_10l": -8.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1208022",
+    "bdl_id": "011212008022",
+    "nazwa": "Gołcza",
+    "powiat": "miechowski",
+    "typ": "wiejska",
+    "ludnosc": 5827,
+    "udzial_65plus": 20.9,
+    "zmiana_ludnosci_10l": -5.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1208032",
+    "bdl_id": "011212008032",
+    "nazwa": "Kozłów",
+    "powiat": "miechowski",
+    "typ": "wiejska",
+    "ludnosc": 4344,
+    "udzial_65plus": 24.0,
+    "zmiana_ludnosci_10l": -7.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1208043",
+    "bdl_id": "011212008043",
+    "nazwa": "Książ Wielki",
+    "powiat": "miechowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 4736,
+    "udzial_65plus": 26.0,
+    "zmiana_ludnosci_10l": -9.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1208053",
+    "bdl_id": "011212008053",
+    "nazwa": "Miechów",
+    "powiat": "miechowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 18401,
+    "udzial_65plus": 24.2,
+    "zmiana_ludnosci_10l": -7.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1208062",
+    "bdl_id": "011212008062",
+    "nazwa": "Racławice",
+    "powiat": "miechowski",
+    "typ": "wiejska",
+    "ludnosc": 2378,
+    "udzial_65plus": 22.4,
+    "zmiana_ludnosci_10l": -3.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1208072",
+    "bdl_id": "011212008072",
+    "nazwa": "Słaboszów",
+    "powiat": "miechowski",
+    "typ": "wiejska",
+    "ludnosc": 3258,
+    "udzial_65plus": 26.1,
+    "zmiana_ludnosci_10l": -10.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1209013",
+    "bdl_id": "011212009013",
+    "nazwa": "Dobczyce",
+    "powiat": "myślenicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 15580,
+    "udzial_65plus": 17.1,
+    "zmiana_ludnosci_10l": 2.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1209022",
+    "bdl_id": "011212009022",
+    "nazwa": "Lubień",
+    "powiat": "myślenicki",
+    "typ": "wiejska",
+    "ludnosc": 10113,
+    "udzial_65plus": 15.9,
+    "zmiana_ludnosci_10l": 1.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1209033",
+    "bdl_id": "011212009033",
+    "nazwa": "Myślenice",
+    "powiat": "myślenicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 45429,
+    "udzial_65plus": 17.4,
+    "zmiana_ludnosci_10l": 4.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1209042",
+    "bdl_id": "011212009042",
+    "nazwa": "Pcim",
+    "powiat": "myślenicki",
+    "typ": "wiejska",
+    "ludnosc": 10990,
+    "udzial_65plus": 17.1,
+    "zmiana_ludnosci_10l": 0.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1209052",
+    "bdl_id": "011212009052",
+    "nazwa": "Raciechowice",
+    "powiat": "myślenicki",
+    "typ": "wiejska",
+    "ludnosc": 6456,
+    "udzial_65plus": 17.1,
+    "zmiana_ludnosci_10l": 3.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1209062",
+    "bdl_id": "011212009062",
+    "nazwa": "Siepraw",
+    "powiat": "myślenicki",
+    "typ": "wiejska",
+    "ludnosc": 9804,
+    "udzial_65plus": 15.4,
+    "zmiana_ludnosci_10l": 13.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1209073",
+    "bdl_id": "011212009073",
+    "nazwa": "Sułkowice",
+    "powiat": "myślenicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 15274,
+    "udzial_65plus": 16.5,
+    "zmiana_ludnosci_10l": 4.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1209082",
+    "bdl_id": "011212009082",
+    "nazwa": "Tokarnia",
+    "powiat": "myślenicki",
+    "typ": "wiejska",
+    "ludnosc": 8777,
+    "udzial_65plus": 14.9,
+    "zmiana_ludnosci_10l": 2.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1209092",
+    "bdl_id": "011212009092",
+    "nazwa": "Wiśniowa",
+    "powiat": "myślenicki",
+    "typ": "wiejska",
+    "ludnosc": 7556,
+    "udzial_65plus": 16.4,
+    "zmiana_ludnosci_10l": 4.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210011",
+    "bdl_id": "011212210011",
+    "nazwa": "Grybów",
+    "powiat": "nowosądecki",
+    "typ": "miejska",
+    "ludnosc": 5857,
+    "udzial_65plus": 19.6,
+    "zmiana_ludnosci_10l": -3.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210022",
+    "bdl_id": "011212210022",
+    "nazwa": "Chełmiec",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 29876,
+    "udzial_65plus": 13.6,
+    "zmiana_ludnosci_10l": 7.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210032",
+    "bdl_id": "011212210032",
+    "nazwa": "Gródek nad Dunajcem",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 8823,
+    "udzial_65plus": 16.4,
+    "zmiana_ludnosci_10l": -4.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210042",
+    "bdl_id": "011212210042",
+    "nazwa": "Grybów",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 25420,
+    "udzial_65plus": 14.4,
+    "zmiana_ludnosci_10l": 2.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210052",
+    "bdl_id": "011212210052",
+    "nazwa": "Kamionka Wielka",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 10486,
+    "udzial_65plus": 13.3,
+    "zmiana_ludnosci_10l": 3.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210062",
+    "bdl_id": "011212210062",
+    "nazwa": "Korzenna",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 14443,
+    "udzial_65plus": 13.7,
+    "zmiana_ludnosci_10l": 1.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210073",
+    "bdl_id": "011212210073",
+    "nazwa": "Krynica-Zdrój",
+    "powiat": "nowosądecki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 15276,
+    "udzial_65plus": 23.0,
+    "zmiana_ludnosci_10l": -9.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210082",
+    "bdl_id": "011212210082",
+    "nazwa": "Łabowa",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 6016,
+    "udzial_65plus": 13.3,
+    "zmiana_ludnosci_10l": 1.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210092",
+    "bdl_id": "011212210092",
+    "nazwa": "Łącko",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 16714,
+    "udzial_65plus": 14.3,
+    "zmiana_ludnosci_10l": 3.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210102",
+    "bdl_id": "011212210102",
+    "nazwa": "Łososina Dolna",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 11187,
+    "udzial_65plus": 14.9,
+    "zmiana_ludnosci_10l": 3.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210113",
+    "bdl_id": "011212210113",
+    "nazwa": "Muszyna",
+    "powiat": "nowosądecki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 11012,
+    "udzial_65plus": 19.7,
+    "zmiana_ludnosci_10l": -5.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210122",
+    "bdl_id": "011212210122",
+    "nazwa": "Nawojowa",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 8869,
+    "udzial_65plus": 14.2,
+    "zmiana_ludnosci_10l": 4.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210133",
+    "bdl_id": "011212210133",
+    "nazwa": "Piwniczna-Zdrój",
+    "powiat": "nowosądecki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 9750,
+    "udzial_65plus": 18.7,
+    "zmiana_ludnosci_10l": -8.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210142",
+    "bdl_id": "011212210142",
+    "nazwa": "Podegrodzie",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 13725,
+    "udzial_65plus": 13.2,
+    "zmiana_ludnosci_10l": 6.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210152",
+    "bdl_id": "011212210152",
+    "nazwa": "Rytro",
+    "powiat": "nowosądecki",
+    "typ": "wiejska",
+    "ludnosc": 3583,
+    "udzial_65plus": 18.3,
+    "zmiana_ludnosci_10l": -7.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1210163",
+    "bdl_id": "011212210163",
+    "nazwa": "Stary Sącz",
+    "powiat": "nowosądecki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 23420,
+    "udzial_65plus": 16.9,
+    "zmiana_ludnosci_10l": -0.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211011",
+    "bdl_id": "011216911011",
+    "nazwa": "Nowy Targ",
+    "powiat": "nowotarski",
+    "typ": "miejska",
+    "ludnosc": 32956,
+    "udzial_65plus": 20.8,
+    "zmiana_ludnosci_10l": -1.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211023",
+    "bdl_id": "011216911023",
+    "nazwa": "Szczawnica",
+    "powiat": "nowotarski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 6567,
+    "udzial_65plus": 21.5,
+    "zmiana_ludnosci_10l": -11.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211033",
+    "bdl_id": "011216911033",
+    "nazwa": "Czarny Dunajec",
+    "powiat": "nowotarski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 22115,
+    "udzial_65plus": 17.2,
+    "zmiana_ludnosci_10l": -0.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211042",
+    "bdl_id": "011216911042",
+    "nazwa": "Czorsztyn",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 7535,
+    "udzial_65plus": 16.9,
+    "zmiana_ludnosci_10l": -0.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211052",
+    "bdl_id": "011216911052",
+    "nazwa": "Jabłonka",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 19289,
+    "udzial_65plus": 14.4,
+    "zmiana_ludnosci_10l": 5.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211062",
+    "bdl_id": "011216911062",
+    "nazwa": "Krościenko nad Dunajcem",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 6592,
+    "udzial_65plus": 19.1,
+    "zmiana_ludnosci_10l": -2.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211072",
+    "bdl_id": "011216911072",
+    "nazwa": "Lipnica Wielka",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 6060,
+    "udzial_65plus": 14.2,
+    "zmiana_ludnosci_10l": 1.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211082",
+    "bdl_id": "011216911082",
+    "nazwa": "Łapsze Niżne",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 9237,
+    "udzial_65plus": 17.7,
+    "zmiana_ludnosci_10l": 0.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211092",
+    "bdl_id": "011216911092",
+    "nazwa": "Nowy Targ",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 24077,
+    "udzial_65plus": 16.2,
+    "zmiana_ludnosci_10l": 1.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211102",
+    "bdl_id": "011216911102",
+    "nazwa": "Ochotnica Dolna",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 8469,
+    "udzial_65plus": 15.4,
+    "zmiana_ludnosci_10l": -0.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211112",
+    "bdl_id": "011216911112",
+    "nazwa": "Raba Wyżna",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 14380,
+    "udzial_65plus": 16.6,
+    "zmiana_ludnosci_10l": -1.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211123",
+    "bdl_id": "011216911123",
+    "nazwa": "Rabka-Zdrój",
+    "powiat": "nowotarski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 16386,
+    "udzial_65plus": 21.4,
+    "zmiana_ludnosci_10l": -5.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211132",
+    "bdl_id": "011216911132",
+    "nazwa": "Spytkowice",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 4703,
+    "udzial_65plus": 16.2,
+    "zmiana_ludnosci_10l": 4.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1211142",
+    "bdl_id": "011216911142",
+    "nazwa": "Szaflary",
+    "powiat": "nowotarski",
+    "typ": "wiejska",
+    "ludnosc": 11338,
+    "udzial_65plus": 15.6,
+    "zmiana_ludnosci_10l": 3.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1212011",
+    "bdl_id": "011212312011",
+    "nazwa": "Bukowno",
+    "powiat": "olkuski",
+    "typ": "miejska",
+    "ludnosc": 9104,
+    "udzial_65plus": 26.7,
+    "zmiana_ludnosci_10l": -12.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1212032",
+    "bdl_id": "011212312032",
+    "nazwa": "Bolesław",
+    "powiat": "olkuski",
+    "typ": "wiejska",
+    "ludnosc": 7353,
+    "udzial_65plus": 25.6,
+    "zmiana_ludnosci_10l": -5.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1212042",
+    "bdl_id": "011212312042",
+    "nazwa": "Klucze",
+    "powiat": "olkuski",
+    "typ": "wiejska",
+    "ludnosc": 14206,
+    "udzial_65plus": 23.1,
+    "zmiana_ludnosci_10l": -6.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1212053",
+    "bdl_id": "011212312053",
+    "nazwa": "Olkusz",
+    "powiat": "olkuski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 44782,
+    "udzial_65plus": 25.2,
+    "zmiana_ludnosci_10l": -9.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1212062",
+    "bdl_id": "011212312062",
+    "nazwa": "Trzyciąż",
+    "powiat": "olkuski",
+    "typ": "wiejska",
+    "ludnosc": 6876,
+    "udzial_65plus": 19.9,
+    "zmiana_ludnosci_10l": -2.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1212073",
+    "bdl_id": "011212312073",
+    "nazwa": "Wolbrom",
+    "powiat": "olkuski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 21566,
+    "udzial_65plus": 22.2,
+    "zmiana_ludnosci_10l": -7.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1213011",
+    "bdl_id": "011212313011",
+    "nazwa": "Oświęcim",
+    "powiat": "oświęcimski",
+    "typ": "miejska",
+    "ludnosc": 35005,
+    "udzial_65plus": 25.7,
+    "zmiana_ludnosci_10l": -10.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1213023",
+    "bdl_id": "011212313023",
+    "nazwa": "Brzeszcze",
+    "powiat": "oświęcimski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 20083,
+    "udzial_65plus": 23.2,
+    "zmiana_ludnosci_10l": -6.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1213033",
+    "bdl_id": "011212313033",
+    "nazwa": "Chełmek",
+    "powiat": "oświęcimski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 12063,
+    "udzial_65plus": 23.4,
+    "zmiana_ludnosci_10l": -8.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1213043",
+    "bdl_id": "011212313043",
+    "nazwa": "Kęty",
+    "powiat": "oświęcimski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 33014,
+    "udzial_65plus": 21.2,
+    "zmiana_ludnosci_10l": -3.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1213052",
+    "bdl_id": "011212313052",
+    "nazwa": "Osiek",
+    "powiat": "oświęcimski",
+    "typ": "wiejska",
+    "ludnosc": 8098,
+    "udzial_65plus": 17.6,
+    "zmiana_ludnosci_10l": -1.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1213062",
+    "bdl_id": "011212313062",
+    "nazwa": "Oświęcim",
+    "powiat": "oświęcimski",
+    "typ": "wiejska",
+    "ludnosc": 18897,
+    "udzial_65plus": 19.8,
+    "zmiana_ludnosci_10l": 4.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1213072",
+    "bdl_id": "011212313072",
+    "nazwa": "Polanka Wielka",
+    "powiat": "oświęcimski",
+    "typ": "wiejska",
+    "ludnosc": 4296,
+    "udzial_65plus": 17.3,
+    "zmiana_ludnosci_10l": 0.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1213082",
+    "bdl_id": "011212313082",
+    "nazwa": "Przeciszów",
+    "powiat": "oświęcimski",
+    "typ": "wiejska",
+    "ludnosc": 6246,
+    "udzial_65plus": 21.1,
+    "zmiana_ludnosci_10l": -7.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1213093",
+    "bdl_id": "011212313093",
+    "nazwa": "Zator",
+    "powiat": "oświęcimski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 8994,
+    "udzial_65plus": 19.3,
+    "zmiana_ludnosci_10l": -3.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1214012",
+    "bdl_id": "011212014012",
+    "nazwa": "Koniusza",
+    "powiat": "proszowicki",
+    "typ": "wiejska",
+    "ludnosc": 9115,
+    "udzial_65plus": 19.0,
+    "zmiana_ludnosci_10l": 2.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1214023",
+    "bdl_id": "011212014023",
+    "nazwa": "Koszyce",
+    "powiat": "proszowicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 5169,
+    "udzial_65plus": 22.7,
+    "zmiana_ludnosci_10l": -7.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1214033",
+    "bdl_id": "011212014033",
+    "nazwa": "Nowe Brzesko",
+    "powiat": "proszowicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 5590,
+    "udzial_65plus": 21.6,
+    "zmiana_ludnosci_10l": -3.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1214042",
+    "bdl_id": "011212014042",
+    "nazwa": "Pałecznica",
+    "powiat": "proszowicki",
+    "typ": "wiejska",
+    "ludnosc": 3409,
+    "udzial_65plus": 20.7,
+    "zmiana_ludnosci_10l": -7.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1214053",
+    "bdl_id": "011212014053",
+    "nazwa": "Proszowice",
+    "powiat": "proszowicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 15224,
+    "udzial_65plus": 22.0,
+    "zmiana_ludnosci_10l": -7.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1214062",
+    "bdl_id": "011212014062",
+    "nazwa": "Radziemice",
+    "powiat": "proszowicki",
+    "typ": "wiejska",
+    "ludnosc": 3140,
+    "udzial_65plus": 21.0,
+    "zmiana_ludnosci_10l": -8.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1215011",
+    "bdl_id": "011216915011",
+    "nazwa": "Jordanów",
+    "powiat": "suski",
+    "typ": "miejska",
+    "ludnosc": 5365,
+    "udzial_65plus": 19.8,
+    "zmiana_ludnosci_10l": 0.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1215021",
+    "bdl_id": "011216915021",
+    "nazwa": "Sucha Beskidzka",
+    "powiat": "suski",
+    "typ": "miejska",
+    "ludnosc": 8688,
+    "udzial_65plus": 22.6,
+    "zmiana_ludnosci_10l": -7.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1215032",
+    "bdl_id": "011216915032",
+    "nazwa": "Budzów",
+    "powiat": "suski",
+    "typ": "wiejska",
+    "ludnosc": 8807,
+    "udzial_65plus": 15.2,
+    "zmiana_ludnosci_10l": -0.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1215042",
+    "bdl_id": "011216915042",
+    "nazwa": "Bystra-Sidzina",
+    "powiat": "suski",
+    "typ": "wiejska",
+    "ludnosc": 6845,
+    "udzial_65plus": 15.0,
+    "zmiana_ludnosci_10l": 0.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1215052",
+    "bdl_id": "011216915052",
+    "nazwa": "Jordanów",
+    "powiat": "suski",
+    "typ": "wiejska",
+    "ludnosc": 11118,
+    "udzial_65plus": 16.5,
+    "zmiana_ludnosci_10l": 1.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1215063",
+    "bdl_id": "011216915063",
+    "nazwa": "Maków Podhalański",
+    "powiat": "suski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 15566,
+    "udzial_65plus": 19.2,
+    "zmiana_ludnosci_10l": -4.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1215072",
+    "bdl_id": "011216915072",
+    "nazwa": "Stryszawa",
+    "powiat": "suski",
+    "typ": "wiejska",
+    "ludnosc": 11846,
+    "udzial_65plus": 18.9,
+    "zmiana_ludnosci_10l": 0.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1215082",
+    "bdl_id": "011216915082",
+    "nazwa": "Zawoja",
+    "powiat": "suski",
+    "typ": "wiejska",
+    "ludnosc": 8686,
+    "udzial_65plus": 19.4,
+    "zmiana_ludnosci_10l": -4.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1215092",
+    "bdl_id": "011216915092",
+    "nazwa": "Zembrzyce",
+    "powiat": "suski",
+    "typ": "wiejska",
+    "ludnosc": 5331,
+    "udzial_65plus": 20.2,
+    "zmiana_ludnosci_10l": -5.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216013",
+    "bdl_id": "011212416013",
+    "nazwa": "Ciężkowice",
+    "powiat": "tarnowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 10929,
+    "udzial_65plus": 18.1,
+    "zmiana_ludnosci_10l": -2.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216022",
+    "bdl_id": "011212416022",
+    "nazwa": "Gromnik",
+    "powiat": "tarnowski",
+    "typ": "wiejska",
+    "ludnosc": 8751,
+    "udzial_65plus": 17.2,
+    "zmiana_ludnosci_10l": -0.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216032",
+    "bdl_id": "011212416032",
+    "nazwa": "Lisia Góra",
+    "powiat": "tarnowski",
+    "typ": "wiejska",
+    "ludnosc": 15694,
+    "udzial_65plus": 15.1,
+    "zmiana_ludnosci_10l": 4.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216042",
+    "bdl_id": "011212416042",
+    "nazwa": "Pleśna",
+    "powiat": "tarnowski",
+    "typ": "wiejska",
+    "ludnosc": 11730,
+    "udzial_65plus": 17.5,
+    "zmiana_ludnosci_10l": -2.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216053",
+    "bdl_id": "011212416053",
+    "nazwa": "Radłów",
+    "powiat": "tarnowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 9288,
+    "udzial_65plus": 18.6,
+    "zmiana_ludnosci_10l": -5.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216063",
+    "bdl_id": "011212416063",
+    "nazwa": "Ryglice",
+    "powiat": "tarnowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 11124,
+    "udzial_65plus": 16.6,
+    "zmiana_ludnosci_10l": -5.0,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216072",
+    "bdl_id": "011212416072",
+    "nazwa": "Rzepiennik Strzyżewski",
+    "powiat": "tarnowski",
+    "typ": "wiejska",
+    "ludnosc": 6488,
+    "udzial_65plus": 18.1,
+    "zmiana_ludnosci_10l": -4.1,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216082",
+    "bdl_id": "011212416082",
+    "nazwa": "Skrzyszów",
+    "powiat": "tarnowski",
+    "typ": "wiejska",
+    "ludnosc": 14201,
+    "udzial_65plus": 17.2,
+    "zmiana_ludnosci_10l": 0.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216092",
+    "bdl_id": "011212416092",
+    "nazwa": "Tarnów",
+    "powiat": "tarnowski",
+    "typ": "wiejska",
+    "ludnosc": 26526,
+    "udzial_65plus": 17.7,
+    "zmiana_ludnosci_10l": 3.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216103",
+    "bdl_id": "011212416103",
+    "nazwa": "Tuchów",
+    "powiat": "tarnowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 16752,
+    "udzial_65plus": 19.0,
+    "zmiana_ludnosci_10l": -7.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216112",
+    "bdl_id": "011212416112",
+    "nazwa": "Wierzchosławice",
+    "powiat": "tarnowski",
+    "typ": "wiejska",
+    "ludnosc": 10433,
+    "udzial_65plus": 20.4,
+    "zmiana_ludnosci_10l": -2.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216122",
+    "bdl_id": "011212416122",
+    "nazwa": "Wietrzychowice",
+    "powiat": "tarnowski",
+    "typ": "wiejska",
+    "ludnosc": 3665,
+    "udzial_65plus": 21.6,
+    "zmiana_ludnosci_10l": -8.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216133",
+    "bdl_id": "011212416133",
+    "nazwa": "Wojnicz",
+    "powiat": "tarnowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 13018,
+    "udzial_65plus": 18.1,
+    "zmiana_ludnosci_10l": -2.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216143",
+    "bdl_id": "011212416143",
+    "nazwa": "Zakliczyn",
+    "powiat": "tarnowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 12315,
+    "udzial_65plus": 17.1,
+    "zmiana_ludnosci_10l": -0.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216153",
+    "bdl_id": "011212416153",
+    "nazwa": "Żabno",
+    "powiat": "tarnowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 18203,
+    "udzial_65plus": 19.2,
+    "zmiana_ludnosci_10l": -4.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1216162",
+    "bdl_id": "011212416162",
+    "nazwa": "Szerzyny",
+    "powiat": "tarnowski",
+    "typ": "wiejska",
+    "ludnosc": 7404,
+    "udzial_65plus": 19.4,
+    "zmiana_ludnosci_10l": -7.5,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1217011",
+    "bdl_id": "011216917011",
+    "nazwa": "Zakopane",
+    "powiat": "tatrzański",
+    "typ": "miejska",
+    "ludnosc": 24921,
+    "udzial_65plus": 25.1,
+    "zmiana_ludnosci_10l": -9.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1217022",
+    "bdl_id": "011216917022",
+    "nazwa": "Biały Dunajec",
+    "powiat": "tatrzański",
+    "typ": "wiejska",
+    "ludnosc": 6810,
+    "udzial_65plus": 16.3,
+    "zmiana_ludnosci_10l": -4.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1217032",
+    "bdl_id": "011216917032",
+    "nazwa": "Bukowina Tatrzańska",
+    "powiat": "tatrzański",
+    "typ": "wiejska",
+    "ludnosc": 13556,
+    "udzial_65plus": 17.4,
+    "zmiana_ludnosci_10l": 2.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1217042",
+    "bdl_id": "011216917042",
+    "nazwa": "Kościelisko",
+    "powiat": "tatrzański",
+    "typ": "wiejska",
+    "ludnosc": 9087,
+    "udzial_65plus": 18.1,
+    "zmiana_ludnosci_10l": 4.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1217052",
+    "bdl_id": "011216917052",
+    "nazwa": "Poronin",
+    "powiat": "tatrzański",
+    "typ": "wiejska",
+    "ludnosc": 11807,
+    "udzial_65plus": 15.5,
+    "zmiana_ludnosci_10l": 2.9,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218013",
+    "bdl_id": "011212318013",
+    "nazwa": "Andrychów",
+    "powiat": "wadowicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 41472,
+    "udzial_65plus": 20.1,
+    "zmiana_ludnosci_10l": -5.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218022",
+    "bdl_id": "011212318022",
+    "nazwa": "Brzeźnica",
+    "powiat": "wadowicki",
+    "typ": "wiejska",
+    "ludnosc": 10873,
+    "udzial_65plus": 17.0,
+    "zmiana_ludnosci_10l": 6.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218033",
+    "bdl_id": "011212318033",
+    "nazwa": "Kalwaria Zebrzydowska",
+    "powiat": "wadowicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 19752,
+    "udzial_65plus": 18.4,
+    "zmiana_ludnosci_10l": -0.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218042",
+    "bdl_id": "011212318042",
+    "nazwa": "Lanckorona",
+    "powiat": "wadowicki",
+    "typ": "wiejska",
+    "ludnosc": 6231,
+    "udzial_65plus": 17.0,
+    "zmiana_ludnosci_10l": 1.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218052",
+    "bdl_id": "011212318052",
+    "nazwa": "Mucharz",
+    "powiat": "wadowicki",
+    "typ": "wiejska",
+    "ludnosc": 4162,
+    "udzial_65plus": 18.3,
+    "zmiana_ludnosci_10l": 3.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218062",
+    "bdl_id": "011212318062",
+    "nazwa": "Spytkowice",
+    "powiat": "wadowicki",
+    "typ": "wiejska",
+    "ludnosc": 10017,
+    "udzial_65plus": 16.4,
+    "zmiana_ludnosci_10l": -2.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218072",
+    "bdl_id": "011212318072",
+    "nazwa": "Stryszów",
+    "powiat": "wadowicki",
+    "typ": "wiejska",
+    "ludnosc": 6742,
+    "udzial_65plus": 16.9,
+    "zmiana_ludnosci_10l": -1.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218082",
+    "bdl_id": "011212318082",
+    "nazwa": "Tomice",
+    "powiat": "wadowicki",
+    "typ": "wiejska",
+    "ludnosc": 8339,
+    "udzial_65plus": 15.8,
+    "zmiana_ludnosci_10l": 5.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218093",
+    "bdl_id": "011212318093",
+    "nazwa": "Wadowice",
+    "powiat": "wadowicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 36050,
+    "udzial_65plus": 21.0,
+    "zmiana_ludnosci_10l": -5.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1218102",
+    "bdl_id": "011212318102",
+    "nazwa": "Wieprz",
+    "powiat": "wadowicki",
+    "typ": "wiejska",
+    "ludnosc": 12864,
+    "udzial_65plus": 15.4,
+    "zmiana_ludnosci_10l": 5.4,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1219012",
+    "bdl_id": "011212019012",
+    "nazwa": "Biskupice",
+    "powiat": "wielicki",
+    "typ": "wiejska",
+    "ludnosc": 12020,
+    "udzial_65plus": 15.4,
+    "zmiana_ludnosci_10l": 21.8,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1219022",
+    "bdl_id": "011212019022",
+    "nazwa": "Gdów",
+    "powiat": "wielicki",
+    "typ": "wiejska",
+    "ludnosc": 18751,
+    "udzial_65plus": 16.4,
+    "zmiana_ludnosci_10l": 5.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1219032",
+    "bdl_id": "011212019032",
+    "nazwa": "Kłaj",
+    "powiat": "wielicki",
+    "typ": "wiejska",
+    "ludnosc": 11435,
+    "udzial_65plus": 18.6,
+    "zmiana_ludnosci_10l": 8.2,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1219043",
+    "bdl_id": "011212019043",
+    "nazwa": "Niepołomice",
+    "powiat": "wielicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 34020,
+    "udzial_65plus": 14.9,
+    "zmiana_ludnosci_10l": 27.7,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1219053",
+    "bdl_id": "011212019053",
+    "nazwa": "Wieliczka",
+    "powiat": "wielicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 70471,
+    "udzial_65plus": 15.8,
+    "zmiana_ludnosci_10l": 24.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1261011",
+    "bdl_id": "011212161011",
+    "nazwa": "Kraków",
+    "powiat": "m. Kraków",
+    "typ": "miejska",
+    "ludnosc": 816614,
+    "udzial_65plus": 20.0,
+    "zmiana_ludnosci_10l": 7.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1262011",
+    "bdl_id": "011212262011",
+    "nazwa": "Nowy Sącz",
+    "powiat": "m. Nowy Sącz",
+    "typ": "miejska",
+    "ludnosc": 79416,
+    "udzial_65plus": 21.7,
+    "zmiana_ludnosci_10l": -5.3,
+    "wskazniki": {
+      "rok": 2025
+    }
+  },
+  {
+    "teryt": "1263011",
+    "bdl_id": "011212463011",
+    "nazwa": "Tarnów",
+    "powiat": "m. Tarnów",
+    "typ": "miejska",
+    "ludnosc": 101177,
+    "udzial_65plus": 25.5,
+    "zmiana_ludnosci_10l": -8.6,
+    "wskazniki": {
+      "rok": 2025
+    }
+  }
+]
