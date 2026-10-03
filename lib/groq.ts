@@ -13,6 +13,25 @@ type ChatOptions = {
   json?: boolean; // tryb JSON: odpowiedź to zawsze poprawny obiekt JSON
 };
 
+/** Groq odrzuca zapytania z powodu limitu na minutę (429) mimo ponowień. */
+export class GroqBusyError extends Error {
+  constructor(detail: string) {
+    super(`Groq 429: ${detail}`);
+    this.name = "GroqBusyError";
+  }
+}
+
+/**
+ * Odpowiedź trasy API na błąd: limit Groq → 503 z komunikatem, co zrobić; inne błędy → 500 z `message`.
+ */
+export function aiErrorResponse(tag: string, e: unknown, message: string): Response {
+  console.error(`[${tag}]`, e);
+  if (e instanceof GroqBusyError) {
+    return Response.json({ error: "Za dużo zapytań do AI naraz. Spróbuj ponownie za minutę" }, { status: 503 });
+  }
+  return Response.json({ error: message }, { status: 500 });
+}
+
 /** Jedno wywołanie Groq (API zgodne z OpenAI). Klucz tylko po stronie serwera. */
 export async function groqChat({ model, messages, temperature = 0.5, maxTokens = 4096, json }: ChatOptions): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
@@ -36,9 +55,11 @@ export async function groqChat({ model, messages, temperature = 0.5, maxTokens =
       }),
       signal: AbortSignal.timeout(60_000),
     });
-    // Darmowy plan ma niskie limity na minutę — krótko czekamy i ponawiamy.
-    if (response.status === 429 && attempt < 2) {
-      const wait = Math.min(Number(response.headers.get("retry-after")) || 2, 10);
+    // Darmowy plan ma 8 tys. tokenów na minutę, a pełne dopasowanie zużywa ok. 6 tys. — czekamy tyle,
+    // ile każe Groq (do 30 s), zamiast od razu zwracać błąd.
+    if (response.status === 429) {
+      if (attempt >= 2) throw new GroqBusyError(await response.text());
+      const wait = Math.min(Number(response.headers.get("retry-after")) || 5, 30);
       await new Promise((r) => setTimeout(r, wait * 1000));
       continue;
     }

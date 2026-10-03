@@ -1,6 +1,7 @@
 import "server-only";
 import { describeGmina, findGmina } from "./gminy";
 import { rerank, type Candidate } from "./llm";
+import { anonymize } from "./pii";
 import {
   GAP_THRESHOLD, RELATED_MIN_SIMILARITY, SIMILAR_NEED_MIN_SIMILARITY,
   type InnovationMatch, type MatchResponse, type NeedCard,
@@ -14,11 +15,43 @@ type MatchInput = { card: NeedCard; text: string; gmina?: string; teryt?: string
 const CANDIDATES = 15;
 
 /**
+ * Innowacje, których nie ma w search_index (np. po seed_innovations.py albo przed embed.py), też muszą
+ * trafić do reranku — inaczej każde zgłoszenie kończy się luką. Pierwsze idą te, których tytuł użytkownik
+ * wpisał, potem te ze słowami kluczowymi potrzeby (rdzeń bez końcówki, jak w lib/innovations.ts); resztę oceni LLM.
+ */
+async function unindexedCandidates(keywords: string[], originalText: string, exclude: string[], limit: number): Promise<Candidate[]> {
+  let query = createAdminClient().from("innovations").select("id, title, solution, problem, beneficiaries").limit(200);
+  if (exclude.length) query = query.not("id", "in", `(${exclude.join(",")})`);
+  const { data, error } = await query;
+  if (error) throw error;
+
+  const stems = keywords
+    .flatMap((k) => k.toLowerCase().split(/\s+/))
+    .filter((w) => w.length >= 3)
+    .map((w) => (w.length > 5 ? w.slice(0, -2) : w));
+  const originalLower = originalText.toLowerCase();
+  return (data ?? [])
+    .map((i) => {
+      const body = [i.solution, i.problem && `Problem: ${i.problem}`, i.beneficiaries && `Dla kogo: ${i.beneficiaries}`]
+        .filter(Boolean)
+        .join("\n");
+      const text = `${i.title}\n${body}`.toLowerCase();
+      const named = originalLower.includes((i.title as string).toLowerCase()) ? 100 : 0;
+      return { candidate: { id: i.id as string, title: i.title as string, body }, hits: named + stems.filter((s) => text.includes(s)).length };
+    })
+    .sort((a, b) => b.hits - a.hits)
+    .slice(0, limit)
+    .map((c) => c.candidate);
+}
+
+/**
  * Społecznik·Dopasuj (README 5.1, kroki 4–7): wyszukiwanie po lematach → rerank z kontekstem gminy →
  * zapis potrzeby z kodem zgłoszenia → indeksowanie potrzeby, żeby kolejne zgłoszenia ją znalazły.
  */
 export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promise<MatchResponse> {
   const supabase = createAdminClient();
+  // Oryginalne słowa (np. wklejony tytuł innowacji) trafiają do reranku, ale tylko po anonimizacji.
+  const original = anonymize(text).text;
 
   // Szukamy, zanim zapiszemy nową potrzebę — dzięki temu nie znajdzie samej siebie.
   // Pole „Gmina” ma pierwszeństwo przed tym, co model wyczytał z opisu; gdy go nie znamy (literówka, wieś), bierzemy gminę z opisu.
@@ -48,14 +81,15 @@ export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promis
   }
 
   // Rerank
-  const { data: bodies, error: bodiesError } = await supabase
-    .from("search_index")
-    .select("ref_id, title, body")
-    .eq("kind", "innowacja")
-    .in("ref_id", innovationIds);
+  const { data: bodies, error: bodiesError } = innovationIds.length
+    ? await supabase.from("search_index").select("ref_id, title, body").eq("kind", "innowacja").in("ref_id", innovationIds)
+    : { data: [], error: null };
   if (bodiesError) throw bodiesError;
   const candidates: Candidate[] = (bodies ?? []).map((r) => ({ id: r.ref_id, title: r.title, body: r.body }));
-  const ranked = await rerank(card, candidates, gminaRow ? describeGmina(gminaRow) : undefined);
+  if (candidates.length < CANDIDATES) {
+    candidates.push(...(await unindexedCandidates(card.keywords, original, candidates.map((c) => c.id), CANDIDATES - candidates.length)));
+  }
+  const ranked = await rerank(card, candidates, gminaRow ? describeGmina(gminaRow) : undefined, original);
   const isGap = (ranked[0]?.fit ?? 0) < GAP_THRESHOLD;
 
   // Zapis potrzeby z kodem zgłoszenia (ponowienie przy kolizji kodu)
