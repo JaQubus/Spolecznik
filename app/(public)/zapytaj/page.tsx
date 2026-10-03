@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { NoDatabase } from "@/components/layout/no-database";
+import { MyNeeds } from "@/components/rozmowa/my-needs";
 import { PrivateLink } from "@/components/rozmowa/private-link";
 import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { rememberedKey } from "@/lib/need-access";
-import { NEED_STATUS_LABELS } from "@/lib/need-status";
-import { formatDate } from "@/lib/pl";
 import { STATUS_CODE } from "@/lib/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { canOpen, expertName, needThread, rememberedThreads, type MyNeed, type NeedThread } from "@/lib/threads";
@@ -117,31 +115,7 @@ function MyConversations({ mine, askedCode, badLink }: { mine: MyNeed[]; askedCo
         </Alert>
       )}
 
-      <section aria-labelledby="moje" className="space-y-3">
-        <h2 id="moje" className="text-2xl font-bold">Twoje zgłoszenia na tym urządzeniu</h2>
-        {mine.length === 0 ? (
-          <p className="text-muted-foreground">
-            Ta przeglądarka nie pamięta żadnego zgłoszenia. Jeśli masz prywatny link do rozmowy, po prostu go otwórz.
-          </p>
-        ) : (
-          <ul className="border-t">
-            {mine.map((n) => (
-              <li key={n.code} className="flex flex-wrap items-center justify-between gap-3 border-b py-4">
-                <div className="min-w-0 flex-1 basis-64 space-y-1">
-                  <p>
-                    <span className="font-mono font-bold tracking-wider">{n.code}</span>
-                    <span className="text-muted-foreground"> · {formatDate(n.createdAt)} · {NEED_STATUS_LABELS[n.status]}</span>
-                  </p>
-                  {n.summary && <p className="line-clamp-2">{n.summary}</p>}
-                </div>
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/zapytaj?potrzeba=${n.code}`} aria-label={`Otwórz rozmowę o zgłoszeniu ${n.code}`}>Otwórz rozmowę</Link>
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <MyNeeds mine={mine} primary="rozmowa" />
 
       <p>
         Nie masz jeszcze zgłoszenia? <Link href="/opisz" className={linkClass}>Opisz problem</Link> — rozmowa będzie
