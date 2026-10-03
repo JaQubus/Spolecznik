@@ -17,19 +17,31 @@ export type PowiatValue = PowiatIndicator & {
 
 export async function listPowiatyIndicators(): Promise<PowiatIndicator[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("powiaty_wskazniki")
-    .select("wskaznik, kategoria, opis, jednostka, rok")
-    .order("kategoria")
-    .order("wskaznik");
-  if (error) throw error;
+  // Supabase oddaje najwyżej max_rows wierszy (domyślnie 1000), a tabela ma ich ~2500 (22 powiaty × 112
+  // wskaźników × lata). Bez stronicowania połowa wskaźników po cichu znikała. Czytamy do pustej strony,
+  // więc działa przy każdym max_rows; kolejność jest pełna, żeby strony się nie nakładały.
+  const rows: PowiatIndicator[] = [];
+  for (let from = 0; ; ) {
+    const { data, error } = await supabase
+      .from("powiaty_wskazniki")
+      .select("wskaznik, kategoria, opis, jednostka, rok")
+      .order("kategoria")
+      .order("wskaznik")
+      .order("powiat")
+      .order("rok")
+      .range(from, from + 999);
+    if (error) throw error;
+    if (!data?.length) break;
+    rows.push(...(data as PowiatIndicator[]));
+    from += data.length;
+  }
   const seen = new Set<string>();
-  return (data ?? []).filter((row) => {
+  return rows.filter((row) => {
     const key = `${row.kategoria}|${row.wskaznik}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
-  }) as PowiatIndicator[];
+  });
 }
 
 export async function listPowiatyValues(indicator: string): Promise<PowiatValue[]> {

@@ -3,15 +3,24 @@ import { cn } from "cn";
 import { Alert } from "@/components/ui/alert";
 import { listPowiatyIndicators, listPowiatyValues } from "@/lib/powiaty";
 import { LINK as linkClass } from "../shared";
+import { FocusHeading } from "./focus-heading";
 
 const chipClass =
   "inline-flex min-h-11 max-w-full items-center rounded-full border border-border-strong bg-background px-4 py-2 text-base [overflow-wrap:anywhere] hover:border-foreground aria-[current=true]:border-foreground aria-[current=true]:bg-foreground aria-[current=true]:font-bold aria-[current=true]:text-background";
 
-const indicatorHref = (indicator: string) => `/biblioteka/kondycja?poziom=powiaty&wskaznik=${encodeURIComponent(indicator)}`;
+// Kotwica przenosi widok do wyniku, który jest pod długą listą wskaźników.
+const indicatorHref = (indicator: string) =>
+  `/biblioteka/kondycja?poziom=powiaty&wskaznik=${encodeURIComponent(indicator)}#powiaty-wynik`;
 const categoryId = (category: string) => `powiaty-${category.toLowerCase().replace(/[^a-z0-9]+/gi, "-")}`;
 
 /** Wskaźnik pokazywany, gdy w adresie nie ma żadnego: najbliższy temu, czym zajmuje się ROPS. */
 const DEFAULT_INDICATOR = "Beneficjenci pomocy społecznej";
+
+/**
+ * Jednostki liczb bezwzględnych. Duży powiat ma więcej placówek czy osób, bo ma więcej mieszkańców,
+ * więc porównanie z medianą sugerowałoby lepszą sytuację tam, gdzie na mieszkańca jest gorzej.
+ */
+const COUNT_UNITS = new Set(["placówki", "osoby", "mieszkania", "rodziny", "dzieci"]);
 
 /** Wynik powiatu na tle mediany Małopolski, słowami. ±5% mediany to „mniej więcej tyle samo”. */
 function compareToMedian(value: number | null, median: number | null) {
@@ -46,7 +55,8 @@ export async function PowiatyView({ requested }: { requested?: string }) {
     indicators.find((i) => i.wskaznik === DEFAULT_INDICATOR) ??
     indicators[0];
   const values = await listPowiatyValues(indicator.wskaznik);
-  const median = medianOf(values.map((v) => v.wartosc).filter((v): v is number => v != null));
+  const isCount = COUNT_UNITS.has(indicator.jednostka);
+  const median = isCount ? null : medianOf(values.map((v) => v.wartosc).filter((v): v is number => v != null));
   const categories = [...new Set(indicators.map((i) => i.kategoria))];
 
   return (
@@ -81,9 +91,21 @@ export async function PowiatyView({ requested }: { requested?: string }) {
           </section>
         ))}
       </div>
-      <div className="space-y-3">
-        <h3 className="text-2xl font-bold">{indicator.wskaznik}</h3>
+      <div id="powiaty-wynik" className="scroll-mt-4 space-y-3">
+        {/* Fokus tylko po wyborze wskaźnika, nie przy pierwszym wejściu na widok powiatów. */}
+        {requested === indicator.wskaznik ? (
+          <FocusHeading key={indicator.wskaznik} as="h3" id="powiaty-wynik-tytul" className="text-2xl font-bold outline-none">
+            {indicator.wskaznik}
+          </FocusHeading>
+        ) : (
+          <h3 id="powiaty-wynik-tytul" className="text-2xl font-bold">{indicator.wskaznik}</h3>
+        )}
         {indicator.opis && <p className="max-w-3xl text-muted-foreground">{indicator.opis}</p>}
+        {isCount && (
+          <p className="max-w-3xl">
+            To liczby bezwzględne: większe powiaty mają ich więcej, bo mają więcej mieszkańców. Dlatego nie porównujemy ich z resztą Małopolski.
+          </p>
+        )}
         <div className="overflow-auto rounded-lg">
           <table className="w-full min-w-[42rem] border-collapse text-left text-base">
             <caption className="pb-2 text-left text-muted-foreground">
@@ -93,7 +115,7 @@ export async function PowiatyView({ requested }: { requested?: string }) {
               <tr className="border-b-2 border-foreground">
                 <th scope="col" className="py-2 pr-4">Powiat</th>
                 <th scope="col" className="py-2 pr-4">Wynik</th>
-                <th scope="col" className="py-2">Na tle Małopolski</th>
+                {!isCount && <th scope="col" className="py-2">Na tle Małopolski</th>}
               </tr>
             </thead>
             <tbody>
@@ -101,7 +123,7 @@ export async function PowiatyView({ requested }: { requested?: string }) {
                 <tr key={row.powiat} className="border-b align-top">
                   <th scope="row" className="py-3 pr-4 font-normal">{row.nazwa}</th>
                   <td className="py-3 pr-4 whitespace-nowrap">{formatValue(row.wartosc, row.jednostka)}</td>
-                  <td className="py-3">{compareToMedian(row.wartosc, median)}</td>
+                  {!isCount && <td className="py-3">{compareToMedian(row.wartosc, median)}</td>}
                 </tr>
               ))}
             </tbody>
