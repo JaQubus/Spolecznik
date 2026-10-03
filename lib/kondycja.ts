@@ -5,6 +5,7 @@
  */
 import { formatNumber } from "./pl";
 import type { GROUPS, MWS_AREAS } from "./schemas";
+import { AREA_LABELS } from "./taxonomy";
 
 type Area = (typeof MWS_AREAS)[number];
 type Group = (typeof GROUPS)[number];
@@ -20,6 +21,8 @@ export type Indicator = {
 
 export type KondycjaArea = {
   area: Area;
+  /** Nazwa tematu, gdy dane pokrywają tylko część obszaru Mapy Wyzwań (domyślnie nazwa obszaru). */
+  label?: string;
   /** Jedno zdanie o tym, co pokazują dane. */
   intro: string;
   /** Pierwszy wskaźnik jest główny: koloruje mapę i daje zdanie o powiecie. */
@@ -90,7 +93,10 @@ export const KONDYCJA_AREAS: KondycjaArea[] = [
   },
   {
     area: "zdrowie_psychiczne",
-    intro: "Jak często powodem pomocy jest uzależnienie od alkoholu.",
+    // Jedyny wskaźnik to alkoholizm, więc nie nazywamy tego „zdrowiem psychicznym” — to byłoby nadużycie.
+    label: "Uzależnienie od alkoholu",
+    intro:
+      "Jak często powodem pomocy jest uzależnienie od alkoholu. To tylko część obszaru „Zdrowie psychiczne” z Mapy Wyzwań: innych danych o zdrowiu psychicznym dla powiatów nie mamy.",
     indicators: [
       { key: "Alkoholizm", label: "Pomoc OPS z powodu uzależnienia od alkoholu (% osób wspieranych)", worse: "higher" },
     ],
@@ -107,6 +113,17 @@ export const KONDYCJA_AREAS: KondycjaArea[] = [
     groups: ["bezdomnosc"],
   },
 ];
+
+export function areaLabel(a: KondycjaArea): string {
+  return a.label ?? AREA_LABELS[a.area];
+}
+
+/**
+ * Temat nazywamy „wyzwaniem” powiatu dopiero wtedy, gdy powiat wypada w nim gorzej niż połowa powiatów.
+ * Drugi temat pokazujemy, gdy jest prawie tak samo źle jak pierwszy.
+ */
+export const CHALLENGE_MIN = 0.5;
+export const CHALLENGE_TIE = 0.1;
 
 export const POPULATION_KEY = "Ludność ogółem";
 

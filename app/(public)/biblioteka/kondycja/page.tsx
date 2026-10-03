@@ -6,13 +6,13 @@ import { NoDatabase } from "@/components/layout/no-database";
 import { Alert } from "@/components/ui/alert";
 import { innovationsForArea } from "@/lib/innovations";
 import {
-  CLASS_COUNT, KONDYCJA_AREAS, POPULATION_KEY, badness, classOf, compareToRegion, findArea, formatBare, formatValue,
+  CHALLENGE_MIN, CHALLENGE_TIE, CLASS_COUNT, KONDYCJA_AREAS, areaLabel, POPULATION_KEY, badness, classOf, compareToRegion, findArea, formatBare, formatValue,
   type KondycjaArea,
 } from "@/lib/kondycja";
 import { formatNumber } from "@/lib/pl";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getKondycjaData, longName, shortName, type PowiatyData } from "@/lib/powiaty";
-import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
+import { GROUP_LABELS } from "@/lib/taxonomy";
 import { FocusHeading } from "./focus-heading";
 import { MAP_FILLS, PowiatyMap } from "./powiaty-map";
 
@@ -62,7 +62,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
     return { c, text: lo === hi ? formatBare(lo, unit) : `${formatBare(lo, "")}–${formatBare(hi, unit)}` };
   }).filter((l) => l != null);
 
-  const areaLabel = AREA_LABELS[area.area];
+  const label = areaLabel(area);
 
   return (
     <div className="space-y-10">
@@ -95,7 +95,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
                   <li key={a.area} className="max-w-full">
                     <Link href={href(a.area, selected?.id)} scroll={false} aria-current={current} className={chipClass}>
                       {current && <Check aria-hidden className="size-5" />}
-                      {AREA_LABELS[a.area]}
+                      {areaLabel(a)}
                     </Link>
                   </li>
                 );
@@ -105,7 +105,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
 
           <section aria-labelledby="obszar" className="space-y-6">
             <div className="space-y-2">
-              <h2 id="obszar" className="text-3xl font-bold break-words hyphens-auto">{areaLabel}</h2>
+              <h2 id="obszar" className="text-3xl font-bold break-words hyphens-auto">{label}</h2>
               <p role="status" className="max-w-2xl text-lg">{area.intro} Dane za {data.year} rok.</p>
             </div>
 
@@ -146,7 +146,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
               <div role="region" aria-labelledby="tabela-podpis" tabIndex={0} className="overflow-x-auto rounded-lg">
                 <table className="w-full min-w-[44rem] border-collapse text-left text-base">
                   <caption id="tabela-podpis" className="pb-2 text-left text-muted-foreground">
-                    {areaLabel}: wskaźniki dla {rows.length} powiatów, {data.year} r. Źródło: Internetowy Obserwator Statystyk Społecznych ROPS.
+                    {label}: wskaźniki dla {rows.length} powiatów, {data.year} r. Źródło: Internetowy Obserwator Statystyk Społecznych ROPS.
                   </caption>
                   <thead>
                     <tr className="border-b-2 border-foreground align-bottom">
@@ -181,7 +181,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
   );
 }
 
-/** Karta powiatu: kluczowe liczby z każdego tematu + rozwiązania dla tematu, w którym powiat wypada najgorzej. */
+/** Karta powiatu: kluczowe liczby z każdego tematu + rozwiązania dla tematów, w których powiat wypada gorzej niż większość. */
 async function PowiatCard({ data, powiat }: { data: PowiatyData; powiat: { id: string; nazwa: string } }) {
   const population = data.values[POPULATION_KEY]?.[powiat.id]?.value;
   const facts = KONDYCJA_AREAS.map((a) => {
@@ -189,8 +189,9 @@ async function PowiatCard({ data, powiat }: { data: PowiatyData; powiat: { id: s
     const all = primaryValues(data, a);
     return v?.value == null ? null : { a, value: v.value, unit: v.unit, b: badness(v.value, all, a.indicators[0].worse), compare: compareToRegion(v.value, all) };
   }).filter((f) => f != null);
-  const worst = facts.reduce<(typeof facts)[number] | null>((w, f) => (w == null || f.b > w.b ? f : w), null);
-  const innovations = worst ? await innovationsForArea(worst.a.area, worst.a.groups) : [];
+  const ranked = facts.filter((f) => f.b > CHALLENGE_MIN).sort((x, y) => y.b - x.b);
+  const challenges = ranked.filter((f, k) => k === 0 || (k === 1 && ranked[0].b - f.b <= CHALLENGE_TIE));
+  const innovations = await Promise.all(challenges.map((c) => innovationsForArea(c.a.area, c.a.groups)));
 
   return (
     <section id="karta" aria-labelledby="karta-tytul" className="scroll-mt-4 space-y-6 rounded-[16px] bg-secondary px-5 py-6 md:px-8">
@@ -199,10 +200,18 @@ async function PowiatCard({ data, powiat }: { data: PowiatyData; powiat: { id: s
         {population != null && <p className="text-lg">Mieszka tu {formatNumber(population, 0)} osób ({data.year} r.).</p>}
       </div>
 
-      {worst && (
+      {challenges.length ? (
+        challenges.map((c, k) => (
+          <p key={c.a.area} className="max-w-[68ch] text-lg">
+            <strong>
+              {k === 0 ? "Największe wyzwanie na tle innych powiatów" : "Prawie tak samo duże wyzwanie"}: {areaLabel(c.a).toLowerCase()}.
+            </strong>{" "}
+            {c.a.sentence(c.value)} {c.compare}
+          </p>
+        ))
+      ) : (
         <p className="max-w-[68ch] text-lg">
-          <strong>Największe wyzwanie na tle innych powiatów: {AREA_LABELS[worst.a.area].toLowerCase()}.</strong>{" "}
-          {worst.a.sentence(worst.value)}
+          W żadnym z tematów ten powiat nie wypada gorzej niż większość powiatów Małopolski.
         </p>
       )}
 
@@ -211,7 +220,7 @@ async function PowiatCard({ data, powiat }: { data: PowiatyData; powiat: { id: s
         <dl className="grid max-w-3xl gap-x-6 sm:grid-cols-[minmax(0,16rem)_1fr]">
           {facts.map((f) => (
             <div key={f.a.area} className="contents">
-              <dt className="pt-3 font-bold sm:border-t sm:border-border-strong/40">{AREA_LABELS[f.a.area]}</dt>
+              <dt className="pt-3 font-bold sm:border-t sm:border-border-strong/40">{areaLabel(f.a)}</dt>
               <dd className="pb-3 sm:border-t sm:border-border-strong/40 sm:pt-3">
                 {f.a.indicators[0].label}: <strong>{formatBare(f.value, f.unit)}</strong>. {f.compare}
               </dd>
@@ -220,12 +229,12 @@ async function PowiatCard({ data, powiat }: { data: PowiatyData; powiat: { id: s
         </dl>
       </div>
 
-      {worst && (
-        <div className="space-y-3">
-          <h3 className="text-xl font-bold">Rozwiązania z Biblioteki: {AREA_LABELS[worst.a.area].toLowerCase()}</h3>
-          {innovations.length ? (
+      {challenges.map((c, k) => (
+        <div key={c.a.area} className="space-y-3">
+          <h3 className="text-xl font-bold">Rozwiązania z Biblioteki: {areaLabel(c.a).toLowerCase()}</h3>
+          {innovations[k].length ? (
             <ul className="max-w-3xl space-y-2">
-              {innovations.map((i) => (
+              {innovations[k].map((i) => (
                 <li key={i.id}>
                   <Link href={`/biblioteka/${i.slug ?? i.id}`} className={linkClass}>{i.title}</Link>
                   {i.solution && <p className="line-clamp-2 text-base text-muted-foreground">{i.solution}</p>}
@@ -235,16 +244,16 @@ async function PowiatCard({ data, powiat }: { data: PowiatyData; powiat: { id: s
           ) : (
             <p>W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.</p>
           )}
-          {worst.a.groups[0] && (
+          {c.a.groups[0] && (
             <p>
-              <Link href={`/biblioteka?dla=${worst.a.groups[0]}#innowacje`} className={cn(linkClass, "inline-flex items-center gap-1")}>
-                Wszystkie rozwiązania: {GROUP_LABELS[worst.a.groups[0]].toLowerCase()}
+              <Link href={`/biblioteka?dla=${c.a.groups[0]}#innowacje`} className={cn(linkClass, "inline-flex items-center gap-1")}>
+                Wszystkie rozwiązania: {GROUP_LABELS[c.a.groups[0]].toLowerCase()}
                 <ChevronRight aria-hidden className="size-5" />
               </Link>
             </p>
           )}
         </div>
-      )}
+      ))}
     </section>
   );
 }

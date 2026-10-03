@@ -37,10 +37,12 @@ export async function listInnovations({ group, q }: { group?: (typeof GROUPS)[nu
   const supabase = await createClient();
   let query = supabase.from("innovations").select(LIST_COLUMNS).order("title");
   if (group) query = query.contains("target_groups", [group]);
-  const text = q ? sanitize(q) : "";
-  if (text) {
-    const p = `*${text}*`;
-    query = query.or(`title.ilike.${p},solution.ilike.${p},problem.ilike.${p},etr_summary.ilike.${p}`);
+  // Każde słowo (bez końcówki, żeby „seniorów” trafiało w „senior”) musi wystąpić w którejś kolumnie.
+  // To proste dopasowanie tekstu; wyszukiwanie semantyczne (lib/search.ts) jest w „Opisz problem”.
+  const words = (q ? sanitize(q) : "").split(" ").filter((w) => w.length >= 3).slice(0, 6);
+  for (const w of words) {
+    const p = `*${w.length > 5 ? w.slice(0, -2) : w}*`;
+    query = query.or(`title.ilike.${p},solution.ilike.${p},problem.ilike.${p},beneficiaries.ilike.${p},etr_summary.ilike.${p}`);
   }
   const { data, error } = await query;
   if (error) throw error;
