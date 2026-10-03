@@ -28,7 +28,7 @@ const Status = ({ published }: { published: boolean }) => (
 );
 
 const editLink = (kind: Tab, id: string, title: string) => (
-  <Link href={`/panel/wiedza/${kind}/${id}`} aria-label={`Edytuj: ${title}`} className="inline-flex min-h-12 items-center font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+  <Link href={`/panel/wiedza/${kind}/${id}`} aria-label={`Edytuj: ${title}`} className="inline-flex min-h-12 items-start pt-3 font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
     Edytuj
   </Link>
 );
@@ -45,6 +45,8 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
   ]);
   const cellHead = "p-3 text-left";
   const cell = "p-3 align-top";
+  // Link „Edytuj” ma 48 px wysokości (cel dotyku), więc górny odstęp komórki jest w nim — tekst w linii z resztą wiersza.
+  const cellAction = "px-3 align-top";
 
   return (
     <section className="space-y-10">
@@ -109,7 +111,7 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
                     <td className={cell}>{i.groups.map((g) => GROUP_LABELS[g]).join(", ")}</td>
                     <td className={cell}>{i.video ? "tak" : "nie"}</td>
                     <td className={cell}><Status published={i.published} /></td>
-                    <td className={cell}>{editLink("innowacja", i.id, i.title)}</td>
+                    <td className={cellAction}>{editLink("innowacja", i.id, i.title)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -129,7 +131,7 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
                     <td className={cell}>{AREA_LABELS[f.area]}</td>
                     <td className={cell}>{f.isExample ? <strong>przykład</strong> : `${f.sourceTitle ?? "brak"}${f.sourcePage ? `, s. ${f.sourcePage}` : ""}`}</td>
                     <td className={cell}><Status published={f.published} /></td>
-                    <td className={cell}>{editLink("fakt", f.id, f.displayValue)}</td>
+                    <td className={cellAction}>{editLink("fakt", f.id, f.displayValue)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -147,7 +149,7 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
                     <th scope="row" className={`${cell} text-left font-normal`}>{m.title}</th>
                     <td className={cell}>{MATERIAL_KIND_LABELS[m.kind]}</td>
                     <td className={cell}><Status published={m.published} /></td>
-                    <td className={cell}>{editLink("material", m.id, m.title)}</td>
+                    <td className={cellAction}>{editLink("material", m.id, m.title)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -165,7 +167,7 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
                     <th scope="row" className={`${cell} text-left font-normal`}>{a.name}</th>
                     <td className={cell}>{a.lead}</td>
                     <td className={cell}><Status published={a.published} /></td>
-                    <td className={cell}>{editLink("obszar", a.key, a.name)}</td>
+                    <td className={cellAction}>{editLink("obszar", a.key, a.name)}</td>
                   </tr>
                 ))}
               </tbody>
