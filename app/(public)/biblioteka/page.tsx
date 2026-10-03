@@ -2,8 +2,6 @@ import { ChevronRightIcon, MapIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GROUP_ICONS } from "@/components/knowledge/icons";
-import { AreaTiles } from "@/components/knowledge/tiles";
-import { knowledge } from "@/lib/knowledge";
 import { searchKnowledge } from "@/lib/knowledge/search";
 import { GROUPS } from "@/lib/schemas";
 import { GROUP_LABELS } from "@/lib/taxonomy";
@@ -26,7 +24,7 @@ export default async function Page(props: PageProps<"/biblioteka">) {
   const sp = await props.searchParams;
   const q = first(sp.q);
   const tab = parseTab(first(sp.tab));
-  const [areas, results] = await Promise.all([knowledge.areas(), q ? searchKnowledge(q) : null]);
+  const results = q ? await searchKnowledge(q) : null;
 
   return (
     <div className="space-y-16">
@@ -44,11 +42,6 @@ export default async function Page(props: PageProps<"/biblioteka">) {
         {results ? resultsSummary(results) : ""}
       </p>
       {results && <SearchResults results={results} />}
-
-      <section aria-labelledby="tematy" className="space-y-6">
-        <h2 id="tematy" className="text-3xl font-bold">Wybierz temat</h2>
-        <AreaTiles areas={areas} />
-      </section>
 
       {/* Mapa jest na osobnej stronie, tak jak w main (Kondycja Małopolski). */}
       <section aria-labelledby="kondycja" className="space-y-3">
