@@ -1,10 +1,5 @@
-import Form from "next/form";
 import Link from "next/link";
 import { InnovationTiles } from "@/components/knowledge/tiles";
-import { Button } from "@/components/ui/button";
-import { CheckboxField } from "@/components/ui/checkbox-field";
-import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
 import { knowledge } from "@/lib/knowledge";
 import { TYPE_LABELS } from "@/lib/knowledge/labels";
 import { INNOVATION_TYPES, type AreaKey, type GroupKey, type InnovationType } from "@/lib/knowledge/types";
@@ -38,55 +33,34 @@ function moreHref(p: LibraryParams): string {
   return `/biblioteka?${q}#lista-innowacji`;
 }
 
-/** Biblioteka innowacji: filtry jako zwykłe pola formularza, licznik wyników w role="status". */
+/**
+ * Biblioteka innowacji: kafle i licznik w role="status". Bez osobnego formularza filtrów — „dla kogo” wybiera się
+ * przyciskami „Szukam rozwiązania dla…” nad zakładkami; obszar i rodzaj nadal działają z adresu (?obszar=, ?typ=).
+ */
 export async function LibraryTab({ params: p }: { params: LibraryParams }) {
   const items = await knowledge.innovations({ area: p.area, group: p.group, types: p.types });
   const shown = items.slice(0, p.limit);
   const n = items.length;
+  // Aktywne filtry z adresu — bez formularza trzeba je pokazać i dać sposób, żeby je wyczyścić.
+  const filters = [p.group && GROUP_LABELS[p.group].toLowerCase(), p.area && AREA_LABELS[p.area].toLowerCase(), p.types.length > 0 && p.types.map((t) => TYPE_LABELS[t].toLowerCase()).join(", ")]
+    .filter((f): f is string => Boolean(f));
 
   return (
-    <section aria-labelledby="biblioteka-naglowek" className="space-y-8">
-      <h2 id="biblioteka-naglowek" className="text-3xl font-bold">Biblioteka innowacji</h2>
-      <p className="max-w-[44rem] text-lg">
-        Rozwiązania sprawdzone w Małopolsce w projektach ROPS. Każde ma opis, wyniki testu i materiały do pobrania za darmo.
-      </p>
-
-      <Form action="/biblioteka" scroll={false} className="space-y-6 rounded-[16px] bg-secondary p-5">
-        <input type="hidden" name="tab" value="library" />
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="filtr-obszar">Obszar</Label>
-            <NativeSelect id="filtr-obszar" name="obszar" defaultValue={p.area ?? ""}>
-              <option value="">Wszystkie obszary</option>
-              {MWS_AREAS.map((a) => <option key={a} value={a}>{AREA_LABELS[a]}</option>)}
-            </NativeSelect>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="filtr-dla">Dla kogo</Label>
-            <NativeSelect id="filtr-dla" name="dla" defaultValue={p.group ?? ""}>
-              <option value="">Dla wszystkich</option>
-              {GROUPS.map((g) => <option key={g} value={g}>{GROUP_LABELS[g]}</option>)}
-            </NativeSelect>
-          </div>
-        </div>
-        <fieldset className="space-y-1">
-          <legend className="text-lg font-bold">Rodzaj rozwiązania</legend>
-          <div className="flex flex-wrap gap-x-8">
-            {INNOVATION_TYPES.map((t) => (
-              <CheckboxField key={t} name="typ" value={t} label={TYPE_LABELS[t]} defaultChecked={p.types.includes(t)} />
-            ))}
-          </div>
-        </fieldset>
-        <div className="flex flex-wrap items-center gap-4">
-          <Button type="submit" variant="outline">Pokaż wyniki</Button>
-          <Link href="/biblioteka?tab=library#dzialy" scroll={false} className="inline-flex min-h-12 items-center underline decoration-1 underline-offset-4 hover:decoration-2">
-            Wyczyść filtry
-          </Link>
-        </div>
-      </Form>
-
-      <p role="status" className="text-lg font-bold">
-        {n === 0 ? "Brak innowacji dla wybranych filtrów." : `Znaleziono ${n} ${plural(n, "innowację", "innowacje", "innowacji")}.`}
+    <section aria-label="Biblioteka innowacji" className="space-y-8">
+      <p role="status" className="text-lg">
+        <strong>
+          {n === 0 ? "Brak innowacji dla wybranych filtrów." : `Znaleziono ${n} ${plural(n, "innowację", "innowacje", "innowacji")}`}
+          {n > 0 && filters.length > 0 && ` · ${filters.join(", ")}`}
+          {n > 0 && "."}
+        </strong>
+        {filters.length > 0 && (
+          <>
+            {" "}
+            <Link href="/biblioteka?tab=library#dzialy" scroll={false} className="underline decoration-1 underline-offset-4 hover:decoration-2">
+              Pokaż wszystkie
+            </Link>
+          </>
+        )}
       </p>
       <div id="lista-innowacji">
         <InnovationTiles items={shown} />
