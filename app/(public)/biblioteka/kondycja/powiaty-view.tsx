@@ -17,7 +17,11 @@ function formatValue(value: number | null, unit: string) {
 export async function PowiatyView({ requested }: { requested?: string }) {
   const indicators = await listPowiatyIndicators();
   if (!indicators.length) {
-    return <Alert title="Brak danych o powiatach"><p>Uruchom `data/import_powiaty.py`, aby wczytać wskaźniki z CSV.</p></Alert>;
+    return (
+      <Alert title="Dane powiatowe są chwilowo niedostępne">
+        <p>Nie udało się jeszcze wczytać wskaźników dla powiatów. Spróbuj ponownie później.</p>
+      </Alert>
+    );
   }
   const indicator = indicators.find((i) => i.wskaznik === requested) ?? indicators[0];
   const values = await listPowiatyValues(indicator.wskaznik);
@@ -28,7 +32,7 @@ export async function PowiatyView({ requested }: { requested?: string }) {
       <div className="space-y-2">
         <h2 id="powiaty-temat" className="text-3xl font-bold">Kondycja powiatów</h2>
         <p className="max-w-2xl text-lg">
-          Dane dla 22 powiatów Małopolski z CSV IOSS. Ten widok pozostaje oddzielny od mapy gmin, bo wskaźniki powiatowe nie opisują każdej gminy osobno.
+          Dane dla 22 powiatów Małopolski. Ten widok pozostaje oddzielny od mapy gmin, bo wskaźniki powiatowe nie opisują każdej gminy osobno.
         </p>
       </div>
       <nav aria-labelledby="powiaty-kategorie" className="space-y-3">
@@ -61,21 +65,21 @@ export async function PowiatyView({ requested }: { requested?: string }) {
         <div className="overflow-auto rounded-lg">
           <table className="w-full min-w-[42rem] border-collapse text-left text-base">
             <caption className="pb-2 text-left text-muted-foreground">
-              {indicator.wskaznik}: {values.length} powiatów Małopolski, rok {values[0]?.rok ?? "—"}.
+              {indicator.wskaznik}: {values.length} powiatów Małopolski, dane z roku {values[0]?.rok ?? "—"}.
             </caption>
             <thead className="bg-background">
               <tr className="border-b-2 border-foreground">
                 <th scope="col" className="py-2 pr-4">Powiat</th>
-                <th scope="col" className="py-2 pr-4">Wartość</th>
-                <th scope="col" className="py-2">Jednostka</th>
+                <th scope="col" className="py-2 pr-4">Wynik</th>
+                <th scope="col" className="py-2">Jak czytać wynik</th>
               </tr>
             </thead>
             <tbody>
               {values.map((row) => (
                 <tr key={row.powiat} className="border-b align-top">
                   <th scope="row" className="py-3 pr-4 font-normal">{row.nazwa}</th>
-                  <td className="py-3 pr-4 whitespace-nowrap">{formatValue(row.wartosc, "")}</td>
-                  <td className="py-3">{row.jednostka || "—"}</td>
+                  <td className="py-3 pr-4 whitespace-nowrap">{formatValue(row.wartosc, row.jednostka)}</td>
+                  <td className="py-3">{row.opis || `Wynik podany w jednostce: ${row.jednostka || "brak jednostki"}.`}</td>
                 </tr>
               ))}
             </tbody>
