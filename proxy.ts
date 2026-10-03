@@ -30,6 +30,7 @@ export async function proxy(request: NextRequest) {
   if (!user && request.nextUrl.pathname.startsWith("/panel")) {
     const url = request.nextUrl.clone();
     url.pathname = "/logowanie";
+    url.search = `?next=${encodeURIComponent(request.nextUrl.pathname)}`;
     return NextResponse.redirect(url);
   }
 
