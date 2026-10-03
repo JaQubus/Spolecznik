@@ -1,10 +1,162 @@
-import { TodoPage } from "@/components/layout/todo-page";
+import Link from "next/link";
+import { Alert } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { StatusTimeline, type TimelineStep } from "@/components/ui/status-timeline";
+import { formatDate } from "@/lib/pl";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { AREA_LABELS } from "@/lib/taxonomy";
+
+export const metadata = { title: "Status zgłoszenia" };
+
+// Alfabet z lib/status-code.ts: bez 0, 1, I, O.
+const CODE = /^SPL-[2-9A-HJ-NP-Z]{4}$/;
+
+type Report = {
+  kind: "potrzeba" | "pomysl";
+  status: string;
+  createdAt: string;
+  summary: string;
+  areas: string[];
+  gmina: string | null;
+};
+
+/** Tylko pola bezpieczne do pokazania każdemu, kto zna kod — nigdy surowy tekst ani e-mail. */
+async function findReport(code: string): Promise<Report | null> {
+  const supabase = createAdminClient();
+  const { data: need, error } = await supabase
+    .from("needs")
+    .select("status, created_at, card, gminy(nazwa)")
+    .eq("status_code", code)
+    .maybeSingle();
+  if (error) throw error;
+  if (need) {
+    const card = need.card as { summary?: string; areas?: string[] };
+    const gmina = need.gminy as unknown as { nazwa: string } | null;
+    return {
+      kind: "potrzeba",
+      status: need.status,
+      createdAt: need.created_at,
+      summary: card.summary ?? "",
+      areas: card.areas ?? [],
+      gmina: gmina?.nazwa ?? null,
+    };
+  }
+
+  const { data: idea, error: ideaError } = await supabase
+    .from("ideas")
+    .select("status, created_at, fiszka")
+    .eq("status_code", code)
+    .maybeSingle();
+  if (ideaError) throw ideaError;
+  if (!idea) return null;
+  const fiszka = idea.fiszka as { krotki_opis?: string };
+  return { kind: "pomysl", status: idea.status, createdAt: idea.created_at, summary: fiszka.krotki_opis ?? "", areas: [], gmina: null };
+}
+
+// Kolejność kroków; 'luka' to zgłoszenie bez gotowego rozwiązania — czeka na pierwszym kroku.
+const ORDER: Record<string, number> = { zgloszone: 0, luka: 0, w_analizie: 1, ekspert: 2, odpowiedz: 3, zamkniete: 4 };
+
+function timeline(report: Report): TimelineStep[] {
+  const steps = [
+    { title: "Zgłoszone", note: formatDate(report.createdAt) },
+    { title: "W analizie", note: "Pracownik ROPS czyta zgłoszenie" },
+    { title: "Przypisano eksperta", note: "Ekspert dostał zaproszenie do rozmowy" },
+    { title: "Odpowiedź", note: "Odpowiedź czeka w rozmowie" },
+  ];
+  const at = ORDER[report.status] ?? 0;
+  return steps.map((s, i) => ({ ...s, state: i < at ? "done" : i === at ? "current" : "todo" }));
+}
 
 export default async function Page(props: PageProps<"/status/[kod]">) {
   const { kod } = await props.params;
-  return <TodoPage title={`Zgłoszenie ${decodeURIComponent(kod)}`} items={[
-    "Oś czasu statusów: Zgłoszone → W analizie → Przypisano eksperta → Odpowiedź",
-    "Pobranie zgłoszenia po status_code (bez logowania)",
-    "Link do wątku z ekspertem",
-  ]} />;
+  const code = decodeURIComponent(kod).trim().toUpperCase();
+
+  let report: Report | null = null;
+  let unavailable = false;
+  if (CODE.test(code)) {
+    try {
+      report = await findReport(code);
+    } catch (e) {
+      console.error("[status]", e);
+      unavailable = true;
+    }
+  }
+
+  if (unavailable) {
+    return (
+      <section className="max-w-2xl space-y-6">
+        <h1 className="text-3xl font-bold">Status zgłoszenia</h1>
+        <Alert tone="error" title="Nie udało się sprawdzić statusu">
+          <p>Sprawdzanie statusu jest chwilowo niedostępne. Spróbuj ponownie za kilka minut.</p>
+        </Alert>
+      </section>
+    );
+  }
+
+  if (!report) {
+    return (
+      <section className="max-w-2xl space-y-6">
+        <h1 className="text-3xl font-bold">Nie znaleźliśmy tego zgłoszenia</h1>
+        <p className="text-lg">
+          Nie ma zgłoszenia o kodzie <strong className="font-mono tracking-wider">{code}</strong>. Sprawdź, czy kod
+          jest przepisany dokładnie — ma postać <span className="font-mono">SPL-</span> i cztery znaki, np.{" "}
+          <span className="font-mono">SPL-4K7Q</span>.
+        </p>
+        <Button asChild variant="outline"><Link href="/status">Wpisz kod jeszcze raz</Link></Button>
+      </section>
+    );
+  }
+
+  const closed = report.status === "zamkniete";
+  const withExpert = report.status === "ekspert" || report.status === "odpowiedz";
+
+  return (
+    <section className="space-y-10">
+      <div className="space-y-3">
+        <h1 className="text-3xl font-bold">
+          {report.kind === "pomysl" ? "Twój pomysł" : "Twoje zgłoszenie"}{" "}
+          <span className="font-mono tracking-wider whitespace-nowrap">{code}</span>
+        </h1>
+        {report.summary && <p className="max-w-[68ch] text-lg">{report.summary}</p>}
+        {(report.gmina || report.areas.length > 0) && (
+          <ul className="flex flex-wrap gap-2 simple:hidden" aria-label="Gmina i obszary">
+            {report.gmina && <li><Badge>Gmina {report.gmina}</Badge></li>}
+            {report.areas.slice(0, 3).map((a) => (
+              <li key={a}><Badge>{AREA_LABELS[a as keyof typeof AREA_LABELS] ?? a}</Badge></li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <section aria-labelledby="przebieg" className="space-y-4">
+        <h2 id="przebieg" className="text-2xl font-bold">Co się dzieje ze zgłoszeniem</h2>
+        <StatusTimeline steps={timeline(report)} />
+      </section>
+
+      {closed && (
+        <Alert tone="success" title="Zgłoszenie jest zamknięte">
+          <p>Dziękujemy. Jeśli problem wrócił, opisz go jeszcze raz.</p>
+        </Alert>
+      )}
+
+      {report.status === "luka" && (
+        <div className="max-w-[44rem] space-y-4">
+          <Alert title="Nie ma jeszcze gotowego rozwiązania">
+            <p>
+              Zgłoszenie jest na mapie potrzeb Małopolski, więc ROPS wie, że trzeba tu szukać nowych pomysłów.
+              Masz pomysł, jak to rozwiązać? Pomożemy go opisać.
+            </p>
+          </Alert>
+          <Button asChild className="w-full sm:w-auto"><Link href={`/pomysl?potrzeba=${code}`}>Zgłoś pomysł</Link></Button>
+        </div>
+      )}
+
+      {withExpert && (
+        <Button asChild variant="outline">
+          <Link href={`/zapytaj?potrzeba=${code}`}>Przejdź do rozmowy z ekspertem</Link>
+        </Button>
+      )}
+    </section>
+  );
 }
