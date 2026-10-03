@@ -7,7 +7,6 @@ dependencies = [
   "playwright",
   "pymupdf",
   "httpx",
-  "anthropic",
   "openai",
   "numpy",
   "scikit-learn",

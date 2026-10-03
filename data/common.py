@@ -1,6 +1,7 @@
 """Wspólne helpery pipeline'u. Konfiguracja z ../.env.local (te same klucze co aplikacja)."""
 import json
 import os
+import time
 from pathlib import Path
 
 import httpx
@@ -68,21 +69,52 @@ def db_url() -> str:
     return os.environ["SUPABASE_DB_URL"]
 
 
-def groq_chat(system: str, prompt: str, *, json_mode: bool = False, temperature: float = 0.2) -> str:
-    """Jedno wywołanie Groq. Przy json_mode prompt musi zawierać słowo „JSON”."""
-    response = httpx.post(
-        GROQ_URL,
-        headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY']}"},
-        json={
-            "model": GROQ_MODEL,
-            "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-            "temperature": temperature,
-            **({"response_format": {"type": "json_object"}} if json_mode else {}),
-        },
-        timeout=60,
-    )
+def groq_chat(messages: list[dict], *, model: str = GROQ_MODEL, json_mode: bool = False, temperature: float = 0.2) -> str:
+    """Jedno wywołanie Groq (API zgodne z OpenAI). Przy 429 i błędach serwera czeka i ponawia."""
+    for attempt in range(6):
+        response = httpx.post(
+            GROQ_URL,
+            headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY']}"},
+            json={
+                "model": model,
+                "messages": messages,
+                "temperature": temperature,
+                **({"response_format": {"type": "json_object"}} if json_mode else {}),
+            },
+            timeout=120,
+        )
+        if response.status_code == 429 or response.status_code >= 500:
+            time.sleep(min(float(response.headers.get("retry-after", 2 ** attempt)), 60))
+            continue
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
     response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
+    raise RuntimeError(f"Groq: {response.status_code} po {attempt + 1} próbach")
+
+
+def groq_json(system: str, schema: dict, prompt: str, *, model: str = GROQ_MODEL) -> dict:
+    """Obiekt JSON zgodny ze schematem — odpowiednik groqObject z lib/groq.ts.
+
+    Tryb JSON nie gwarantuje schematu, więc przy brakujących polach raz prosimy model o poprawkę.
+    Wartości (enumy, długości list) i tak waliduje kod wywołujący."""
+    messages = [
+        {"role": "system", "content": f"{system}\n\nOdpowiadasz wyłącznie jednym obiektem JSON zgodnym z tym JSON Schema "
+                                      f"(klucze i wartości wyliczeniowe dokładnie jak w schemacie):\n{json.dumps(schema, ensure_ascii=False)}"},
+        {"role": "user", "content": prompt},
+    ]
+    for attempt in range(2):
+        raw = groq_chat(messages, model=model, json_mode=True)
+        try:
+            out = json.loads(raw)
+            missing = [k for k in schema.get("required", []) if k not in out]
+            if not missing:
+                return out
+            problem = f"brak pól: {', '.join(missing)}"
+        except json.JSONDecodeError:
+            problem = "to nie jest poprawny JSON"
+        messages += [{"role": "assistant", "content": raw},
+                     {"role": "user", "content": f"Odpowiedź nie pasuje do schematu: {problem}. Zwróć poprawiony obiekt JSON."}]
+    raise RuntimeError(f"Groq: odpowiedź niezgodna ze schematem ({problem})")
 
 
 def write_json(path: Path, data) -> None:

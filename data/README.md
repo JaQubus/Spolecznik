@@ -8,7 +8,7 @@ uv sync
 uv run scrape_library.py   # innowacje z ../dane/mock (domyślnie; --live = prawdziwa Biblioteka ROPS)
 uv run bdl.py              # profile 183 gmin z API BDL GUS (bez klucza: limity, skrypt sam czeka)
 uv run parse_pdfs.py       # PDF-y z raw/docs/ → taxonomy, canvas, fragmenty raportów
-uv run enrich.py           # Haiku: obszary, grupy, lematy, ETR          (ANTHROPIC_API_KEY)
+uv run enrich.py           # Groq: obszary, grupy, lematy, ETR           (GROQ_API_KEY)
 uv run seed_synthetic.py   # 200 potrzeb, 10 ekspertów, 2 nabory, pomysły, testy (bez API)
 uv run embed.py            # embeddingi + ładowanie do Supabase          (OPENAI_API_KEY, SUPABASE_DB_URL)
 uv run eval.py             # hit@3, MRR@5, wykrywanie luk                (oba klucze)

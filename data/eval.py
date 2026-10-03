@@ -6,8 +6,8 @@ Metryki: hit@3, MRR@5, trafność wykrywania luk.
 Konfiguracje: BM25 na lematach, same embeddingi, hybryda, hybryda + rerank.
 
 Liczy offline na out/innovations.json + out/enriched.json (bez bazy), odtwarzając produkcyjny
-przepływ: intake (Haiku, jak lib/llm.ts) → słowa kluczowe + embedding (jak lib/match.ts) →
-RRF z k=50 i top 30 z każdej listy (jak hybrid_search) → rerank (Sonnet, jak lib/llm.ts).
+przepływ: intake (Groq, jak lib/llm.ts) → słowa kluczowe + embedding (jak lib/match.ts) →
+RRF z k=50 i top 30 z każdej listy (jak hybrid_search) → rerank (Groq, jak lib/llm.ts).
 Prompty są kopią tych z lib/llm.ts — po zmianie tam zaktualizuj je tutaj.
 
 Uruchomienie: uv run eval.py [--no-rerank]"""
@@ -20,9 +20,8 @@ import sys
 from collections import Counter
 
 import numpy as np
-from anthropic import Anthropic
 
-from common import CROSS, AREAS, GROUPS, HAIKU, OUT, RAW, ROOT, SONNET, innovation_text, read_json, taxonomy_prompt, write_json
+from common import CROSS, AREAS, GROUPS, OUT, RAW, ROOT, innovation_text, read_json, taxonomy_prompt, write_json
 from embed import Embedder
 from enrich import call_tool
 
@@ -128,18 +127,18 @@ def metrics(ranked: list[str], relevant: list[str]) -> tuple[float, float]:
     return hit3, mrr
 
 
-def intake_all(client: Anthropic, queries: list[str]) -> dict[str, dict]:
+def intake_all(queries: list[str]) -> dict[str, dict]:
     cache: dict = read_json(INTAKE_CACHE) if INTAKE_CACHE.exists() else {}
     for q in queries:
         key = hashlib.sha1(q.encode()).hexdigest()
         if key not in cache:
-            cache[key] = call_tool(client, INTAKE_SYSTEM, INTAKE_TOOL, f"<opis>{q}</opis>")
+            cache[key] = call_tool(INTAKE_SYSTEM, INTAKE_TOOL, f"<opis>{q}</opis>")
             write_json(INTAKE_CACHE, cache)
     return {q: cache[hashlib.sha1(q.encode()).hexdigest()] for q in queries}
 
 
 def main() -> None:
-    missing = [k for k in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY") if not os.environ.get(k)]
+    missing = [k for k in ("GROQ_API_KEY", "OPENAI_API_KEY") if not os.environ.get(k)]
     if missing:
         sys.exit(f"Brak w ../.env.local: {', '.join(missing)}")
     use_rerank = "--no-rerank" not in sys.argv
@@ -154,14 +153,13 @@ def main() -> None:
     if unknown:
         sys.exit(f"golden_set.jsonl odwołuje się do innowacji spoza korpusu: {sorted(unknown)}")
 
-    client = Anthropic(max_retries=5)
     emb = Embedder()
     texts = [innovation_text(i) for i in innovations]
     doc_vecs = np.array(emb.embed(texts))
     doc_vecs /= np.linalg.norm(doc_vecs, axis=1, keepdims=True)
     bm25 = Bm25([tokens(i["title"] + " " + " ".join(enriched.get(i["slug"], {}).get("lemmas", []))) for i in innovations])
 
-    cards = intake_all(client, [g["query"] for g in gold])
+    cards = intake_all([g["query"] for g in gold])
     q_texts = [f"{cards[g['query']]['summary']}\n{', '.join(cards[g['query']]['keywords'])}" for g in gold]
     q_vecs = np.array(emb.embed(q_texts))
     q_vecs /= np.linalg.norm(q_vecs, axis=1, keepdims=True)
@@ -181,9 +179,8 @@ def main() -> None:
         if use_rerank:
             cands = "\n".join(f'<kandydat id="{slugs[i]}"><tytul>{innovations[i]["title"]}</tytul>{texts[i]}</kandydat>'
                               for i in r_hyb)
-            out = call_tool(client, RERANK_SYSTEM, RERANK_TOOL,
-                            f"<potrzeba>{json.dumps(card, ensure_ascii=False)}</potrzeba>\n<gmina>brak danych</gmina>\n<kandydaci>\n{cands}\n</kandydaci>",
-                            model=SONNET)
+            out = call_tool(RERANK_SYSTEM, RERANK_TOOL,
+                            f"<potrzeba>{json.dumps(card, ensure_ascii=False)}</potrzeba>\n<gmina>brak danych</gmina>\n<kandydaci>\n{cands}\n</kandydaci>")
             allowed = {slugs[i] for i in r_hyb}
             items = sorted((x for x in out["items"] if x["id"] in allowed), key=lambda x: -x["fit"])
             is_gap = (items[0]["fit"] if items else 0) < GAP_THRESHOLD
