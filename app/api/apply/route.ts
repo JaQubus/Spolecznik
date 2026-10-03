@@ -3,6 +3,7 @@ import { draftApplication } from "@/lib/llm";
 import { anonymize } from "@/lib/pii";
 import { ApplyRequest } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Pola merytoryczne formularza IWS 2.0 (dane/mock/wnioski_mock.json). Pomijamy 2 (dane pomysłodawcy)
 // i 12 (oświadczenia) — tych nie pisze model.
@@ -25,6 +26,8 @@ const FormSchema = z.object({
 
 /** Generator wniosków: tylko przy aktywnym naborze. Szkic zapisujemy w applications. */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "apply", 3);
+  if (limited) return limited;
   const parsed = ApplyRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });

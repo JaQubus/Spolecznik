@@ -2,11 +2,14 @@ import { answerFromReports, tagCard } from "@/lib/llm";
 import { anonymize } from "@/lib/pii";
 import { AskRequest, type AskResponse } from "@/lib/schemas";
 import { searchDocChunks } from "@/lib/search";
+import { rateLimit } from "@/lib/rate-limit";
 
 const NO_ANSWER = "Raporty w Bibliotece nie zawierają odpowiedzi na to pytanie.";
 
 /** Zapytaj Bibliotekę: RAG po fragmentach raportów, z odnośnikami do stron PDF. */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "ask", 10);
+  if (limited) return limited;
   const parsed = AskRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });

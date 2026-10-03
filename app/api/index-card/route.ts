@@ -1,8 +1,11 @@
 import { reindexCard } from "@/lib/index-card";
 import { IndexCardRequest } from "@/lib/schemas";
+import { rateLimit } from "@/lib/rate-limit";
 
 /** Reindeks karty po zapisie w Panelu albo Pracowni (README 5.3). */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "index-card", 20);
+  if (limited) return limited;
   const parsed = IndexCardRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });

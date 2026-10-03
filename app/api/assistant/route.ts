@@ -3,9 +3,12 @@ import { anonymize } from "@/lib/pii";
 import { AssistantRequest, NOVELTY_MIN_SIMILARITY, type AssistantResponse } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit } from "@/lib/rate-limit";
 
 /** Asystent Pracowni: pytania, nieoczywiste kierunki i sprawdzanie nowości tym samym silnikiem co Dopasuj. */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "assistant", 15);
+  if (limited) return limited;
   const parsed = AssistantRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });

@@ -3,9 +3,12 @@ import { implementationCard } from "@/lib/llm";
 import { MiddlemanRequest, RELATED_MIN_SIMILARITY } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit } from "@/lib/rate-limit";
 
 /** Karta wdrożeniowa: innowacja z Biblioteki + profil gminy z BDL + partnerzy z indeksu ekspertów. */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "middleman", 5);
+  if (limited) return limited;
   const parsed = MiddlemanRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
