@@ -1,7 +1,9 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { safeNext } from "@/lib/auth";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { signOut } from "./actions";
 import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Logowanie" };
@@ -14,16 +16,9 @@ const ROLE_LABELS: Record<string, string> = {
   admin: "administrator ROPS",
 };
 
-async function signOut() {
-  "use server";
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/logowanie");
-}
-
 export default async function Page(props: PageProps<"/logowanie">) {
   const params = await props.searchParams;
-  const next = typeof params.next === "string" ? params.next : "/panel";
+  const next = safeNext(typeof params.next === "string" ? params.next : null);
   const linkError = params.blad === "link";
 
   if (!isSupabaseConfigured()) {
@@ -48,6 +43,13 @@ export default async function Page(props: PageProps<"/logowanie">) {
           Konto: <strong>{user.email}</strong>
           {profile?.role && <>, rola: <strong>{ROLE_LABELS[profile.role] ?? profile.role}</strong></>}.
         </p>
+        {profile?.role === "admin" && (
+          <p>
+            <Link href={next} className="text-lg font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+              Przejdź do Panelu
+            </Link>
+          </p>
+        )}
         <form action={signOut}>
           <Button type="submit" variant="outline">Wyloguj się</Button>
         </form>
