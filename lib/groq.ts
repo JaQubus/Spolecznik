@@ -32,11 +32,15 @@ export function aiErrorResponse(tag: string, e: unknown, message: string): Respo
   return Response.json({ error: message }, { status: 500 });
 }
 
+/** Ile łącznie czekamy na limit Groq w jednym wywołaniu, zanim oddamy 503. */
+const RATE_LIMIT_BUDGET_MS = 20_000;
+
 /** Jedno wywołanie Groq (API zgodne z OpenAI). Klucz tylko po stronie serwera. */
 export async function groqChat({ model, messages, temperature = 0.5, maxTokens = 4096, json }: ChatOptions): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Brak GROQ_API_KEY w .env.local");
 
+  let waited = 0;
   for (let attempt = 0; ; attempt++) {
     const response = await fetch(GROQ_URL, {
       method: "POST",
@@ -55,12 +59,14 @@ export async function groqChat({ model, messages, temperature = 0.5, maxTokens =
       }),
       signal: AbortSignal.timeout(60_000),
     });
-    // Darmowy plan ma 8 tys. tokenów na minutę, a pełne dopasowanie zużywa ok. 6 tys. — czekamy tyle,
-    // ile każe Groq (do 30 s), zamiast od razu zwracać błąd.
+    // Darmowy plan ma 8 tys. tokenów na minutę, a pełne dopasowanie zużywa ok. 6 tys. — czekamy tyle, ile każe
+    // Groq, ale łącznie najwyżej RATE_LIMIT_BUDGET_MS na wywołanie. Dłuższe czekanie zgłaszamy od razu jako 503
+    // („Spróbuj ponownie za minutę”), zamiast trzymać użytkownika minutami przy „Szukam rozwiązań…”.
     if (response.status === 429) {
-      if (attempt >= 2) throw new GroqBusyError(await response.text());
-      const wait = Math.min(Number(response.headers.get("retry-after")) || 5, 30);
-      await new Promise((r) => setTimeout(r, wait * 1000));
+      const wait = (Number(response.headers.get("retry-after")) || 5) * 1000;
+      if (attempt >= 2 || waited + wait > RATE_LIMIT_BUDGET_MS) throw new GroqBusyError(await response.text());
+      waited += wait;
+      await new Promise((r) => setTimeout(r, wait));
       continue;
     }
     if (!response.ok) throw new Error(`Groq ${response.status}: ${await response.text()}`);
