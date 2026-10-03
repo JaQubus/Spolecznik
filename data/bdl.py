@@ -1,15 +1,21 @@
 """Profile gmin Małopolski z API BDL GUS (README sekcja 8.3).
 
-Ludność ogółem, ludność wg wieku (udział 65+), zmiana ludności w 10 lat.
+Ludność ogółem, ludność wg wieku (udział 65+), zmiana ludności w 10 lat, a w gminy.wskazniki
+dodatkowe tematy mapy „Kondycja Małopolski” (EXTRA_VARS: migracje, przyrost naturalny, pomoc
+społeczna, bezrobocie, przedszkola) — każdy z ostatniego roku, dla którego BDL ma dane.
 Identyfikatory jednostek BDL ≠ TERYT — mapujemy raz, przy pobieraniu.
 Nagłówek X-ClientId (zmienna BDL_CLIENT_ID) podnosi limity.
-Wynik: out/gminy.json."""
+Wynik: out/gminy.json.
+
+Uruchomienie: uv run bdl.py               (wszystko)
+              uv run bdl.py --wskazniki   (tylko EXTRA_VARS, do istniejącego out/gminy.json)"""
 import os
+import sys
 import time
 
 import httpx
 
-from common import OUT, write_json
+from common import OUT, read_json, write_json
 
 API = "https://bdl.stat.gov.pl/api/v1"
 MALOPOLSKIE = "011200000000"
@@ -18,6 +24,15 @@ GMINA_LEVEL = 6
 # Temat P2137 „Ludność wg grup wieku i płci” (poziom gminy)
 VAR_TOTAL = "72305"            # ogółem, ogółem
 VARS_65PLUS = ["72239", "72240"]  # 65–69 i 70 i więcej, ogółem
+
+# Dodatkowe wskaźniki (poziom gminy). Klucz = nazwa w gminy.wskazniki, której używa lib/kondycja.ts.
+EXTRA_VARS = {
+    "saldo_migracji_1000": "1365239",      # P1350: saldo migracji ogółem na 1000 ludności
+    "przyrost_naturalny_1000": "450551",   # P3428: przyrost naturalny na 1000 ludności
+    "pomoc_spoleczna_10k": "1548717",      # P3870: beneficjenci środowiskowej pomocy społecznej na 10 tys. ludności
+    "bezrobocie_proc": "60270",            # P2670: udział bezrobotnych zarejestrowanych w ludności w wieku produkcyjnym, ogółem
+    "przedszkola_proc": None,              # P4013: odsetek dzieci 3–5 lat objętych wychowaniem przedszkolnym (ID ustala find_var)
+}
 
 # Rodzaj jednostki BDL (ostatnia cyfra ID): 1 miejska, 2 wiejska, 3 miejsko-wiejska.
 # 4/5 to miasto i obszar wiejski w gminie miejsko-wiejskiej, 8/9 dzielnice/delegatury — pomijamy.
@@ -83,7 +98,45 @@ def latest_year(bdl: Bdl) -> int:
     return time.localtime().tm_year - 2
 
 
+def var_years(bdl: Bdl, var_id: str) -> list[int]:
+    return sorted(bdl.get(f"/variables/{var_id}").get("years") or [])
+
+
+def fetch_extra(bdl: Bdl) -> dict[str, dict]:
+    """teryt → {klucz: wartość, „klucz_rok”: rok} dla EXTRA_VARS."""
+    out: dict[str, dict] = {}
+    for key, var_id in EXTRA_VARS.items():
+        if var_id is None:
+            continue
+        years = var_years(bdl, var_id)
+        if not years:
+            print(f"! {key}: BDL nie podaje lat dla zmiennej {var_id}")
+            continue
+        year = years[-1]
+        values = bdl.variable(var_id, [year])
+        for uid, by_year in values.items():
+            if uid[-1] in GMINA_KINDS and by_year.get(year) is not None:
+                row = out.setdefault(bdl_to_teryt(uid), {})
+                row[key] = round(float(by_year[year]), 2)
+                row[f"{key}_rok"] = year
+        print(f"  {key}: zmienna {var_id}, rok {year}, gmin {sum(1 for r in out.values() if key in r)}")
+    return out
+
+
+def only_extra() -> None:
+    """Dopisuje EXTRA_VARS do istniejącego out/gminy.json bez ponownego pobierania ludności."""
+    bdl = Bdl()
+    gminy = read_json(OUT / "gminy.json")
+    extra = fetch_extra(bdl)
+    for g in gminy:
+        g["wskazniki"] = {**(g.get("wskazniki") or {}), **extra.get(g["teryt"], {})}
+    write_json(OUT / "gminy.json", gminy)
+    print(f"Zaktualizowano wskaźniki w out/gminy.json ({len(gminy)} gmin)")
+
+
 def main() -> None:
+    if "--wskazniki" in sys.argv:
+        return only_extra()
     bdl = Bdl()
     year = latest_year(bdl)
     base = year - 10
@@ -124,6 +177,10 @@ def main() -> None:
             "zmiana_ludnosci_10l": round(100 * (pop - pop_base) / pop_base, 1) if pop and pop_base else None,
             "wskazniki": {"rok": year},
         })
+
+    extra = fetch_extra(bdl)
+    for g in gminy:
+        g["wskazniki"].update(extra.get(g["teryt"], {}))
 
     gminy.sort(key=lambda g: g["teryt"])
     write_json(OUT / "gminy.json", gminy)

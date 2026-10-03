@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cn } from "cn";
 import gminyShapes from "@/lib/gminy-shapes.json";
+import { MapHover, type HoverDetail } from "./map-hover";
 
 export type MapItem = {
   id: string;
@@ -30,6 +31,7 @@ export function ChoroplethMap({
   selected,
   title,
   focusable = true,
+  details,
 }: {
   shapes: Shapes;
   items: MapItem[];
@@ -40,13 +42,15 @@ export function ChoroplethMap({
    * przechodziłaby przez mapę bardzo długo — te same linki są w tabeli pod mapą.
    */
   focusable?: boolean;
+  /** Treść karty po najechaniu myszą, po id obszaru. */
+  details?: Record<string, HoverDetail>;
 }) {
   const byId = new Map(items.map((i) => [i.id, i]));
   // Wybrany obszar na końcu, żeby gruba ramka nie chowała się pod sąsiadami.
   const ordered = [...shapes.shapes].sort((a, b) => Number(a.id === selected) - Number(b.id === selected));
   const strokeWidth = shapes.shapes.length > 50 ? 0.8 : 1.5;
 
-  return (
+  const map = (
     <svg
       viewBox={`-4 -4 ${shapes.width + 8} ${shapes.height + 8}`}
       role="group"
@@ -63,9 +67,9 @@ export function ChoroplethMap({
             href={item.href}
             aria-label={item.name}
             tabIndex={focusable ? undefined : -1}
+            data-id={s.id}
             className="group outline-none"
           >
-            <title>{item.name}</title>
             <path
               d={s.d}
               fillRule="evenodd"
@@ -83,6 +87,7 @@ export function ChoroplethMap({
       })}
     </svg>
   );
+  return details ? <MapHover details={details}>{map}</MapHover> : map;
 }
 
 /** Legenda klas kartogramu: kolor + zakres wartości słowami (kolor nigdy nie jest jedyną informacją). */

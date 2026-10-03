@@ -9,14 +9,15 @@ import {
 } from "@/lib/kondycja";
 import { formatNumber } from "@/lib/pl";
 import { LINK as linkClass } from "../shared";
-import { ChoroplethMap, GMINA_SHAPES, MapLegend } from "./choropleth-map";
+import { ChoroplethMap, GMINA_SHAPES, MAP_FILLS, MapLegend } from "./choropleth-map";
 import { FocusHeading } from "./focus-heading";
+import type { HoverDetail } from "./map-hover";
 
 export const gminyHref = (topic: string, gmina?: string) =>
   `/biblioteka/kondycja?temat=${topic}${gmina ? `&gmina=${gmina}#karta` : ""}`;
 
 const valuesOf = (gminy: Gmina[], t: GminaTopic) =>
-  gminy.map((g) => g[t.field]).filter((v): v is number => v != null);
+  gminy.map((g) => t.get(g)).filter((v): v is number => v != null);
 
 /**
  * Kondycja Małopolski: 183 gminy (tabela gminy, dane BDL). Tylko dwa tematy, bo tyle wskaźników
@@ -25,7 +26,7 @@ const valuesOf = (gminy: Gmina[], t: GminaTopic) =>
 const chipClass =
   "inline-flex min-h-12 max-w-full items-center gap-2 rounded-full border border-border-strong bg-background px-4 py-2 text-base [overflow-wrap:anywhere] hover:border-foreground aria-[current=true]:border-foreground aria-[current=true]:bg-foreground aria-[current=true]:font-bold aria-[current=true]:text-background";
 
-export async function GminyView({ topic, selectedId }: { topic: GminaTopic; selectedId: string }) {
+export async function GminyView({ topic: requested, selectedId }: { topic: GminaTopic; selectedId: string }) {
   const gminy = await listGminy();
   if (!gminy.length) {
     return (
@@ -35,10 +36,13 @@ export async function GminyView({ topic, selectedId }: { topic: GminaTopic; sele
     );
   }
 
+  // Temat bez żadnych danych (np. przed ponownym uruchomieniem data/bdl.py) nie pojawia się wcale.
+  const topics = GMINA_TOPICS.filter((t) => gminy.some((g) => t.get(g) != null));
+  const topic = topics.includes(requested) ? requested : topics[0];
   const all = valuesOf(gminy, topic);
   const rows = gminy
     .map((g) => {
-      const value = g[topic.field];
+      const value = topic.get(g);
       return {
         g,
         value,
@@ -48,6 +52,7 @@ export async function GminyView({ topic, selectedId }: { topic: GminaTopic; sele
     })
     .sort((a, b) => a.g.powiat.localeCompare(b.g.powiat, "pl") || a.g.nazwa.localeCompare(b.g.nazwa, "pl"));
   const selected = gminy.find((g) => g.teryt === selectedId) ?? null;
+  const details = Object.fromEntries(rows.map((r) => [r.g.teryt, hoverDetail(r.g, topic, topics, r.cls)]));
   const legend = classRanges(rows).map(({ c, lo, hi }) => ({
     c,
     text: lo === hi ? topic.format(lo) : `${topic.format(lo)} do ${topic.format(hi)}`,
@@ -58,7 +63,7 @@ export async function GminyView({ topic, selectedId }: { topic: GminaTopic; sele
       <nav aria-labelledby="tematy-gmin" className="space-y-3">
         <h2 id="tematy-gmin" className="text-lg font-bold">Temat</h2>
         <ul className="flex flex-wrap gap-2">
-          {GMINA_TOPICS.map((t) => {
+          {topics.map((t) => {
             const current = t.key === topic.key;
             return (
               <li key={t.key} className="max-w-full">
@@ -85,6 +90,7 @@ export async function GminyView({ topic, selectedId }: { topic: GminaTopic; sele
             focusable={false}
             title={`Mapa gmin: ${topic.column}. Każdą gminę wybierzesz też z tabeli pod mapą`}
             selected={selected?.teryt ?? null}
+            details={details}
             items={rows.map((r) => ({
               id: r.g.teryt,
               name: `${gminaLabel(r.g)}: ${r.value == null ? "brak danych" : topic.format(r.value)}. Pokaż kartę gminy`,
@@ -100,7 +106,7 @@ export async function GminyView({ topic, selectedId }: { topic: GminaTopic; sele
           />
         </figure>
 
-        {selected && <GminaCard gminy={gminy} gmina={selected} key={selected.teryt} />}
+        {selected && <GminaCard gminy={gminy} gmina={selected} topics={topics} key={selected.teryt} />}
 
         <div id="tabela-gmin" tabIndex={-1} className="scroll-mt-4 space-y-3 outline-none">
           <h3 className="text-2xl font-bold">Dane w tabeli</h3>
@@ -113,7 +119,7 @@ export async function GminyView({ topic, selectedId }: { topic: GminaTopic; sele
                 <tr className="border-b-2 border-foreground align-bottom">
                   <th scope="col" className="py-2 pr-4">Gmina</th>
                   <th scope="col" className="py-2 pr-4">Powiat</th>
-                  {GMINA_TOPICS.map((t) => <th key={t.key} scope="col" className="py-2 pr-4">{t.column}</th>)}
+                  <th scope="col" className="py-2 pr-4">{topic.column}</th>
                   <th scope="col" className="py-2">Co to znaczy</th>
                 </tr>
               </thead>
@@ -127,10 +133,7 @@ export async function GminyView({ topic, selectedId }: { topic: GminaTopic; sele
                       {r.g.typ && !r.g.powiat.startsWith("m. ") && <span className="block text-muted-foreground">gmina {r.g.typ}</span>}
                     </th>
                     <td className="py-3 pr-4">{r.g.powiat}</td>
-                    {GMINA_TOPICS.map((t) => {
-                      const v = r.g[t.field];
-                      return <td key={t.key} className="py-3 pr-4 whitespace-nowrap">{v == null ? "brak danych" : t.format(v)}</td>;
-                    })}
+                    <td className="py-3 pr-4 whitespace-nowrap">{r.value == null ? "brak danych" : topic.format(r.value)}</td>
                     <td className="py-3">{r.sentence ?? "Brak danych."}</td>
                   </tr>
                 ))}
@@ -143,10 +146,32 @@ export async function GminyView({ topic, selectedId }: { topic: GminaTopic; sele
   );
 }
 
+/** Treść karty po najechaniu na gminę: bieżący temat na górze (z kolorem z mapy), potem pozostałe. */
+function hoverDetail(g: Gmina, topic: GminaTopic, topics: GminaTopic[], cls: number | null): HoverDetail {
+  const isCity = g.powiat.startsWith("m. ");
+  const ordered = [topic, ...topics.filter((t) => t !== topic)];
+  return {
+    title: g.nazwa,
+    subtitle: isCity ? "miasto na prawach powiatu" : `gmina ${g.typ ?? ""} · powiat ${g.powiat}`,
+    rows: [
+      ...ordered.map((t) => {
+        const v = t.get(g);
+        return {
+          label: t.label,
+          value: v == null ? "brak danych" : t.format(v),
+          current: t === topic,
+          swatch: t === topic ? (cls == null ? "var(--surface-sunken)" : MAP_FILLS[cls]) : undefined,
+        };
+      }),
+      ...(g.ludnosc != null ? [{ label: "Mieszkańcy", value: formatNumber(g.ludnosc, 0) }] : []),
+    ],
+  };
+}
+
 /** Karta gminy: oba tematy słowami + rozwiązania dla tematów, w których gmina wypada wyraźnie gorzej. */
-async function GminaCard({ gminy, gmina }: { gminy: Gmina[]; gmina: Gmina }) {
-  const facts = GMINA_TOPICS.map((t) => {
-    const value = gmina[t.field];
+async function GminaCard({ gminy, gmina, topics }: { gminy: Gmina[]; gmina: Gmina; topics: GminaTopic[] }) {
+  const facts = topics.map((t) => {
+    const value = t.get(gmina);
     const all = valuesOf(gminy, t);
     return value == null ? null : {
       t, value,

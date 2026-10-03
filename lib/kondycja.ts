@@ -16,7 +16,30 @@ export type Worse = "higher" | "lower";
 /** Temat nazywamy „wyzwaniem” gminy dopiero wtedy, gdy gmina wypada w nim gorzej niż połowa gmin. */
 export const CHALLENGE_MIN = 0.5;
 
-export type GminaField = "udzial_65plus" | "zmiana_ludnosci_10l";
+/** Liczby gminy: kolumny tabeli gminy + dodatkowe wskaźniki BDL w gminy.wskazniki (data/bdl.py). */
+export type GminaValues = {
+  udzial_65plus: number | null;
+  zmiana_ludnosci_10l: number | null;
+  wskazniki: Record<string, unknown>;
+};
+
+/** Wskaźnik z gminy.wskazniki jako liczba (jsonb może mieć null albo brak klucza). */
+const extra = (key: string) => (g: GminaValues): number | null => {
+  const v = g.wskazniki?.[key];
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+};
+
+const regionWords = (d: -1 | 0 | 1) =>
+  d === 0 ? "Podobnie jak w większości gmin Małopolski."
+    : d > 0 ? "To więcej niż w większości gmin Małopolski." : "To mniej niż w większości gmin Małopolski.";
+
+/** Porównanie dla wartości ze znakiem (+/−): „ubywa mniej” to co innego niż „przybywa mniej”. */
+const flowWords = (d: -1 | 0 | 1, v: number, how: string) =>
+  d === 0 ? "Podobnie jak w większości gmin Małopolski."
+    : d > 0 ? (v > 0 ? `Przybywa więcej mieszkańców${how} niż w większości gmin Małopolski.` : `Ubywa mniej mieszkańców${how} niż w większości gmin Małopolski.`)
+    : v < 0 ? `Ubywa więcej mieszkańców${how} niż w większości gmin Małopolski.` : `Przybywa mniej mieszkańców${how} niż w większości gmin Małopolski.`;
+
+const signed = (v: number, digits = 1) => `${v > 0 ? "+" : ""}${formatNumber(v, digits)}`;
 
 export type GminaTopic = {
   key: string;
@@ -24,7 +47,7 @@ export type GminaTopic = {
   intro: string;
   /** Nagłówek kolumny w tabeli. */
   column: string;
-  field: GminaField;
+  get: (g: GminaValues) => number | null;
   worse: Worse;
   format: (v: number) => string;
   sentence: (v: number) => string;
@@ -34,7 +57,8 @@ export type GminaTopic = {
   innovations: { area?: Area; groups: Group[]; cross: Cross[] };
 };
 
-const perHundred = (x: number) => (x < 1 ? "mniej niż 1" : formatNumber(Math.round(x), 0));
+/** „6”, a poniżej 1 „mniej niż 1” — do zdań typu „ubyło 6 na 100 mieszkańców”. */
+const rounded = (x: number) => (x < 1 ? "mniej niż 1" : formatNumber(Math.round(x), 0));
 
 export const GMINA_TOPICS: [GminaTopic, ...GminaTopic[]] = [
   {
@@ -42,14 +66,12 @@ export const GMINA_TOPICS: [GminaTopic, ...GminaTopic[]] = [
     label: "Seniorzy",
     intro: "Jaka część mieszkańców gminy ma 65 lat lub więcej.",
     column: "Osoby w wieku 65+ (% mieszkańców)",
-    field: "udzial_65plus",
+    get: (g) => g.udzial_65plus,
     worse: "higher",
     format: (v) => formatValue(v, "%"),
     sentence: (v) => `${share(v, { one: "osoba", many: "osób" })} ma 65 lat lub więcej.`,
-    compare: (d) =>
-      d === 0 ? "Podobnie jak w większości gmin Małopolski."
-        : d > 0 ? "To więcej niż w większości gmin Małopolski." : "To mniej niż w większości gmin Małopolski.",
-    innovations: { area: "seniorzy", groups: ["seniorzy"], cross: [] },
+    compare: regionWords,
+    innovations: { area: "seniorzy", groups: ["seniorzy"], cross: ["samotnosc"] },
   },
   {
     key: "ludnosc",
@@ -57,20 +79,86 @@ export const GMINA_TOPICS: [GminaTopic, ...GminaTopic[]] = [
     intro:
       "Czy przez 10 lat mieszkańców przybyło, czy ubyło. Wyludnianie się gmin to jeden z tematów przekrojowych Mapy Wyzwań.",
     column: "Zmiana liczby mieszkańców w 10 lat (%)",
-    field: "zmiana_ludnosci_10l",
+    get: (g) => g.zmiana_ludnosci_10l,
     worse: "lower",
-    format: (v) => `${v > 0 ? "+" : ""}${formatNumber(v, 1)}%`,
+    format: (v) => `${signed(v)}%`,
     sentence: (v) =>
       Math.abs(v) < 0.5 ? "Przez 10 lat liczba mieszkańców prawie się nie zmieniła."
-        : v < 0 ? `Przez 10 lat ubyło ${perHundred(-v)} na 100 mieszkańców.`
-        : `Przez 10 lat przybyło ${perHundred(v)} na 100 mieszkańców.`,
+        : v < 0 ? `Przez 10 lat ubyło ${rounded(-v)} na 100 mieszkańców.`
+        : `Przez 10 lat przybyło ${rounded(v)} na 100 mieszkańców.`,
     // „Więcej/mniej” zależy od znaku: -0,5% przy medianie -1% to wciąż ubywanie, tylko wolniejsze.
-    compare: (d, v) =>
-      d === 0 ? "Podobnie jak w większości gmin Małopolski."
-        : d > 0 ? (v > 0 ? "Przybywa więcej mieszkańców niż w większości gmin Małopolski." : "Ubywa mniej mieszkańców niż w większości gmin Małopolski.")
-        : v < 0 ? "Ubywa więcej mieszkańców niż w większości gmin Małopolski." : "Przybywa mniej mieszkańców niż w większości gmin Małopolski.",
+    compare: (d, v) => flowWords(d, v, ""),
     // Wyjeżdżają głównie młodzi za pracą, a zostającym brakuje usług — stąd rynek pracy i dostęp do usług.
     innovations: { groups: ["rynek_pracy"], cross: ["depopulacja_suburbanizacja", "dostep_do_uslug"] },
+  },
+  {
+    key: "przeprowadzki",
+    label: "Przeprowadzki",
+    intro: "Czy więcej osób się do gminy wprowadza, czy z niej wyprowadza (saldo migracji na 1000 mieszkańców w ciągu roku).",
+    column: "Saldo migracji na 1000 mieszkańców",
+    get: extra("saldo_migracji_1000"),
+    worse: "lower",
+    format: (v) => signed(v),
+    sentence: (v) =>
+      Math.abs(v) < 0.5 ? "Mniej więcej tyle samo osób się wprowadza, co wyprowadza."
+        : v < 0 ? `Więcej osób się wyprowadza, niż wprowadza: w rok ubywa tak ${rounded(-v)} na 1000 mieszkańców.`
+        : `Więcej osób się wprowadza, niż wyprowadza: w rok przybywa tak ${rounded(v)} na 1000 mieszkańców.`,
+    compare: (d, v) => flowWords(d, v, " przez przeprowadzki"),
+    innovations: { groups: ["rynek_pracy", "dzieci_mlodziez_rodzina"], cross: ["depopulacja_suburbanizacja"] },
+  },
+  {
+    key: "urodzenia",
+    label: "Urodzenia i zgony",
+    intro: "Czy w gminie rodzi się więcej dzieci, niż umiera osób (przyrost naturalny na 1000 mieszkańców w ciągu roku).",
+    column: "Przyrost naturalny na 1000 mieszkańców",
+    get: extra("przyrost_naturalny_1000"),
+    worse: "lower",
+    format: (v) => signed(v),
+    sentence: (v) =>
+      Math.abs(v) < 0.5 ? "Rodzi się mniej więcej tyle dzieci, ile umiera osób."
+        : v < 0 ? `Umiera więcej osób, niż rodzi się dzieci: w rok ubywa tak ${rounded(-v)} na 1000 mieszkańców.`
+        : `Rodzi się więcej dzieci, niż umiera osób: w rok przybywa tak ${rounded(v)} na 1000 mieszkańców.`,
+    compare: (d, v) => flowWords(d, v, " przez urodzenia i zgony"),
+    innovations: { area: "seniorzy", groups: ["dzieci_mlodziez_rodzina"], cross: [] },
+  },
+  {
+    key: "pomoc",
+    label: "Pomoc społeczna",
+    intro: "Ilu mieszkańców korzysta z pomocy ośrodka pomocy społecznej (na 10 tys. mieszkańców).",
+    column: "Osoby korzystające z pomocy społecznej na 10 tys. mieszkańców",
+    get: extra("pomoc_spoleczna_10k"),
+    worse: "higher",
+    format: (v) => formatNumber(v, 0),
+    sentence: (v) => `${share(v / 100, { one: "mieszkaniec", many: "mieszkańców", ord: "m" })} korzysta z pomocy społecznej.`,
+    compare: regionWords,
+    innovations: { area: "ubostwo", groups: ["rynek_pracy", "bezdomnosc"], cross: ["dostep_do_uslug"] },
+  },
+  {
+    key: "bezrobocie",
+    label: "Bezrobocie",
+    intro: "Jaka część osób w wieku produkcyjnym jest zarejestrowana w urzędzie pracy jako bezrobotna.",
+    column: "Bezrobotni zarejestrowani (% osób w wieku produkcyjnym)",
+    get: extra("bezrobocie_proc"),
+    worse: "higher",
+    format: (v) => formatValue(v, "%"),
+    sentence: (v) =>
+      `${v < 0.5 ? "Mniej niż 1" : formatNumber(Math.round(v), 0)} na 100 osób w wieku produkcyjnym to bezrobotni zarejestrowani w urzędzie pracy.`,
+    compare: regionWords,
+    innovations: { area: "ubostwo", groups: ["rynek_pracy"], cross: [] },
+  },
+  {
+    key: "przedszkola",
+    label: "Przedszkola",
+    intro: "Jaka część dzieci w wieku 3–5 lat chodzi do przedszkola albo innej formy wychowania przedszkolnego.",
+    column: "Dzieci 3–5 lat w przedszkolu (%)",
+    get: extra("przedszkola_proc"),
+    worse: "lower",
+    format: (v) => formatValue(v, "%"),
+    sentence: (v) =>
+      v >= 100 ? "Do przedszkoli w gminie chodzą wszystkie dzieci w wieku 3–5 lat, a do tego część dzieci z sąsiednich gmin."
+        : `${share(v, { one: "dziecko w wieku 3–5 lat", many: "dzieci w wieku 3–5 lat" })} chodzi do przedszkola.`,
+    compare: regionWords,
+    innovations: { area: "rodzina_piecza", groups: ["dzieci_mlodziez_rodzina"], cross: ["dostep_do_uslug"] },
   },
 ];
 
