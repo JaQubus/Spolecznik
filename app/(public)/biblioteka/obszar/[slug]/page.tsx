@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/knowledge/breadcrumbs";
 import { FactList } from "@/components/knowledge/fact-list";
-import { NamedIcon } from "@/components/knowledge/icons";
+import { AreaIcon } from "@/components/knowledge/icons";
 import { MaterialList } from "@/components/knowledge/material-list";
 import { PersonaStory } from "@/components/knowledge/persona";
 import { InnovationTiles } from "@/components/knowledge/tiles";
@@ -40,7 +40,7 @@ export default async function Page(props: PageProps<"/biblioteka/obszar/[slug]">
       <div className="space-y-6">
         <Breadcrumbs items={[{ href: "/biblioteka", label: "Biblioteka i wiedza" }, { label: area.name }]} />
         <h1 className="flex items-center gap-4 text-4xl font-bold">
-          <NamedIcon name={area.icon} className="size-10 shrink-0" />
+          <AreaIcon area={area.key} className="size-10 shrink-0" />
           {area.name}
         </h1>
         <p className="max-w-2xl text-xl">{area.lead}</p>

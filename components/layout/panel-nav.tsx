@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { cn } from "cn";
 import { logout } from "@/app/(public)/logowanie/actions";
@@ -34,7 +34,7 @@ export function PanelNav({ current, viewer }: { current: string; viewer: Viewer 
       <form action={logout} className="flex flex-wrap items-center gap-3 text-base">
         <span>{viewer.label}</span>
         <button type="submit" className="inline-flex min-h-12 items-center gap-2 rounded-full px-4 underline decoration-1 underline-offset-4 hover:bg-secondary">
-          <LogOut aria-hidden className="size-5" />Wyloguj się
+          <ArrowRightStartOnRectangleIcon aria-hidden className="size-5" />Wyloguj się
         </button>
       </form>
     </div>

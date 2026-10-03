@@ -1,4 +1,4 @@
-import { LogIn, LogOut } from "lucide-react";
+import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ export default async function Page(props: PageProps<"/logowanie">) {
         <div className="space-y-4">
           <p className="text-lg">Jesteś zalogowany jako: <strong>{viewer.label}</strong>.</p>
           <form action={logout}>
-            <Button type="submit" variant="outline"><LogOut aria-hidden />Wyloguj się</Button>
+            <Button type="submit" variant="outline"><ArrowRightStartOnRectangleIcon aria-hidden />Wyloguj się</Button>
           </form>
         </div>
       ) : (
@@ -56,7 +56,7 @@ export default async function Page(props: PageProps<"/logowanie">) {
                 <Label htmlFor="haslo">Hasło</Label>
                 <Input id="haslo" name="haslo" type="password" autoComplete="current-password" className="max-w-md" />
               </div>
-              <Button type="submit"><LogIn aria-hidden />Zaloguj się</Button>
+              <Button type="submit"><ArrowRightEndOnRectangleIcon aria-hidden />Zaloguj się</Button>
             </form>
           )}
 
@@ -69,10 +69,10 @@ export default async function Page(props: PageProps<"/logowanie">) {
               <form action={testLogin} className="flex flex-col gap-3 sm:flex-row">
                 <input type="hidden" name="dalej" value={next} />
                 <Button type="submit" name="rola" value="admin" variant={passwordEnabled ? "outline" : "default"}>
-                  <LogIn aria-hidden />Wejdź jako administrator ROPS
+                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako administrator ROPS
                 </Button>
                 <Button type="submit" name="rola" value="mieszkaniec" variant="outline">
-                  <LogIn aria-hidden />Wejdź jako mieszkaniec
+                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako mieszkaniec
                 </Button>
               </form>
               <FieldHint>Konto mieszkańca pozwala sprawdzić, że panel administratora jest dla niego niedostępny.</FieldHint>

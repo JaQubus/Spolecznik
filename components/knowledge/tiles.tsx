@@ -2,7 +2,7 @@ import { StoryTile, StoryTiles } from "@/components/ui/story-tile";
 import { TYPE_LABELS } from "@/lib/knowledge/labels";
 import type { Area, Innovation } from "@/lib/knowledge/types";
 import { GROUP_LABELS } from "@/lib/taxonomy";
-import { GROUP_ICONS, NamedIcon } from "./icons";
+import { GROUP_ICONS, AreaIcon } from "./icons";
 
 export const innovationHref = (slug: string) => `/biblioteka/innowacja/${slug}`;
 export const areaHref = (slug: string) => `/biblioteka/obszar/${slug}`;
@@ -42,7 +42,7 @@ export function AreaTiles({ areas, className }: { areas: Area[]; className?: str
           wide
           href={areaHref(a.slug)}
           title={a.name}
-          placeholder={<NamedIcon name={a.icon} className="size-16" />}
+          placeholder={<AreaIcon area={a.key} className="size-16" />}
           note={a.lead}
         />
       ))}

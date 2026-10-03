@@ -1,4 +1,4 @@
-import { Plus, RefreshCw } from "lucide-react";
+import { ArrowPathIcon, PlusIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cn } from "cn";
@@ -85,11 +85,11 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
       <div className="flex flex-wrap items-center gap-4">
         <h2 className="mr-auto text-2xl font-bold">{current.label}</h2>
         {current.add && (
-          <Button asChild><Link href={`/panel/wiedza/${tab}/nowy`}><Plus aria-hidden />{current.add}</Link></Button>
+          <Button asChild><Link href={`/panel/wiedza/${tab}/nowy`}><PlusIcon aria-hidden />{current.add}</Link></Button>
         )}
         {canUseHybridSearch() && (
           <form action={reindexAll}>
-            <Button type="submit" variant="outline"><RefreshCw aria-hidden />Odśwież indeks wyszukiwarki</Button>
+            <Button type="submit" variant="outline"><ArrowPathIcon aria-hidden />Odśwież indeks wyszukiwarki</Button>
           </form>
         )}
       </div>

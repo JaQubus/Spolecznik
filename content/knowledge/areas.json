@@ -3,7 +3,7 @@
     "key": "seniorzy",
     "slug": "seniorzy",
     "name": "Seniorzy",
-    "icon": "HeartHandshake",
+    "icon": "HeartIcon",
     "lead": "Samotność, zdrowie i pomoc w domu dla osób starszych.",
     "definition": "Ludzi starszych przybywa. Wielu z nich mieszka samotnie i potrzebuje pomocy w codziennym życiu. Chodzi o to, żeby senior mógł żyć bezpiecznie, samodzielnie i wśród ludzi.",
     "challenges": [
@@ -33,7 +33,7 @@
     "key": "niepelnosprawnosc",
     "slug": "niepelnosprawnosc",
     "name": "Niepełnosprawność",
-    "icon": "Accessibility",
+    "icon": "HandRaisedIcon",
     "lead": "Praca, nauka i samodzielne życie bez barier.",
     "definition": "Niepełnosprawność to trwała trudność w funkcjonowaniu ciała lub umysłu. Można się z nią urodzić albo pojawia się po chorobie lub wypadku. Osoby z niepełnosprawnością potrzebują dostępu do pracy, nauki, informacji i przestrzeni bez barier.",
     "challenges": [
@@ -65,7 +65,7 @@
     "key": "rodzina_piecza",
     "slug": "rodzina-piecza",
     "name": "Rodzina i piecza zastępcza",
-    "icon": "HouseHeart",
+    "icon": "UsersIcon",
     "lead": "Wsparcie rodzin i dom dla dzieci, które nie mogą mieszkać z rodzicami.",
     "definition": "Niektóre rodziny mają trudności z opieką nad dziećmi. Wtedy pomagają im asystenci i specjaliści. Gdy dziecko nie może mieszkać z rodzicami, trafia do rodziny zastępczej albo placówki.",
     "challenges": [
@@ -91,7 +91,7 @@
     "key": "zdrowie_psychiczne",
     "slug": "zdrowie-psychiczne",
     "name": "Zdrowie psychiczne",
-    "icon": "Brain",
+    "icon": "LifebuoyIcon",
     "lead": "Pomoc w kryzysie, stresie i depresji — dla dzieci i dorosłych.",
     "definition": "Zdrowie psychiczne to dobre samopoczucie, radzenie sobie ze stresem i dobre relacje z ludźmi. Coraz więcej dzieci i dorosłych potrzebuje pomocy. Wiele osób nie szuka jej, bo się wstydzi.",
     "challenges": [
@@ -122,7 +122,7 @@
     "key": "zdrowie",
     "slug": "zdrowie",
     "name": "Zdrowie",
-    "icon": "HeartPulse",
+    "icon": "PlusCircleIcon",
     "lead": "Dostęp do lekarza, rehabilitacji i opieki długoterminowej.",
     "definition": "Zdrowie to nie tylko leczenie, ale też zapobieganie chorobom i zdrowy styl życia. Ważne jest, żeby każdy miał podobny dostęp do lekarzy i rehabilitacji.",
     "challenges": [
@@ -151,7 +151,7 @@
     "key": "ubostwo",
     "slug": "ubostwo",
     "name": "Ubóstwo",
-    "icon": "HandCoins",
+    "icon": "BanknotesIcon",
     "lead": "Gdy brakuje pieniędzy na jedzenie, ogrzewanie i rachunki.",
     "definition": "Ubóstwo to sytuacja, w której nie starcza pieniędzy na podstawowe potrzeby: jedzenie, mieszkanie, ogrzewanie. Dotyka dzieci, seniorów, osób z niepełnosprawnością, a nawet osób, które pracują.",
     "challenges": [
@@ -182,7 +182,7 @@
     "key": "bezdomnosc",
     "slug": "bezdomnosc",
     "name": "Bezdomność",
-    "icon": "House",
+    "icon": "HomeIcon",
     "lead": "Dach nad głową i droga z ulicy do własnego mieszkania.",
     "definition": "Osoba w kryzysie bezdomności nie ma swojego miejsca do życia. Przyczyn jest zwykle kilka naraz, na przykład utrata pracy, długi, choroba albo uzależnienie. Coraz częściej dotyczy to młodych ludzi.",
     "challenges": [
@@ -212,7 +212,7 @@
     "key": "cudzoziemcy",
     "slug": "cudzoziemcy",
     "name": "Integracja cudzoziemców",
-    "icon": "Languages",
+    "icon": "LanguageIcon",
     "lead": "Nauka języka, praca i szkoła dla osób z innych krajów.",
     "definition": "Do Małopolski przyjeżdżają ludzie z innych krajów, na przykład z Ukrainy. Potrzebują mieszkania, pracy, szkoły dla dzieci i pomocy po polsku i w swoim języku.",
     "challenges": [

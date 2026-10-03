@@ -1,4 +1,4 @@
-import { Download, ExternalLink, FileText, TriangleAlert } from "lucide-react";
+import { ArrowDownTrayIcon, ArrowTopRightOnSquareIcon, DocumentTextIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -101,12 +101,12 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
           {i.materialsZip?.linkOk && (
             <li className="space-y-1">
               <a href={i.materialsZip.url} className={`inline-flex items-start gap-2 ${link}`}>
-                <Download aria-hidden className="mt-1 size-5 shrink-0" />
+                <ArrowDownTrayIcon aria-hidden className="mt-1 size-5 shrink-0" />
                 Pobierz wszystkie materiały: {i.title} (archiwum ZIP{zipSize && `, ${zipSize}`}, po polsku)
               </a>
               {isHugeFile(i.materialsZip.sizeBytes) && (
                 <p className="flex items-start gap-2 text-base">
-                  <TriangleAlert aria-hidden className="mt-1 size-5 shrink-0" />
+                  <ExclamationTriangleIcon aria-hidden className="mt-1 size-5 shrink-0" />
                   To bardzo duży plik. Pobieraj przez Wi-Fi, może to potrwać długo.
                 </p>
               )}
@@ -115,7 +115,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
           {i.pdfUrl && (
             <li>
               <a href={i.pdfUrl} className={`inline-flex items-start gap-2 ${link}`}>
-                <FileText aria-hidden className="mt-1 size-5 shrink-0" />
+                <DocumentTextIcon aria-hidden className="mt-1 size-5 shrink-0" />
                 Pobierz opis innowacji: {i.title} (PDF, po polsku)
               </a>
             </li>
@@ -123,7 +123,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
           {i.sourceUrl && (
             <li>
               <a href={i.sourceUrl} className={`inline-flex items-start gap-2 ${link}`}>
-                <ExternalLink aria-hidden className="mt-1 size-5 shrink-0" />
+                <ArrowTopRightOnSquareIcon aria-hidden className="mt-1 size-5 shrink-0" />
                 Zobacz innowację na stronie ROPS w Krakowie
               </a>
             </li>

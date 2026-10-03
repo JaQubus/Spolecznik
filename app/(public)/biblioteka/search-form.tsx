@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import Form from "next/form";
 import { Button } from "@/components/ui/button";
 import { FieldHint } from "@/components/ui/field";
@@ -15,7 +15,7 @@ export function SearchForm({ defaultValue }: { defaultValue: string }) {
         <label htmlFor="pytanie" className="text-2xl font-bold">O czym chcesz się dowiedzieć?</label>
         <FieldHint id="pytanie-pomoc">Np. samotność starszych osób na wsi, praca dla osób z niepełnosprawnością, pomoc dla dzieci z Ukrainy.</FieldHint>
         <div className="relative">
-          <Search aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-6 -translate-y-1/2 text-muted-foreground" />
+          <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-6 -translate-y-1/2 text-muted-foreground" />
           <Input id="pytanie" name="q" type="search" defaultValue={defaultValue} maxLength={300} aria-describedby="pytanie-pomoc" className="pl-13" />
         </div>
       </div>

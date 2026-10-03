@@ -34,7 +34,7 @@ MAP_SOURCE = {
 
 # ── Obszary: tekst prostym językiem (ręcznie, na podstawie Mapy Wyzwań) ──
 AREAS = [
-    dict(key="seniorzy", name="Seniorzy", icon="HeartHandshake",
+    dict(key="seniorzy", name="Seniorzy", icon="HeartIcon",
          lead="Samotność, zdrowie i pomoc w domu dla osób starszych.",
          definition="Ludzi starszych przybywa. Wielu z nich mieszka samotnie i potrzebuje pomocy w codziennym życiu. "
                     "Chodzi o to, żeby senior mógł żyć bezpiecznie, samodzielnie i wśród ludzi.",
@@ -43,7 +43,7 @@ AREAS = [
                      "Nauka obsługi telefonu, komputera i urządzeń w mieście.",
                      "Bezpieczne branie leków i suplementów.",
                      "Mieszkania i przestrzeń bez barier dla osób starszych."]),
-    dict(key="niepelnosprawnosc", name="Niepełnosprawność", icon="Accessibility",
+    dict(key="niepelnosprawnosc", name="Niepełnosprawność", icon="HandRaisedIcon",
          lead="Praca, nauka i samodzielne życie bez barier.",
          definition="Niepełnosprawność to trwała trudność w funkcjonowaniu ciała lub umysłu. Można się z nią urodzić "
                     "albo pojawia się po chorobie lub wypadku. Osoby z niepełnosprawnością potrzebują dostępu do pracy, "
@@ -53,7 +53,7 @@ AREAS = [
                      "Wsparcie w budowaniu przyjaźni i relacji.",
                      "Przestrzeń, transport i informacje dostępne dla wszystkich.",
                      "Mieszkania przystosowane do potrzeb."]),
-    dict(key="rodzina_piecza", name="Rodzina i piecza zastępcza", icon="HouseHeart",
+    dict(key="rodzina_piecza", name="Rodzina i piecza zastępcza", icon="UsersIcon",
          lead="Wsparcie rodzin i dom dla dzieci, które nie mogą mieszkać z rodzicami.",
          definition="Niektóre rodziny mają trudności z opieką nad dziećmi. Wtedy pomagają im asystenci i specjaliści. "
                     "Gdy dziecko nie może mieszkać z rodzicami, trafia do rodziny zastępczej albo placówki.",
@@ -62,7 +62,7 @@ AREAS = [
                      "Krótszy pobyt dziecka w pieczy zastępczej.",
                      "Lepsza współpraca między powiatami.",
                      "Jednakowe zasady adopcji w całym kraju."]),
-    dict(key="zdrowie_psychiczne", name="Zdrowie psychiczne", icon="Brain",
+    dict(key="zdrowie_psychiczne", name="Zdrowie psychiczne", icon="LifebuoyIcon",
          lead="Pomoc w kryzysie, stresie i depresji — dla dzieci i dorosłych.",
          definition="Zdrowie psychiczne to dobre samopoczucie, radzenie sobie ze stresem i dobre relacje z ludźmi. "
                     "Coraz więcej dzieci i dorosłych potrzebuje pomocy. Wiele osób nie szuka jej, bo się wstydzi.",
@@ -70,7 +70,7 @@ AREAS = [
                      "Pomoc rodzicom w rozpoznawaniu sygnałów, że dziecko ma problem.",
                      "Pomoc blisko domu zamiast w szpitalu.",
                      "Mniej wstydu i uprzedzeń wobec osób w kryzysie."]),
-    dict(key="zdrowie", name="Zdrowie", icon="HeartPulse",
+    dict(key="zdrowie", name="Zdrowie", icon="PlusCircleIcon",
          lead="Dostęp do lekarza, rehabilitacji i opieki długoterminowej.",
          definition="Zdrowie to nie tylko leczenie, ale też zapobieganie chorobom i zdrowy styl życia. "
                     "Ważne jest, żeby każdy miał podobny dostęp do lekarzy i rehabilitacji.",
@@ -78,7 +78,7 @@ AREAS = [
                      "Równy dostęp do dobrej opieki medycznej.",
                      "Więcej opieki długoterminowej dla starzejących się mieszkańców.",
                      "Dbanie o zdrowie dzieci i młodzieży."]),
-    dict(key="ubostwo", name="Ubóstwo", icon="HandCoins",
+    dict(key="ubostwo", name="Ubóstwo", icon="BanknotesIcon",
          lead="Gdy brakuje pieniędzy na jedzenie, ogrzewanie i rachunki.",
          definition="Ubóstwo to sytuacja, w której nie starcza pieniędzy na podstawowe potrzeby: jedzenie, mieszkanie, "
                     "ogrzewanie. Dotyka dzieci, seniorów, osób z niepełnosprawnością, a nawet osób, które pracują.",
@@ -87,7 +87,7 @@ AREAS = [
                      "Pomoc dla seniorów i osób z niepełnosprawnością z niskimi dochodami.",
                      "Pieniądze na ogrzewanie domu.",
                      "Nikt nie powinien być głodny."]),
-    dict(key="bezdomnosc", name="Bezdomność", icon="House",
+    dict(key="bezdomnosc", name="Bezdomność", icon="HomeIcon",
          lead="Dach nad głową i droga z ulicy do własnego mieszkania.",
          definition="Osoba w kryzysie bezdomności nie ma swojego miejsca do życia. Przyczyn jest zwykle kilka naraz, "
                     "na przykład utrata pracy, długi, choroba albo uzależnienie. Coraz częściej dotyczy to młodych ludzi.",
@@ -95,7 +95,7 @@ AREAS = [
                      "Wsparcie dla osób, które opuszczają domy dziecka.",
                      "Noclegownie i schroniska przygotowane na potrzeby młodych.",
                      "Pomoc w odbudowaniu relacji z bliskimi."]),
-    dict(key="cudzoziemcy", name="Integracja cudzoziemców", icon="Languages",
+    dict(key="cudzoziemcy", name="Integracja cudzoziemców", icon="LanguageIcon",
          lead="Nauka języka, praca i szkoła dla osób z innych krajów.",
          definition="Do Małopolski przyjeżdżają ludzie z innych krajów, na przykład z Ukrainy. Potrzebują mieszkania, pracy, "
                     "szkoły dla dzieci i pomocy po polsku i w swoim języku.",
@@ -106,11 +106,6 @@ AREAS = [
                      "Mniej uprzedzeń wobec cudzoziemców."]),
 ]
 
-GROUP_ICONS = {
-    "seniorzy": "HeartHandshake", "dzieci_mlodziez_rodzina": "Users", "ograniczona_mobilnosc": "Accessibility",
-    "niepelnosprawnosc_sensoryczna": "Ear", "zdrowie_medycyna": "Stethoscope", "rynek_pracy": "Briefcase",
-    "cudzoziemcy": "Languages", "bezdomnosc": "House", "niepelnosprawnosc_intelektualna": "BookOpen",
-}
 
 # ── Obszary dla innowacji: kategoria „dla kogo” → obszar bazowy + słowa w opisie ──
 GROUP_AREA = {

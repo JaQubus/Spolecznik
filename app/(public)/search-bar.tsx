@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
@@ -35,7 +35,7 @@ export function SearchBar() {
         <FieldHint id="problem-pomoc">Np. samotność seniorów, brak opieki po szkole, dojazd do lekarza.</FieldHint>
         <FieldError id="problem-blad">{error}</FieldError>
         <div className="relative">
-          <Search aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-6 -translate-y-1/2 text-muted-foreground" />
+          <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-6 -translate-y-1/2 text-muted-foreground" />
           <Input
             ref={problem}
             id="problem"

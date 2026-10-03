@@ -1,12 +1,12 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { AlignLeft, Contrast, Type } from "lucide-react";
+import { Bars3BottomLeftIcon, EyeIcon, MagnifyingGlassPlusIcon } from "@heroicons/react/24/outline";
 
 export const A11Y_OPTIONS = [
-  { key: "large", label: "Większy tekst", Icon: Type },
-  { key: "contrast", label: "Wysoki kontrast", Icon: Contrast },
-  { key: "simple", label: "Tryb prosty", Icon: AlignLeft },
+  { key: "large", label: "Większy tekst", Icon: MagnifyingGlassPlusIcon },
+  { key: "contrast", label: "Wysoki kontrast", Icon: EyeIcon },
+  { key: "simple", label: "Tryb prosty", Icon: Bars3BottomLeftIcon },
 ] as const;
 
 // Źródłem prawdy są klasy na <html> (np. a11y-simple); ustawia je też A11Y_INIT_SCRIPT przed hydracją.

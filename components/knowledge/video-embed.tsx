@@ -1,6 +1,6 @@
 "use client";
 
-import { Captions, Hand, Play } from "lucide-react";
+import { ChatBubbleBottomCenterTextIcon, ChatBubbleLeftRightIcon, PlayIcon } from "@heroicons/react/24/outline";
 import { useRef, useState } from "react";
 import type { Video } from "@/lib/knowledge/types";
 
@@ -37,7 +37,7 @@ export function VideoEmbed({ video, description }: { video: Video; description: 
               <img src={video.thumbnailUrl} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
             )}
             <span className="relative inline-flex min-h-12 items-center gap-3 rounded-full bg-background px-5 py-2 text-lg font-bold text-foreground group-hover:underline">
-              <Play aria-hidden className="size-6 shrink-0" />
+              <PlayIcon aria-hidden className="size-6 shrink-0" />
               Odtwórz film: {label}
             </span>
           </button>
@@ -46,8 +46,8 @@ export function VideoEmbed({ video, description }: { video: Video; description: 
       <figcaption className="space-y-2 text-base">
         {(video.captions || video.signLanguage) && (
           <ul className="flex flex-wrap gap-x-6 gap-y-1">
-            {video.captions && <li className="flex items-center gap-2"><Captions aria-hidden className="size-5" />Film ma napisy.</li>}
-            {video.signLanguage && <li className="flex items-center gap-2"><Hand aria-hidden className="size-5" />Film ma tłumaczenie na polski język migowy (PJM).</li>}
+            {video.captions && <li className="flex items-center gap-2"><ChatBubbleBottomCenterTextIcon aria-hidden className="size-5" />Film ma napisy.</li>}
+            {video.signLanguage && <li className="flex items-center gap-2"><ChatBubbleLeftRightIcon aria-hidden className="size-5" />Film ma tłumaczenie na polski język migowy (PJM).</li>}
           </ul>
         )}
         <div>{description}</div>

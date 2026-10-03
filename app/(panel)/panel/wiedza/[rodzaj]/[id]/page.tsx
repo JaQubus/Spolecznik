@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { TrashIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -69,7 +69,7 @@ export default async function Page(props: PageProps<"/panel/wiedza/[rodzaj]/[id]
           <form action={removeEntity}>
             <input type="hidden" name="kind" value={kind} />
             <input type="hidden" name="id" value={id} />
-            <Button type="submit" variant="outline"><Trash2 aria-hidden />Usuń {KINDS[kind].noun}</Button>
+            <Button type="submit" variant="outline"><TrashIcon aria-hidden />Usuń {KINDS[kind].noun}</Button>
           </form>
         </section>
       )}

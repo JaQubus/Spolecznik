@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { isShowable } from "@/components/knowledge/fact-list";
-import { NamedIcon } from "@/components/knowledge/icons";
+import { AreaIcon } from "@/components/knowledge/icons";
 import { areaHref } from "@/components/knowledge/tiles";
 import { flags } from "@/lib/flags";
 import { knowledge } from "@/lib/knowledge";
@@ -27,7 +27,7 @@ export async function ChallengesTab() {
           return (
             <li key={a.key} className="grid gap-4 py-6 md:grid-cols-[16rem_1fr] md:gap-8">
               <h3 className="flex items-start gap-3 text-xl font-bold">
-                <NamedIcon name={a.icon} className="mt-1 size-7 shrink-0" />
+                <AreaIcon area={a.key} className="mt-1 size-7 shrink-0" />
                 <Link href={areaHref(a.slug)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{a.name}</Link>
               </h3>
               {fact ? (

@@ -1,4 +1,4 @@
-import { TriangleAlert } from "lucide-react";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { formatBytes, isHugeFile, MATERIAL_KIND_LABELS, materialLinkText } from "@/lib/knowledge/labels";
 import type { Material } from "@/lib/knowledge/types";
 import { MATERIAL_ICONS } from "./icons";
@@ -26,7 +26,7 @@ export function MaterialList({ items, headingLevel = 3 }: { items: Material[]; h
             </p>
             {isHugeFile(m.sizeBytes) && (
               <p className="flex items-start gap-2 text-base">
-                <TriangleAlert aria-hidden className="mt-1 size-5 shrink-0" />
+                <ExclamationTriangleIcon aria-hidden className="mt-1 size-5 shrink-0" />
                 Duży plik ({formatBytes(m.sizeBytes)}). Pobieraj przez Wi-Fi.
               </p>
             )}

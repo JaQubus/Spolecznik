@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NamedIcon } from "@/components/knowledge/icons";
+import { AreaIcon } from "@/components/knowledge/icons";
 import { MaterialList } from "@/components/knowledge/material-list";
 import { areaHref, InnovationTiles } from "@/components/knowledge/tiles";
 import type { KnowledgeResults } from "@/lib/knowledge/search";
@@ -38,7 +38,7 @@ export function SearchResults({ results: r }: { results: KnowledgeResults }) {
           <ul className="max-w-[48rem] divide-y divide-border border-y border-border">
             {r.areas.map((a) => (
               <li key={a.key} className="flex items-start gap-4 py-5">
-                <NamedIcon name={a.icon} className="mt-1 size-8 shrink-0" />
+                <AreaIcon area={a.key} className="mt-1 size-8 shrink-0" />
                 <div className="space-y-1">
                   <h4 className="text-xl font-bold">
                     <Link href={areaHref(a.slug)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{a.name}</Link>

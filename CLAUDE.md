@@ -9,5 +9,6 @@ Plan projektu: README.md (po polsku). Kod i identyfikatory po angielsku, teksty 
 - Supabase: `lib/supabase/server.ts` (sesja + RLS), `client.ts` (przeglądarka), `admin.ts` (service_role, tylko serwer).
 - Wymiar embeddingów (1536) musi się zgadzać w `lib/search.ts` i `supabase/migrations`.
 - Wygląd: system projektowy w `docs/design-system/README.md` (tokeny, zasady, komponenty w `components/*.md`). Jeden zielony przycisk na widok, pola tekstowe jako białe pola z ramką, bez kart w wierszach.
+- Ikony: Heroicons (`@heroicons/react/24/outline`), zawsze z klasą `size-*` i obok tekstu. shadcn generuje importy `lucide-react` — po `shadcn add` podmień je na Heroicons.
 - Dostępność to wymóg, nie dodatek: etykiety przy polach, `aria-live` dla wyników asynchronicznych, ikony zawsze z tekstem.
 - Pipeline danych: `cd data && uv run <skrypt>.py`.

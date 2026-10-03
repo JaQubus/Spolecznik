@@ -1,6 +1,6 @@
 "use client";
 
-import { ThumbsDownIcon, ThumbsUpIcon, UsersIcon } from "lucide-react";
+import { HandThumbDownIcon, HandThumbUpIcon, UsersIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/ui/alert";
@@ -186,10 +186,10 @@ function FeedbackButtons({ matchId }: { matchId: string }) {
     <div role="group" aria-label="Czy to rozwiązanie jest pomocne?" className="flex flex-wrap items-center gap-2">
       <span className="text-base text-muted-foreground">Czy to pomocne?</span>
       <Button type="button" size="sm" variant="outline" aria-pressed={value === 1} onClick={() => send(1)} className={toggle}>
-        <ThumbsUpIcon aria-hidden /> Tak
+        <HandThumbUpIcon aria-hidden /> Tak
       </Button>
       <Button type="button" size="sm" variant="outline" aria-pressed={value === -1} onClick={() => send(-1)} className={toggle}>
-        <ThumbsDownIcon aria-hidden /> Nie
+        <HandThumbDownIcon aria-hidden /> Nie
       </Button>
       <span aria-live="polite" className="text-base">
         {error ? "Nie udało się zapisać oceny." : value !== 0 ? "Dziękujemy za ocenę." : ""}

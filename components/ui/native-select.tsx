@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { cn } from "cn";
 
 /**
@@ -14,7 +14,7 @@ export function NativeSelect({ className, children, ...props }: React.ComponentP
       >
         {children}
       </select>
-      <ChevronDown aria-hidden className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2" />
+      <ChevronDownIcon aria-hidden className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2" />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Download, TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { ArrowDownTrayIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Form from "next/form";
 import { AreaTrendCharts, AreaTrendTable } from "@/components/knowledge/trend-charts";
@@ -48,7 +48,7 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
         <Button type="submit" variant="outline">Pokaż</Button>
         <Button asChild>
           <a href={`/panel/trendy/eksport?okres=${bucket}`} download>
-            <Download aria-hidden />Pobierz dane (CSV)
+            <ArrowDownTrayIcon aria-hidden />Pobierz dane (CSV)
           </a>
         </Button>
       </Form>
@@ -94,7 +94,7 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
             <tbody>
               {t.keywords.map((k) => {
                 const diff = k.recent - k.previous;
-                const Icon = diff > 0 ? TrendingUp : diff < 0 ? TrendingDown : Minus;
+                const Icon = diff > 0 ? ArrowTrendingUpIcon : diff < 0 ? ArrowTrendingDownIcon : MinusIcon;
                 return (
                   <tr key={k.keyword} className="border-b border-border">
                     <th scope="row" className="p-3 text-left font-normal">{k.keyword}</th>
