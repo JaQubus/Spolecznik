@@ -1,0 +1,16 @@
+[project]
+name = "splot-data"
+version = "0.1.0"
+description = "Offline pipeline danych dla Splotu: scraping, PDF-y, BDL, wzbogacanie, embeddingi, ewaluacja"
+requires-python = ">=3.12"
+dependencies = [
+  "playwright",
+  "pymupdf",
+  "httpx",
+  "anthropic",
+  "openai",
+  "numpy",
+  "scikit-learn",
+  "psycopg[binary]",
+  "python-dotenv",
+]
