@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GROUP_ICONS } from "@/components/knowledge/icons";
+import { RegionMap } from "@/components/knowledge/region-map";
 import { AreaTiles } from "@/components/knowledge/tiles";
 import { knowledge } from "@/lib/knowledge";
 import { searchKnowledge } from "@/lib/knowledge/search";
@@ -47,6 +48,12 @@ export default async function Page(props: PageProps<"/biblioteka">) {
         <h2 id="tematy" className="text-3xl font-bold">Wybierz temat</h2>
         <AreaTiles areas={areas} />
       </section>
+
+      <RegionMap
+        initialLayer={first(sp.mapa) === "powiaty" ? "powiaty" : "gminy"}
+        initialIndicator={first(sp.wskaznik) || undefined}
+        initialUnit={first(sp.jednostka) || undefined}
+      />
 
       <section aria-labelledby="dla-kogo" className="space-y-6">
         <h2 id="dla-kogo" className="text-3xl font-bold">Szukam rozwiązania dla…</h2>

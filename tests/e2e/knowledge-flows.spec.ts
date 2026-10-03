@@ -106,3 +106,31 @@ test("admin dodaje innowację, po chwili znajduje ją w wyszukiwarce, potem usuw
   await page.getByRole("button", { name: "Usuń innowację" }).click();
   await expect(page.getByText("Rekord został usunięty.")).toBeVisible();
 });
+
+test("mapa Małopolski: gminy i powiaty z prawdziwymi granicami, wybór z listy, tabela, bez naruszeń axe", async ({ page }) => {
+  await page.goto("/biblioteka");
+  const map = page.getByRole("region", { name: "Małopolska na mapie" });
+  await map.scrollIntoViewIfNeeded();
+  const svg = page.getByRole("img", { name: /Mapa Małopolski/ });
+  await expect(svg).toBeVisible();
+  await expect(svg.locator("g").first().locator("path")).toHaveCount(183);
+
+  // Klawiatura / czytnik ekranu: wybór gminy z listy → panel szczegółów (aria-live) i adres do udostępnienia.
+  await page.getByLabel("Wybierz gminę").selectOption({ label: "Zakopane (gmina miejska, powiat tatrzański)" });
+  await expect(map.locator("[aria-live=polite]")).toContainText("Zakopane");
+  await expect(map.locator("[aria-live=polite]")).toContainText(/miejsce na 183 gmin/);
+  await expect(page).toHaveURL(/jednostka=1217011/);
+
+  // Przełącznik warstw: wybrana gmina przechodzi na swój powiat.
+  await page.getByText(/^Powiaty \(22\)$/).click();
+  await expect(svg.locator("g").first().locator("path")).toHaveCount(22);
+  await expect(map.locator("[aria-live=polite]")).toContainText("powiat tatrzański");
+
+  // Tabela z tymi samymi danymi co mapa.
+  await page.getByText(/^Pokaż dane w tabeli/).click();
+  await expect(page.getByRole("table", { name: /powiaty, od najwyższej wartości/ }).locator("tbody tr")).toHaveCount(22);
+
+  const { violations } = await new AxeBuilder({ page }).include("#mapa-naglowek").include("section[aria-labelledby=mapa-naglowek]")
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).slice(0, 2)}`)).toEqual([]);
+});
