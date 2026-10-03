@@ -1,7 +1,8 @@
 import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { NoDatabase } from "@/components/layout/no-database";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Ucz się" };
 
@@ -18,7 +19,7 @@ type Material = {
 
 const linkClass = "inline-flex items-center gap-2 font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
-export default async function Page() {
+async function listMaterials(): Promise<Material[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("materials")
@@ -26,7 +27,12 @@ export default async function Page() {
     .order("sort")
     .order("title");
   if (error) throw error;
-  const materials = data as Material[];
+  return data as Material[];
+}
+
+export default async function Page() {
+  const connected = isSupabaseConfigured();
+  const materials = connected ? await listMaterials() : [];
 
   return (
     <div className="space-y-10">
@@ -42,7 +48,9 @@ export default async function Page() {
         </p>
       </header>
 
-      {materials.length === 0 ? (
+      {!connected ? (
+        <NoDatabase />
+      ) : materials.length === 0 ? (
         <p className="text-lg">Nie ma jeszcze materiałów.</p>
       ) : (
         <ul className="max-w-3xl border-t">

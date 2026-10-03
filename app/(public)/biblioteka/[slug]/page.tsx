@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import { NoDatabase } from "@/components/layout/no-database";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getInnovation } from "@/lib/innovations";
 import { formatNumber, plural } from "@/lib/pl";
 import { GROUPS } from "@/lib/schemas";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { GROUP_LABELS } from "@/lib/taxonomy";
 import { LiteVideo } from "./video";
 
@@ -16,7 +18,7 @@ const load = cache(getInnovation);
 
 export async function generateMetadata(props: PageProps<"/biblioteka/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
-  const innovation = await load(decodeURIComponent(slug));
+  const innovation = isSupabaseConfigured() ? await load(decodeURIComponent(slug)) : null;
   return { title: innovation?.title ?? "Nie znaleziono rozwiązania" };
 }
 
@@ -56,6 +58,7 @@ function Labeled({ label, children }: { label: string; children: string | null }
 
 export default async function Page(props: PageProps<"/biblioteka/[slug]">) {
   const { slug } = await props.params;
+  if (!isSupabaseConfigured()) return <NoDatabase />;
   const i = await load(decodeURIComponent(slug));
   if (!i) notFound();
 

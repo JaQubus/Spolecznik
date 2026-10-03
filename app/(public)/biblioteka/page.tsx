@@ -1,9 +1,11 @@
 import { ChevronRight, GraduationCap, Lightbulb, MapPinned, Play } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { NoDatabase } from "@/components/layout/no-database";
 import { listInnovations } from "@/lib/innovations";
 import { formatNumber, plural } from "@/lib/pl";
 import { GROUPS } from "@/lib/schemas";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { GROUP_LABELS } from "@/lib/taxonomy";
 import { LibraryFilters } from "./filters";
 
@@ -25,7 +27,8 @@ export default async function Page(props: PageProps<"/biblioteka">) {
   const dla = first(params.dla);
   const group = isGroup(dla) ? dla : null;
   const q = first(params.q).slice(0, 100);
-  const innovations = await listInnovations({ group: group ?? undefined, q });
+  const connected = isSupabaseConfigured();
+  const innovations = connected ? await listInnovations({ group: group ?? undefined, q }) : [];
   const n = innovations.length;
   const filtered = Boolean(group || q);
 
@@ -61,6 +64,8 @@ export default async function Page(props: PageProps<"/biblioteka">) {
           <h2 id="innowacje-tytul" className="text-3xl font-bold">Innowacje</h2>
           <p className="max-w-2xl text-lg">Każde rozwiązanie opowiadamy w czterech krokach: problem, rozwiązanie, skąd wiemy, że działa, i jak z niego skorzystać.</p>
         </div>
+
+        {!connected && <NoDatabase />}
 
         <LibraryFilters group={group} q={q} />
 

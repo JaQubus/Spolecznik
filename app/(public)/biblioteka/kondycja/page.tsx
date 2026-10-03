@@ -2,6 +2,7 @@ import { ArrowLeft, Check, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cn } from "cn";
+import { NoDatabase } from "@/components/layout/no-database";
 import { Alert } from "@/components/ui/alert";
 import { innovationsForArea } from "@/lib/innovations";
 import {
@@ -9,6 +10,7 @@ import {
   type KondycjaArea,
 } from "@/lib/kondycja";
 import { formatNumber } from "@/lib/pl";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getKondycjaData, longName, shortName, type PowiatyData } from "@/lib/powiaty";
 import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { FocusHeading } from "./focus-heading";
@@ -33,7 +35,8 @@ function primaryValues(data: PowiatyData, area: KondycjaArea): number[] {
 export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
   const params = await props.searchParams;
   const area = findArea(first(params.obszar));
-  const data = await getKondycjaData();
+  const connected = isSupabaseConfigured();
+  const data: PowiatyData = connected ? await getKondycjaData() : { year: null, powiaty: [], values: {} };
   const primary = area.indicators[0];
   const all = primaryValues(data, area);
 
@@ -75,7 +78,9 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
         </p>
       </header>
 
-      {data.year == null ? (
+      {!connected ? (
+        <NoDatabase />
+      ) : data.year == null ? (
         <Alert title="Brak danych o powiatach">
           <p>Dane jeszcze nie zostały wczytane. Instrukcja jest w pliku data/README.md (import powiatów).</p>
         </Alert>
