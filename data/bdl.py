@@ -31,7 +31,7 @@ EXTRA_VARS = {
     "przyrost_naturalny_1000": "450551",   # P3428: przyrost naturalny na 1000 ludności
     "pomoc_spoleczna_10k": "1548717",      # P3870: beneficjenci środowiskowej pomocy społecznej na 10 tys. ludności
     "bezrobocie_proc": "60270",            # P2670: udział bezrobotnych zarejestrowanych w ludności w wieku produkcyjnym, ogółem
-    "przedszkola_proc": None,              # P4013: odsetek dzieci 3–5 lat objętych wychowaniem przedszkolnym (ID ustala find_var)
+    "przedszkola_proc": None,              # P4013: ID jest wyszukiwane z metadanych BDL
 }
 
 # Rodzaj jednostki BDL (ostatnia cyfra ID): 1 miejska, 2 wiejska, 3 miejsko-wiejska.
@@ -88,6 +88,24 @@ class Bdl:
         )
         return {r["id"]: {int(v["year"]): v["val"] for v in r["values"]} for r in rows}
 
+    def find_preschool_variable(self) -> str:
+        """Find the current variable ID for the P4013 preschool coverage subject."""
+        variables = self.all_pages("/variables", **{"subject-id": "P4013"})
+        candidates = [
+            v for v in variables
+            if "3" in str(v.get("name", ""))
+            and "5" in str(v.get("name", ""))
+            and ("przedszkol" in str(v.get("name", "")).lower()
+                 or "wychowania" in str(v.get("name", "")).lower())
+        ]
+        if len(candidates) != 1:
+            names = ", ".join(f'{v.get("id")}: {v.get("name")}' for v in candidates)
+            raise RuntimeError(
+                "Nie udało się jednoznacznie znaleźć zmiennej P4013 dla przedszkoli"
+                + (f" ({names})" if names else ". Sprawdź metadane BDL.")
+            )
+        return str(candidates[0]["id"])
+
 
 def latest_year(bdl: Bdl) -> int:
     """Ostatni rok, dla którego jest ludność ogółem (BDL publikuje z opóźnieniem)."""
@@ -105,9 +123,8 @@ def var_years(bdl: Bdl, var_id: str) -> list[int]:
 def fetch_extra(bdl: Bdl) -> dict[str, dict]:
     """teryt → {klucz: wartość, „klucz_rok”: rok} dla EXTRA_VARS."""
     out: dict[str, dict] = {}
-    for key, var_id in EXTRA_VARS.items():
-        if var_id is None:
-            continue
+    variables = {**EXTRA_VARS, "przedszkola_proc": bdl.find_preschool_variable()}
+    for key, var_id in variables.items():
         years = var_years(bdl, var_id)
         if not years:
             print(f"! {key}: BDL nie podaje lat dla zmiennej {var_id}")
