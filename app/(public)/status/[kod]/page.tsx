@@ -3,7 +3,8 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusTimeline, type TimelineStep } from "@/components/ui/status-timeline";
-import { formatDate } from "@/lib/pl";
+import { needTimeline, type NeedStatus } from "@/lib/need-status";
+import { needHistory, statusEvents } from "@/lib/panel/needs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AREA_LABELS } from "@/lib/taxonomy";
 
@@ -14,7 +15,8 @@ const CODE = /^SPL-[2-9A-HJ-NP-Z]{4}$/;
 
 type Report = {
   kind: "potrzeba" | "pomysl";
-  status: string;
+  id: string;
+  status: NeedStatus;
   createdAt: string;
   summary: string;
   areas: string[];
@@ -26,7 +28,7 @@ async function findReport(code: string): Promise<Report | null> {
   const supabase = createAdminClient();
   const { data: need, error } = await supabase
     .from("needs")
-    .select("status, created_at, card, gminy(nazwa)")
+    .select("id, status, created_at, card, gminy(nazwa)")
     .eq("status_code", code)
     .maybeSingle();
   if (error) throw error;
@@ -35,6 +37,7 @@ async function findReport(code: string): Promise<Report | null> {
     const gmina = need.gminy as unknown as { nazwa: string } | null;
     return {
       kind: "potrzeba",
+      id: need.id,
       status: need.status,
       createdAt: need.created_at,
       summary: card.summary ?? "",
@@ -45,27 +48,19 @@ async function findReport(code: string): Promise<Report | null> {
 
   const { data: idea, error: ideaError } = await supabase
     .from("ideas")
-    .select("status, created_at, fiszka")
+    .select("id, status, created_at, fiszka")
     .eq("status_code", code)
     .maybeSingle();
   if (ideaError) throw ideaError;
   if (!idea) return null;
   const fiszka = idea.fiszka as { krotki_opis?: string };
-  return { kind: "pomysl", status: idea.status, createdAt: idea.created_at, summary: fiszka.krotki_opis ?? "", areas: [], gmina: null };
+  return { kind: "pomysl", id: idea.id, status: idea.status, createdAt: idea.created_at, summary: fiszka.krotki_opis ?? "", areas: [], gmina: null };
 }
 
-// Kolejność kroków; 'luka' to zgłoszenie bez gotowego rozwiązania — czeka na pierwszym kroku.
-const ORDER: Record<string, number> = { zgloszone: 0, luka: 0, w_analizie: 1, ekspert: 2, odpowiedz: 3, zamkniete: 4 };
-
-function timeline(report: Report): TimelineStep[] {
-  const steps = [
-    { title: "Zgłoszone", note: formatDate(report.createdAt) },
-    { title: "W analizie", note: "Pracownik ROPS czyta zgłoszenie" },
-    { title: "Przypisano eksperta", note: "Ekspert dostał zaproszenie do rozmowy" },
-    { title: "Odpowiedź", note: "Odpowiedź czeka w rozmowie" },
-  ];
-  const at = ORDER[report.status] ?? 0;
-  return steps.map((s, i) => ({ ...s, state: i < at ? "done" : i === at ? "current" : "todo" }));
+/** Oś czasu z historii zmian w Panelu: daty kroków i wiadomości ROPS dla zgłaszającego. */
+async function timeline(report: Report): Promise<TimelineStep[]> {
+  const history = await needHistory(report.id, report.kind === "potrzeba" ? "need" : "idea");
+  return needTimeline(report.createdAt, report.status, statusEvents(history));
 }
 
 export default async function Page(props: PageProps<"/status/[kod]">) {
@@ -73,10 +68,12 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
   const code = decodeURIComponent(kod).trim().toUpperCase();
 
   let report: Report | null = null;
+  let steps: TimelineStep[] = [];
   let unavailable = false;
   if (CODE.test(code)) {
     try {
       report = await findReport(code);
+      if (report) steps = await timeline(report);
     } catch (e) {
       console.error("[status]", e);
       unavailable = true;
@@ -120,7 +117,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         </h1>
         {report.summary && <p className="max-w-[68ch] text-lg">{report.summary}</p>}
         {(report.gmina || report.areas.length > 0) && (
-          <ul className="flex flex-wrap gap-2 simple:hidden" aria-label="Gmina i obszary">
+          <ul className="flex flex-wrap gap-2" aria-label="Gmina i obszary">
             {report.gmina && <li><Badge>Gmina {report.gmina}</Badge></li>}
             {report.areas.slice(0, 3).map((a) => (
               <li key={a}><Badge>{AREA_LABELS[a as keyof typeof AREA_LABELS] ?? a}</Badge></li>
@@ -131,7 +128,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
 
       <section aria-labelledby="przebieg" className="space-y-4">
         <h2 id="przebieg" className="text-2xl font-bold">Co się dzieje ze zgłoszeniem</h2>
-        <StatusTimeline steps={timeline(report)} />
+        <StatusTimeline steps={steps} />
       </section>
 
       {closed && (

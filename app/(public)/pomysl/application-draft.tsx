@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleAlert, CircleCheck, Printer } from "lucide-react";
+import { CheckCircleIcon, ExclamationCircleIcon, PrinterIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -66,8 +66,8 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
               {draft.checklist.map((c) => (
                 <li key={c.criterion} className="flex items-start gap-3 py-3">
                   {c.met
-                    ? <CircleCheck aria-hidden className="mt-1 size-6 shrink-0 text-primary" />
-                    : <CircleAlert aria-hidden className="mt-1 size-6 shrink-0 text-destructive" />}
+                    ? <CheckCircleIcon aria-hidden className="mt-1 size-6 shrink-0 text-primary" />
+                    : <ExclamationCircleIcon aria-hidden className="mt-1 size-6 shrink-0 text-destructive" />}
                   <div>
                     <p className="font-bold">{c.met ? "Spełnione" : "Do poprawy"}: {c.criterion}</p>
                     {c.note && <p className="text-muted-foreground">{c.note}</p>}
@@ -78,7 +78,7 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
           </section>
         )}
         <Button type="button" variant="outline" onClick={() => window.print()} className="print:hidden">
-          <Printer aria-hidden /> Wydrukuj albo zapisz jako PDF
+          <PrinterIcon aria-hidden className="size-4" /> Wydrukuj albo zapisz jako PDF
         </Button>
       </div>
     );

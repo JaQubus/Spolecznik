@@ -1,0 +1,63 @@
+import "server-only";
+import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
+import { knowledge } from "./index";
+
+import { MATERIAL_KIND_LABELS, TYPE_LABELS } from "./labels";
+import { queryStems, scoreDocument } from "./text-search";
+import type { Area, Innovation, Material } from "./types";
+
+export type KnowledgeResults = {
+  query: string;
+  areas: Area[];
+  innovations: Innovation[];
+  materials: Material[];
+  /** Zawsze „słowa”: bez embeddingów (tylko Groq) szukamy po słowach w danych. */
+  engine: "słowa";
+};
+
+const LIMITS = { areas: 3, innovations: 9, materials: 4 };
+
+/** „O czym chcesz się dowiedzieć?” — jedno zapytanie, wyniki w trzech grupach. */
+export async function searchKnowledge(query: string): Promise<KnowledgeResults> {
+  const q = query.trim().slice(0, 300);
+  if (q.length < 2) return { query: q, areas: [], innovations: [], materials: [], engine: "słowa" };
+  return textSearch(q);
+}
+
+async function textSearch(q: string): Promise<KnowledgeResults> {
+  const groups = queryStems(q);
+  const [areas, innovations, materials] = await Promise.all([knowledge.areas(), knowledge.innovations(), knowledge.materials()]);
+  // Wymagamy trafienia większości słów z zapytania (przy 1–2 słowach: wszystkich), żeby nie zalać wyników.
+  const needed = groups.length <= 2 ? groups.length : Math.ceil(groups.length / 2);
+  const rank = <T,>(items: T[], fields: (t: T) => { text: string | null | undefined; weight: number }[], limit: number) =>
+    items
+      .map((item) => {
+        const f = fields(item);
+        const matched = groups.filter((g) => scoreDocument([g], f) > 0).length;
+        return { item, matched, score: scoreDocument(groups, f) };
+      })
+      .filter((r) => r.matched >= needed && r.score > 0)
+      .sort((a, b) => b.matched - a.matched || b.score - a.score)
+      .slice(0, limit)
+      .map((r) => r.item);
+
+  return {
+    query: q,
+    engine: "słowa",
+    areas: rank(areas, (a) => [
+      { text: a.name, weight: 4 }, { text: a.lead, weight: 3 }, { text: a.definition, weight: 2 },
+      { text: a.challenges.join(" "), weight: 1 },
+    ], LIMITS.areas),
+    innovations: rank(innovations, (i) => [
+      { text: i.title, weight: 4 }, { text: i.problem, weight: 2 }, { text: i.solution, weight: 2 },
+      { text: i.beneficiaries, weight: 2 }, { text: i.whoCanUse, weight: 1 }, { text: i.etrSummary, weight: 2 },
+      { text: i.groups.map((g) => GROUP_LABELS[g]).join(" "), weight: 2 },
+      { text: i.areas.map((a) => AREA_LABELS[a]).join(" "), weight: 1 },
+      { text: i.innovationType && TYPE_LABELS[i.innovationType], weight: 1 },
+    ], LIMITS.innovations),
+    materials: rank(materials, (m) => [
+      { text: m.title, weight: 3 }, { text: m.description, weight: 2 }, { text: MATERIAL_KIND_LABELS[m.kind], weight: 2 },
+      { text: m.areas.map((a) => AREA_LABELS[a]).join(" "), weight: 1 },
+    ], LIMITS.materials),
+  };
+}

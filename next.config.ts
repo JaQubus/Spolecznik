@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // forbidden() w Panelu, gdy zalogowany użytkownik nie jest adminem (lib/auth.ts).
+  experimental: { authInterrupts: true },
 };
 
 export default nextConfig;

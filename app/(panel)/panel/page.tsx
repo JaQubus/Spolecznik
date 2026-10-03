@@ -1,214 +1,116 @@
+import { DocumentDuplicateIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { getViewer } from "@/lib/auth";
-import { formatDate } from "@/lib/pl";
+import { requireAdmin } from "@/lib/auth";
+import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
+import { NEED_COLUMNS, needTriage, type NeedRow, type Triage } from "@/lib/panel/needs";
+import { formatDate, plural } from "@/lib/pl";
 import { anonymize } from "@/lib/pii";
-import { NEED_STATUSES } from "@/lib/schemas";
-import { keywordSearch, similarNeeds } from "@/lib/search";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { AREA_LABELS } from "@/lib/taxonomy";
-import { setCallActive, setStatus } from "./actions";
 
 export const metadata = { title: "Panel ROPS" };
 
-const STATUS_LABELS: Record<string, string> = {
-  zgloszone: "Zgłoszone",
-  w_analizie: "W analizie",
-  ekspert: "Przypisano eksperta",
-  odpowiedz: "Odpowiedź",
-  luka: "Luka — brak rozwiązania",
-  zamkniete: "Zamknięte",
-};
+const PAGE_SIZE = 25;
 
-const selectClass = "h-12 rounded-lg border-2 border-input bg-background px-3 text-base hover:border-foreground";
+const FILTERS: { key: string; label: string; statuses: NeedStatus[] | null }[] = [
+  { key: "nowe", label: "Do przejrzenia", statuses: ["zgloszone", "luka"] },
+  { key: "luka", label: "Luki", statuses: ["luka"] },
+  { key: "w_analizie", label: "W analizie", statuses: ["w_analizie"] },
+  { key: "ekspert", label: "Przypisano eksperta", statuses: ["ekspert"] },
+  { key: "odpowiedz", label: "Odpowiedź", statuses: ["odpowiedz"] },
+  { key: "zamkniete", label: "Zamknięte", statuses: ["zamkniete"] },
+  { key: "wszystkie", label: "Wszystkie", statuses: null },
+];
 
-type Triage = { pii: boolean; duplicates: string[]; expert: string | null };
-type InboxItem = {
-  kind: "potrzeba" | "pomysl";
-  id: string;
-  code: string;
-  createdAt: string;
-  summary: string;
-  areas: string[];
-  gmina: string | null;
-  status: string;
-  triage: Triage | null;
-};
+const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
+const chipLink =
+  "inline-flex min-h-12 items-center rounded-full border border-border-strong px-4 text-base hover:border-foreground aria-[current=page]:border-foreground aria-[current=page]:bg-foreground aria-[current=page]:font-bold aria-[current=page]:text-background";
 
-/** Triage AI (README §6, Panel): obszar z karty, duplikaty (zgodność słów kluczowych ≥ 90%), sugerowany ekspert, dane osobowe. */
-async function triage(id: string, keywords: string[], rawText: string | null): Promise<Triage | null> {
-  try {
-    const [dupes, experts] = await Promise.all([similarNeeds(keywords, 0.9), keywordSearch("ekspert", keywords, 1)]);
-    const others = dupes.filter((d) => d.need_id !== id).slice(0, 3);
-    const codes = others.length
-      ? (await createAdminClient().from("needs").select("status_code").in("id", others.map((d) => d.need_id))).data ?? []
-      : [];
-    return {
-      pii: rawText ? anonymize(rawText).found : false,
-      duplicates: codes.map((c) => c.status_code as string),
-      expert: experts[0]?.title ?? null,
-    };
-  } catch {
-    return null; // bez migracji 0005 skrzynka działa, tylko bez podpowiedzi
-  }
-}
+export default async function Page(props: PageProps<"/panel">) {
+  await requireAdmin();
+  const params = await props.searchParams;
+  const filter = FILTERS.find((f) => f.key === params.status) ?? FILTERS[0];
+  const page = Math.max(1, Number(params.strona) || 1);
 
-async function loadInbox(): Promise<InboxItem[]> {
-  const supabase = createAdminClient();
-  const [needs, ideas] = await Promise.all([
-    supabase.from("needs").select("id, status_code, created_at, card, raw_text, status, gminy(nazwa)")
-      .neq("status", "zamkniete").order("created_at", { ascending: false }).limit(20),
-    supabase.from("ideas").select("id, status_code, created_at, fiszka, status")
-      .neq("status", "zamkniete").order("created_at", { ascending: false }).limit(10),
-  ]);
-  if (needs.error) throw needs.error;
-  if (ideas.error) throw ideas.error;
-
-  const needItems = await Promise.all((needs.data ?? []).map(async (n): Promise<InboxItem> => {
-    const card = n.card as { summary?: string; areas?: string[]; keywords?: string[] };
-    return {
-      kind: "potrzeba",
-      id: n.id,
-      code: n.status_code,
-      createdAt: n.created_at,
-      summary: card.summary ?? "",
-      areas: card.areas ?? [],
-      gmina: (n.gminy as unknown as { nazwa: string } | null)?.nazwa ?? null,
-      status: n.status,
-      triage: await triage(n.id, card.keywords ?? [], n.raw_text),
-    };
-  }));
-  const ideaItems: InboxItem[] = (ideas.data ?? []).map((i) => ({
-    kind: "pomysl",
-    id: i.id,
-    code: i.status_code,
-    createdAt: i.created_at,
-    summary: (i.fiszka as { krotki_opis?: string }).krotki_opis ?? "",
-    areas: [],
-    gmina: null,
-    status: i.status,
-    triage: null,
-  }));
-  return [...needItems, ...ideaItems].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-}
-
-async function loadCalls() {
-  const { data, error } = await createAdminClient().from("calls").select("id, title, active, closes_at").order("closes_at");
+  // Odczyt sesją użytkownika: RLS (is_admin) pilnuje dostępu drugi raz.
+  const supabase = await createClient();
+  let query = supabase
+    .from("needs")
+    .select(NEED_COLUMNS, { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+  if (filter.statuses) query = query.in("status", filter.statuses);
+  const { data, count, error } = await query;
   if (error) throw error;
-  return data ?? [];
-}
 
-export default async function Page() {
-  const viewer = await getViewer();
-  if (!viewer) redirect("/logowanie?next=/panel");
-  if (viewer.role !== "admin") {
-    return (
-      <section className="max-w-2xl space-y-6">
-        <h1 className="text-3xl font-bold">Panel ROPS</h1>
-        <Alert title="Ten panel jest tylko dla pracowników ROPS">
-          <p>Jesteś zalogowany jako {viewer.email}. Jeśli pracujesz w ROPS, poproś administratora o nadanie roli.</p>
-        </Alert>
-        <Button asChild variant="outline"><Link href="/logowanie">Twoje konto</Link></Button>
-      </section>
-    );
-  }
-
-  let inbox: InboxItem[] = [];
-  let calls: Awaited<ReturnType<typeof loadCalls>> = [];
-  let unavailable = false;
-  try {
-    [inbox, calls] = await Promise.all([loadInbox(), loadCalls()]);
-  } catch (e) {
-    console.error("[panel]", e);
-    unavailable = true;
-  }
+  const needs = (data ?? []) as unknown as NeedRow[];
+  const triage = await needTriage(needs);
+  const total = count ?? 0;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const href = (p: number) => `/panel?status=${filter.key}${p > 1 ? `&strona=${p}` : ""}`;
 
   return (
-    <div className="space-y-14">
-      <h1 className="text-3xl font-bold">Panel ROPS</h1>
-      {unavailable && (
-        <Alert tone="error" title="Nie udało się pobrać danych">
-          <p>Spróbuj odświeżyć stronę za chwilę.</p>
-        </Alert>
+    <section className="space-y-6">
+      <h1 className="text-3xl font-bold">Zgłoszenia</h1>
+
+      <nav aria-label="Filtruj zgłoszenia">
+        <ul className="flex flex-wrap gap-2">
+          {FILTERS.map((f) => (
+            <li key={f.key}>
+              <Link href={`/panel?status=${f.key}`} aria-current={f.key === filter.key ? "page" : undefined} className={chipLink}>
+                {f.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <p className="text-lg">
+        {filter.label}: <strong>{total}</strong> {plural(total, "zgłoszenie", "zgłoszenia", "zgłoszeń")}
+        {pages > 1 && `, strona ${page} z ${pages}`}
+      </p>
+
+      {needs.length === 0 ? (
+        <p className="text-muted-foreground">Nie ma tu żadnych zgłoszeń.</p>
+      ) : (
+        <ol className="max-w-4xl border-t">
+          {needs.map((n) => <NeedItem key={n.id} need={n} triage={triage.get(n.id)} />)}
+        </ol>
       )}
 
-      <section aria-labelledby="skrzynka" className="space-y-4">
-        <h2 id="skrzynka" className="text-2xl font-bold">Nowe zgłoszenia</h2>
-        {inbox.length === 0 ? (
-          <p className="text-muted-foreground">Nie ma otwartych zgłoszeń.</p>
-        ) : (
-          <ul className="max-w-4xl divide-y border-y">
-            {inbox.map((item) => (
-              <li key={`${item.kind}:${item.id}`} className="grid gap-3 py-6">
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span className="font-mono text-lg font-bold tracking-wider">{item.code}</span>
-                  <span className="text-base text-muted-foreground">
-                    {item.kind === "pomysl" ? "Pomysł" : "Potrzeba"} · {formatDate(item.createdAt)}
-                    {item.gmina && ` · gmina ${item.gmina}`}
-                  </span>
-                </div>
-                <p className="max-w-[68ch]">{item.summary}</p>
-                {item.areas.length > 0 && (
-                  <ul className="flex flex-wrap gap-2" aria-label="Obszary">
-                    {item.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a as keyof typeof AREA_LABELS] ?? a}</Badge></li>)}
-                  </ul>
-                )}
-                {item.triage && (item.triage.pii || item.triage.duplicates.length > 0 || item.triage.expert) && (
-                  <ul className="list-disc space-y-1 pl-6 text-base">
-                    {item.triage.pii && <li><strong>Dane osobowe w treści</strong> — zamaskowane przed AI, sprawdź oryginał.</li>}
-                    {item.triage.duplicates.length > 0 && <li>Możliwy duplikat: <span className="font-mono">{item.triage.duplicates.join(", ")}</span></li>}
-                    {item.triage.expert && <li>Sugerowany ekspert: {item.triage.expert}</li>}
-                  </ul>
-                )}
-                <form action={setStatus} className="flex flex-wrap items-end gap-3">
-                  <input type="hidden" name="kind" value={item.kind} />
-                  <input type="hidden" name="id" value={item.id} />
-                  <label className="grid gap-1 text-base">
-                    <span className="font-bold">Status</span>
-                    <select name="status" defaultValue={item.status} className={selectClass}>
-                      {NEED_STATUSES.filter((s) => item.kind === "potrzeba" || s !== "luka").map((s) => (
-                        <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <Button type="submit" variant="outline" size="sm">Zapisz status</Button>
-                  <Link href={`/status/${item.code}`} className="text-base underline decoration-1 underline-offset-4 hover:decoration-2">
-                    Widok dla autora
-                  </Link>
-                </form>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {pages > 1 && (
+        <nav aria-label="Strony" className="flex flex-wrap gap-6 text-lg">
+          {page > 1 && <Link href={href(page - 1)} className={`font-bold ${linkClass}`}>Nowsze zgłoszenia</Link>}
+          {page < pages && <Link href={href(page + 1)} className={`font-bold ${linkClass}`}>Starsze zgłoszenia</Link>}
+        </nav>
+      )}
+    </section>
+  );
+}
 
-      <section aria-labelledby="nabory" className="space-y-4">
-        <h2 id="nabory" className="text-2xl font-bold">Nabory</h2>
-        {calls.length === 0 ? (
-          <p className="text-muted-foreground">Nie ma jeszcze naborów.</p>
-        ) : (
-          <ul className="max-w-4xl divide-y border-y">
-            {calls.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
-                <div>
-                  <p className="font-bold">{c.title}</p>
-                  <p className="text-base text-muted-foreground">
-                    {c.active ? "Otwarty" : "Zamknięty"}{c.closes_at && ` · wnioski do ${formatDate(c.closes_at)}`}
-                  </p>
-                </div>
-                <form action={setCallActive}>
-                  <input type="hidden" name="id" value={c.id} />
-                  <input type="hidden" name="active" value={String(!c.active)} />
-                  <Button type="submit" variant="outline" size="sm">{c.active ? "Zamknij nabór" : "Otwórz nabór"}</Button>
-                </form>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </div>
+/** Wiersz skrzynki (jak ResultList): bez ramek, linie między wierszami, analiza AI jako etykiety ze słowami. */
+function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
+  const pii = !!n.raw_text && anonymize(n.raw_text).found;
+  const dups = triage?.duplicates.length ?? 0;
+  return (
+    <li className="grid gap-2 border-b py-6">
+      <h2 className="text-xl font-bold">
+        <Link href={`/panel/zgloszenia/${n.id}`} className={linkClass}>{n.card.summary}</Link>
+      </h2>
+      <p className="text-base text-muted-foreground">
+        <span className="font-mono tracking-wider">{n.status_code}</span>
+        {" · "}{n.gminy ? `${n.gminy.nazwa}, powiat ${n.gminy.powiat}` : "gmina nieznana"}
+        {" · "}{formatDate(n.created_at)}
+        {" · "}<strong className="text-foreground">{NEED_STATUS_LABELS[n.status]}</strong>
+        {n.best_fit != null && ` · najlepsze dopasowanie ${n.best_fit} na 100`}
+      </p>
+      <ul className="flex flex-wrap gap-2" aria-label="Analiza zgłoszenia">
+        {n.card.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
+        {pii && <li><Badge variant="outline"><ShieldExclamationIcon aria-hidden className="size-4" /> Może zawierać dane osobowe</Badge></li>}
+        {dups > 0 && <li><Badge variant="outline"><DocumentDuplicateIcon aria-hidden className="size-4" /> Możliwy duplikat ({dups})</Badge></li>}
+      </ul>
+      {triage?.expertName && <p className="text-base">Sugerowany ekspert: <strong>{triage.expertName}</strong></p>}
+    </li>
   );
 }
