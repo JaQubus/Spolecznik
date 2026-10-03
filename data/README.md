@@ -31,3 +31,4 @@ uv run gminy_geo.py        # kształty 183 gmin z WFS PRG GUGiK → ../lib/gminy
 - `powiaty_mapping.json` to jedyne miejsce porządków: pełne nazwy obciętych arkuszy XLS (`POMOC SPOŁECZNA - P` → „powody udzielania pomocy”, `Sheet6` → „świadczenia i usługi” itd.) i jednostki dla wskaźników, które ich nie mają (np. `Stopa bezrobocia` → `%`). Nowy wskaźnik bez jednostki → import wypisze ostrzeżenie.
 - Import jest idempotentny: upsert po (powiat, wskaźnik, rok); wiersze z tego samego roku, których nie ma już w pliku, są kasowane. Nowy rok = nowy CSV i ponowny import, poprzednie lata zostają.
 - Na stronie Kondycji Małopolski są dziś gminy (tabela `gminy`). Dane powiatów zostają w bazie dla trendów w Panelu (#23). Tematy mapy gmin i zdania „co czwarta osoba…” ustala `../lib/kondycja.ts`.
+uv run powiaty_geo.py       # ksztalty 22 powiat�w z WFS PRG GUGiK ? ../lib/powiaty-shapes.json
