@@ -20,8 +20,8 @@ const valuesOf = (gminy: Gmina[], t: GminaTopic) =>
   gminy.map((g) => t.get(g)).filter((v): v is number => v != null);
 
 /**
- * Kondycja Małopolski: 183 gminy (tabela gminy, dane BDL). Tylko dwa tematy, bo tyle wskaźników
- * BDL mamy dla gmin: udział osób 65+ i zmiana liczby mieszkańców w 10 lat.
+ * Kondycja Małopolski: 183 gminy (tabela gminy, dane BDL). Tematy z `GMINA_TOPICS`; chip tematu
+ * pokazujemy tylko, gdy BDL ma dla niego dane.
  */
 const chipClass =
   "inline-flex min-h-12 max-w-full items-center gap-2 rounded-full border border-border-strong bg-background px-4 py-2 text-base [overflow-wrap:anywhere] hover:border-foreground aria-[current=true]:border-foreground aria-[current=true]:bg-foreground aria-[current=true]:font-bold aria-[current=true]:text-background";
@@ -224,7 +224,10 @@ async function GminaCard({ gminy, gmina, topics }: { gminy: Gmina[]; gmina: Gmin
               ))}
             </ul>
           ) : (
-            <p>W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.</p>
+            <p>
+              W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.{" "}
+              <Link href="/biblioteka#innowacje" className={linkClass}>Przeglądaj wszystkie rozwiązania</Link>
+            </p>
           )}
         </div>
       ))}

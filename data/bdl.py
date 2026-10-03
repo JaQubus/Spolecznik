@@ -2,7 +2,8 @@
 
 Ludność ogółem, ludność wg wieku (udział 65+), zmiana ludności w 10 lat, a w gminy.wskazniki
 dodatkowe tematy mapy „Kondycja Małopolski” (EXTRA_VARS: migracje, przyrost naturalny, pomoc
-społeczna, bezrobocie, przedszkola) — każdy z ostatniego roku, dla którego BDL ma dane.
+społeczna, bezrobocie) — każdy z ostatniego roku, dla którego BDL ma dane. Wskaźnik, którego nie da
+się pobrać, jest pomijany z ostrzeżeniem; reszta i ludność zapisują się normalnie.
 Identyfikatory jednostek BDL ≠ TERYT — mapujemy raz, przy pobieraniu.
 Nagłówek X-ClientId (zmienna BDL_CLIENT_ID) podnosi limity.
 Wynik: out/gminy.json.
@@ -31,7 +32,8 @@ EXTRA_VARS = {
     "przyrost_naturalny_1000": "450551",   # P3428: przyrost naturalny na 1000 ludności
     "pomoc_spoleczna_10k": "1548717",      # P3870: beneficjenci środowiskowej pomocy społecznej na 10 tys. ludności
     "bezrobocie_proc": "60270",            # P2670: udział bezrobotnych zarejestrowanych w ludności w wieku produkcyjnym, ogółem
-    "przedszkola_proc": None,              # P4013: ID jest wyszukiwane z metadanych BDL
+    # Przedszkola (P4013) wrócą, gdy ID zmiennej zostanie sprawdzone na żywym API: /variables nie ma
+    # pola „name” (opis jest w n1…n5), więc wyszukiwanie po nazwie zawsze kończyło się błędem.
 }
 
 # Rodzaj jednostki BDL (ostatnia cyfra ID): 1 miejska, 2 wiejska, 3 miejsko-wiejska.
@@ -88,23 +90,6 @@ class Bdl:
         )
         return {r["id"]: {int(v["year"]): v["val"] for v in r["values"]} for r in rows}
 
-    def find_preschool_variable(self) -> str:
-        """Find the current variable ID for the P4013 preschool coverage subject."""
-        variables = self.all_pages("/variables", **{"subject-id": "P4013"})
-        candidates = [
-            v for v in variables
-            if "3" in str(v.get("name", ""))
-            and "5" in str(v.get("name", ""))
-            and ("przedszkol" in str(v.get("name", "")).lower()
-                 or "wychowania" in str(v.get("name", "")).lower())
-        ]
-        if len(candidates) != 1:
-            names = ", ".join(f'{v.get("id")}: {v.get("name")}' for v in candidates)
-            raise RuntimeError(
-                "Nie udało się jednoznacznie znaleźć zmiennej P4013 dla przedszkoli"
-                + (f" ({names})" if names else ". Sprawdź metadane BDL.")
-            )
-        return str(candidates[0]["id"])
 
 
 def latest_year(bdl: Bdl) -> int:
@@ -123,14 +108,18 @@ def var_years(bdl: Bdl, var_id: str) -> list[int]:
 def fetch_extra(bdl: Bdl) -> dict[str, dict]:
     """teryt → {klucz: wartość, „klucz_rok”: rok} dla EXTRA_VARS."""
     out: dict[str, dict] = {}
-    variables = {**EXTRA_VARS, "przedszkola_proc": bdl.find_preschool_variable()}
-    for key, var_id in variables.items():
-        years = var_years(bdl, var_id)
-        if not years:
-            print(f"! {key}: BDL nie podaje lat dla zmiennej {var_id}")
+    for key, var_id in EXTRA_VARS.items():
+        # Jeden zły ID nie może przerwać całego pobierania (ludność jest już ściągnięta).
+        try:
+            years = var_years(bdl, var_id)
+            if not years:
+                print(f"! {key}: BDL nie podaje lat dla zmiennej {var_id} — pomijam")
+                continue
+            year = years[-1]
+            values = bdl.variable(var_id, [year])
+        except httpx.HTTPStatusError as error:
+            print(f"! {key}: BDL zwrócił {error.response.status_code} dla zmiennej {var_id} — pomijam")
             continue
-        year = years[-1]
-        values = bdl.variable(var_id, [year])
         for uid, by_year in values.items():
             if uid[-1] in GMINA_KINDS and by_year.get(year) is not None:
                 row = out.setdefault(bdl_to_teryt(uid), {})
