@@ -14,7 +14,7 @@ uv run embed.py            # embeddingi + ładowanie do Supabase          (OPENA
 uv run eval.py             # hit@3, MRR@5, wykrywanie luk                (oba klucze)
 ```
 
-- Przed `embed.py` w Supabase muszą być migracje `0001`–`0003`.
+- Przed `embed.py` w Supabase muszą być migracje `0001`–`0004`.
 - `embed.py` jest idempotentny: innowacje upsertuje po slugu (usuwa te spoza `out/innovations.json`), dane syntetyczne kasuje i wstawia od nowa.
 - Wyniki LLM i embeddingi są cache'owane (`out/enriched.json`, `raw/*_cache.json`), więc ponowne uruchomienie płaci tylko za zmiany.
 - Wszystko, co pochodzi z mocka albo z `seed_synthetic.py`, ma `synthetic = true`.

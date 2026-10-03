@@ -2,7 +2,7 @@
 
 Wejście (z poprzednich kroków): out/gminy.json, out/innovations.json, out/enriched.json,
 out/pdf_sections.json, out/synthetic.json, out/doc_chunks.json.
-Ładuje do Supabase przez SUPABASE_DB_URL (wymaga migracji 0001–0003).
+Ładuje do Supabase przez SUPABASE_DB_URL (wymaga migracji 0001–0004).
 
 Skrypt jest idempotentny: innowacje upsertuje po slugu (i usuwa te spoza korpusu),
 a dane syntetyczne kasuje i wstawia od nowa. Embeddingi są cache'owane w raw/embeddings_cache.json,
@@ -228,16 +228,9 @@ def load_synthetic(cur, emb: Embedder, innovation_ids: dict[str, str], teryts: s
         [(innovation_ids[t["innovation_slug"]], t["teryt"], t["status"], t["rating"], t["feedback"],
           t["suggestions"], t["created_at"]) for t in tests],
     )
-    cur.execute(
-        """update innovations i set
-             tests_count = coalesce(s.n, 0), avg_rating = s.avg
-           from (select innovations.id,
-                        count(t.id) filter (where t.rating is not null) as n,
-                        round(avg(t.rating), 1) as avg
-                 from innovations left join tests t on t.innovation_id = innovations.id
-                 group by innovations.id) s
-           where s.id = i.id"""
-    )
+    # Liczniki przelicza trigger z migracji 0004 (ta sama funkcja). Jawne wywołanie wyrównuje
+    # dane wgrane przed migracją i od razu wywala się, gdy 0004 nie została zastosowana.
+    cur.execute("select refresh_innovation_test_stats(id) from innovations")
     print(f"demo: {len(needs)} potrzeb, {len(experts)} ekspertów, {len(call_rows)} nabory, "
           f"{len(idea_rows)} pomysłów, {len(tests)} testów")
 
