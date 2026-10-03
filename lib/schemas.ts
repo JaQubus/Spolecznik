@@ -59,6 +59,7 @@ export const MatchRequest = z.object({
   card: NeedCard,
   text: z.string().min(3).max(10000), // oryginalny opis (+ odpowiedź na dopytanie) — tylko do needs.raw_text
   gmina: z.string().max(100).optional(), // to, co użytkownik wpisał w pole „Gmina”
+  teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi — rozstrzyga np. Bochnię miejską i wiejską
 });
 
 export const FeedbackRequest = z.object({

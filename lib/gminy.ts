@@ -1,5 +1,24 @@
 import "server-only";
+import gminyJson from "@/data/out/gminy.json";
 import { createAdminClient } from "./supabase/admin";
+
+/** Podpowiedź w polu „Gmina”: nazwa do wpisania i opis, który rozróżnia np. Bochnię miejską i wiejską. */
+export type GminaOption = { teryt: string; nazwa: string; opis: string };
+
+/**
+ * Wszystkie gminy Małopolski (BDL, data/bdl.py), alfabetycznie. Zgodne z listą
+ * malopolska.uw.gov.pl/dane_teleadresowe/adresyGmin plus miasta na prawach powiatu.
+ * Strony przekazują ją do pola jako props, żeby do przeglądarki nie trafił cały gminy.json.
+ */
+export const GMINA_OPTIONS: GminaOption[] = gminyJson
+  .map((g) => ({
+    teryt: g.teryt,
+    nazwa: g.nazwa,
+    opis: g.powiat.startsWith("m. ")
+      ? "miasto na prawach powiatu"
+      : `gmina ${g.typ}, powiat ${g.powiat}`,
+  }))
+  .sort((a, b) => a.nazwa.localeCompare(b.nazwa, "pl") || a.opis.localeCompare(b.opis, "pl"));
 
 export type Gmina = {
   teryt: string;
@@ -19,8 +38,16 @@ function normalize(name: string): string {
     .replace(/[%_\\]/g, ""); // znaki specjalne ILIKE
 }
 
-/** Gmina po nazwie (bez rozróżniania wielkości liter). Przy dwóch gminach o tej samej nazwie bierze większą. */
-export async function findGmina(name: string | null | undefined): Promise<Gmina | null> {
+/**
+ * Gmina po TERYT (wybrana z podpowiedzi), a bez niego po nazwie (bez rozróżniania wielkości liter).
+ * Przy dwóch gminach o tej samej nazwie i bez TERYT bierze większą.
+ */
+export async function findGmina(name: string | null | undefined, teryt?: string): Promise<Gmina | null> {
+  if (teryt) {
+    const { data, error } = await createAdminClient().from("gminy").select("*").eq("teryt", teryt).maybeSingle();
+    if (error) throw error;
+    if (data) return data as Gmina;
+  }
   if (!name) return null;
   const q = normalize(name);
   if (!q) return null;
