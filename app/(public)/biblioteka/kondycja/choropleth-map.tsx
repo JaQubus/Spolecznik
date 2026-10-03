@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { cn } from "cn";
 import gminyShapes from "@/lib/gminy-shapes.json";
-import powiatyShapes from "@/lib/powiaty-shapes.json";
 
 export type MapItem = {
   id: string;
-  /** Krótka nazwa do podpisu na mapie. */
-  label: string;
-  /** Pełna nazwa dostępna (np. „powiat bocheński: 23,3%. Pokaż kartę powiatu”). */
+  /** Pełna nazwa dostępna (np. „Bochnia (gmina miejska…): 22,5%. Pokaż kartę gminy”). */
   name: string;
   /** Klasa 0–4 (0 = najmniejsze wyzwanie) albo null, gdy brak danych. */
   cls: number | null;
@@ -17,8 +14,7 @@ export type MapItem = {
 type Shape = { id: string; d: string; cx: number; cy: number };
 type Shapes = { width: number; height: number; shapes: Shape[] };
 
-/** Kształty z PRG GUGiK (data/powiaty_geo.py, data/gminy_geo.py) w jednym formacie. */
-export const POWIAT_SHAPES: Shapes = { ...powiatyShapes, shapes: powiatyShapes.shapes.map((s) => ({ ...s, id: s.powiat })) };
+/** Kształty gmin z PRG GUGiK (data/gminy_geo.py). */
 export const GMINA_SHAPES: Shapes = { ...gminyShapes, shapes: gminyShapes.shapes.map((s) => ({ ...s, id: s.teryt })) };
 
 // Sekwencyjna skala jednego odcienia (dataviz: niebieski 150→700), ciemniej = większe wyzwanie.
@@ -33,18 +29,12 @@ export function ChoroplethMap({
   items,
   selected,
   title,
-  drawLast,
-  labels,
   focusable = true,
 }: {
   shapes: Shapes;
   items: MapItem[];
   selected: string | null;
   title: string;
-  /** Obszary leżące w środku innych (np. miasta na prawach powiatu) rysujemy na wierzchu, żeby były klikalne. */
-  drawLast?: Set<string>;
-  /** Podpisy (od md) z ewentualnym przesunięciem [dx, dy]; bez tej opcji mapa nie ma podpisów. */
-  labels?: { offsets?: Record<string, [number, number]> };
   /**
    * false: obszary klikalne myszą i dotykiem, ale poza kolejnością Tab. Przy 183 gminach klawiatura
    * przechodziłaby przez mapę bardzo długo — te same linki są w tabeli pod mapą.
@@ -52,8 +42,8 @@ export function ChoroplethMap({
   focusable?: boolean;
 }) {
   const byId = new Map(items.map((i) => [i.id, i]));
-  const rank = (id: string) => Number(drawLast?.has(id) ?? false) * 2 + Number(id === selected);
-  const ordered = [...shapes.shapes].sort((a, b) => rank(a.id) - rank(b.id));
+  // Wybrany obszar na końcu, żeby gruba ramka nie chowała się pod sąsiadami.
+  const ordered = [...shapes.shapes].sort((a, b) => Number(a.id === selected) - Number(b.id === selected));
   const strokeWidth = shapes.shapes.length > 50 ? 0.8 : 1.5;
 
   return (
@@ -91,28 +81,6 @@ export function ChoroplethMap({
           </Link>
         );
       })}
-      {/* Podpisy tylko od md: na wąskim ekranie byłyby nieczytelne; nazwy są w tabeli i w nazwach linków. */}
-      {labels && (
-        <g aria-hidden className="pointer-events-none hidden md:inline">
-          {shapes.shapes.map((s) => {
-            const item = byId.get(s.id);
-            if (!item) return null;
-            const [dx, dy] = labels.offsets?.[s.id] ?? [0, 0];
-            return (
-              <text
-                key={s.id}
-                x={s.cx + dx}
-                y={s.cy + dy}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="fill-[var(--ink)] stroke-[var(--surface)] text-[14px] font-bold [paint-order:stroke] [stroke-width:3.5px]"
-              >
-                {item.label}
-              </text>
-            );
-          })}
-        </g>
-      )}
     </svg>
   );
 }

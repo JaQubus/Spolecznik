@@ -1,25 +1,88 @@
 """Kształty 183 gmin Małopolski do mapy gmin w „Kondycji Małopolski” → ../lib/gminy-shapes.json.
 
 Źródło: Państwowy Rejestr Granic (PRG) GUGiK, usługa WFS „AdministrativeBoundaries”, warstwa
-A03_Granice_gmin, filtrowana po kodzie TERYT województwa (12). Pobieramy raz do raw/ (kilkadziesiąt MB
-GML w pełnej rozdzielczości), a do repo trafiają tylko uproszczone ścieżki SVG — ten sam rzut
-i format co lib/powiaty-shapes.json (powiaty_geo.svg_shapes).
+A03_Granice_gmin, filtrowana po kodzie TERYT województwa (12). Pobieramy raz do raw/ (ok. 10 MB GML
+w pełnej rozdzielczości), a do repo trafiają tylko uproszczone ścieżki SVG (rzut równoodległościowy
+ze skalą cos φ dla ~50°N, uproszczenie Douglasa-Peuckera), więc strona nie potrzebuje Leafleta.
 
 Klucz kształtu to 7-cyfrowy TERYT gminy (JPT_KOD_JE), taki sam jak gminy.teryt w bazie.
 
 Uruchomienie: uv run gminy_geo.py"""
 import json
+import math
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
 from common import OUT, RAW, ROOT, read_json
-from powiaty_geo import svg_shapes
 
 WFS = "https://mapy.geoportal.gov.pl/wss/service/PZGIK/PRG/WFS/AdministrativeBoundaries"
 GML_PATH = RAW / "gminy-malopolska.gml"
 OUT_PATH = ROOT.parent / "lib" / "gminy-shapes.json"
-TOLERANCE = 0.0025  # gminy są mniejsze od powiatów, więc upraszczamy delikatniej
+TOLERANCE = 0.0025  # stopnie, ok. 200 m — granice gmin nadal rozpoznawalne, plik ok. 100 kB
+WIDTH = 600         # szerokość viewBox; wysokość wynika z proporcji
+LAT0 = math.radians(49.85)
+
+
+def simplify(points: list[tuple[float, float]], tol: float) -> list[tuple[float, float]]:
+    """Douglas-Peucker (iteracyjnie, bez rekurencji)."""
+    if len(points) < 4:
+        return points
+    keep = [False] * len(points)
+    keep[0] = keep[-1] = True
+    stack = [(0, len(points) - 1)]
+    while stack:
+        a, b = stack.pop()
+        (x1, y1), (x2, y2) = points[a], points[b]
+        dx, dy = x2 - x1, y2 - y1
+        norm = math.hypot(dx, dy) or 1e-12
+        best, idx = 0.0, -1
+        for i in range(a + 1, b):
+            x, y = points[i]
+            d = abs(dy * (x - x1) - dx * (y - y1)) / norm
+            if d > best:
+                best, idx = d, i
+        if best > tol and idx > 0:
+            keep[idx] = True
+            stack += [(a, idx), (idx, b)]
+    return [p for p, k in zip(points, keep) if k]
+
+
+def simplify_ring(ring: list[tuple[float, float]], tol: float) -> list[tuple[float, float]]:
+    """Pierścień jest zamknięty (pierwszy punkt = ostatni), więc upraszczamy osobno dwie połowy."""
+    mid = len(ring) // 2
+    return simplify(ring[:mid + 1], tol)[:-1] + simplify(ring[mid:], tol)
+
+
+def svg_shapes(shapes: dict[str, list], key: str, tolerance: float, width: int = WIDTH) -> dict:
+    """Wielokąty (lon, lat) → ścieżki SVG w viewBox o szerokości `width` + środek obszaru."""
+    project = lambda lon, lat: (lon * math.cos(LAT0), -lat)  # noqa: E731
+    projected = {
+        pid: [[[project(*p) for p in simplify_ring(ring, tolerance)] for ring in poly] for poly in polys]
+        for pid, polys in shapes.items()
+    }
+    xs = [x for polys in projected.values() for poly in polys for ring in poly for x, _ in ring]
+    ys = [y for polys in projected.values() for poly in polys for ring in poly for _, y in ring]
+    scale = width / (max(xs) - min(xs))
+    height = round((max(ys) - min(ys)) * scale)
+    to_svg = lambda x, y: (round((x - min(xs)) * scale, 1), round((y - min(ys)) * scale, 1))  # noqa: E731
+
+    out = []
+    for pid, polys in sorted(projected.items()):
+        parts, area_best, centre = [], -1.0, (0.0, 0.0)
+        for poly in polys:
+            for k, ring in enumerate(poly):
+                pts = [to_svg(x, y) for x, y in ring]
+                parts.append("M" + "L".join(f"{x:g},{y:g}" for x, y in pts) + "Z")
+                if k == 0:  # środek największego pierścienia zewnętrznego — tylko do podpisu
+                    area = abs(sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1]))) / 2
+                    if area > area_best:
+                        area_best = area
+                        centre = (round(sum(p[0] for p in pts) / len(pts), 1), round(sum(p[1] for p in pts) / len(pts), 1))
+        out.append({key: pid, "d": "".join(parts), "cx": centre[0], "cy": centre[1]})
+
+    return {"width": width, "height": height, "shapes": out}
+
 
 NS = {"gml": "http://www.opengis.net/gml", "ms": "http://mapserver.gis.umn.edu/mapserver"}
 

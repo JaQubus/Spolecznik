@@ -1,4 +1,4 @@
-import { Check, ChevronRight } from "lucide-react";
+import { Check } from "lucide-react";
 import Link from "next/link";
 import { cn } from "cn";
 import { Alert } from "@/components/ui/alert";
@@ -8,22 +8,24 @@ import {
   CHALLENGE_MIN, GMINA_TOPICS, badness, classOf, classRanges, regionDirection, worseThanRegion, type GminaTopic,
 } from "@/lib/kondycja";
 import { formatNumber } from "@/lib/pl";
-import { powiatId } from "@/lib/powiaty";
 import { LINK as linkClass } from "../shared";
 import { ChoroplethMap, GMINA_SHAPES, MapLegend } from "./choropleth-map";
 import { FocusHeading } from "./focus-heading";
 
 export const gminyHref = (topic: string, gmina?: string) =>
-  `/biblioteka/kondycja?poziom=gminy&temat=${topic}${gmina ? `&gmina=${gmina}#karta` : ""}`;
+  `/biblioteka/kondycja?temat=${topic}${gmina ? `&gmina=${gmina}#karta` : ""}`;
 
 const valuesOf = (gminy: Gmina[], t: GminaTopic) =>
   gminy.map((g) => g[t.field]).filter((v): v is number => v != null);
 
 /**
- * Kondycja na poziomie 183 gmin (tabela gminy, dane BDL). Tylko dwa tematy, bo tyle wskaźników
+ * Kondycja Małopolski: 183 gminy (tabela gminy, dane BDL). Tylko dwa tematy, bo tyle wskaźników
  * BDL mamy dla gmin: udział osób 65+ i zmiana liczby mieszkańców w 10 lat.
  */
-export async function GminyView({ topic, selectedId, chipClass }: { topic: GminaTopic; selectedId: string; chipClass: string }) {
+const chipClass =
+  "inline-flex min-h-12 max-w-full items-center gap-2 rounded-full border border-border-strong bg-background px-4 py-2 text-base [overflow-wrap:anywhere] hover:border-foreground aria-[current=true]:border-foreground aria-[current=true]:bg-foreground aria-[current=true]:font-bold aria-[current=true]:text-background";
+
+export async function GminyView({ topic, selectedId }: { topic: GminaTopic; selectedId: string }) {
   const gminy = await listGminy();
   if (!gminy.length) {
     return (
@@ -85,7 +87,6 @@ export async function GminyView({ topic, selectedId, chipClass }: { topic: Gmina
             selected={selected?.teryt ?? null}
             items={rows.map((r) => ({
               id: r.g.teryt,
-              label: r.g.nazwa,
               name: `${gminaLabel(r.g)}: ${r.value == null ? "brak danych" : topic.format(r.value)}. Pokaż kartę gminy`,
               cls: r.cls,
               href: gminyHref(topic.key, r.g.teryt),
@@ -203,12 +204,6 @@ async function GminaCard({ gminy, gmina }: { gminy: Gmina[]; gmina: Gmina }) {
         </div>
       ))}
 
-      <p>
-        <Link href={`/biblioteka/kondycja?powiat=${powiatId(gmina.powiat)}#karta`} className={cn(linkClass, "inline-flex items-center gap-1")}>
-          {isCity ? "Więcej liczb o tym mieście" : `Więcej liczb: powiat ${gmina.powiat}`}
-          <ChevronRight aria-hidden className="size-5" />
-        </Link>
-      </p>
     </section>
   );
 }

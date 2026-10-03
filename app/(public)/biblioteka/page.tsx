@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Biblioteka i wiedza" };
 
 const ENTRIES = [
   { href: "#innowacje", title: "Innowacje", text: "Sprawdzone rozwiązania z Małopolski: na czym polegają, skąd wiemy, że działają, i jak z nich skorzystać.", Icon: Lightbulb },
-  { href: "/biblioteka/kondycja", title: "Kondycja Małopolski", text: "Mapa powiatów: gdzie jest najwięcej seniorów, gdzie najczęściej potrzebna jest pomoc.", Icon: MapPinned },
+  { href: "/biblioteka/kondycja", title: "Kondycja Małopolski", text: "Mapa 183 gmin: gdzie mieszka najwięcej seniorów i gdzie ubywa mieszkańców.", Icon: MapPinned },
   { href: "/biblioteka/ucz-sie", title: "Ucz się", text: "Przewodniki i raporty ROPS o innowacjach społecznych, opisane prostym językiem.", Icon: GraduationCap },
 ];
 
