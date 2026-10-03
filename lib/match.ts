@@ -5,34 +5,49 @@ import {
   GAP_THRESHOLD, RELATED_MIN_SIMILARITY, SIMILAR_NEED_MIN_SIMILARITY,
   type InnovationMatch, type MatchResponse, type NeedCard,
 } from "./schemas";
-import { embedText, hybridSearch, similarNeeds, upsertIndex } from "./search";
+import { keywordSearch, similarNeeds, upsertIndex } from "./search";
 import { newStatusCode } from "./status-code";
 import { createAdminClient } from "./supabase/admin";
 
 type MatchInput = { card: NeedCard; text: string; gmina?: string; teryt?: string };
 
+const CANDIDATES = 15;
+
 /**
- * Społecznik·Dopasuj (README 5.1, kroki 4–7): wyszukiwanie hybrydowe → rerank z kontekstem gminy →
+ * Społecznik·Dopasuj (README 5.1, kroki 4–7): wyszukiwanie po lematach → rerank z kontekstem gminy →
  * zapis potrzeby z kodem zgłoszenia → indeksowanie potrzeby, żeby kolejne zgłoszenia ją znalazły.
  */
 export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promise<MatchResponse> {
   const supabase = createAdminClient();
-  // Pole „Gmina” ma pierwszeństwo przed tym, co model wyczytał z opisu; gdy go nie znamy (literówka, wieś), bierzemy gminę z opisu.
-  const [gminaRow, embedding] = await Promise.all([
-    findGmina(gmina, teryt).then((g) => g ?? findGmina(card.gmina)),
-    embedText(`${card.summary}\n${card.keywords.join(", ")}`),
-  ]);
 
   // Szukamy, zanim zapiszemy nową potrzebę — dzięki temu nie znajdzie samej siebie.
-  const [innovationHits, expertHits, callHits, similar] = await Promise.all([
-    hybridSearch("innowacja", card.keywords, embedding, 15),
-    hybridSearch("ekspert", card.keywords, embedding, 5),
-    hybridSearch("nabor", card.keywords, embedding, 5),
-    similarNeeds(embedding, SIMILAR_NEED_MIN_SIMILARITY),
+  // Pole „Gmina” ma pierwszeństwo przed tym, co model wyczytał z opisu; gdy go nie znamy (literówka, wieś), bierzemy gminę z opisu.
+  const [gminaRow, innovationHits, expertHits, callHits, similar] = await Promise.all([
+    findGmina(gmina, teryt).then((g) => g ?? findGmina(card.gmina)),
+    keywordSearch("innowacja", card.keywords, CANDIDATES),
+    keywordSearch("ekspert", card.keywords, 5),
+    keywordSearch("nabor", card.keywords, 5),
+    similarNeeds(card.keywords, SIMILAR_NEED_MIN_SIMILARITY),
   ]);
 
-  // Rerank
+  // Bez embeddingów słowa kluczowe mogą się minąć z opisem innowacji („samotność” vs „izolacja”),
+  // więc listę dla reranku dopełniamy innowacjami z tych samych obszarów — znaczenie oceni LLM.
   const innovationIds = innovationHits.map((h) => h.ref_id);
+  if (innovationIds.length < CANDIDATES) {
+    let fill = supabase
+      .from("search_index")
+      .select("ref_id")
+      .eq("kind", "innowacja")
+      .eq("active", true)
+      .overlaps("areas", [...card.areas])
+      .limit(CANDIDATES - innovationIds.length);
+    if (innovationIds.length) fill = fill.not("ref_id", "in", `(${innovationIds.join(",")})`);
+    const { data: extra, error: fillError } = await fill;
+    if (fillError) throw fillError;
+    innovationIds.push(...(extra ?? []).map((r) => r.ref_id as string));
+  }
+
+  // Rerank
   const { data: bodies, error: bodiesError } = await supabase
     .from("search_index")
     .select("ref_id, title, body")
@@ -84,7 +99,6 @@ export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promis
       areas: [...card.areas],
       targetGroups: [...card.groups],
       teryt: gminaRow?.teryt ?? null,
-      embedding,
     }),
     supabase.from("notifications").insert({
       role: "admin",

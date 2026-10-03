@@ -1,8 +1,11 @@
 import { intake } from "@/lib/llm";
 import { anonymize } from "@/lib/pii";
 import { CLARITY_THRESHOLD, IntakeRequest } from "@/lib/schemas";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "intake", 10);
+  if (limited) return limited;
   const parsed = IntakeRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
