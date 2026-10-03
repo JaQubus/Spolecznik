@@ -1,0 +1,611 @@
+[
+  {
+    "slug": "sasiedzki-dzwonek",
+    "url": "https://example.org/mock/biblioteka-innowacji/sasiedzki-dzwonek",
+    "title": "Sąsiedzki Dzwonek",
+    "categories": [
+      "Dla seniorów"
+    ],
+    "groups": [
+      "seniorzy"
+    ],
+    "dissemination_badge": null,
+    "solution": "Sieć sąsiedzkich wolontariuszy, którzy codziennie o stałej porze dzwonią do samotnie mieszkających seniorów i zgłaszają niepokojące sygnały do OPS.",
+    "problem": "Innowacja odpowiada na problem: samotność i brak codziennego kontaktu u osób starszych mieszkających samodzielnie, szczególnie na terenach wiejskich.",
+    "target_group": "Osoby 75+ mieszkające samotnie, bez bliskiej rodziny w okolicy.",
+    "who_can_implement": "Ośrodki pomocy społecznej, kluby seniora, parafialne zespoły charytatywne, koła gospodyń wiejskich.",
+    "evidence": "Test z udziałem 13 osób przyniósł pozytywne wyniki (mierzono: spadek poczucia osamotnienia mierzonego skalą De Jong Gierveld). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "pudelko-wspomnien",
+    "url": "https://example.org/mock/biblioteka-innowacji/pudelko-wspomnien",
+    "title": "Pudełko Wspomnień",
+    "categories": [
+      "Dla seniorów"
+    ],
+    "groups": [
+      "seniorzy"
+    ],
+    "dissemination_badge": null,
+    "solution": "Zestaw tematycznych pudełek z przedmiotami codziennego użytku z lat 60.-80. do prowadzenia zajęć reminiscencyjnych.",
+    "problem": "Innowacja odpowiada na problem: ograniczona liczba prostych narzędzi do stymulacji poznawczej osób z otępieniem w opiece domowej.",
+    "target_group": "Osoby z łagodnymi zaburzeniami poznawczymi i ich opiekunowie rodzinni.",
+    "who_can_implement": "Dzienne domy pomocy, DPS, opiekunowie rodzinni, usługi opiekuńcze.",
+    "evidence": "Test z udziałem 27 osób przyniósł pozytywne wyniki (mierzono: poprawa nastroju i zaangażowania uczestników w trakcie zajęć). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "senior-w-sieci-gminy",
+    "url": "https://example.org/mock/biblioteka-innowacji/senior-w-sieci-gminy",
+    "title": "Senior w Sieci Gminy",
+    "categories": [
+      "Dla seniorów"
+    ],
+    "groups": [
+      "seniorzy"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Dyżury cyfrowego asystenta w świetlicach wiejskich, który pomaga seniorom załatwiać sprawy urzędowe i medyczne online.",
+    "problem": "Innowacja odpowiada na problem: wykluczenie cyfrowe seniorów utrudniające dostęp do e-recept, e-wizyt i usług publicznych.",
+    "target_group": "Osoby 65+ bez umiejętności cyfrowych z małych miejscowości.",
+    "who_can_implement": "Gminne biblioteki, centra kultury, OPS, organizacje pozarządowe.",
+    "evidence": "Test z udziałem 59 osób przyniósł pozytywne wyniki (mierzono: liczba spraw samodzielnie załatwionych online po zakończeniu wsparcia). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "opiekun-na-zmiane",
+    "url": "https://example.org/mock/biblioteka-innowacji/opiekun-na-zmiane",
+    "title": "Opiekun na Zmianę",
+    "categories": [
+      "Dla seniorów"
+    ],
+    "groups": [
+      "seniorzy"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Grafik wzajemnych zastępstw między opiekunami rodzinnymi, koordynowany przez lokalnego animatora i wspierany krótkim szkoleniem.",
+    "problem": "Innowacja odpowiada na problem: przeciążenie i wypalenie opiekunów rodzinnych, którzy nie mają możliwości odpoczynku.",
+    "target_group": "Opiekunowie rodzinni osób starszych i przewlekle chorych.",
+    "who_can_implement": "OPS, centra usług społecznych, stowarzyszenia opiekunów.",
+    "evidence": "Test z udziałem 59 osób przyniósł pozytywne wyniki (mierzono: liczba godzin wytchnienia uzyskanych przez opiekunów). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "mapa-ciszy",
+    "url": "https://example.org/mock/biblioteka-innowacji/mapa-ciszy",
+    "title": "Mapa Ciszy",
+    "categories": [
+      "Dla osób z niepełnosprawnością intelektualną"
+    ],
+    "groups": [
+      "niepelnosprawnosc_intelektualna"
+    ],
+    "dissemination_badge": null,
+    "solution": "Aplikacja mobilna z mapą miejsc przyjaznych sensorycznie (ciche godziny w sklepach, urzędach, przychodniach) uzupełnianą przez użytkowników.",
+    "problem": "Innowacja odpowiada na problem: przeciążenie sensoryczne utrudniające osobom w spektrum autyzmu samodzielne korzystanie z przestrzeni publicznej.",
+    "target_group": "Osoby w spektrum autyzmu i z niepełnosprawnością intelektualną oraz ich rodziny.",
+    "who_can_implement": "Samorządy, organizacje pozarządowe, centra handlowe, instytucje kultury.",
+    "evidence": "Test z udziałem 17 osób przyniósł pozytywne wyniki (mierzono: liczba samodzielnych wyjść użytkowników do miejsc publicznych). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "krok-po-kroku-do-pracy",
+    "url": "https://example.org/mock/biblioteka-innowacji/krok-po-kroku-do-pracy",
+    "title": "Krok po Kroku do Pracy",
+    "categories": [
+      "Dla osób z niepełnosprawnością intelektualną"
+    ],
+    "groups": [
+      "niepelnosprawnosc_intelektualna"
+    ],
+    "dissemination_badge": null,
+    "solution": "Obrazkowe instrukcje stanowiskowe i trener pracy dostępny w pierwszych tygodniach zatrudnienia.",
+    "problem": "Innowacja odpowiada na problem: niska aktywność zawodowa osób z niepełnosprawnością intelektualną i szybkie rezygnacje z pracy.",
+    "target_group": "Dorosłe osoby z niepełnosprawnością intelektualną w stopniu lekkim i umiarkowanym.",
+    "who_can_implement": "WTZ, ZAZ, pracodawcy, powiatowe urzędy pracy.",
+    "evidence": "Test z udziałem 14 osób przyniósł pozytywne wyniki (mierzono: odsetek osób utrzymujących zatrudnienie po 3 miesiącach). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "moje-mieszkanie-moj-plan",
+    "url": "https://example.org/mock/biblioteka-innowacji/moje-mieszkanie-moj-plan",
+    "title": "Moje Mieszkanie, Mój Plan",
+    "categories": [
+      "Dla osób z niepełnosprawnością intelektualną"
+    ],
+    "groups": [
+      "niepelnosprawnosc_intelektualna"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Zestaw kart i plansz do nauki samodzielnego prowadzenia gospodarstwa domowego w mieszkaniach treningowych.",
+    "problem": "Innowacja odpowiada na problem: brak przygotowania do samodzielnego życia osób opuszczających placówki całodobowe.",
+    "target_group": "Mieszkańcy mieszkań treningowych i wspomaganych.",
+    "who_can_implement": "Mieszkania treningowe, ŚDS, DPS realizujące deinstytucjonalizację.",
+    "evidence": "Test z udziałem 25 osób przyniósł pozytywne wyniki (mierzono: przyrost samodzielności w codziennych czynnościach). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "glosny-przystanek",
+    "url": "https://example.org/mock/biblioteka-innowacji/glosny-przystanek",
+    "title": "Głośny Przystanek",
+    "categories": [
+      "Dla osób z niepełnosprawnością sensoryczną"
+    ],
+    "groups": [
+      "niepelnosprawnosc_sensoryczna"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Niskokosztowa nakładka na rozkład jazdy odczytująca na żądanie odjazdy autobusów po zbliżeniu telefonu.",
+    "problem": "Innowacja odpowiada na problem: brak dostępnej informacji pasażerskiej na przystankach poza dużymi miastami.",
+    "target_group": "Osoby niewidome i słabowidzące korzystające z komunikacji publicznej.",
+    "who_can_implement": "Gminy, przewoźnicy, zarządy dróg.",
+    "evidence": "Test z udziałem 50 osób przyniósł pozytywne wyniki (mierzono: liczba samodzielnych podróży zgłoszonych przez testerów). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "migowy-urzad",
+    "url": "https://example.org/mock/biblioteka-innowacji/migowy-urzad",
+    "title": "Migowy Urząd",
+    "categories": [
+      "Dla osób z niepełnosprawnością sensoryczną"
+    ],
+    "groups": [
+      "niepelnosprawnosc_sensoryczna"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Wideotłumacz PJM dostępny z tabletu w okienku urzędu gminy bez wcześniejszej rezerwacji.",
+    "problem": "Innowacja odpowiada na problem: bariery komunikacyjne osób głuchych w kontaktach z małymi urzędami.",
+    "target_group": "Osoby głuche i słabosłyszące posługujące się PJM.",
+    "who_can_implement": "Urzędy gmin, starostwa, OPS, przychodnie.",
+    "evidence": "Test z udziałem 24 osób przyniósł pozytywne wyniki (mierzono: czas załatwienia sprawy i ocena satysfakcji użytkowników). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "dotykowy-przewodnik",
+    "url": "https://example.org/mock/biblioteka-innowacji/dotykowy-przewodnik",
+    "title": "Dotykowy Przewodnik",
+    "categories": [
+      "Dla osób z niepełnosprawnością sensoryczną"
+    ],
+    "groups": [
+      "niepelnosprawnosc_sensoryczna"
+    ],
+    "dissemination_badge": null,
+    "solution": "Wydruki 3D lokalnych zabytków z opisem w brajlu i audiodeskrypcją dostępną przez kod QR.",
+    "problem": "Innowacja odpowiada na problem: ograniczony dostęp osób niewidomych do oferty turystycznej i kulturalnej regionu.",
+    "target_group": "Osoby niewidome i słabowidzące, w tym dzieci w wieku szkolnym.",
+    "who_can_implement": "Muzea, centra informacji turystycznej, szkoły.",
+    "evidence": "Test z udziałem 56 osób przyniósł pozytywne wyniki (mierzono: liczba odwiedzin instytucji przez osoby z niepełnosprawnością wzroku). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "kawa-bez-slow",
+    "url": "https://example.org/mock/biblioteka-innowacji/kawa-bez-slow",
+    "title": "Kawa bez Słów",
+    "categories": [
+      "Dla osób z niepełnosprawnością sensoryczną"
+    ],
+    "groups": [
+      "niepelnosprawnosc_sensoryczna"
+    ],
+    "dissemination_badge": null,
+    "solution": "Cykl spotkań integracyjnych w kawiarniach, w których obsługa i goście uczą się podstaw PJM.",
+    "problem": "Innowacja odpowiada na problem: izolacja społeczna osób głuchych w małych miejscowościach.",
+    "target_group": "Osoby głuche, ich rodziny i lokalna społeczność.",
+    "who_can_implement": "Kawiarnie, domy kultury, organizacje osób głuchych.",
+    "evidence": "Test z udziałem 26 osób przyniósł pozytywne wyniki (mierzono: liczba nowych kontaktów społecznych uczestników). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "podjazd-na-telefon",
+    "url": "https://example.org/mock/biblioteka-innowacji/podjazd-na-telefon",
+    "title": "Podjazd na Telefon",
+    "categories": [
+      "Dla osób o ograniczonej mobilności"
+    ],
+    "groups": [
+      "ograniczona_mobilnosc"
+    ],
+    "dissemination_badge": null,
+    "solution": "Wypożyczalnia mobilnych ramp z dowozem na żądanie, zamawiana przez SMS lub formularz.",
+    "problem": "Innowacja odpowiada na problem: bariery architektoniczne w starych budynkach uniemożliwiające udział w wydarzeniach.",
+    "target_group": "Osoby poruszające się na wózkach i z balkonikami.",
+    "who_can_implement": "OPS, centra wolontariatu, organizatorzy wydarzeń, wspólnoty mieszkaniowe.",
+    "evidence": "Test z udziałem 29 osób przyniósł pozytywne wyniki (mierzono: liczba wydarzeń, w których uczestniczyli użytkownicy). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "wspolny-kurs",
+    "url": "https://example.org/mock/biblioteka-innowacji/wspolny-kurs",
+    "title": "Wspólny Kurs",
+    "categories": [
+      "Dla osób o ograniczonej mobilności"
+    ],
+    "groups": [
+      "ograniczona_mobilnosc"
+    ],
+    "dissemination_badge": null,
+    "solution": "Gminny system współdzielonych przejazdów door-to-door łączący kursy do lekarza, urzędu i na zakupy.",
+    "problem": "Innowacja odpowiada na problem: wykluczenie transportowe osób z ograniczoną mobilnością na terenach wiejskich.",
+    "target_group": "Osoby z niepełnosprawnością ruchową i seniorzy bez dostępu do samochodu.",
+    "who_can_implement": "Gminy, OPS, organizacje pozarządowe, przewoźnicy lokalni.",
+    "evidence": "Test z udziałem 12 osób przyniósł pozytywne wyniki (mierzono: liczba zrealizowanych przejazdów i koszt jednego kursu). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "ogrod-na-wysokosci",
+    "url": "https://example.org/mock/biblioteka-innowacji/ogrod-na-wysokosci",
+    "title": "Ogród na Wysokości",
+    "categories": [
+      "Dla osób o ograniczonej mobilności"
+    ],
+    "groups": [
+      "ograniczona_mobilnosc"
+    ],
+    "dissemination_badge": null,
+    "solution": "Modułowe podwyższone grządki z dostępem dla wózka, do montażu na terenie placówek i osiedli.",
+    "problem": "Innowacja odpowiada na problem: brak dostępnych form aktywności na świeżym powietrzu dla osób na wózkach.",
+    "target_group": "Osoby poruszające się na wózkach, uczestnicy ŚDS i DDP.",
+    "who_can_implement": "Spółdzielnie mieszkaniowe, ŚDS, DPS, szkoły specjalne.",
+    "evidence": "Test z udziałem 22 osób przyniósł pozytywne wyniki (mierzono: regularność udziału w zajęciach ogrodniczych). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "reka-na-klamce",
+    "url": "https://example.org/mock/biblioteka-innowacji/reka-na-klamce",
+    "title": "Ręka na Klamce",
+    "categories": [
+      "Dla osób o ograniczonej mobilności"
+    ],
+    "groups": [
+      "ograniczona_mobilnosc"
+    ],
+    "dissemination_badge": null,
+    "solution": "Otwarty projekt taniego otwieracza drzwi sterowanego przyciskiem, do samodzielnego montażu.",
+    "problem": "Innowacja odpowiada na problem: brak samodzielności osób z niedowładem kończyn we własnym mieszkaniu.",
+    "target_group": "Osoby z niedowładem kończyn górnych mieszkające samodzielnie.",
+    "who_can_implement": "Warsztaty terapii zajęciowej, fablaby, organizacje pozarządowe.",
+    "evidence": "Test z udziałem 33 osób przyniósł pozytywne wyniki (mierzono: liczba czynności wykonywanych bez pomocy osób trzecich). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "rodzinne-popoludnia",
+    "url": "https://example.org/mock/biblioteka-innowacji/rodzinne-popoludnia",
+    "title": "Rodzinne Popołudnia",
+    "categories": [
+      "Dla dzieci, młodzieży i rodziny"
+    ],
+    "groups": [
+      "dzieci_mlodziez_rodzina"
+    ],
+    "dissemination_badge": null,
+    "solution": "Cotygodniowe warsztaty dla rodziców i dzieci w świetlicach, oparte na wspólnym gotowaniu i grach.",
+    "problem": "Innowacja odpowiada na problem: osłabione więzi rodzinne i niska kompetencja wychowawcza w rodzinach objętych wsparciem asystenta.",
+    "target_group": "Rodziny z dziećmi w wieku 6-12 lat przeżywające trudności opiekuńczo-wychowawcze.",
+    "who_can_implement": "Placówki wsparcia dziennego, asystenci rodziny, OPS.",
+    "evidence": "Test z udziałem 25 osób przyniósł pozytywne wyniki (mierzono: zmiana wyników w skali kompetencji rodzicielskich). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "starszy-brat-starsza-siostra",
+    "url": "https://example.org/mock/biblioteka-innowacji/starszy-brat-starsza-siostra",
+    "title": "Starszy Brat, Starsza Siostra",
+    "categories": [
+      "Dla dzieci, młodzieży i rodziny"
+    ],
+    "groups": [
+      "dzieci_mlodziez_rodzina"
+    ],
+    "dissemination_badge": null,
+    "solution": "Program mentoringu, w którym studenci wspierają wychowanków pieczy zastępczej w nauce i planowaniu przyszłości.",
+    "problem": "Innowacja odpowiada na problem: słabe przygotowanie usamodzielniających się wychowanków pieczy zastępczej do dorosłości.",
+    "target_group": "Wychowankowie pieczy zastępczej w wieku 14-18 lat.",
+    "who_can_implement": "PCPR, placówki opiekuńczo-wychowawcze, uczelnie.",
+    "evidence": "Test z udziałem 33 osób przyniósł pozytywne wyniki (mierzono: odsetek uczestników kontynuujących naukę po 18 roku życia). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "kieszonkowy-budzet",
+    "url": "https://example.org/mock/biblioteka-innowacji/kieszonkowy-budzet",
+    "title": "Kieszonkowy Budżet",
+    "categories": [
+      "Dla dzieci, młodzieży i rodziny"
+    ],
+    "groups": [
+      "dzieci_mlodziez_rodzina"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Gra mobilna ucząca nastolatków planowania wydatków na podstawie realnych scenariuszy usamodzielnienia.",
+    "problem": "Innowacja odpowiada na problem: niska edukacja finansowa młodzieży z rodzin zagrożonych ubóstwem.",
+    "target_group": "Młodzież 13-18 lat z rodzin korzystających z pomocy społecznej.",
+    "who_can_implement": "Szkoły, świetlice środowiskowe, PCPR.",
+    "evidence": "Test z udziałem 36 osób przyniósł pozytywne wyniki (mierzono: wynik testu wiedzy finansowej przed i po grze). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "bezpieczny-przystanek",
+    "url": "https://example.org/mock/biblioteka-innowacji/bezpieczny-przystanek",
+    "title": "Bezpieczny Przystanek",
+    "categories": [
+      "Dla dzieci, młodzieży i rodziny"
+    ],
+    "groups": [
+      "dzieci_mlodziez_rodzina"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Dyżury psychologa w formie czatu dla młodzieży, prowadzone w godzinach wieczornych w lokalnej świetlicy i online.",
+    "problem": "Innowacja odpowiada na problem: ograniczony dostęp do wsparcia psychologicznego dla młodzieży w kryzysie poza dużymi miastami.",
+    "target_group": "Młodzież 12-19 lat w kryzysie emocjonalnym.",
+    "who_can_implement": "Poradnie psychologiczno-pedagogiczne, organizacje pozarządowe, szkoły.",
+    "evidence": "Test z udziałem 34 osób przyniósł pozytywne wyniki (mierzono: liczba skutecznych przekierowań do specjalistycznej pomocy). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "tata-w-akcji",
+    "url": "https://example.org/mock/biblioteka-innowacji/tata-w-akcji",
+    "title": "Tata w Akcji",
+    "categories": [
+      "Dla dzieci, młodzieży i rodziny"
+    ],
+    "groups": [
+      "dzieci_mlodziez_rodzina"
+    ],
+    "dissemination_badge": null,
+    "solution": "Grupy wsparcia i warsztaty dla ojców, prowadzone przez ojców-liderów w weekendy.",
+    "problem": "Innowacja odpowiada na problem: marginalizacja roli ojców w programach wsparcia rodziny.",
+    "target_group": "Ojcowie z rodzin objętych pracą socjalną.",
+    "who_can_implement": "OPS, centra usług społecznych, parafie, kluby sportowe.",
+    "evidence": "Test z udziałem 14 osób przyniósł pozytywne wyniki (mierzono: czas spędzany przez ojców z dziećmi deklarowany w ankiecie). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "dzien-dobry-po-polsku",
+    "url": "https://example.org/mock/biblioteka-innowacji/dzien-dobry-po-polsku",
+    "title": "Dzień Dobry po Polsku",
+    "categories": [
+      "Dla cudzoziemców"
+    ],
+    "groups": [
+      "cudzoziemcy"
+    ],
+    "dissemination_badge": null,
+    "solution": "Obrazkowy zestaw fiszek z najważniejszymi zwrotami do przychodni, szkoły i urzędu, w kilku językach.",
+    "problem": "Innowacja odpowiada na problem: bariera językowa utrudniająca cudzoziemcom korzystanie z podstawowych usług.",
+    "target_group": "Cudzoziemcy w pierwszym roku pobytu, w tym rodziny z dziećmi.",
+    "who_can_implement": "Szkoły, przychodnie, OPS, organizacje pomocowe.",
+    "evidence": "Test z udziałem 46 osób przyniósł pozytywne wyniki (mierzono: liczba wizyt odbytych bez tłumacza). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "sasiad-z-daleka",
+    "url": "https://example.org/mock/biblioteka-innowacji/sasiad-z-daleka",
+    "title": "Sąsiad z Daleka",
+    "categories": [
+      "Dla cudzoziemców"
+    ],
+    "groups": [
+      "cudzoziemcy"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Parowanie rodzin cudzoziemskich z lokalnymi rodzinami-przewodnikami na pierwsze pół roku pobytu.",
+    "problem": "Innowacja odpowiada na problem: izolacja i brak sieci wsparcia cudzoziemców w nowym miejscu zamieszkania.",
+    "target_group": "Rodziny cudzoziemców osiedlające się w mniejszych miejscowościach.",
+    "who_can_implement": "Gminy, parafie, stowarzyszenia, szkoły.",
+    "evidence": "Test z udziałem 36 osób przyniósł pozytywne wyniki (mierzono: liczba relacji utrzymanych po zakończeniu programu). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "pierwszy-etat",
+    "url": "https://example.org/mock/biblioteka-innowacji/pierwszy-etat",
+    "title": "Pierwszy Etat",
+    "categories": [
+      "Dla rynku pracy"
+    ],
+    "groups": [
+      "rynek_pracy"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Krótkie, płatne staże próbne u lokalnych pracodawców poprzedzone tygodniowym przygotowaniem.",
+    "problem": "Innowacja odpowiada na problem: długotrwałe bezrobocie i utrata nawyków pracowniczych.",
+    "target_group": "Osoby bezrobotne powyżej 12 miesięcy, w tym 50+.",
+    "who_can_implement": "PUP, CIS, KIS, lokalni przedsiębiorcy.",
+    "evidence": "Test z udziałem 30 osób przyniósł pozytywne wyniki (mierzono: odsetek uczestników zatrudnionych po zakończeniu stażu). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "spoldzielnia-smaku",
+    "url": "https://example.org/mock/biblioteka-innowacji/spoldzielnia-smaku",
+    "title": "Spółdzielnia Smaku",
+    "categories": [
+      "Dla rynku pracy"
+    ],
+    "groups": [
+      "rynek_pracy"
+    ],
+    "dissemination_badge": null,
+    "solution": "Przedsiębiorstwo społeczne prowadzące catering na bazie lokalnych produktów, zatrudniające osoby po kryzysach.",
+    "problem": "Innowacja odpowiada na problem: brak miejsc pracy dla osób zagrożonych wykluczeniem po zakończeniu reintegracji.",
+    "target_group": "Absolwenci CIS i KIS, osoby po kryzysie bezdomności i uzależnieniu.",
+    "who_can_implement": "Przedsiębiorstwa społeczne, gminy, CIS, OWES.",
+    "evidence": "Test z udziałem 51 osób przyniósł pozytywne wyniki (mierzono: liczba miejsc pracy utrzymanych przez 12 miesięcy). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "cieply-kat",
+    "url": "https://example.org/mock/biblioteka-innowacji/cieply-kat",
+    "title": "Ciepły Kąt",
+    "categories": [
+      "Dla osób w kryzysie bezdomności"
+    ],
+    "groups": [
+      "bezdomnosc"
+    ],
+    "dissemination_badge": null,
+    "solution": "Mobilny punkt z prysznicem, pralnią i konsultacjami, krążący po mniejszych miejscowościach powiatu.",
+    "problem": "Innowacja odpowiada na problem: brak podstawowej infrastruktury higienicznej i wsparcia dla osób w kryzysie bezdomności poza miastami.",
+    "target_group": "Osoby w kryzysie bezdomności i zagrożone bezdomnością.",
+    "who_can_implement": "OPS, organizacje pomocowe, schroniska, gminy.",
+    "evidence": "Test z udziałem 35 osób przyniósł pozytywne wyniki (mierzono: liczba osób, które podjęły dalsze wsparcie po kontakcie z punktem). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "klucz-na-start",
+    "url": "https://example.org/mock/biblioteka-innowacji/klucz-na-start",
+    "title": "Klucz na Start",
+    "categories": [
+      "Dla osób w kryzysie bezdomności"
+    ],
+    "groups": [
+      "bezdomnosc"
+    ],
+    "dissemination_badge": null,
+    "solution": "Model „najpierw mieszkanie” w małej skali, z gminnym lokalem i wsparciem streetworkera.",
+    "problem": "Innowacja odpowiada na problem: powracanie osób do bezdomności po pobycie w schroniskach.",
+    "target_group": "Osoby w długotrwałym kryzysie bezdomności.",
+    "who_can_implement": "Gminy, TBS, OPS, organizacje pozarządowe.",
+    "evidence": "Test z udziałem 57 osób przyniósł pozytywne wyniki (mierzono: odsetek osób utrzymujących mieszkanie po 6 miesiącach). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "zdrowie-na-kolkach",
+    "url": "https://example.org/mock/biblioteka-innowacji/zdrowie-na-kolkach",
+    "title": "Zdrowie na Kółkach",
+    "categories": [
+      "Dla zdrowia i medycyny"
+    ],
+    "groups": [
+      "zdrowie_medycyna"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Objazdowy punkt badań przesiewowych i edukacji zdrowotnej w sołectwach bez przychodni.",
+    "problem": "Innowacja odpowiada na problem: niska zgłaszalność na badania profilaktyczne mieszkańców obszarów wiejskich.",
+    "target_group": "Mieszkańcy wsi powyżej 50 roku życia.",
+    "who_can_implement": "Gminy, POZ, organizacje pacjentów, koła gospodyń wiejskich.",
+    "evidence": "Test z udziałem 54 osób przyniósł pozytywne wyniki (mierzono: liczba osób skierowanych na dalszą diagnostykę). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "apteczka-pamieci",
+    "url": "https://example.org/mock/biblioteka-innowacji/apteczka-pamieci",
+    "title": "Apteczka Pamięci",
+    "categories": [
+      "Dla zdrowia i medycyny"
+    ],
+    "groups": [
+      "zdrowie_medycyna"
+    ],
+    "dissemination_badge": "INNOWACJA WYBRANA DO UPOWSZECHNIANIA W RAMACH PROJEKTU \"INKUBATOR WŁĄCZENIA SPOŁECZNEGO 2.0\" (MOCK)",
+    "solution": "Dozownik leków z sygnałem świetlnym i dźwiękowym oraz prostym dziennikiem dawek dla opiekuna.",
+    "problem": "Innowacja odpowiada na problem: błędy w przyjmowaniu leków przez seniorów leczonych wieloma lekami.",
+    "target_group": "Seniorzy przyjmujący co najmniej 5 leków dziennie.",
+    "who_can_implement": "Usługi opiekuńcze, apteki, POZ, opiekunowie rodzinni.",
+    "evidence": "Test z udziałem 30 osób przyniósł pozytywne wyniki (mierzono: liczba pominiętych dawek w okresie testu). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  },
+  {
+    "slug": "glowa-do-gory",
+    "url": "https://example.org/mock/biblioteka-innowacji/glowa-do-gory",
+    "title": "Głowa do Góry",
+    "categories": [
+      "Dla zdrowia i medycyny"
+    ],
+    "groups": [
+      "zdrowie_medycyna"
+    ],
+    "dissemination_badge": null,
+    "solution": "Grupy wsparcia prowadzone przez przeszkolonych liderów-rówieśników dla osób po kryzysie psychicznym.",
+    "problem": "Innowacja odpowiada na problem: długie oczekiwanie na wsparcie psychiatryczne i nawroty kryzysów.",
+    "target_group": "Dorośli po pierwszym epizodzie kryzysu psychicznego.",
+    "who_can_implement": "Centra zdrowia psychicznego, ŚDS, organizacje pozarządowe.",
+    "evidence": "Test z udziałem 26 osób przyniósł pozytywne wyniki (mierzono: liczba ponownych hospitalizacji w okresie testu). Uczestnicy ocenili rozwiązanie jako proste w użyciu.",
+    "pdf_url": null,
+    "video_url": null,
+    "files": [],
+    "synthetic": true
+  }
+]
