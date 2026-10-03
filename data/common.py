@@ -13,7 +13,8 @@ OUT = ROOT / "out"    # przetworzone JSON-y gotowe do załadowania
 load_dotenv(ROOT.parent / ".env.local")
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.3-70b-versatile"  # ten sam co w lib/llm.ts
+GROQ_FAST = "openai/gpt-oss-120b"     # jak models.fast w lib/llm.ts (20b psuł polskie lematy)
+GROQ_QUALITY = "openai/gpt-oss-120b"  # jak models.quality w lib/llm.ts
 EMBEDDING_MODEL = "text-embedding-3-small"  # wymiar 1536, jak w migracji
 
 
@@ -69,7 +70,7 @@ def db_url() -> str:
     return os.environ["SUPABASE_DB_URL"]
 
 
-def groq_chat(messages: list[dict], *, model: str = GROQ_MODEL, json_mode: bool = False, temperature: float = 0.2) -> str:
+def groq_chat(messages: list[dict], *, model: str = GROQ_FAST, json_mode: bool = False, temperature: float = 0.5) -> str:
     """Jedno wywołanie Groq (API zgodne z OpenAI). Przy 429 i błędach serwera czeka i ponawia."""
     for attempt in range(6):
         response = httpx.post(
@@ -79,7 +80,10 @@ def groq_chat(messages: list[dict], *, model: str = GROQ_MODEL, json_mode: bool 
                 "model": model,
                 "messages": messages,
                 "temperature": temperature,
+                "max_tokens": 4096,  # obejmuje też tokeny rozumowania
                 **({"response_format": {"type": "json_object"}} if json_mode else {}),
+                # gpt-oss to modele rozumujące: krótkie rozumowanie i bez jego treści w odpowiedzi.
+                **({"reasoning_effort": "low", "include_reasoning": False} if model.startswith("openai/gpt-oss") else {}),
             },
             timeout=120,
         )
@@ -92,7 +96,7 @@ def groq_chat(messages: list[dict], *, model: str = GROQ_MODEL, json_mode: bool 
     raise RuntimeError(f"Groq: {response.status_code} po {attempt + 1} próbach")
 
 
-def groq_json(system: str, schema: dict, prompt: str, *, model: str = GROQ_MODEL) -> dict:
+def groq_json(system: str, schema: dict, prompt: str, *, model: str = GROQ_FAST) -> dict:
     """Obiekt JSON zgodny ze schematem — odpowiednik groqObject z lib/groq.ts.
 
     Tryb JSON nie gwarantuje schematu, więc przy brakujących polach raz prosimy model o poprawkę.

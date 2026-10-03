@@ -14,31 +14,43 @@ type ChatOptions = {
 };
 
 /** Jedno wywołanie Groq (API zgodne z OpenAI). Klucz tylko po stronie serwera. */
-export async function groqChat({ model, messages, temperature = 0.2, maxTokens, json }: ChatOptions): Promise<string> {
+export async function groqChat({ model, messages, temperature = 0.5, maxTokens = 4096, json }: ChatOptions): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Brak GROQ_API_KEY w .env.local");
 
-  const response = await fetch(GROQ_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      ...(maxTokens && { max_tokens: maxTokens }),
-      ...(json && { response_format: { type: "json_object" } }),
-    }),
-    signal: AbortSignal.timeout(60_000),
-  });
-  if (!response.ok) throw new Error(`Groq ${response.status}: ${await response.text()}`);
+  for (let attempt = 0; ; attempt++) {
+    const response = await fetch(GROQ_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature,
+        max_tokens: maxTokens, // obejmuje też tokeny rozumowania
+        ...(json && { response_format: { type: "json_object" } }),
+        // gpt-oss to modele rozumujące: krótkie rozumowanie i bez jego treści w odpowiedzi.
+        ...(model.startsWith("openai/gpt-oss") && { reasoning_effort: "low", include_reasoning: false }),
+      }),
+      signal: AbortSignal.timeout(60_000),
+    });
+    // Darmowy plan ma niskie limity na minutę — krótko czekamy i ponawiamy.
+    if (response.status === 429 && attempt < 2) {
+      const wait = Math.min(Number(response.headers.get("retry-after")) || 2, 10);
+      await new Promise((r) => setTimeout(r, wait * 1000));
+      continue;
+    }
+    if (!response.ok) throw new Error(`Groq ${response.status}: ${await response.text()}`);
 
-  const data = await response.json();
-  const content = data.choices?.[0]?.message?.content;
-  if (typeof content !== "string") throw new Error("Groq zwrócił pustą odpowiedź");
-  return content;
+    const data = await response.json();
+    const choice = data.choices?.[0];
+    if (choice?.finish_reason === "length") throw new Error(`Groq: odpowiedź ucięta po ${maxTokens} tokenach`);
+    const content = choice?.message?.content;
+    if (typeof content !== "string" || !content) throw new Error("Groq zwrócił pustą odpowiedź");
+    return content;
+  }
 }
 
 type ObjectOptions = { model: string; system: string; prompt: string; temperature?: number };

@@ -8,9 +8,11 @@ import { AREA_LABELS, CROSS_LABELS, GROUP_LABELS } from "./taxonomy";
 
 // Warstwa LLM ukryta za tym modułem — w produkcji podmieniamy dostawcę tutaj.
 // fast: intake, lematy, Q&A · quality: rerank, asystent, karta wdrożeniowa, wnioski (README sekcja 4)
+// Oba w darmowym planie Groq. Na fast nie bierzemy openai/gpt-oss-20b: w testach psuł polską
+// gramatykę i lematy („seniorzy” zamiast „senior”), a na lematach stoi wyszukiwanie po słowach.
 export const models = {
-  fast: "llama-3.3-70b-versatile",
-  quality: "llama-3.3-70b-versatile",
+  fast: "openai/gpt-oss-120b",
+  quality: "openai/gpt-oss-120b",
 };
 
 const TAXONOMY = `Obszary (areas): ${Object.entries(AREA_LABELS).map(([k, v]) => `${k} = ${v}`).join("; ")}
@@ -133,7 +135,8 @@ export async function assistantReply(
 ${similar.map((s) => `<${s.kind} podobienstwo="${s.similarity.toFixed(2)}"><tytul>${s.title}</tytul>${s.body}</${s.kind}>`).join("\n") || "brak"}
 </podobne>`;
   const messages: ChatMessage[] = [{ role: "system", content: `${ASSISTANT_SYSTEM}\n\n${context}` }, ...history];
-  return groqChat({ model: models.quality, messages, temperature: 0.6, maxTokens: 600 });
+  // Limit obejmuje też tokeny rozumowania, więc jest wyższy niż sama odpowiedź (do 120 słów).
+  return groqChat({ model: models.quality, messages, temperature: 0.6, maxTokens: 1500 });
 }
 
 export type Partner = { id: string; name: string; description: string };

@@ -9,7 +9,7 @@ Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
 
 - **Nazwa:** **Społecznik**. Hasło: *Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.*
 - **Idea:** każda potrzeba, innowacja, pomysł, ekspert i nabór to „karta”. Jeden silnik dopasowań (wyszukiwanie hybrydowe + rerank LLM z uzasadnieniem) splata karty ze sobą. Siedem modułów z briefu to widoki i akcje na tym samym grafie, a nie siedem osobnych aplikacji.
-- **Stack:** Next.js + TypeScript + Tailwind + shadcn/ui (Vercel) · Supabase (Postgres + pgvector + Auth + Realtime + Storage) · LLM na Groq (`llama-3.3-70b-versatile`) za wymiennym interfejsem `lib/llm.ts` · Python (Playwright, PyMuPDF) do jednorazowego pipeline'u danych · API BDL GUS do profili gmin.
+- **Stack:** Next.js + TypeScript + Tailwind + shadcn/ui (Vercel) · Supabase (Postgres + pgvector + Auth + Realtime + Storage) · LLM na Groq (`openai/gpt-oss-120b`) za wymiennym interfejsem `lib/llm.ts` · Python (Playwright, PyMuPDF) do jednorazowego pipeline'u danych · API BDL GUS do profili gmin.
 - **Co jest nowe:**
   1. mapa luk innowacyjnych (potrzeby bez rozwiązań → kierunki naborów),
   2. dopasowanie z kontekstem terytorialnym gminy,
@@ -85,7 +85,7 @@ flowchart LR
   subgraph A["Next.js na Vercel (region fra1)"]
     API[Route handlers api]
     PII[Anonimizacja PII]
-    LLM[Warstwa LLM<br/>Groq: Llama 3.3 70B]
+    LLM[Warstwa LLM<br/>Groq: GPT-OSS 120B]
   end
   subgraph D["Supabase (Irlandia)"]
     PG[(Postgres + pgvector<br/>indeks kart)]
@@ -140,7 +140,7 @@ flowchart TD
 | Mapy | react-leaflet + GeoJSON gmin (PRG GUGiK uproszczony mapshaperem) | Lekkie, bez kluczy API |
 | Wykresy | Recharts | Szybkie, wystarczające |
 | Głos | Web Speech API: rozpoznawanie `pl-PL` (Chrome/Edge) + `speechSynthesis` do czytania na głos | Zero kosztu. W innych przeglądarkach fallback do pola tekstowego. |
-| LLM | **Groq** (`llama-3.3-70b-versatile`, plan Enterprise), wywołania `fetch` w `lib/groq.ts` i `data/common.py` | Tryb JSON + walidacja zod (`groqObject`). Wszystkie zadania: intake, rerank, lematy, ETR, Q&A, asystent Pracowni, karta wdrożeniowa, wnioski. Modele `fast` / `quality` w `lib/llm.ts`. **Infrastruktura w USA — tylko demo na danych syntetycznych** (sekcja 10). |
+| LLM | **Groq** (`openai/gpt-oss-120b`, model rozumujący, `reasoning_effort: low`), wywołania `fetch` w `lib/groq.ts` i `data/common.py` | Tryb JSON + walidacja zod (`groqObject`). `gpt-oss-20b` odrzucony: w testach psuł polską gramatykę i lematy. Wszystkie zadania: intake, rerank, lematy, ETR, Q&A, asystent Pracowni, karta wdrożeniowa, wnioski. Modele `fast` / `quality` w `lib/llm.ts`. **Infrastruktura w USA — tylko demo na danych syntetycznych** (sekcja 10). |
 | AI SDK | **Vercel AI SDK** (`ai`, `@ai-sdk/openai`) | Tylko embeddingi |
 | Embeddingi | `text-embedding-3-small` (OpenAI) albo Voyage, czyli to, do czego macie klucz | Ten sam model dla korpusu i zapytań. Wymiar 1536 w schemacie poniżej dopasujcie do modelu. |
 | Baza | **Supabase**: Postgres + pgvector, Auth, RLS, Realtime, Storage, Database Webhooks | Jedna usługa zamiast pięciu. Open source, więc da się postawić on-prem w produkcji. |
@@ -527,7 +527,9 @@ sequenceDiagram
 - 400 sesji asystenta, karty wdrożeniowej lub generatora wniosków,
 - 2 000 pytań do Zasobnika.
 
-**Który LLM liczymy:** demo działa na Groq (`llama-3.3-70b-versatile`), ale ten model jest dostępny tylko w planie Enterprise z ceną ustalaną indywidualnie, a infrastruktura Groq jest w USA. Produkcja z danymi mieszkańców wymaga LLM w UE (sekcja 10), więc koszt liczymy dla wariantu produkcyjnego: Claude przez regionalny endpoint w UE.
+**Który LLM liczymy:** demo działa na Groq (`openai/gpt-oss-120b`, 0,15 / 0,60 USD za mln tokenów — przy założeniach poniżej to ok. 15–20 USD/mies.). Infrastruktura Groq jest jednak w USA, a produkcja z danymi mieszkańców wymaga LLM w UE (sekcja 10), więc koszt liczymy dla wariantu produkcyjnego: Claude przez regionalny endpoint w UE.
+
+**Limity Groq w demo:** darmowy plan daje dla `gpt-oss-120b` 30 zapytań i 8 tys. tokenów na minutę. Jedno pełne dopasowanie (intake + rerank) na obecnym korpusie z mocka to ok. 4–5 tys. tokenów, czyli 1–2 dopasowania na minutę. Na prezentację z kilkoma osobami naraz potrzebny jest plan Developer (250 tys. tokenów na minutę, płatność za zużycie).
 
 Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tokenów (wejście / wyjście), Claude Sonnet 5.5 to 2 / 10 USD, endpoint regionalny w UE +10%, Batch API daje −50%.
 

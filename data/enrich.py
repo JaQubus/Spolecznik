@@ -16,7 +16,7 @@ import sys
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from common import AREAS, CROSS, GROUPS, GROQ_MODEL, OUT, groq_json, innovation_text, read_json, taxonomy_prompt, write_json
+from common import AREAS, CROSS, GROUPS, GROQ_FAST, OUT, groq_json, innovation_text, read_json, taxonomy_prompt, write_json
 
 WORKERS = 4  # darmowy plan Groq ma niskie limity na minutę; 429 i tak ponawia groq_chat
 
@@ -80,7 +80,7 @@ FACTS_TOOL = {
 }
 
 
-def call_tool(system: str, tool: dict, prompt: str, model: str = GROQ_MODEL) -> dict:
+def call_tool(system: str, tool: dict, prompt: str, model: str = GROQ_FAST) -> dict:
     """Wynik w kształcie tool["input_schema"] (tryb JSON Groq). Wspólne dla enrich.py i eval.py."""
     return groq_json(system, tool["input_schema"], prompt, model=model)
 

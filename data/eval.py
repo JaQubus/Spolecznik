@@ -21,7 +21,7 @@ from collections import Counter
 
 import numpy as np
 
-from common import CROSS, AREAS, GROUPS, OUT, RAW, ROOT, innovation_text, read_json, taxonomy_prompt, write_json
+from common import CROSS, AREAS, GROUPS, GROQ_QUALITY, OUT, RAW, ROOT, innovation_text, read_json, taxonomy_prompt, write_json
 from embed import Embedder
 from enrich import call_tool
 
@@ -180,7 +180,8 @@ def main() -> None:
             cands = "\n".join(f'<kandydat id="{slugs[i]}"><tytul>{innovations[i]["title"]}</tytul>{texts[i]}</kandydat>'
                               for i in r_hyb)
             out = call_tool(RERANK_SYSTEM, RERANK_TOOL,
-                            f"<potrzeba>{json.dumps(card, ensure_ascii=False)}</potrzeba>\n<gmina>brak danych</gmina>\n<kandydaci>\n{cands}\n</kandydaci>")
+                            f"<potrzeba>{json.dumps(card, ensure_ascii=False)}</potrzeba>\n<gmina>brak danych</gmina>\n<kandydaci>\n{cands}\n</kandydaci>",
+                            model=GROQ_QUALITY)
             allowed = {slugs[i] for i in r_hyb}
             items = sorted((x for x in out["items"] if x["id"] in allowed), key=lambda x: -x["fit"])
             is_gap = (items[0]["fit"] if items else 0) < GAP_THRESHOLD
