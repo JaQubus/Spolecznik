@@ -9,7 +9,7 @@ import { keywordSearch, similarNeeds, upsertIndex } from "./search";
 import { newStatusCode } from "./status-code";
 import { createAdminClient } from "./supabase/admin";
 
-type MatchInput = { card: NeedCard; text: string; gmina?: string };
+type MatchInput = { card: NeedCard; text: string; gmina?: string; teryt?: string };
 
 const CANDIDATES = 15;
 
@@ -17,13 +17,13 @@ const CANDIDATES = 15;
  * Społecznik·Dopasuj (README 5.1, kroki 4–7): wyszukiwanie po lematach → rerank z kontekstem gminy →
  * zapis potrzeby z kodem zgłoszenia → indeksowanie potrzeby, żeby kolejne zgłoszenia ją znalazły.
  */
-export async function runMatch({ card, text, gmina }: MatchInput): Promise<MatchResponse> {
+export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promise<MatchResponse> {
   const supabase = createAdminClient();
 
   // Szukamy, zanim zapiszemy nową potrzebę — dzięki temu nie znajdzie samej siebie.
-  // Pole „Gmina” wpisane ręcznie ma pierwszeństwo przed tym, co model wyczytał z opisu.
+  // Pole „Gmina” ma pierwszeństwo przed tym, co model wyczytał z opisu; gdy go nie znamy (literówka, wieś), bierzemy gminę z opisu.
   const [gminaRow, innovationHits, expertHits, callHits, similar] = await Promise.all([
-    findGmina(gmina || card.gmina),
+    findGmina(gmina, teryt).then((g) => g ?? findGmina(card.gmina)),
     keywordSearch("innowacja", card.keywords, CANDIDATES),
     keywordSearch("ekspert", card.keywords, 5),
     keywordSearch("nabor", card.keywords, 5),
