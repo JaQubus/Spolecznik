@@ -1,4 +1,4 @@
-"""Wzbogacanie LLM (Haiku, równolegle), README sekcja 8.4.
+"""Wzbogacanie LLM (Groq przez common.groq_json, równolegle), README sekcja 8.4.
 
 Dla każdej innowacji: tagi obu osi, tematy przekrojowe, 10–20 lematów,
 streszczenie w tekście łatwym do czytania.
@@ -16,11 +16,9 @@ import sys
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from anthropic import Anthropic
+from common import AREAS, CROSS, GROUPS, GROQ_FAST, OUT, groq_json, innovation_text, read_json, taxonomy_prompt, write_json
 
-from common import AREAS, CROSS, GROUPS, HAIKU, OUT, innovation_text, read_json, taxonomy_prompt, write_json
-
-WORKERS = 8
+WORKERS = 4  # darmowy plan Groq ma niskie limity na minutę; 429 i tak ponawia groq_chat
 
 INNOVATION_SYSTEM = f"""Jesteś analitykiem Małopolskiego Hubu Innowacji Społecznych.
 Opisujesz innowację społeczną z Biblioteki ROPS, żeby dało się ją wyszukać i zrozumieć.
@@ -82,20 +80,9 @@ FACTS_TOOL = {
 }
 
 
-def call_tool(client: Anthropic, system: str, tool: dict, prompt: str, model: str = HAIKU) -> dict:
-    msg = client.messages.create(
-        model=model,
-        max_tokens=1500,
-        # Statyczny prompt z taksonomią jest wspólny dla wszystkich wywołań — cache'ujemy go.
-        system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-        tools=[tool],
-        tool_choice={"type": "tool", "name": tool["name"]},
-        messages=[{"role": "user", "content": prompt}],
-    )
-    for block in msg.content:
-        if block.type == "tool_use":
-            return block.input
-    raise RuntimeError("Model nie zwrócił wyniku narzędzia")
+def call_tool(system: str, tool: dict, prompt: str, model: str = GROQ_FAST) -> dict:
+    """Wynik w kształcie tool["input_schema"] (tryb JSON Groq). Wspólne dla enrich.py i eval.py."""
+    return groq_json(system, tool["input_schema"], prompt, model=model)
 
 
 def content_hash(i: dict) -> str:
@@ -120,7 +107,7 @@ def clean_tags(raw: dict, i: dict) -> dict:
     }
 
 
-def enrich_innovations(client: Anthropic, innovations: list[dict], limit: int | None) -> None:
+def enrich_innovations(innovations: list[dict], limit: int | None) -> None:
     path = OUT / "enriched.json"
     cache: dict = read_json(path) if path.exists() else {}
     todo = [i for i in innovations if cache.get(i["slug"], {}).get("hash") != content_hash(i)]
@@ -130,7 +117,7 @@ def enrich_innovations(client: Anthropic, innovations: list[dict], limit: int | 
 
     def work(i: dict) -> tuple[str, dict]:
         prompt = f"<kategorie>{', '.join(i.get('categories', []))}</kategorie>\n<innowacja>{innovation_text(i)}</innowacja>"
-        return i["slug"], {"hash": content_hash(i), **clean_tags(call_tool(client, INNOVATION_SYSTEM, INNOVATION_TOOL, prompt), i)}
+        return i["slug"], {"hash": content_hash(i), **clean_tags(call_tool(INNOVATION_SYSTEM, INNOVATION_TOOL, prompt), i)}
 
     by_slug = {i["slug"]: i for i in innovations}
     done = 0
@@ -152,7 +139,7 @@ def enrich_innovations(client: Anthropic, innovations: list[dict], limit: int | 
     print(f"Zapisano out/enriched.json ({len(cache)} innowacji)")
 
 
-def enrich_reports(client: Anthropic) -> None:
+def enrich_reports() -> None:
     chunks_path = OUT / "doc_chunks.json"
     if not chunks_path.exists():
         print("Brak out/doc_chunks.json — pomijam fakty z raportów (uruchom parse_pdfs.py)")
@@ -174,7 +161,7 @@ def enrich_reports(client: Anthropic) -> None:
             body.append(f'<fragment strona="{c["page"]}">{c["text"]}</fragment>')
             size += len(c["text"])
         try:
-            out = call_tool(client, FACTS_SYSTEM, FACTS_TOOL, f"Raport: {title}\n" + "\n".join(body))
+            out = call_tool(FACTS_SYSTEM, FACTS_TOOL, f"Raport: {title}\n" + "\n".join(body))
         except Exception as e:
             print(f"  ! {title}: {e}")
             continue
@@ -185,12 +172,11 @@ def enrich_reports(client: Anthropic) -> None:
 
 
 def main() -> None:
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        sys.exit("Brak ANTHROPIC_API_KEY w ../.env.local")
+    if not os.environ.get("GROQ_API_KEY"):
+        sys.exit("Brak GROQ_API_KEY w ../.env.local")
     limit = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else None
-    client = Anthropic(max_retries=5)
-    enrich_innovations(client, read_json(OUT / "innovations.json"), limit)
-    enrich_reports(client)
+    enrich_innovations(read_json(OUT / "innovations.json"), limit)
+    enrich_reports()
 
 
 if __name__ == "__main__":

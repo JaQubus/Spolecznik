@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { EMPTY_GMINA, GminaField, type GminaValue } from "@/components/gmina-field";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { GminaOption } from "@/lib/gminy";
 import type { MatchResponse, NeedCard } from "@/lib/schemas";
 import { MatchResults } from "./match-results";
 import { VoiceInput } from "./voice-input";
@@ -27,7 +28,7 @@ async function post<T>(url: string, body: unknown): Promise<T> {
 
 const appendText = (prev: string, chunk: string) => (prev ? `${prev.trimEnd()} ${chunk}` : chunk);
 
-export function DescribeFlow({ initialText = "", initialGmina = "" }: { initialText?: string; initialGmina?: string }) {
+export function DescribeFlow({ gminy, initialText = "", initialGmina = EMPTY_GMINA }: { gminy: GminaOption[]; initialText?: string; initialGmina?: GminaValue }) {
   const [step, setStep] = useState<Step>({ kind: "input" });
   const [text, setText] = useState(initialText);
   const [gmina, setGmina] = useState(initialGmina);
@@ -60,7 +61,9 @@ export function DescribeFlow({ initialText = "", initialGmina = "" }: { initialT
 
   async function match(card: NeedCard, rawText: string) {
     setStatus("Szukam rozwiązań. To może potrwać kilkanaście sekund.");
-    const result = await post<MatchResponse>("/api/match", { card, text: rawText, gmina: gmina || undefined });
+    const result = await post<MatchResponse>("/api/match", {
+      card, text: rawText, gmina: gmina.text || undefined, teryt: gmina.teryt ?? undefined,
+    });
     setStep({ kind: "results", card, result });
     setStatus("");
   }
@@ -75,7 +78,7 @@ export function DescribeFlow({ initialText = "", initialGmina = "" }: { initialT
     setFieldError(null);
     run(async () => {
       setStatus("Czytam opis…");
-      const r = await post<IntakeResponse>("/api/intake", { text, gmina: gmina || undefined });
+      const r = await post<IntakeResponse>("/api/intake", { text, gmina: gmina.text || undefined });
       setPiiFound(r.piiFound);
       if (r.needsFollowUp) {
         setStep({ kind: "followUp", card: r.card });
@@ -156,7 +159,9 @@ export function DescribeFlow({ initialText = "", initialGmina = "" }: { initialT
           <div className="space-y-2">
             <Label htmlFor="gmina">Gmina</Label>
             <FieldHint id="gmina-pomoc">Nieobowiązkowo.</FieldHint>
-            <Input id="gmina" autoComplete="address-level2" aria-describedby="gmina-pomoc" value={gmina} onChange={(e) => setGmina(e.target.value)} className="max-w-sm" />
+            <div className="max-w-sm">
+              <GminaField id="gmina" aria-describedby="gmina-pomoc" options={gminy} value={gmina} onValueChange={setGmina} />
+            </div>
           </div>
           <Button type="submit" aria-disabled={busy || undefined} className="w-full sm:w-auto">
             {busy ? "Szukam…" : "Znajdź rozwiązania"}

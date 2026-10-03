@@ -8,20 +8,20 @@ uv sync
 uv run scrape_library.py   # innowacje z ../dane/mock (domyślnie; --live = prawdziwa Biblioteka ROPS)
 uv run bdl.py              # profile 183 gmin z API BDL GUS (bez klucza: limity, skrypt sam czeka)
 uv run parse_pdfs.py       # PDF-y z raw/docs/ → taxonomy, canvas, fragmenty raportów
-uv run enrich.py           # Haiku: obszary, grupy, lematy, ETR          (ANTHROPIC_API_KEY)
+uv run enrich.py           # Groq: obszary, grupy, lematy, ETR           (GROQ_API_KEY)
 uv run seed_synthetic.py   # 200 potrzeb, 10 ekspertów, 2 nabory, pomysły, testy (bez API)
-uv run embed.py            # embeddingi + ładowanie do Supabase          (OPENAI_API_KEY, SUPABASE_DB_URL)
-uv run eval.py             # hit@3, MRR@5, wykrywanie luk                (oba klucze)
+uv run embed.py            # ładowanie do Supabase (bez embeddingów)     (SUPABASE_DB_URL)
+uv run eval.py             # hit@3, MRR@5, wykrywanie luk                (GROQ_API_KEY)
 
-uv run seed_innovations.py # szybki seed Biblioteki z out/innovations.json, bez embeddingów (SUPABASE_DB_URL)
+uv run seed_innovations.py # szybki seed Biblioteki z out/innovations.json, bez kluczy API (SUPABASE_DB_URL)
 uv run import_powiaty.py   # 22 powiaty × 112 wskaźników → powiaty_wskazniki (SUPABASE_DB_URL)
 uv run import_powiaty.py --sql  # to samo jako out/powiaty.sql do wklejenia w SQL Editor Supabase
 uv run powiaty_geo.py      # kształty powiatów (PRG GUGiK) → ../lib/powiaty-shapes.json, tylko gdy zmienią się granice
 ```
 
-- Przed `embed.py` w Supabase muszą być migracje `0001`–`0004`; przed `import_powiaty.py` także `0005`, a lista „Ucz się” to migracja `0006` (materiały są w tabeli `materials`, nowy materiał = nowy wiersz).
+- Przed `embed.py` w Supabase muszą być migracje `0001`–`0006`; przed `import_powiaty.py` także `0007`, a lista „Ucz się” to migracja `0008` (materiały są w tabeli `materials`, nowy materiał = nowy wiersz).
 - `embed.py` jest idempotentny: innowacje upsertuje po slugu (usuwa te spoza `out/innovations.json`), dane syntetyczne kasuje i wstawia od nowa.
-- Wyniki LLM i embeddingi są cache'owane (`out/enriched.json`, `raw/*_cache.json`), więc ponowne uruchomienie płaci tylko za zmiany.
+- Wyniki LLM są cache'owane (`out/enriched.json`, `raw/*_cache.json`), więc ponowne uruchomienie płaci tylko za zmiany.
 - Wszystko, co pochodzi z mocka albo z `seed_synthetic.py`, ma `synthetic = true`.
 - `golden_set.jsonl` odwołuje się do slugów z mocka. Po przejściu na `--live` trzeba go napisać od nowa.
 

@@ -1,0 +1,325 @@
+{
+  "pudelko-wspomnien": {
+    "hash": "234b0cb199eb",
+    "areas": [
+      "seniorzy",
+      "zdrowie_psychiczne"
+    ],
+    "groups": [
+      "seniorzy"
+    ],
+    "cross": [
+      "samotnosc"
+    ],
+    "lemmas": [
+      "senior",
+      "otępienie",
+      "pamięć",
+      "reminiscencja",
+      "pudełko",
+      "przedmiot",
+      "stymulacja",
+      "poznanie",
+      "opiekun",
+      "dom",
+      "zaburzenie",
+      "starszy",
+      "wspomnienie",
+      "codzienność",
+      "terapia",
+      "opieka",
+      "rodzina"
+    ],
+    "etr_summary": "Pudełko Wspomnień to zestaw pudełek z przedmiotami z lat 60‑80. Służy do prowadzenia zajęć reminiscencyjnych dla seniorów z łagodnym otępieniem. Pomaga osobom z zaburzeniami poznawczymi i ich opiekunom w domu."
+  },
+  "sasiedzki-dzwonek": {
+    "hash": "3b3c75cbd2fc",
+    "areas": [
+      "seniorzy"
+    ],
+    "groups": [
+      "seniorzy"
+    ],
+    "cross": [
+      "samotnosc"
+    ],
+    "lemmas": [
+      "senior",
+      "samotność",
+      "wieś",
+      "wolontariat",
+      "kontakt",
+      "opiekun",
+      "ops",
+      "klub seniora",
+      "ośrodek pomocy społecznej",
+      "rodzina",
+      "izolacja",
+      "starszy",
+      "mieszkanie",
+      "codzienny",
+      "pomoc"
+    ],
+    "etr_summary": "Sąsiedzki Dzwonek to sieć wolontariuszy, którzy codziennie dzwonią do samotnych seniorów. Dzwonią o stałej porze i sprawdzają, czy wszystko w porządku. Pomaga to osobom 75+, które mieszkają same i nie mają bliskich w pobliżu. Projekt może prowadzić ośrodek pomocy społecznej lub klub seniora."
+  },
+  "senior-w-sieci-gminy": {
+    "hash": "fd1826c919fb",
+    "areas": [
+      "seniorzy",
+      "zdrowie"
+    ],
+    "groups": [
+      "seniorzy"
+    ],
+    "cross": [
+      "wykluczenie_cyfrowe",
+      "dostep_do_uslug"
+    ],
+    "lemmas": [
+      "senior",
+      "cyfrowy",
+      "wykluczenie",
+      "e‑recepta",
+      "e‑wizyta",
+      "usługa publiczna",
+      "wieś",
+      "biblioteka",
+      "asystent",
+      "technologia",
+      "zdrowie",
+      "mobilność",
+      "internet",
+      "pomoc"
+    ],
+    "etr_summary": "Senior w Sieci Gminy to cyfrowy asystent w świetlicach wiejskich. Pomaga osobom 65+ załatwiać sprawy urzędowe i medyczne online. Dzięki temu seniorzy z małych miejscowości mogą korzystać z e‑recept, e‑wizyt i innych usług publicznych."
+  },
+  "opiekun-na-zmiane": {
+    "hash": "5cafd4e5439f",
+    "areas": [
+      "rodzina_piecza",
+      "seniorzy"
+    ],
+    "groups": [
+      "seniorzy"
+    ],
+    "cross": [
+      "samotnosc",
+      "wspolpraca_miedzysektorowa"
+    ],
+    "lemmas": [
+      "opiekun",
+      "rodzina",
+      "senior",
+      "wypalenie",
+      "przeciążenie",
+      "odpoczynek",
+      "zastępstwo",
+      "szkolenie",
+      "animator",
+      "koordynacja",
+      "wsparcie",
+      "opieka",
+      "choroba",
+      "lokalny",
+      "usługa"
+    ],
+    "etr_summary": "Opiekun na Zmianę to graf zastępstw między opiekunami rodzinnymi. Lokalny animator organizuje wymianę i krótkie szkolenia. Dzięki temu opiekunowie mogą odpocząć i uniknąć wypalenia. Projekt pomaga seniorom i ich rodzinom."
+  },
+  "mapa-ciszy": {
+    "hash": "19edf95df23b",
+    "areas": [
+      "niepelnosprawnosc",
+      "zdrowie_psychiczne"
+    ],
+    "groups": [
+      "niepelnosprawnosc_intelektualna",
+      "dzieci_mlodziez_rodzina"
+    ],
+    "cross": [
+      "dostep_do_uslug"
+    ],
+    "lemmas": [
+      "autyzm",
+      "sensoryczny",
+      "przeciążenie",
+      "mapa",
+      "aplikacja",
+      "miejsca",
+      "sklep",
+      "urząd",
+      "przychodnia",
+      "rodzina",
+      "niepełnosprawność",
+      "spektrum",
+      "samodzielność",
+      "wsparcie"
+    ],
+    "etr_summary": "Mapa Ciszy to aplikacja mobilna pokazująca ciche miejsca w mieście. Pomaga osobom w spektrum autyzmu i z niepełnosprawnością intelektualną korzystać z przestrzeni publicznej. Rodziny i opiekunowie mogą łatwo znaleźć przyjazne miejsca. Wspiera samodzielność i komfort użytkowników."
+  },
+  "krok-po-kroku-do-pracy": {
+    "hash": "9c71adf7b304",
+    "areas": [
+      "niepelnosprawnosc"
+    ],
+    "groups": [
+      "niepelnosprawnosc_intelektualna"
+    ],
+    "cross": [
+      "wspolpraca_miedzysektorowa",
+      "dostep_do_uslug"
+    ],
+    "lemmas": [
+      "niepełnosprawność",
+      "inteligencja",
+      "praca",
+      "zatrudnienie",
+      "trener",
+      "instrukcja",
+      "obrazek",
+      "wsparcie",
+      "wtz",
+      "zaz",
+      "urząd pracy",
+      "aktywnosc",
+      "rezygnacja",
+      "lekka",
+      "umiarkowana",
+      "dorosły",
+      "umiejętność",
+      "adaptacja",
+      "szkolenie",
+      "rynek"
+    ],
+    "etr_summary": "Krok po Kroku do Pracy to zestaw obrazkowych instrukcji i trenera pracy dla dorosłych z lekką i umiarkowaną niepełnosprawnością intelektualną. Pomaga im utrzymać się w pierwszych tygodniach zatrudnienia. Wdrażają go organizacje wsparcia, pracodawcy i urzędy pracy."
+  },
+  "glosny-przystanek": {
+    "hash": "b3432fa23305",
+    "areas": [
+      "niepelnosprawnosc"
+    ],
+    "groups": [
+      "niepelnosprawnosc_sensoryczna"
+    ],
+    "cross": [
+      "wykluczenie_cyfrowe",
+      "dostep_do_uslug"
+    ],
+    "lemmas": [
+      "niewidomy",
+      "slabowidzacy",
+      "przystanek",
+      "rozklad jazdy",
+      "autobus",
+      "informacja",
+      "dostepnosc",
+      "telefon",
+      "gmina",
+      "przewoznik",
+      "transport publiczny",
+      "aplikacja",
+      "nakladka"
+    ],
+    "etr_summary": "Głośny Przystanek to prosta nakładka na rozkład jazdy. Pokazuje odjazdy autobusów po przybliżeniu telefonu. Pomaga osobom niewidomym i słabowidzącym w korzystaniu z transportu publicznego. Może wprowadzić ją gmina lub przewoźnik."
+  },
+  "dotykowy-przewodnik": {
+    "hash": "54e8bacdb56c",
+    "areas": [
+      "niepelnosprawnosc"
+    ],
+    "groups": [
+      "niepelnosprawnosc_sensoryczna",
+      "dzieci_mlodziez_rodzina"
+    ],
+    "cross": [
+      "wykluczenie_cyfrowe",
+      "dostep_do_uslug",
+      "wspolpraca_miedzysektorowa"
+    ],
+    "lemmas": [
+      "niewidomy",
+      "dotyk",
+      "przewodnik",
+      "druk 3d",
+      "zabytek",
+      "brajl",
+      "audiodeskrypcja",
+      "kod qr",
+      "turystyka",
+      "kultura",
+      "dziecko",
+      "muzeum",
+      "szkoła",
+      "dostęp",
+      "sensoryczny",
+      "region",
+      "oferta",
+      "lokalny",
+      "technologia",
+      "słabowidzący"
+    ],
+    "etr_summary": "Dotykowy Przewodnik to wydruki 3D zabytków z opisem w brajlu i nagraniem audio dostępnym po zeskanowaniu kodu QR. Pomaga osobom niewidomym i słabowidzącym, także dzieciom szkolnym, lepiej poznawać atrakcje turystyczne i kulturalne regionu. Mogą go używać muzea, centra informacji turystycznej i szkoły."
+  },
+  "podjazd-na-telefon": {
+    "hash": "8215d915a796",
+    "areas": [
+      "niepelnosprawnosc"
+    ],
+    "groups": [
+      "ograniczona_mobilnosc"
+    ],
+    "cross": [
+      "wykluczenie_cyfrowe",
+      "dostep_do_uslug",
+      "wspolpraca_miedzysektorowa"
+    ],
+    "lemmas": [
+      "podjazd",
+      "rampa",
+      "mobilny",
+      "wózek",
+      "bariera",
+      "architektura",
+      "budynek",
+      "wydarzenie",
+      "sms",
+      "formularz",
+      "wypożyczalnia",
+      "dowóz",
+      "osoba",
+      "niepełnosprawność",
+      "dostęp",
+      "usługa",
+      "transport",
+      "pomoc",
+      "ruch"
+    ],
+    "etr_summary": "Podjazd na Telefon to wypożyczalnia mobilnych ramp. Rampy są dostarczane na żądanie po SMS lub formularzu. Pomagają osobom na wózkach pokonać bariery w budynkach i uczestniczyć w wydarzeniach."
+  },
+  "reka-na-klamce": {
+    "hash": "ba1a78ba4b9b",
+    "areas": [
+      "niepelnosprawnosc"
+    ],
+    "groups": [
+      "ograniczona_mobilnosc"
+    ],
+    "cross": [
+      "dostep_do_uslug"
+    ],
+    "lemmas": [
+      "niedowład",
+      "ręka",
+      "klamka",
+      "otwieracz",
+      "samodzielność",
+      "mieszkanie",
+      "osoba",
+      "mobilność",
+      "terapia zajęciowa",
+      "warsztat",
+      "fablab",
+      "niepełnosprawność"
+    ],
+    "etr_summary": "Ręka na Klamce to tani otwieracz drzwi, który można zamontować samodzielnie. Umożliwia osobom z niedowładem kończyn górnych samodzielne wchodzenie i wychodzenie z mieszkania. Projekt może wprowadzić warsztat terapii zajęciowej, fablab lub organizacja pozarządowa."
+  }
+}

@@ -26,7 +26,7 @@ async function listMaterials(): Promise<Material[]> {
     .select("id, title, description, audience, kind, url, publisher, year")
     .order("sort")
     .order("title");
-  if (isMissingTable(error)) return []; // migracja 0006 jeszcze nie uruchomiona
+  if (isMissingTable(error)) return []; // migracja 0008 jeszcze nie uruchomiona
   if (error) throw error;
   return data as Material[];
 }

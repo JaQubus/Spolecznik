@@ -1,39 +1,18 @@
 import "server-only";
-import { openai } from "@ai-sdk/openai";
-import { embed } from "ai";
 import type { CardKind } from "./schemas";
 import { createAdminClient } from "./supabase/admin";
 
-// Musi zgadzać się z wymiarem vector(...) w migracji.
-const embeddingModel = openai.embeddingModel("text-embedding-3-small");
+// Bez embeddingów: cały AI idzie przez Groq, a Groq nie ma modeli embeddingów (migracja 0005).
+// Wyszukujemy po słowach kluczowych w formie podstawowej z LLM, a znaczenie ocenia rerank.
 
-export async function embedText(text: string): Promise<number[]> {
-  const { embedding } = await embed({ model: embeddingModel, value: text });
-  return embedding;
-}
+/** similarity = jaka część słów kluczowych zapytania pasuje do karty (0–1). */
+export type SearchHit = { ref_id: string; title: string; teryt: string | null; score: number; similarity: number };
 
-/** Buduje zapytanie websearch: 'senior or samotność or "transport publiczny"'. */
-export function keywordQuery(keywords: string[]): string {
-  return keywords
-    .map((k) => k.trim().toLowerCase().replace(/"/g, ""))
-    .filter(Boolean)
-    .map((k) => (k.includes(" ") ? `"${k}"` : k))
-    .join(" or ");
-}
-
-export type SearchHit = { ref_id: string; title: string; score: number; similarity: number };
-
-export async function hybridSearch(
-  kind: CardKind,
-  keywords: string[],
-  embedding: number[],
-  count = 15,
-): Promise<SearchHit[]> {
-  const supabase = createAdminClient();
-  const { data, error } = await supabase.rpc("hybrid_search", {
+export async function keywordSearch(kind: CardKind, keywords: string[], count = 15): Promise<SearchHit[]> {
+  if (keywords.length === 0) return [];
+  const { data, error } = await createAdminClient().rpc("keyword_search", {
     p_kind: kind,
-    p_keywords: keywordQuery(keywords),
-    p_embedding: JSON.stringify(embedding),
+    p_keywords: keywords,
     p_count: count,
   });
   if (error) throw error;
@@ -42,14 +21,45 @@ export async function hybridSearch(
 
 export type SimilarNeed = { need_id: string; teryt: string | null; gmina: string | null; similarity: number };
 
-export async function similarNeeds(embedding: number[], minSimilarity: number): Promise<SimilarNeed[]> {
-  const supabase = createAdminClient();
-  const { data, error } = await supabase.rpc("similar_needs", {
-    p_embedding: JSON.stringify(embedding),
+export async function similarNeeds(keywords: string[], minSimilarity: number): Promise<SimilarNeed[]> {
+  if (keywords.length === 0) return [];
+  const { data, error } = await createAdminClient().rpc("similar_needs_kw", {
+    p_keywords: keywords,
     p_min_similarity: minSimilarity,
   });
   if (error) throw error;
   return (data ?? []) as SimilarNeed[];
+}
+
+/**
+ * Zapytanie po prefiksach słów: 'samotno:* | senior:*'. Fragmenty raportów nie mają lematów,
+ * a ucięcie końcówki łapie polskie odmiany („samotność” → „samotności”, „żłobek” → „żłobku”).
+ */
+export function prefixQuery(keywords: string[]): string {
+  const words = keywords
+    .flatMap((k) => k.toLowerCase().split(/\s+/))
+    .map((w) => w.replace(/[^\p{L}\p{N}]/gu, ""))
+    .filter((w) => w.length >= 3)
+    .map((w) => `${w.slice(0, Math.max(4, w.length - 2))}:*`);
+  return [...new Set(words)].join(" | ");
+}
+
+export type DocChunkHit = {
+  id: string;
+  doc_title: string;
+  year: number | null;
+  url: string | null;
+  page: number | null;
+  text: string;
+  score: number;
+};
+
+export async function searchDocChunks(keywords: string[], count = 6): Promise<DocChunkHit[]> {
+  const query = prefixQuery(keywords);
+  if (!query) return [];
+  const { data, error } = await createAdminClient().rpc("search_doc_chunks", { p_query: query, p_count: count });
+  if (error) throw error;
+  return (data ?? []) as DocChunkHit[];
 }
 
 export type IndexEntry = {
@@ -62,7 +72,6 @@ export type IndexEntry = {
   targetGroups?: string[];
   teryt?: string | null;
   active?: boolean;
-  embedding: number[];
 };
 
 /** Dodaje albo aktualizuje kartę we wspólnym indeksie (unikalność po kind + ref_id). */
@@ -79,7 +88,6 @@ export async function upsertIndex(e: IndexEntry): Promise<void> {
       target_groups: e.targetGroups ?? [],
       teryt: e.teryt ?? null,
       active: e.active ?? true,
-      embedding: JSON.stringify(e.embedding),
     },
     { onConflict: "kind,ref_id" },
   );

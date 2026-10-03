@@ -31,7 +31,7 @@ export async function getKondycjaData(): Promise<PowiatyData> {
     .order("rok", { ascending: false })
     .limit(1)
     .maybeSingle();
-  // Bez migracji 0005 strona pokazuje „Brak danych o powiatach” zamiast błędu 500.
+  // Bez migracji 0007 strona pokazuje „Brak danych o powiatach” zamiast błędu 500.
   if (isMissingTable(yearError)) return { year: null, powiaty: [], values: {} };
   if (yearError) throw yearError;
   if (!latest) return { year: null, powiaty: [], values: {} };

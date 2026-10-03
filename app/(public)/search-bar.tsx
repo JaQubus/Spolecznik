@@ -2,17 +2,20 @@
 
 import { Search } from "lucide-react";
 import { useRef, useState } from "react";
+import { EMPTY_GMINA, GminaField } from "@/components/gmina-field";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { GminaOption } from "@/lib/gminy";
 
 /**
  * Główne wejście ze strony startowej (SearchBar.md): dwa zwykłe pola i jedyny zielony przycisk na stronie.
  * Wysyła GET na /opisz, które od razu zaczyna szukać.
  */
-export function SearchBar() {
+export function SearchBar({ gminy }: { gminy: GminaOption[] }) {
   const [error, setError] = useState<string | null>(null);
+  const [gmina, setGmina] = useState(EMPTY_GMINA);
   const problem = useRef<HTMLInputElement>(null);
 
   return (
@@ -51,7 +54,16 @@ export function SearchBar() {
       <div className="flex flex-col gap-2 md:w-64">
         <Label htmlFor="gmina-start">Gmina</Label>
         <FieldHint id="gmina-start-pomoc">Nieobowiązkowo.</FieldHint>
-        <Input id="gmina-start" name="gmina" autoComplete="address-level2" aria-describedby="gmina-start-pomoc" />
+        <GminaField
+          id="gmina-start"
+          name="gmina"
+          aria-describedby="gmina-start-pomoc"
+          options={gminy}
+          value={gmina}
+          onValueChange={setGmina}
+        />
+        {/* Wyłączone pole nie trafia do adresu: bez wyboru zostaje samo ?gmina=. */}
+        <input type="hidden" name="teryt" value={gmina.teryt ?? ""} disabled={!gmina.teryt} />
       </div>
       <Button type="submit" className="w-full md:w-auto">Szukaj</Button>
     </form>

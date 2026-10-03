@@ -1,7 +1,7 @@
 """Szybki seed innowacji do bazy deweloperskiej — bez embeddingów i bez kluczy API.
 
 Dla kogo: ktoś, kto chce zobaczyć Bibliotekę lokalnie, zanim przejdzie cały pipeline
-(enrich.py → embed.py wymagają kluczy Anthropic i OpenAI). Ładuje out/innovations.json
+(enrich.py wymaga klucza Groq). Ładuje out/innovations.json
 (domyślnie zbudowany przez scrape_library.py z ../dane/mock/innowacje_mock.json),
 więc to wciąż jedno źródło danych: tabela innovations.
 

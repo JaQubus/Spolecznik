@@ -6,6 +6,7 @@ import { listInnovations } from "@/lib/innovations";
 import { formatNumber, plural } from "@/lib/pl";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { GROUP_LABELS } from "@/lib/taxonomy";
+import { AskLibrary } from "./ask-library";
 import { LibraryFilters } from "./filters";
 import { LINK as linkClass, first, isGroup } from "./shared";
 
@@ -126,6 +127,14 @@ export default async function Page(props: PageProps<"/biblioteka">) {
           </>
         )}
       </section>
+
+      {connected && (
+        <section id="zapytaj" aria-labelledby="zapytaj-tytul" className="scroll-mt-4 space-y-4">
+          <h2 id="zapytaj-tytul" className="text-3xl font-bold">Zapytaj Bibliotekę</h2>
+          <p className="max-w-2xl text-lg">Zadaj pytanie o sytuację w Małopolsce albo o innowacje społeczne.</p>
+          <AskLibrary />
+        </section>
+      )}
     </div>
   );
 }

@@ -7,8 +7,15 @@ import "./globals.css";
 
 // latin-ext jest potrzebne dla polskich znaków.
 // Atkinson Hyperlegible: projektowany dla osób słabowidzących (patrz docs/design-system).
-const atkinson = Atkinson_Hyperlegible_Next({ variable: "--font-atkinson", subsets: ["latin", "latin-ext"], weight: ["400", "700"], style: ["normal", "italic"] });
-const atkinsonMono = Atkinson_Hyperlegible_Mono({ variable: "--font-atkinson-mono", subsets: ["latin", "latin-ext"], weight: ["500"] });
+// Next nie ma metryk tych krojów do wyliczenia zastępczego fontu, więc fallback podajemy wprost.
+const atkinson = Atkinson_Hyperlegible_Next({
+  variable: "--font-atkinson", subsets: ["latin", "latin-ext"], weight: ["400", "700"], style: ["normal", "italic"],
+  adjustFontFallback: false, fallback: ["system-ui", "Arial", "sans-serif"],
+});
+const atkinsonMono = Atkinson_Hyperlegible_Mono({
+  variable: "--font-atkinson-mono", subsets: ["latin", "latin-ext"], weight: ["500"],
+  adjustFontFallback: false, fallback: ["ui-monospace", "Consolas", "monospace"],
+});
 
 export const metadata: Metadata = {
   title: { default: "Społecznik", template: "%s · Społecznik" },

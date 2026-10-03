@@ -181,9 +181,9 @@ html.a11y-simple body { font-size: 1.25rem; line-height: 2rem; }
 @custom-variant simple (&:where(.a11y-simple, .a11y-simple *));
 
 /* Pas na całą szerokość okna wewnątrz kontenera main, bez poziomego przewijania (cień nie zwiększa szerokości strony). */
+/* Tło do krawędzi ekranu tylko w poziomie. Bez clip-path, które ucinało rozwijane listy (podpowiedzi gmin) na dole pasa. */
 @utility full-bleed {
-  box-shadow: 0 0 0 100vmax var(--bleed, var(--surface-alt));
-  clip-path: inset(0 -100vmax);
+  border-image: conic-gradient(var(--bleed, var(--surface-alt)) 0 0) fill 0 / / 0 100vmax;
 }
 
 @keyframes mic-pulse {

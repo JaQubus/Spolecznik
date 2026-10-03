@@ -81,3 +81,11 @@ export async function innovationsForArea(area: (typeof MWS_AREAS)[number], group
   if (error) throw error;
   return data as InnovationListItem[];
 }
+
+/** Tytuły innowacji do list wyboru (Wdrożenie, Próba). */
+export async function innovationOptions(): Promise<{ id: string; title: string }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("innovations").select("id, title").order("title");
+  if (error) throw error;
+  return data ?? [];
+}

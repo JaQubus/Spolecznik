@@ -1,4 +1,4 @@
-"""Import wskaźników powiatów do tabeli powiaty_wskazniki (migracja 0005).
+"""Import wskaźników powiatów do tabeli powiaty_wskazniki (migracja 0007).
 
 Źródło: ../dane/powiaty/wszystkie_powiaty.csv (eksport IOSS: 22 powiaty × 112 wskaźników).
 Pliki per powiat w tym samym katalogu to duplikaty — nie są czytane.
@@ -117,7 +117,7 @@ def main() -> None:
     print(f"CSV: {len(rows)} wierszy, {n_powiaty} powiatów, {n_wsk} wskaźników → out/powiaty.json")
     if "--sql" in sys.argv:
         write_sql(rows, OUT / "powiaty.sql")
-        print("→ out/powiaty.sql (wklej w Supabase → SQL Editor po migracji 0005)")
+        print("→ out/powiaty.sql (wklej w Supabase → SQL Editor po migracji 0007)")
     else:
         load_db(rows)
 
