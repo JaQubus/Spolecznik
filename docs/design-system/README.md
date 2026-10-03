@@ -10,7 +10,6 @@ Every rule below serves **WCAG 2.1 level AA**. Where a rule cites a success crit
 - **Numbers as people say them:** "co czwarta osoba ma 65+ lat", "Dopasowanie 86 na 100", not "0.86".
 - **Errors say what to do:** "Wpisz adres e-mail w formacie nazwa@domena.pl", never "Nieprawidłowe dane".
 - **No emoji** in the interface.
-- **Tryb prosty** (`html.a11y-simple`) swaps body copy for the easy-to-read summary, sets it in `lead`, hides secondary metadata.
 - `lang="pl"` on `<html>`; mark English terms with `lang="en"`.
 
 ## Colour
@@ -118,6 +117,6 @@ From JaQubus/VibeCorner at `main@68fab36`, read only (nothing was installed, bui
 
 - **Colour values not taken:** the repo's `app/globals.css` is shadcn's stock neutral palette, not a brand. Two of its pairs fail AA: `--input` `oklch(0.922 0 0)` on white is about 1.3:1 for input edges (SC 1.4.11 needs 3:1), and `outline-ring/50` makes a half-transparent focus ring. This system's values replace them; the `--chart-*` and `--sidebar-*` variables have no counterpart here and stay as they are in the repo.
 - **Font not taken:** the code loads Geist; this system uses Atkinson Hyperlegible Next. There are no font files in the repo.
-- **Taken from the code:** the `html` class hooks (`dark`, `a11y-large`, `a11y-contrast`, `a11y-simple`), the three toggles and their labels, the five nav labels, the "hubmi.pl" wordmark, the `#tresc` skip-link target, the footer line.
+- **Taken from the code:** the `html` class hooks (`dark`, `a11y-large`, `a11y-contrast`), the two toggles and their labels, the five nav labels, the "hubmi.pl" wordmark, the `#tresc` skip-link target, the footer line.
 - **Components not built:** the shadcn primitives in `components/ui/` (button, input, textarea, select, radio-group, badge, label, card, dialog, tabs, form, separator, skeleton, sonner) and the app components (`app/(public)/opisz/voice-input.tsx`, `match-results.tsx`, `describe-flow.tsx`). The design system's own previews ran on a small hand-written React bundle (`bundle.js` / `bundle.css`), which was not copied into this repo; `reference.css` here is the matching stylesheet, a reference implementation rather than the repo's code; "Applying it to VibeCorner" lists the class changes per file.
 - No logos or icons in the repo; it uses Lucide via shadcn.
