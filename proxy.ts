@@ -27,7 +27,9 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname.startsWith("/panel")) {
+  // Konto testowe (lib/auth.ts) nie ma sesji Supabase; podpis i rolę sprawdza strona panelu (requireAdmin).
+  const testSession = request.cookies.has("spolecznik-test");
+  if (!user && !testSession && request.nextUrl.pathname.startsWith("/panel")) {
     const url = request.nextUrl.clone();
     url.pathname = "/logowanie";
     return NextResponse.redirect(url);

@@ -46,3 +46,6 @@ data/.venv/
 data/raw/*
 !data/raw/.gitkeep
 __pycache__/
+
+# Zasobnik wiedzy: lokalne zmiany z panelu w trybie bez bazy
+/.data/
