@@ -1,4 +1,4 @@
--- Splot·Dopasuj: podobieństwo w wynikach wyszukiwania + podobne potrzeby z innych gmin.
+-- hubmi.pl·Dopasuj: podobieństwo w wynikach wyszukiwania + podobne potrzeby z innych gmin.
 
 -- hybrid_search zwraca teraz też podobieństwo cosinusowe (0–1), żeby aplikacja mogła
 -- odciąć niepowiązanych ekspertów i nabory — sam wynik RRF nie mówi, czy coś w ogóle pasuje.

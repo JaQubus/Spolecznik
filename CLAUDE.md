@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# Splot — notatki dla agentów
+# hubmi.pl — notatki dla agentów
 
 Plan projektu: README.md (po polsku). Kod i identyfikatory po angielsku, teksty UI po polsku.
 

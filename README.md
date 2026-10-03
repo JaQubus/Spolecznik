@@ -1,4 +1,4 @@
-# Splot — cyfrowe serce Małopolskiego Hubu Innowacji Społecznych
+# hubmi.pl — cyfrowe serce Małopolskiego Hubu Innowacji Społecznych
 
 Plan hackathonowy · HackYeah 2026 · wyzwanie ROPS Kraków
 Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
@@ -7,7 +7,7 @@ Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
 
 ## TL;DR
 
-- **Nazwa:** **Splot**. Hasło: *Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.*
+- **Nazwa:** **hubmi.pl**. Hasło: *Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.*
 - **Idea:** każda potrzeba, innowacja, pomysł, ekspert i nabór to „karta”. Jeden silnik dopasowań (wyszukiwanie hybrydowe + rerank LLM z uzasadnieniem) splata karty ze sobą. Siedem modułów z briefu to widoki i akcje na tym samym grafie, a nie siedem osobnych aplikacji.
 - **Stack:** Next.js + TypeScript + Tailwind + shadcn/ui (Vercel) · Supabase (Postgres + pgvector + Auth + Realtime + Storage) · Claude Haiku 4.5 i Sonnet 5.5 przez Vercel AI SDK · Python (Playwright, PyMuPDF) do jednorazowego pipeline'u danych · API BDL GUS do profili gmin.
 - **Co jest nowe:**
@@ -21,11 +21,7 @@ Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
 
 ## 1. Nazwa i koncepcja
 
-**Splot** ma dwa znaczenia:
-- splatanie nici, czyli potrzeb, ludzi i rozwiązań;
-- splot słoneczny, czyli centrum nerwowe. To dokładnie „cyfrowe serce Hubu”, o które prosi brief.
-
-Słowo jest krótkie, polskie i łatwe do wymówienia dla każdego, także seniora.
+**hubmi.pl**: nazwa jest od razu adresem serwisu, więc nie trzeba jej nigdzie tłumaczyć ani zapamiętywać osobno.
 
 Alternatywy:
 - **Zaczyn** — mała porcja, która zakwasza całe ciasto; mikroinnowacje skalowane na cały region.
@@ -35,19 +31,19 @@ Alternatywy:
 
 | Moduł z briefu | Nazwa w pitchu | Etykieta w UI |
 |---|---|---|
-| I. Matchmaking społeczny (obligatoryjny) | Splot·Dopasuj | „Opisz problem” |
-| II. Zasobnik wiedzy | Splot·Wiedza | „Biblioteka i wiedza” |
-| III. Kreator pomysłów | Splot·Pracownia | „Zgłoś pomysł” |
-| IV. Tester innowacji | Splot·Próba | „Przetestuj rozwiązanie” |
-| V. Platforma komunikacji | Splot·Rozmowy | „Zapytaj eksperta” |
-| VI. Panel administratora | Splot·Panel | (tylko dla ROPS) |
-| VII. Middleman Innowacji | Splot·Wdrożenie | „Jak to wdrożyć u nas?” |
+| I. Matchmaking społeczny (obligatoryjny) | hubmi.pl·Dopasuj | „Opisz problem” |
+| II. Zasobnik wiedzy | hubmi.pl·Wiedza | „Biblioteka i wiedza” |
+| III. Kreator pomysłów | hubmi.pl·Pracownia | „Zgłoś pomysł” |
+| IV. Tester innowacji | hubmi.pl·Próba | „Przetestuj rozwiązanie” |
+| V. Platforma komunikacji | hubmi.pl·Rozmowy | „Zapytaj eksperta” |
+| VI. Panel administratora | hubmi.pl·Panel | (tylko dla ROPS) |
+| VII. Middleman Innowacji | hubmi.pl·Wdrożenie | „Jak to wdrożyć u nas?” |
 
 ---
 
 ## 2. Dane: co faktycznie mamy
 
-| Źródło | Co zawiera | Format | Użycie w Splocie |
+| Źródło | Co zawiera | Format | Użycie w hubmi.pl |
 |---|---|---|---|
 | [Biblioteka Innowacji Społecznych](https://rops.krakow.pl/innowacje-spoleczne/biblioteka-innowacji-spolecznych/kategorie) | Innowacje w 9 kategoriach (szczegóły niżej). Każda strona ma te same sekcje: *1. Na czym polega rozwiązanie? · 2. Jakich problemów dotyczy? · 3. Grupa docelowa · 4. Kto może skorzystać?* Do tego PDF-karty modeli z sekcjami *Skąd wiemy, że działa? · Jak skorzystać? · Składowe innowacji*. | HTML, adresy `…/biblioteka-innowacji-spolecznych/{kategoria},{slug}` + PDF | Główny korpus dopasowań. Strukturę wyciągamy prawie za darmo, bo sekcje są stałe. |
 | [Mapa Wyzwań Społecznych](https://rops.krakow.pl/mpliki/IS/IWS_20/za._nr_2._Mapa_Wyzwa_Spoecznych.pdf) | 8 obszarów: rodzina i piecza zastępcza, bezdomność, niepełnosprawność, ubóstwo, integracja cudzoziemców, zdrowie, zdrowie psychiczne, seniorzy. Każdy z definicją i listą wyzwań. **Dane są ogólnopolskie.** | PDF (~8 MB) | Oś 1 taksonomii, opisy obszarów w Zasobniku |
@@ -161,7 +157,7 @@ flowchart TD
 ### Struktura repo
 
 ```
-splot/
+hubmi.pl/
 ├─ app/                      # Next.js
 │  ├─ (public)/opisz, wyniki, biblioteka, pomysl, status/[kod], wdrozenie
 │  ├─ (panel)/panel/...      # tylko admin
@@ -176,7 +172,7 @@ splot/
 
 ---
 
-## 5. Splot·Dopasuj, czyli silnik dopasowań (moduł obligatoryjny)
+## 5. hubmi.pl·Dopasuj, czyli silnik dopasowań (moduł obligatoryjny)
 
 ### 5.1 Przepływ
 
@@ -324,7 +320,7 @@ Wynik idzie na slajd jako tabela. Kryterium „trafność dopasowania” zostaje
 
 Punktacja: 10% za moduł obligatoryjny i +5% za każdy kolejny. Sześć dodatkowych daje +30%. Każdy moduł ma zrobić **jedną rzecz dobrze** i być wpięty w pętlę.
 
-| Moduł | Co budujemy na hackathonie | Wpięcie w Splot | Szac. czas |
+| Moduł | Co budujemy na hackathonie | Wpięcie w hubmi.pl | Szac. czas |
 |---|---|---|---|
 | **Wiedza** (Zasobnik) | **Biblioteka jako historie w 4 krokach:** Problem → Rozwiązanie → Skąd wiemy, że działa → Jak skorzystać (mapuje się 1:1 na sekcje stron ROPS). Filtry „dla kogo” z ikonami, wideo, jeśli jest. **Kondycja Małopolski:** mapa gmin z BDL z podpisami prostym językiem („co czwarta osoba ma 65+ lat”). **Zapytaj Bibliotekę:** Q&A po raportach z odnośnikami do stron PDF. Przy każdej innowacji gotowe streszczenie w tekście łatwym do czytania. | Ten sam korpus co Dopasuj | 3 h |
 | **Panel** (admin) | Skrzynka nowych zgłoszeń z triage AI: obszar, duplikaty (podobieństwo > 0,9), sugerowany ekspert, ostrzeżenie o danych osobowych. CRUD innowacji z automatycznym reindeksem. Włącznik naborów. **Trendy:** potrzeby wg obszaru × powiatu × czasu, klastry z etykietami LLM. **Mapa luk.** Eksport CSV, log zmian. | Widzi wszystkie karty | 3 h |
@@ -338,7 +334,7 @@ Punktacja: 10% za moduł obligatoryjny i +5% za każdy kolejny. Sześć dodatkow
 ```mermaid
 sequenceDiagram
   actor A as Autor
-  participant S as Splot
+  participant S as hubmi.pl
   actor R as Admin ROPS
   actor E as Ekspert
   A->>S: Zgłasza pomysł (fiszka)
@@ -504,7 +500,7 @@ sequenceDiagram
 ### Scenariusz demo (≤ 3 min)
 
 1. **0:00** Pani Halina, sołtyska z wiejskiej gminy (postać syntetyczna), klika „Opowiedz problem” i mówi: seniorzy w przysiółkach są samotni, autobus jeździ dwa razy dziennie.
-2. **0:25** Splot zadaje jedno pytanie doprecyzowujące. Potem pokazuje 3 rozwiązania z „dlaczego pasuje” i „co dostosować”, a pod nimi: „4 inne gminy zgłosiły podobny problem”.
+2. **0:25** hubmi.pl zadaje jedno pytanie doprecyzowujące. Potem pokazuje 3 rozwiązania z „dlaczego pasuje” i „co dostosować”, a pod nimi: „4 inne gminy zgłosiły podobny problem”.
 3. **0:55** Widok wójta: „Jak to wdrożyć u nas?” → karta wdrożeniowa z liczbami gminy z BDL. Następnie „Chcę przetestować”.
 4. **1:25** Drugi przypadek: problem bez rozwiązania → luka → Pracownia. Asystent sprawdza nowość, powstaje fiszka. System dopasowuje aktywny nabór i generuje szkic wniosku.
 5. **2:10** Panel ROPS: dzwonek z nowym pomysłem, przypisanie eksperta jednym kliknięciem, autor widzi zmianę statusu. **Mapa luk:** „tu otwórzcie nabór”.
@@ -512,7 +508,7 @@ sequenceDiagram
 
 ### Deck (10 slajdów)
 
-1. Splot — hasło i jedno zdanie
+1. hubmi.pl — hasło i jedno zdanie
 2. Problem: rozproszone potrzeby, rozwiązania i ludzie
 3. Pętla innowacji (diagram z sekcji 3)
 4. Jak działa dopasowanie + tabela trafności

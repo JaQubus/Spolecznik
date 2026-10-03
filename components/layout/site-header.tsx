@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { A11yToolbar } from "@/components/a11y/a11y-toolbar";
 
-// Etykiety w UI to proste czasowniki — nazwy modułów (Splot·Dopasuj itd.) są tylko do pitchu.
+// Etykiety w UI to proste czasowniki — nazwy modułów (hubmi.pl·Dopasuj itd.) są tylko do pitchu.
 const NAV = [
   { href: "/opisz", label: "Opisz problem" },
   { href: "/biblioteka", label: "Biblioteka i wiedza" },
@@ -14,7 +14,7 @@ export function SiteHeader() {
   return (
     <header className="border-b">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="text-2xl font-bold">Splot</Link>
+        <Link href="/" className="text-2xl font-bold">hubmi.pl</Link>
         <nav aria-label="Główna">
           <ul className="flex flex-wrap gap-x-4 gap-y-2">
             {NAV.map((n) => (

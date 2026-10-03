@@ -1,7 +1,7 @@
 [project]
-name = "splot-data"
+name = "hubmi-pl-data"
 version = "0.1.0"
-description = "Offline pipeline danych dla Splotu: scraping, PDF-y, BDL, wzbogacanie, embeddingi, ewaluacja"
+description = "Offline pipeline danych dla hubmi.pl: scraping, PDF-y, BDL, wzbogacanie, embeddingi, ewaluacja"
 requires-python = ">=3.12"
 dependencies = [
   "playwright",
