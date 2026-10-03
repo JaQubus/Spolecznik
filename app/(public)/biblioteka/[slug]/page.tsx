@@ -84,11 +84,11 @@ export default async function Page(props: PageProps<"/biblioteka/[slug]">) {
         )}
       </header>
 
-      {/* Tekst łatwy do czytania: zawsze, gdy jest; w trybie prostym większy i na pierwszym planie. */}
+      {/* Tekst łatwy do czytania: zawsze, gdy jest. */}
       {i.etr_summary && (
         <section aria-labelledby="w-skrocie" className="max-w-[44rem] space-y-2 rounded-[16px] bg-secondary px-5 py-4">
           <h2 id="w-skrocie" className="text-xl font-bold">W skrócie, prostym językiem</h2>
-          <p className="text-lg simple:text-xl">{i.etr_summary}</p>
+          <p className="text-lg">{i.etr_summary}</p>
         </section>
       )}
 

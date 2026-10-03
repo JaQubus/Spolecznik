@@ -1,19 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FilterChip } from "@/components/ui/chip";
 
-/**
- * Przełącznik „Łatwy tekst”: streszczenie w tekście łatwym do czytania (pole etr_summary).
- * Gdy ktoś ma włączony „Tryb prosty” w pasku dostępności, streszczenie jest od razu rozwinięte.
- */
+/** Przełącznik „Łatwy tekst”: streszczenie w tekście łatwym do czytania (pole etr_summary). */
 export function EasyText({ text }: { text: string }) {
   const [on, setOn] = useState(false);
-  useEffect(() => {
-    // Odczyt klasy z <html> dopiero po hydracji — na serwerze jej nie znamy.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- jednorazowa synchronizacja z ustawieniem dostępności
-    if (document.documentElement.classList.contains("a11y-simple")) setOn(true);
-  }, []);
 
   return (
     <div className="space-y-4">
