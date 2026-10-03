@@ -94,7 +94,7 @@ export function statusEvents(history: AuditRow[]): StatusEvent[] {
 
 /** Każda zmiana w Panelu zostawia ślad (README §7: audit_log). W diff nie zapisujemy treści zgłoszeń. */
 export async function logChange(
-  actorId: string,
+  actorId: string | null, // null: konto testowe (lib/auth.ts) nie ma użytkownika w auth.users
   action: string,
   entity: string,
   entityId: string,

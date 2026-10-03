@@ -1,0 +1,272 @@
+[
+  {
+    "kind": "kanwa",
+    "description": "Trzy plansze do pracy nad pomysłem: problem, odbiorcy, rozwiązanie, koszty i partnerzy. Wydrukuj i wypełnij w zespole.",
+    "areas": [],
+    "language": "pl",
+    "sort": 0,
+    "published": true,
+    "title": "Kanwa Innowacji Społecznych INNO AGH (Social Canvas)",
+    "year": 2026,
+    "url": "https://rops.krakow.pl/mpliki/IS/Moj_folder/INNO_AGH_-_SOCIAL_CANVAS.pdf",
+    "format": "PDF",
+    "size_bytes": 7694251,
+    "id": "233f8d64-21d5-5691-a6aa-d0ca01853c41"
+  },
+  {
+    "kind": "publikacja",
+    "description": "Historie innowacji z projektu „Inkubator Włączenia Społecznego”: kto je wymyślił, jak je testowano i co z tego wyszło.",
+    "areas": [
+      "niepelnosprawnosc",
+      "seniorzy",
+      "rodzina_piecza",
+      "cudzoziemcy",
+      "ubostwo",
+      "bezdomnosc"
+    ],
+    "language": "pl",
+    "sort": 1,
+    "published": true,
+    "title": "Połącz kropki, czyli o sile innowacji społecznych w obszarze włączenia społecznego",
+    "year": 2023,
+    "url": "https://rops.krakow.pl/mpliki/IS/PUBLIKACJE_INKUBATOROW/Pocz_kropki_Publikacja_IWS.pdf",
+    "format": "PDF",
+    "size_bytes": 1844113,
+    "id": "fde65435-b3e6-59ca-8892-bc65cb7a0843"
+  },
+  {
+    "kind": "publikacja",
+    "description": "Rozwiązania dla osób z niepełnosprawnością i seniorów, przetestowane w projekcie „Inkubator Dostępności”.",
+    "areas": [
+      "niepelnosprawnosc",
+      "seniorzy"
+    ],
+    "language": "pl",
+    "sort": 2,
+    "published": true,
+    "title": "Innowacje społeczne dla dostępności",
+    "year": 2022,
+    "url": "https://rops.krakow.pl/mpliki/IS/ikony_PUBLIKACJE/Innowacje_spoleczne_dla_dostepnosci.pdf",
+    "format": "PDF",
+    "size_bytes": 1990622,
+    "id": "59d54556-bfcd-595a-bce2-b7977793883b"
+  },
+  {
+    "kind": "poradnik",
+    "description": "Jak urząd albo organizacja może wspierać nowe pomysły. Doświadczenia „Małopolskiego Inkubatora Innowacji Społecznych”.",
+    "areas": [
+      "seniorzy",
+      "niepelnosprawnosc"
+    ],
+    "language": "pl",
+    "sort": 3,
+    "published": true,
+    "title": "Przewodnik po innowacjach społecznych",
+    "year": 2019,
+    "url": "https://rops.krakow.pl/mpliki/IS/ikony_PUBLIKACJE/InnMalopolska_przewodnik_po_innowacjach.pdf",
+    "format": "PDF",
+    "size_bytes": 1931812,
+    "id": "09a8b6ec-8484-5710-8a28-d066a3daec3c"
+  },
+  {
+    "kind": "poradnik",
+    "description": "Angielska wersja przewodnika po innowacjach społecznych.",
+    "areas": [],
+    "language": "en",
+    "sort": 4,
+    "published": true,
+    "title": "Guide to social innovations",
+    "year": 2019,
+    "url": "https://rops.krakow.pl/mpliki/IS/PUBLIKACJE_INKUBATOROW/InnMalopolska_Guide_to_social_innovations_MIIS_ENG.pdf",
+    "format": "PDF",
+    "size_bytes": 1663273,
+    "id": "af7ec686-8fa5-5125-9a69-db79f9d67e6b"
+  },
+  {
+    "kind": "raport",
+    "description": "Osiem najważniejszych obszarów problemów społecznych, z przykładami osób i listą raportów. Dane ogólnopolskie.",
+    "areas": [
+      "seniorzy",
+      "niepelnosprawnosc",
+      "rodzina_piecza",
+      "zdrowie_psychiczne",
+      "zdrowie",
+      "ubostwo",
+      "bezdomnosc",
+      "cudzoziemcy"
+    ],
+    "language": "pl",
+    "sort": 5,
+    "published": true,
+    "title": "Mapa Wyzwań Społecznych",
+    "year": 2024,
+    "url": "https://rops.krakow.pl/mpliki/IS/IWS_20/za._nr_2._Mapa_Wyzwa_Spoecznych.pdf",
+    "format": "PDF",
+    "size_bytes": 7787592,
+    "id": "1ee52e66-6f44-5690-924a-8df1d9371f12"
+  },
+  {
+    "kind": "raport",
+    "description": "Krótkie podsumowanie: gdzie w Małopolsce brakuje opieki, pomocy dla rodzin, seniorów i osób w kryzysie.",
+    "areas": [
+      "seniorzy",
+      "niepelnosprawnosc",
+      "bezdomnosc",
+      "zdrowie_psychiczne",
+      "rodzina_piecza",
+      "zdrowie"
+    ],
+    "language": "pl",
+    "sort": 6,
+    "published": true,
+    "title": "Usługi społeczne w Małopolsce – deficyty, potrzeby, potencjał rozwojowy. Zaktualizowane wnioski z diagnozy",
+    "year": 2025,
+    "url": "https://rops.krakow.pl/pliki-do-pobrania/wpis,2025-uslugi-spoleczne-w-malopolsce-deficyty-potrzeby-potencjal-rozwojowy-zaktualizowane-wnioski-z-diagnozy,1348",
+    "format": "PDF",
+    "size_bytes": 683150,
+    "id": "68fcb31c-9fa0-50a9-b5ba-9b31ae8653a8"
+  },
+  {
+    "kind": "raport",
+    "description": "Ile jest rodzin zastępczych, czego im brakuje i co można poprawić.",
+    "areas": [
+      "rodzina_piecza"
+    ],
+    "language": "pl",
+    "sort": 7,
+    "published": true,
+    "title": "Piecza zastępcza w Małopolsce. Stan, potrzeby, wyzwania",
+    "year": 2024,
+    "url": "https://rops.krakow.pl/pliki-do-pobrania/wpis,2024-piecza-zastepcza-w-malopolsce-stan-potrzeby-wyzwania,1105",
+    "format": "PDF",
+    "size_bytes": 5890000,
+    "id": "86deb7f6-9aaf-5693-9d6f-b1060131b61b"
+  },
+  {
+    "kind": "raport",
+    "description": "Jak domy pomocy społecznej mogą pomagać także osobom, które w nich nie mieszkają.",
+    "areas": [
+      "seniorzy",
+      "zdrowie"
+    ],
+    "language": "pl",
+    "sort": 8,
+    "published": true,
+    "title": "Domy pomocy społecznej w Małopolsce wobec wyzwań deinstytucjonalizacji opieki długoterminowej",
+    "year": 2025,
+    "url": "https://rops.krakow.pl/pliki-do-pobrania/wpis,2025-domy-pomocy-spolecznej-w-malopolsce-wobec-wyzwan-deinstytucjonalizacji-opieki-dlugoterminowej,1257",
+    "format": "PDF",
+    "size_bytes": 6180000,
+    "id": "d01e5405-c9d9-5526-ae24-90233317a661"
+  },
+  {
+    "kind": "raport",
+    "description": "Mieszkania, w których można uczyć się samodzielności: dla kogo są i co utrudnia ich tworzenie.",
+    "areas": [
+      "bezdomnosc",
+      "niepelnosprawnosc",
+      "rodzina_piecza"
+    ],
+    "language": "pl",
+    "sort": 9,
+    "published": true,
+    "title": "Mieszkania wspomagane i treningowe w Małopolsce jako priorytet w rozwoju usług społecznych i deinstytucjonalizacji",
+    "year": 2025,
+    "url": "https://rops.krakow.pl/pliki-do-pobrania/wpis,2025-mieszkania-wspomagane-i-treningowe-w-malopolsce-jako-priorytet-w-rozwoju-uslug-spolecznych-i-deinstytucjonalizacji,1310",
+    "format": "PDF",
+    "size_bytes": 12790000,
+    "id": "71a07ba7-e8dc-546e-822f-570361b4d49c"
+  },
+  {
+    "kind": "raport",
+    "description": "Kim są opiekunowie osób starszych i chorych, ile pracują i czego potrzebują.",
+    "areas": [
+      "seniorzy",
+      "zdrowie"
+    ],
+    "language": "pl",
+    "sort": 10,
+    "published": true,
+    "title": "Wyzwania i potrzeby sektora opiekuńczego w Małopolsce. Perspektywa opiekunów oraz podmiotów realizujących opiekę",
+    "year": 2026,
+    "url": "https://rops.krakow.pl/pliki-do-pobrania/wpis,2026-i-wyzwania-i-potrzeby-sektora-opiekunczego-w-malopolsce-perspektywa-opiekunow-oraz-podmiotow-realizujacych-opieke,1479",
+    "format": "PDF",
+    "size_bytes": 15410000,
+    "id": "87ae5976-c61f-54f1-858a-83fa3fc2840a"
+  },
+  {
+    "kind": "raport",
+    "description": "Z czym zmagają się rodziny, które same opiekują się starszymi bliskimi.",
+    "areas": [
+      "seniorzy"
+    ],
+    "language": "pl",
+    "sort": 11,
+    "published": true,
+    "title": "Opiekunowie rodzinni osób starszych – problemy, potrzeby, wyzwania dla polityki społecznej",
+    "year": 2015,
+    "url": "https://rops.krakow.pl/pliki-do-pobrania/wpis,2015-opiekunowie-rodzinni-osob-starszych-problemy-potrzeby-wyzwania-dla-polityki-spolecznej,842",
+    "format": "PDF",
+    "size_bytes": 1480000,
+    "id": "77c048d0-640e-5de2-b3f8-ee39f6b8dc5b"
+  },
+  {
+    "kind": "film",
+    "description": "Krótki film o grze, która pomaga seniorom rozmawiać i nawiązywać znajomości.",
+    "areas": [
+      "seniorzy"
+    ],
+    "language": "pl",
+    "sort": 12,
+    "published": true,
+    "title": "Senior CUDER — gra dla seniorów",
+    "year": null,
+    "url": "https://www.youtube.com/watch?v=o5TP10ZStNA",
+    "format": "film",
+    "size_bytes": null,
+    "sign_language": false,
+    "captions": true,
+    "innovation_slug": "senior-cuder",
+    "id": "f54b0e77-3411-5249-8576-0f85ac8870c5"
+  },
+  {
+    "kind": "film",
+    "description": "Jak w kilka dni zrobić łazienkę w mieszkaniu, w którym jej nie ma.",
+    "areas": [
+      "ubostwo",
+      "seniorzy"
+    ],
+    "language": "pl",
+    "sort": 13,
+    "published": true,
+    "title": "Przenośne, modularne łazienki",
+    "year": null,
+    "url": "https://www.youtube.com/watch?v=Pl5bkpxEqgs",
+    "format": "film",
+    "size_bytes": null,
+    "sign_language": true,
+    "captions": false,
+    "innovation_slug": "przenosne-modularne-lazienki",
+    "id": "b7088709-5975-5d97-aaf3-ecfc14962365"
+  },
+  {
+    "kind": "film",
+    "description": "Platforma, na której osoby głuche uczą się zawodów w branży IT.",
+    "areas": [
+      "niepelnosprawnosc",
+      "ubostwo"
+    ],
+    "language": "pl",
+    "sort": 14,
+    "published": true,
+    "title": "Hear IT — nauka programowania w polskim języku migowym",
+    "year": null,
+    "url": "https://www.youtube.com/watch?v=uDLOSoCb3E8",
+    "format": "film",
+    "size_bytes": null,
+    "sign_language": true,
+    "captions": false,
+    "innovation_slug": "hear-it",
+    "id": "1580c01a-faeb-5f2e-9188-d64614312cd8"
+  }
+]

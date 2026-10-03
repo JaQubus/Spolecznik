@@ -1,6 +1,6 @@
 # Applying it to VibeCorner
 
-How this system maps onto the repository's Next.js + Tailwind v4 + shadcn/ui ("new-york", neutral) setup. Paths are relative to the repo root. The repo's own conventions win where they exist: themes are classes on `<html>` (`.dark`, `.a11y-contrast`), settings are `a11y-large` / `a11y-simple`, and components stay in `components/ui/`.
+How this system maps onto the repository's Next.js + Tailwind v4 + shadcn/ui ("new-york", neutral) setup. Paths are relative to the repo root. The repo's own conventions win where they exist: themes are classes on `<html>` (`.dark`, `.a11y-contrast`), settings are `a11y-large`, and components stay in `components/ui/`.
 
 ## 1. `app/globals.css`: tokens
 
@@ -81,7 +81,7 @@ html.a11y-contrast {
 }
 ```
 
-Replace the base layer's `@apply border-border outline-ring/50;` with `@apply border-border;` (the half-opacity ring fails 1.4.11), keep the repo's `:focus-visible` rule but set `outline-offset: 3px`, and add `body { font-size: 1.125rem; line-height: 1.75rem; }` and `html.a11y-simple body { font-size: 1.25rem; line-height: 2rem; }`. Keep `html.a11y-large { font-size: 125%; }`.
+Replace the base layer's `@apply border-border outline-ring/50;` with `@apply border-border;` (the half-opacity ring fails 1.4.11), keep the repo's `:focus-visible` rule but set `outline-offset: 3px`, and add `body { font-size: 1.125rem; line-height: 1.75rem; }`. Keep `html.a11y-large { font-size: 125%; }`.
 
 ## 2. `app/layout.tsx`: the font
 
@@ -106,7 +106,7 @@ Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(-
 
 - Done: `app/(public)/opisz/match-results.tsx` no longer uses `Card`; it is the **ResultList** pattern: an `<ol>` with rows split by `border-b border-border py-8`, no Card. Per row the three actions from README §5.1: "Jak to wdrożyć u nas?" is `variant="outline"`, "Chcę przetestować" and "Zapytaj eksperta" (with `innowacja` + `potrzeba`, so the expert knows which solution) are `variant="link"`, so ten results don’t produce ten green buttons.
 - The amber notice (`bg-amber-50 border-amber-500 text-amber-950`) and `border-dashed` boxes in `match-results.tsx` / `describe-flow.tsx` → **Alert** (info: `bg-secondary rounded-[16px] p-5`, an icon, no border). There's no yellow in the system.
-- `components/a11y/a11y-toolbar.tsx`: buttons → `rounded-full min-h-12 px-3 text-base border-0 hover:bg-muted aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:font-bold`, plus a Lucide icon each (`Type`, `Contrast`, `AlignLeft`). Each toggles a class on `<html>`: Większy tekst → `a11y-large`, Wysoki kontrast → `a11y-contrast`, Tryb prosty → `a11y-simple` (see `components/Header.md`); put the group in a `bg-secondary` strip above the header row. Add "Czytaj na głos" (`Volume2`, `speechSynthesis`) when it's built.
+- `components/a11y/a11y-toolbar.tsx`: buttons → `rounded-full min-h-12 px-3 text-base border-0 hover:bg-muted aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:font-bold`, plus a Heroicons icon each (`MagnifyingGlassPlusIcon`, `EyeIcon`). Each toggles a class on `<html>`: Większy tekst → `a11y-large`, Wysoki kontrast → `a11y-contrast` (see `components/Header.md`); put the group in a `bg-secondary` strip above the header row. Add "Czytaj na głos" (`SpeakerWaveIcon`, `speechSynthesis`) when it's built.
 - `components/layout/site-header.tsx`: links → `rounded-full px-4 min-h-12 inline-flex items-center hover:bg-secondary no-underline`, current page `aria-current="page"` + `font-bold underline underline-offset-8`; wordmark `hubmi<span className="font-normal text-muted-foreground">.pl</span>`. Six nav items don't fit under 1024px: fold them behind a "Menu" button there. Under 768px the toolbar folds behind a "Dostępność" button and must open below the header row (render it after the row, or `flex-col` + `order-2` / `md:order-none`), so the pressed button doesn't jump.
 - The home search: two normal shadcn `Input`s (label above, hint below the label, no placeholder) and one `Button` in a `flex flex-col md:flex-row md:items-end gap-4` form, sitting on a `bg-secondary` hero band so the white inputs stand out. No pill-shaped or fill-only fields.
 - `text-sm` appears in a few places; the floor is `text-base` (16px).
@@ -127,7 +127,7 @@ Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(-
 | StatusTimeline | `components/ui/status-timeline.tsx` (ready for `/status/[kod]`) |
 | StoryTile | `StoryTiles` + `StoryTile` (`components/ui/story-tile.tsx`, ready for `/biblioteka`) |
 
-Tailwind extras in `globals.css`: `simple:` variant (applies under `html.a11y-simple`, e.g. `simple:hidden` on secondary metadata), `full-bleed` utility (cream band edge to edge inside `main` without horizontal scroll), colours `border-strong`, `brand-soft`, `danger-soft`.
+Tailwind extras in `globals.css`: `full-bleed` utility (cream band edge to edge inside `main` without horizontal scroll), colours `border-strong`, `brand-soft`, `danger-soft`.
 
 ## 6. Check
 

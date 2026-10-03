@@ -1,6 +1,6 @@
 "use client";
 
-import { CopyIcon } from "lucide-react";
+import { DocumentDuplicateIcon } from "@heroicons/react/24/outline";
 import { useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldHint } from "@/components/ui/field";
@@ -42,7 +42,7 @@ export function PrivateLink({ code, accessKey, id = "prywatny-link" }: { code: s
           className="min-w-0 flex-1 basis-72 font-mono text-base"
         />
         <Button type="button" variant="outline" onClick={copy}>
-          <CopyIcon aria-hidden /> Kopiuj link
+          <DocumentDuplicateIcon aria-hidden className="size-5" /> Kopiuj link
         </Button>
       </div>
       <p role="status" className="font-bold">{copied}</p>

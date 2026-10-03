@@ -117,7 +117,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         </h1>
         {report.summary && <p className="max-w-[68ch] text-lg">{report.summary}</p>}
         {(report.gmina || report.areas.length > 0) && (
-          <ul className="flex flex-wrap gap-2 simple:hidden" aria-label="Gmina i obszary">
+          <ul className="flex flex-wrap gap-2" aria-label="Gmina i obszary">
             {report.gmina && <li><Badge>Gmina {report.gmina}</Badge></li>}
             {report.areas.slice(0, 3).map((a) => (
               <li key={a}><Badge>{AREA_LABELS[a as keyof typeof AREA_LABELS] ?? a}</Badge></li>

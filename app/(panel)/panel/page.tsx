@@ -1,4 +1,4 @@
-import { CopyIcon, ShieldAlertIcon } from "lucide-react";
+import { DocumentDuplicateIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { requireAdmin } from "@/lib/auth";
@@ -107,8 +107,8 @@ function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
       </p>
       <ul className="flex flex-wrap gap-2" aria-label="Analiza zgłoszenia">
         {n.card.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
-        {pii && <li><Badge variant="outline"><ShieldAlertIcon aria-hidden /> Może zawierać dane osobowe</Badge></li>}
-        {dups > 0 && <li><Badge variant="outline"><CopyIcon aria-hidden /> Możliwy duplikat ({dups})</Badge></li>}
+        {pii && <li><Badge variant="outline"><ShieldExclamationIcon aria-hidden className="size-4" /> Może zawierać dane osobowe</Badge></li>}
+        {dups > 0 && <li><Badge variant="outline"><DocumentDuplicateIcon aria-hidden className="size-4" /> Możliwy duplikat ({dups})</Badge></li>}
       </ul>
       {triage?.expertName && <p className="text-base">Sugerowany ekspert: <strong>{triage.expertName}</strong></p>}
     </li>

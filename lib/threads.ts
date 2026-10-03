@@ -145,11 +145,11 @@ async function nudge(threadId: string) {
 
 /**
  * Zapis wiadomości + powiadomienia: od autora → dzwonek admina; od ROPS albo eksperta → autor (jeśli ma konto)
- * i status „Odpowiedź” na osi czasu. `actorId` to admin piszący z Panelu.
+ * i status „Odpowiedź” na osi czasu. `actorId` to admin piszący z Panelu (null przy koncie testowym).
  */
 export async function postNeedMessage(
   t: NeedThread,
-  msg: { role: AuthorRole; name?: string; body: string; actorId?: string; expertId?: string | null },
+  msg: { role: AuthorRole; name?: string; body: string; actorId?: string | null; expertId?: string | null },
 ): Promise<string> {
   const supabase = createAdminClient();
   const threadId = await ensureThread(t, msg.expertId ?? null);
@@ -178,10 +178,10 @@ export async function postNeedMessage(
     if (nError) console.error("[rozmowy] powiadomienie:", nError);
   }
 
-  if (!fromAuthor && msg.actorId && BEFORE_ANSWER.includes(t.status)) {
+  if (!fromAuthor && BEFORE_ANSWER.includes(t.status)) {
     const { error: sError } = await supabase.from("needs").update({ status: "odpowiedz", updated_at: now }).eq("id", t.needId);
     if (sError) throw sError;
-    await logChange(msg.actorId, "need.status", "need", t.needId, {
+    await logChange(msg.actorId ?? null, "need.status", "need", t.needId, {
       from: t.status,
       to: "odpowiedz",
       note: `Odpowiedź w rozmowie od: ${msg.name ?? ROLE_LABELS[msg.role]}`,

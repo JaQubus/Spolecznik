@@ -1,5 +1,4 @@
 -- Społecznik·Rozmowy (README §6): jeden wątek przypięty do karty.
--- Numer 0011, bo 0010 zajmuje feat/knowledge-base.
 -- Autor zgłoszenia pisze po kodzie SPL-…, bez konta — zapisy idą przez route handler (service_role).
 -- Eksperci istnieją na razie tylko w search_index (kind = 'ekspert'), stąd expert_id bez klucza obcego.
 

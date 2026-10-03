@@ -1,6 +1,6 @@
 "use client";
 
-import { Printer } from "lucide-react";
+import { PrinterIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { GminaField, type GminaValue } from "@/components/gmina-field";
@@ -135,7 +135,7 @@ export function ImplementationFlow({
 
         <div className="flex flex-wrap items-center gap-3 print:hidden">
           <Button asChild variant="outline"><Link href={`/przetestuj?innowacja=${result.innovation.id}`}>Chcę przetestować</Link></Button>
-          <Button type="button" variant="link" onClick={() => window.print()}><Printer aria-hidden /> Wydrukuj kartę</Button>
+          <Button type="button" variant="link" onClick={() => window.print()}><PrinterIcon aria-hidden className="size-4" /> Wydrukuj kartę</Button>
           <Button type="button" variant="link" onClick={() => setResult(null)}>Inna gmina albo rozwiązanie</Button>
         </div>
       </article>
