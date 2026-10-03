@@ -1,7 +1,7 @@
 import type { CallFormContent } from "@/lib/call-schema";
 import {
   type Application, type Contact, type Entity, type Person, type PlanRow,
-  declarationSets, filledRows, formatPLN, parseAmount, planTotal,
+  declarationSets, filledRows, formatPLN, formatPostalCode, parseAmount, planTotal,
 } from "./model";
 
 // Wypełniony formularz w układzie wzoru (numeracja punktów 1–12). Ten sam znacznik idzie do druku/PDF
@@ -21,7 +21,7 @@ function PersonTable({ p }: { p: Person }) {
         <Row label="Imię" value={p.imie} />
         <Row label="Nazwisko" value={p.nazwisko} />
         <Row label="Adres korespondencyjny" value={p.adres} />
-        <Row label="Kod pocztowy" value={p.kod} />
+        <Row label="Kod pocztowy" value={formatPostalCode(p.kod)} />
         <Row label="Miejscowość" value={p.miejscowosc} />
         <Row label="Telefon" value={p.telefon} />
         <Row label="E-mail" value={p.email} />
@@ -50,7 +50,7 @@ function EntityTable({ e }: { e: Entity }) {
           <Row label="REGON" value={e.regon} />
           <Row label="NIP" value={e.nip} />
           <Row label="Adres siedziby" value={e.adres} />
-          <Row label="Kod pocztowy" value={e.kod} />
+          <Row label="Kod pocztowy" value={formatPostalCode(e.kod)} />
           <Row label="Miejscowość" value={e.miejscowosc} />
           <Row label="Telefon" value={e.telefon} />
           <Row label="E-mail" value={e.email} />
@@ -150,8 +150,9 @@ export function ApplicationDocument({ app, content }: { app: Application; conten
           )}
         </li>
 
+        {/* Numer z treści naboru (n), nie z pozycji: tak samo jak w etykietach formularza. */}
         {content.sections.map((s) => (
-          <li key={s.key}>
+          <li key={s.key} value={s.n}>
             <h3>{s.title}</h3>
             <Paragraphs text={app.opisy[s.key] ?? ""} />
           </li>
@@ -173,7 +174,7 @@ export function ApplicationDocument({ app, content }: { app: Application; conten
           <p className="doc-text"><strong>{amount === null ? app.kwota || "—" : formatPLN(amount)}</strong></p>
         </li>
 
-        <li>
+        <li value={team.n}>
           <h3>{team.title}</h3>
           <Paragraphs text={app.zespol} />
         </li>

@@ -12,16 +12,16 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplicationDocument, WORD_CSS } from "./application-document";
-import type { CallFormContent, CallFormSchema } from "@/lib/call-schema";
+import type { CallFormContent } from "@/lib/call-schema";
 import {
   type Application, type ApplicantType, type Errors, type PlanRow,
   MAX_PARTNERS, STEPS, declarationSets, emptyApplication, emptyPartner, emptyRow, fieldId,
-  applicationFromPrefill, firstInvalidStep, formatPLN, getAt, parseAmount, planTotal, restore, setAt, validateStep,
-  type ApplicationPrefill,
+  applicationFromPrefill, declarationFingerprints, firstInvalidStep, formatPLN, getAt, parseAmount, planTotal, restore, setAt,
+  validateStep, type ApplicationPrefill,
 } from "./model";
 
-// localStorage pozostaje szybką kopią UX; właściwy szkic zapisujemy przez /api/wniosek/draft.
-// Klucz per nabór: szkic jednego naboru nie pasuje do treści innego.
+// Szkic żyje tylko w localStorage tej przeglądarki: dane osobowe wnioskodawcy i partnerów nie trafiają
+// na serwer, dopóki ktoś sam nie wyśle wniosku. Klucz per nabór: szkic jednego naboru nie pasuje do treści innego.
 const storageKey = (callId: string) => `wniosek-${callId}`;
 
 type Ctx = { app: Application; errors: Errors; content: CallFormContent; update: (path: string, value: unknown) => void };
@@ -380,7 +380,19 @@ function FinishStep({ goTo }: { goTo: (step: number) => void }) {
 
 // ---- Formularz
 
-type Saved = { app: Application; step: number; reached: number };
+type Saved = {
+  app: Application; step: number; reached: number;
+  /** Szkic wczytany z localStorage (a nie świeży formularz). */
+  fromSaved: boolean;
+  /** Pomysł z /pomysl, który różni się od zapisanego szkicu: pytamy, zamiast go po cichu pominąć. */
+  pendingPrefill?: ApplicationPrefill;
+};
+
+/** Czy pola przenoszone z fiszki mają w szkicu inną treść niż w linku z /pomysl. */
+function prefillDiffers(app: Application, prefill: ApplicationPrefill, content: CallFormContent): boolean {
+  const fromIdea = applicationFromPrefill(prefill, content);
+  return fromIdea.tytul !== app.tytul || Object.entries(fromIdea.opisy).some(([k, v]) => v && v !== app.opisy[k]);
+}
 
 function readSaved(callId: string, content: CallFormContent, prefill?: ApplicationPrefill): Saved {
   try {
@@ -388,13 +400,17 @@ function readSaved(callId: string, content: CallFormContent, prefill?: Applicati
     if (saved) {
       const step = Math.min(Math.max(Number(saved.step) || 0, 0), STEPS.length - 1);
       const reached = Math.min(Math.max(step, Number(saved.reached) || 0), STEPS.length - 1);
-      return { app: restore(saved.app, content), step, reached };
+      const app = restore(saved.app, content, saved.declarations);
+      const pendingPrefill = prefill && prefillDiffers(app, prefill, content) ? prefill : undefined;
+      return { app, step, reached, fromSaved: true, pendingPrefill };
     }
   } catch {}
-  return { app: prefill ? applicationFromPrefill(prefill, content) : emptyApplication(content), step: 0, reached: 0 };
+  return {
+    app: prefill ? applicationFromPrefill(prefill, content) : emptyApplication(content), step: 0, reached: 0, fromSaved: false,
+  };
 }
 
-type Call = { id: string; title: string; formSchema: CallFormSchema; content: CallFormContent };
+type Call = { id: string; title: string; content: CallFormContent };
 
 const noSubscribe = () => () => {};
 
@@ -415,34 +431,18 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const summary = useRef<HTMLDivElement>(null);
   const moved = useRef(false);
-  const applicationId = useRef<string | undefined>(undefined);
+  // Zapisujemy dopiero po pierwszej zmianie: samo otwarcie /wniosek nie może zostawić szkicu,
+  // bo zapisany szkic ma pierwszeństwo przed pomysłem przekazanym później z /pomysl.
+  const dirty = useRef(initial.fromSaved);
+  // Fokus na podsumowanie błędów tylko po „Dalej”, nie przy każdej poprawce pola.
+  const focusSummary = useRef(false);
+  const [pendingPrefill, setPendingPrefill] = useState(initial.pendingPrefill);
 
   useEffect(() => {
-    try { localStorage.setItem(storageKey(call.id), JSON.stringify({ app, step, reached })); } catch {}
-    try {
-      applicationId.current ??= localStorage.getItem(`wniosek-application-${call.id}`) ?? undefined;
-    } catch {}
-    const timer = window.setTimeout(() => {
-      void fetch("/api/wniosek/draft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          applicationId: applicationId.current,
-          callId: call.id,
-          // Same pola wystarczą do odtworzenia szkicu; treść naboru jest w calls.form_schema.
-          draft: { app, formSchema: { fields: call.formSchema.fields } },
-          step,
-          reached,
-        }),
-      }).then((response) => response.ok ? response.json() : null).then((result) => {
-        if (result?.applicationId) {
-          applicationId.current = result.applicationId;
-          try { localStorage.setItem(`wniosek-application-${call.id}`, result.applicationId); } catch {}
-        }
-      }).catch(() => {});
-    }, 700);
-    return () => window.clearTimeout(timer);
-  }, [app, step, reached, call.id, call.formSchema.fields]);
+    if (!dirty.current) return;
+    const declarations = declarationFingerprints(content);
+    try { localStorage.setItem(storageKey(call.id), JSON.stringify({ app, step, reached, declarations })); } catch {}
+  }, [app, step, reached, call.id, content]);
 
   // Po zmianie kroku fokus na nagłówek kroku, żeby czytnik ekranu zaczął od początku.
   useEffect(() => {
@@ -451,9 +451,14 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
     heading.current?.scrollIntoView({ block: "start" });
   }, [step]);
 
-  useEffect(() => { if (Object.keys(errors).length) summary.current?.focus(); }, [errors]);
+  useEffect(() => {
+    if (!focusSummary.current || !Object.keys(errors).length) return;
+    focusSummary.current = false;
+    summary.current?.focus();
+  }, [errors]);
 
   function update(path: string, value: unknown) {
+    dirty.current = true;
     setApp((a) => setAt(a, path, value));
     setErrors((e) => {
       const stale = Object.keys(e).filter((k) => k === path || k.startsWith(`${path}.`) || path.startsWith(`${k}.`));
@@ -473,11 +478,24 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
 
   function next() {
     const e = validateStep(step, app, content);
-    if (Object.keys(e).length) return setErrors(e);
+    if (Object.keys(e).length) {
+      focusSummary.current = true;
+      return setErrors(e);
+    }
     goTo(step + 1);
   }
 
+  function applyPrefill() {
+    if (!pendingPrefill) return;
+    dirty.current = true;
+    setApp(applicationFromPrefill(pendingPrefill, content));
+    setPendingPrefill(undefined);
+    setReached(0);
+    goTo(0);
+  }
+
   function reset() {
+    dirty.current = true;
     setApp(emptyApplication(content));
     setConfirmReset(false);
     setReached(0);
@@ -490,6 +508,18 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
   return (
     <FormCtx.Provider value={{ app, errors, content, update }}>
       <div className="grid gap-8">
+        {pendingPrefill && (
+          <Alert title="Masz zapisany szkic wniosku" className="print:hidden">
+            <p>
+              Otworzyliśmy szkic zapisany w tej przeglądarce, a nie pomysł „{pendingPrefill.tytul?.trim() || "bez tytułu"}” z Pracowni.
+              Jeśli wolisz zacząć od tego pomysłu, obecny szkic zostanie usunięty.
+            </p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Button type="button" variant="outline" size="sm" onClick={applyPrefill}>Zastąp szkic tym pomysłem</Button>
+              <Button type="button" variant="link" size="sm" onClick={() => setPendingPrefill(undefined)}>Zostaw szkic</Button>
+            </div>
+          </Alert>
+        )}
         <nav aria-label="Kroki wniosku" className="print:hidden">
           <ol className="flex flex-wrap gap-2">
             {STEPS.map((s, i) => {
@@ -601,7 +631,7 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
         </div>
 
         <div className="grid gap-2 text-base text-muted-foreground print:hidden">
-          <p>Wpisy są zapisywane na serwerze jako szkic oraz lokalnie w tej przeglądarce. Możesz przerwać i wrócić później.</p>
+          <p>Wpisy zapisują się tylko w tej przeglądarce, na tym urządzeniu. Możesz przerwać i wrócić później.</p>
           {confirmReset ? (
             <div role="group" aria-label="Potwierdź wyczyszczenie" className="flex flex-wrap items-center gap-3">
               <span>Usunąć wszystko, co wpisano?</span>

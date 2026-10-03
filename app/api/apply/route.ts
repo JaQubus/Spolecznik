@@ -1,5 +1,5 @@
 import { draftApplication } from "@/lib/llm";
-import { parseCallFormSchema } from "@/lib/call-schema";
+import { parseCallFields } from "@/lib/call-schema";
 import { anonymize } from "@/lib/pii";
 import { ApplyRequest } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -31,10 +31,10 @@ export async function POST(request: Request) {
       (call.data.closes_at && call.data.closes_at < today);
     if (!call.data.active || outsideWindow) return Response.json({ error: "Ten nabór nie jest aktywny" }, { status: 409 });
 
-    const formSchema = parseCallFormSchema(call.data.form_schema);
+    const fields = parseCallFields(call.data.form_schema);
     const draft = await draftApplication({
       call: { title: call.data.title, description: call.data.description },
-      fields: formSchema.fields.map(({ key, label }) => ({ field: key, label })),
+      fields: fields.map(({ key, label }) => ({ field: key, label })),
       criteria: call.data.criteria,
       fiszka: anonymize(JSON.stringify(idea.data.fiszka)).text,
       canvas: anonymize(JSON.stringify(idea.data.canvas)).text,

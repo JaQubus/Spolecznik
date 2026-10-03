@@ -82,8 +82,29 @@ export function applicationFromPrefill(prefill: ApplicationPrefill, content: Cal
   return app;
 }
 
-/** Szkic z localStorage mógł powstać przy starszej wersji treści naboru: uzupełniamy brakujące pola pustymi. */
-export function restore(saved: unknown, content: CallFormContent): Application {
+/** Odcisk treści oświadczeń (FNV-1a). Zmiana choćby jednego słowa zmienia odcisk. */
+function fingerprint(items: string[]): string {
+  let h = 0x811c9dc5;
+  for (const ch of JSON.stringify(items)) {
+    h ^= ch.codePointAt(0)!;
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16);
+}
+
+/** Zapisywane obok szkicu, żeby wiedzieć, pod jaką treścią oświadczeń ktoś postawił znaczniki. */
+export function declarationFingerprints(content: CallFormContent): Record<DeclarationSet, string> {
+  return { A: fingerprint(content.declarations.A.items), B: fingerprint(content.declarations.B.items) };
+}
+
+/**
+ * Szkic z localStorage mógł powstać przy starszej wersji treści naboru: uzupełniamy brakujące pola pustymi.
+ * Oświadczenia odznaczamy, gdy zmieniła się ich treść (albo nie wiemy, pod jaką treścią je zaznaczono):
+ * nikt nie może „potwierdzić” zdania, którego nie widział.
+ */
+export function restore(
+  saved: unknown, content: CallFormContent, savedFingerprints?: Partial<Record<DeclarationSet, string>>,
+): Application {
   const base = emptyApplication(content);
   if (!saved || typeof saved !== "object") return base;
   const merge = (a: unknown, b: unknown): unknown => {
@@ -95,9 +116,11 @@ export function restore(saved: unknown, content: CallFormContent): Application {
     return typeof b === typeof a ? b : a;
   };
   const app = merge(base, saved) as Application;
-  // Liczba oświadczeń musi się zgadzać z treścią, inaczej odznaczamy wszystko.
+  const current = declarationFingerprints(content);
   for (const set of ["A", "B"] as const) {
-    if (app.oswiadczenia[set].length !== content.declarations[set].items.length) app.oswiadczenia[set] = base.oswiadczenia[set];
+    if (app.oswiadczenia[set].length !== content.declarations[set].items.length || savedFingerprints?.[set] !== current[set]) {
+      app.oswiadczenia[set] = base.oswiadczenia[set];
+    }
   }
   return app;
 }
@@ -159,6 +182,14 @@ export const STEPS = [
 export type Errors = Record<string, string>;
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Myślnik opcjonalny: pole otwiera klawiaturę numeryczną, a na iPhonie nie ma na niej „-”.
+const POSTAL_CODE = /^\d{2}-?\d{3}$/;
+
+/** „30070” → „30-070” w gotowym dokumencie; wszystko inne zostaje jak wpisano. */
+export function formatPostalCode(raw: string): string {
+  const s = raw.replace(/\s/g, "");
+  return /^\d{5}$/.test(s) ? `${s.slice(0, 2)}-${s.slice(2)}` : raw;
+}
 const digits = (s: string) => s.replace(/\D/g, "");
 
 function required(e: Errors, app: Application, path: string, message: string) {
@@ -181,7 +212,7 @@ function checkAddress(e: Errors, app: Application, base: string) {
   required(e, app, `${base}.adres`, "Wpisz ulicę i numer.");
   const kod = String(getAt(app, `${base}.kod`) ?? "").trim();
   if (!kod) e[`${base}.kod`] = "Wpisz kod pocztowy.";
-  else if (!/^\d{2}-\d{3}$/.test(kod)) e[`${base}.kod`] = "Wpisz kod pocztowy w formacie 30-070.";
+  else if (!POSTAL_CODE.test(kod.replace(/\s/g, ""))) e[`${base}.kod`] = "Wpisz kod pocztowy, np. 30-070 albo 30070.";
   required(e, app, `${base}.miejscowosc`, "Wpisz miejscowość.");
   checkPhone(e, app, `${base}.telefon`);
   checkEmail(e, app, `${base}.email`);

@@ -82,3 +82,12 @@ export function parseCallFormSchema(value: unknown): CallFormSchema {
   }
   return CallFormSchema.parse(value);
 }
+
+/**
+ * Same pola dla generatora (/api/apply). Błąd w treści formularza /wniosek nie może wyłączyć
+ * generatora, a błędne lub puste pola zastępujemy wzorem IWS, jak przed wprowadzeniem content.
+ */
+export function parseCallFields(value: unknown): CallFormSchema["fields"] {
+  const parsed = CallFormSchema.pick({ fields: true }).safeParse(value);
+  return parsed.success ? parsed.data.fields : FALLBACK_CALL_FORM.fields;
+}

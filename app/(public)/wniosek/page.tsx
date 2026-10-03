@@ -83,7 +83,7 @@ export default async function Page(props: PageProps<"/wniosek">) {
         </p>
         <p className="max-w-2xl">Zajmie to około godziny. Przygotuj dane kontaktowe, krótki opis pomysłu i szacunkowe koszty.</p>
       </div>
-      <ApplicationForm call={{ id: call.id, title: call.title, formSchema, content }} prefill={hasPrefill ? prefill : undefined} />
+      <ApplicationForm call={{ id: call.id, title: call.title, content }} prefill={hasPrefill ? prefill : undefined} />
     </section>
   );
 }
