@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck } from "lucide-react";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ export function ActionForm({
       <div role="status">
         {state?.ok && (
           <p className="flex items-start gap-2 font-bold">
-            <CircleCheck aria-hidden className="mt-1 size-5 shrink-0 text-primary" />
+            <CheckCircleIcon aria-hidden className="mt-1 size-5 shrink-0 text-primary" />
             {state.message}
           </p>
         )}
