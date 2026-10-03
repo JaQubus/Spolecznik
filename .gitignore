@@ -47,5 +47,9 @@ data/raw/*
 !data/raw/.gitkeep
 __pycache__/
 
+# Zasobnik wiedzy: lokalne zmiany z panelu w trybie bez bazy
+/.data/
+/test-results/
+/playwright-report/
 # wynik import_powiaty.py (duży; do bazy idzie out/powiaty.sql albo import bezpośredni)
 data/out/powiaty.json

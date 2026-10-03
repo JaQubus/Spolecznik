@@ -19,7 +19,8 @@ export const CROSS = [
   "depopulacja_suburbanizacja", "wspolpraca_miedzysektorowa",
 ] as const;
 
-export const CARD_KINDS = ["innowacja", "potrzeba", "pomysl", "ekspert", "nabor"] as const;
+// biblioteka / obszar / material — karty Zasobnika wiedzy (migracja 0005), osobno od korpusu matchmakingu.
+export const CARD_KINDS = ["innowacja", "potrzeba", "pomysl", "ekspert", "nabor", "biblioteka", "obszar", "material"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
 export const NEED_STATUSES = [
@@ -52,6 +53,7 @@ export type RerankItem = z.infer<typeof RerankItem>;
 export const IntakeRequest = z.object({
   text: z.string().min(3).max(5000),
   gmina: z.string().optional(),
+  area: z.enum(MWS_AREAS).optional(), // obszar wybrany wcześniej, np. z „Biblioteki i wiedzy”
   previousCard: NeedCard.optional(), // przy odpowiedzi na pytanie doprecyzowujące
 });
 

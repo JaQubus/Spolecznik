@@ -1,4 +1,4 @@
-import { CircleAlert } from "lucide-react";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import { cn } from "cn";
 
 /** Podpowiedź pod etykietą pola; podłącz przez aria-describedby (TextField.md: etykieta, podpowiedź, błąd, pole). */
@@ -11,7 +11,7 @@ export function FieldError({ className, children, ...props }: React.ComponentPro
   if (!children) return null;
   return (
     <p className={cn("flex items-start gap-2 text-base font-bold text-destructive", className)} {...props}>
-      <CircleAlert aria-hidden className="mt-0.5 size-5 shrink-0" />
+      <ExclamationCircleIcon aria-hidden className="mt-0.5 size-5 shrink-0" />
       <span><span className="sr-only">Błąd: </span>{children}</span>
     </p>
   );

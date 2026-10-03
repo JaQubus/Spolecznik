@@ -1,6 +1,6 @@
 "use client";
 
-import { MousePointerClick } from "lucide-react";
+import { CursorArrowRaysIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 
 const CARD_WIDTH = 288; // w-72
@@ -74,7 +74,7 @@ export function MapHover({ details, children }: { details: Record<string, HoverD
             ))}
           </dl>
           <p className="flex items-center gap-2 text-muted-foreground">
-            <MousePointerClick className="size-4 shrink-0" /> Kliknij, żeby zobaczyć kartę gminy
+            <CursorArrowRaysIcon aria-hidden className="size-4 shrink-0" /> Kliknij, żeby zobaczyć kartę gminy
           </p>
         </div>
       )}

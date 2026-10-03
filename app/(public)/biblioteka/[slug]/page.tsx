@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { ArrowLeftIcon, ArrowTopRightOnSquareIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -68,7 +68,7 @@ export default async function Page(props: PageProps<"/biblioteka/[slug]">) {
     <article className="space-y-10">
       <p>
         <Link href="/biblioteka#innowacje" className={linkClass}>
-          <ArrowLeft aria-hidden className="size-5" /> Wróć do biblioteki
+          <ArrowLeftIcon aria-hidden className="size-5" /> Wróć do biblioteki
         </Link>
       </p>
 
@@ -84,11 +84,11 @@ export default async function Page(props: PageProps<"/biblioteka/[slug]">) {
         )}
       </header>
 
-      {/* Tekst łatwy do czytania: zawsze, gdy jest; w trybie prostym większy i na pierwszym planie. */}
+      {/* Tekst łatwy do czytania: zawsze, gdy jest. */}
       {i.etr_summary && (
         <section aria-labelledby="w-skrocie" className="max-w-[44rem] space-y-2 rounded-[16px] bg-secondary px-5 py-4">
           <h2 id="w-skrocie" className="text-xl font-bold">W skrócie, prostym językiem</h2>
-          <p className="text-lg simple:text-xl">{i.etr_summary}</p>
+          <p className="text-lg">{i.etr_summary}</p>
         </section>
       )}
 
@@ -149,10 +149,10 @@ export default async function Page(props: PageProps<"/biblioteka/[slug]">) {
           <h2 id="zrodla" className="text-xl font-bold">Źródła</h2>
           <ul className="space-y-2">
             {i.source_url && (
-              <li><a href={i.source_url} className={linkClass}><ExternalLink aria-hidden className="size-5" /> Opis w Bibliotece Innowacji ROPS</a></li>
+              <li><a href={i.source_url} className={linkClass}><ArrowTopRightOnSquareIcon aria-hidden className="size-5" /> Opis w Bibliotece Innowacji ROPS</a></li>
             )}
             {i.pdf_url && (
-              <li><a href={i.pdf_url} className={linkClass}><FileText aria-hidden className="size-5" /> Karta innowacji (PDF)</a></li>
+              <li><a href={i.pdf_url} className={linkClass}><DocumentTextIcon aria-hidden className="size-5" /> Karta innowacji (PDF)</a></li>
             )}
           </ul>
           {i.synthetic && (
