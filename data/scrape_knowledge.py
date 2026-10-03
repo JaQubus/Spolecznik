@@ -4,7 +4,7 @@ Co pobiera:
 1. Biblioteka Innowacji Społecznych: 9 kategorii → strony innowacji. Sekcje 1–5, odznaka upowszechniania,
    PDF-folder („dowiedz się więcej”), film na YouTube, paczka ZIP z materiałami (z rozmiarem — bywa
    kilka GB, więc UI musi go pokazać przed pobraniem), licencja.
-   Sekcję „Autorzy” pomijamy — to dane osobowe (wymóg ROPS).
+   Sekcję „Autorzy” pomijamy — to dane osobowe (wymóg ROPS). Sekcje rozpoznajemy po treści nagłówka.
    PDF-folderów nie parsujemy: mają układ kolumnowy i sekcje mieszają się w tekście — zostaje sam link.
 2. Filmy: tytuł i miniatura z YouTube oEmbed — przy okazji sprawdzamy, że film nadal istnieje.
 3. Raporty z badań ROPS: tytuł, rok, opis, link, typ i rozmiar pliku.
@@ -53,8 +53,23 @@ CATEGORIES = {
     "dla-osob-z-niepelnosprawnoscia-intelektualna": "niepelnosprawnosc_intelektualna",
 }
 
-# Numer sekcji na stronie → pole w innovations. Nagłówki bywają różnie sformułowane, numer jest stały.
-SECTIONS = {"1": "solution", "2": "problem", "3": "beneficiaries", "4": "who_can_use", "5": "evidence"}
+# Nagłówek sekcji → pole w innovations. Rozpoznajemy po treści, nie po numerze: na stronach bez
+# „Czy to działa?” numer 5 ma sekcja „Autorzy” (dane osobowe — zawsze pomijamy).
+SECTIONS = [
+    (r"autor", None),
+    (r"na czym polega", "solution"),
+    (r"jakich problem|problem", "problem"),
+    (r"grupa docelowa", "beneficiaries"),
+    (r"kto może", "who_can_use"),
+    (r"działa", "evidence"),
+]
+FIELDS = [f for _, f in SECTIONS if f]
+
+
+def section_field(heading: str) -> str | None:
+    h = heading.lower()
+    return next((field for pattern, field in SECTIONS if re.search(pattern, h)), None)
+
 
 # Kolejność i klucze obszarów jak MWS_AREAS w lib/schemas.ts
 AREAS = [
@@ -171,15 +186,17 @@ def parse_innovation(url: str, groups: list[str]) -> dict:
         badge = text(m.group(1))
 
     # Sekcje po <h4>: „1. Na czym polega rozwiązanie?” … „5. Czy to działa?”. „6. Autorzy” pomijamy.
-    fields: dict[str, str | None] = {f: None for f in SECTIONS.values()}
+    fields: dict[str, str | None] = {f: None for f in FIELDS}
     headings: dict[str, str] = {}
     parts = re.split(r"<h[3-5][^>]*>(.*?)</h[3-5]>", body, flags=re.S)
     for heading, content in zip(parts[1::2], parts[2::2]):
         h = text(heading)
-        num = re.match(r"\s*(\d+)\s*\.", h)
-        if num and num.group(1) in SECTIONS:
-            fields[SECTIONS[num.group(1)]] = text(re.sub(r"<table.*?</table>", "", content, flags=re.S)) or None
-            headings[SECTIONS[num.group(1)]] = h
+        field = section_field(h)
+        if field and not fields[field]:
+            # Blok kończy się w środku znacznika (<div class="…) — odcinamy niedomknięty ogon.
+            content = re.sub(r"<[^>]*$", "", re.sub(r"<table.*?</table>", "", content, flags=re.S))
+            fields[field] = text(content) or None
+            headings[field] = h
 
     links = [absolute(h) for h in re.findall(r'<a[^>]+href="([^"]+)"', body)]
     pdf = next((h for h in links if h.lower().split("?")[0].endswith(".pdf")), None)
