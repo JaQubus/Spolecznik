@@ -24,6 +24,12 @@ export type GapDirection = {
   area: AreaKey;
   needs: number;
   gminy: number;
+  withoutGmina: number;          // wliczone w needs, ale bez gminy, więc nie ma ich na mapie
+  /**
+   * Średnie najlepsze dopasowanie (0–100) albo null. Próg luki to 50: im bliżej, tym bardziej coś podobnego
+   * już jest w Bibliotece; im niżej, tym bardziej brakuje nowego rozwiązania.
+   */
+  avgFit: number | null;
   groups: GroupKey[];            // najczęstsze grupy docelowe, do 3
   keywords: string[];            // najczęstsze słowa z kart potrzeb, do 5
 };
@@ -49,14 +55,17 @@ const bump = <T,>(m: Map<T, number>, k: T) => m.set(k, (m.get(k) ?? 0) + 1);
 
 function aggregate(rows: Row[], source: Gaps["source"]): Gaps {
   const byGmina: Record<string, number> = {};
-  const perArea = new Map<AreaKey, { needs: number; gminy: Set<string>; groups: Map<GroupKey, number>; keywords: Map<string, number> }>();
+  type AreaStats = { needs: number; gminy: Set<string>; withoutGmina: number; fits: number[]; groups: Map<GroupKey, number>; keywords: Map<string, number> };
+  const perArea = new Map<AreaKey, AreaStats>();
 
   for (const r of rows) {
     if (r.teryt) byGmina[r.teryt] = (byGmina[r.teryt] ?? 0) + 1;
     for (const a of (r.card.areas ?? []).filter(isArea)) {
-      const s = perArea.get(a) ?? { needs: 0, gminy: new Set(), groups: new Map(), keywords: new Map() };
+      const s: AreaStats = perArea.get(a) ?? { needs: 0, gminy: new Set(), withoutGmina: 0, fits: [], groups: new Map(), keywords: new Map() };
       s.needs += 1;
       if (r.teryt) s.gminy.add(r.teryt);
+      else s.withoutGmina += 1;
+      if (r.best_fit != null) s.fits.push(r.best_fit);
       for (const g of (r.card.groups ?? []).filter(isGroup)) bump(s.groups, g);
       for (const k of r.card.keywords ?? []) bump(s.keywords, k.toLowerCase());
       perArea.set(a, s);
@@ -77,7 +86,15 @@ function aggregate(rows: Row[], source: Gaps["source"]): Gaps {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     byGmina,
     directions: [...perArea]
-      .map(([area, s]) => ({ area, needs: s.needs, gminy: s.gminy.size, groups: top(s.groups, 3), keywords: top(s.keywords, 5) }))
+      .map(([area, s]) => ({
+        area,
+        needs: s.needs,
+        gminy: s.gminy.size,
+        withoutGmina: s.withoutGmina,
+        avgFit: s.fits.length ? Math.round(s.fits.reduce((a, b) => a + b, 0) / s.fits.length) : null,
+        groups: top(s.groups, 3),
+        keywords: top(s.keywords, 5),
+      }))
       .sort((a, b) => b.needs - a.needs || b.gminy - a.gminy),
     synthetic: rows.some((r) => r.synthetic),
     source,

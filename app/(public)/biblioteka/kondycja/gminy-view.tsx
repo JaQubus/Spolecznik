@@ -9,9 +9,9 @@ import {
 } from "@/lib/kondycja";
 import { formatNumber } from "@/lib/pl";
 import { LINK as linkClass } from "../shared";
-import { ChoroplethMap, GMINA_SHAPES, MAP_FILLS, MapLegend } from "./choropleth-map";
-import { FocusHeading } from "./focus-heading";
-import type { HoverDetail } from "./map-hover";
+import { ChoroplethMap, GMINA_SHAPES, MAP_FILLS, MapLegend } from "@/components/maps/choropleth-map";
+import { FocusHeading } from "@/components/a11y/focus-heading";
+import type { HoverDetail } from "@/components/maps/map-hover";
 
 export const gminyHref = (topic: string, gmina?: string) =>
   `/biblioteka/kondycja?temat=${topic}${gmina ? `&gmina=${gmina}#karta` : ""}`;

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "cn";
-import { ChoroplethMap, GMINA_SHAPES, MapLegend } from "@/app/(public)/biblioteka/kondycja/choropleth-map";
-import { FocusHeading } from "@/app/(public)/biblioteka/kondycja/focus-heading";
+import { ChoroplethMap, GMINA_SHAPES, MapLegend } from "@/components/maps/choropleth-map";
+import { FocusHeading } from "@/components/a11y/focus-heading";
 import { Badge } from "@/components/ui/badge";
 import { GAP_LEGEND, gapClass, gapGminaLabel, type Gaps } from "@/lib/knowledge/gaps";
 import { formatDate, plural } from "@/lib/pl";
@@ -33,6 +33,11 @@ export function GapMap({ gaps, selected, hrefFor }: { gaps: Gaps; selected: stri
               ? "Na razie każde zgłoszenie ma przynajmniej jedno pasujące rozwiązanie w Bibliotece."
               : `${needs(total)} bez gotowego rozwiązania${rows.length ? ` w ${gminy(rows.length)}` : ""}. Tak oznaczamy zgłoszenie, gdy najlepsze rozwiązanie z Biblioteki pasuje w mniej niż 50 na 100.`}
           </p>
+          {total > 0 && (
+            <p className="max-w-[44rem] text-base text-muted-foreground">
+              Ocena pochodzi z dnia zgłoszenia. Innowacje dodane później do Biblioteki jej nie zmieniają, więc część luk mogła już zniknąć.
+            </p>
+          )}
           {withoutGmina > 0 && (
             <p className="max-w-[44rem] text-base text-muted-foreground">
               {withoutGmina === total
@@ -137,13 +142,19 @@ export function GapMap({ gaps, selected, hrefFor }: { gaps: Gaps; selected: stri
           <h2 id="kierunki" className="text-2xl font-bold">Kierunki naborów</h2>
           <p className="max-w-[44rem] text-base text-muted-foreground">
             Obszary Mapy Wyzwań, w których najwięcej zgłoszeń nie ma rozwiązania. Tu nowa innowacja jest najbardziej potrzebna.
-            Jedno zgłoszenie może dotyczyć kilku obszarów.
+            Jedno zgłoszenie może dotyczyć kilku obszarów. Średnie dopasowanie bliskie 50 znaczy, że w Bibliotece jest coś podobnego
+            do dostosowania; im niżej, tym bardziej brakuje nowego rozwiązania.
           </p>
           <ol className="max-w-[48rem] border-t">
             {gaps.directions.map((d) => (
               <li key={d.area} className="grid gap-2 border-b py-4">
                 <h3 className="text-xl font-bold">{AREA_LABELS[d.area]}</h3>
-                <p>{needs(d.needs)} bez rozwiązania w {gminy(d.gminy)}.</p>
+                <p>
+                  {needs(d.needs)} bez rozwiązania
+                  {d.gminy > 0 && ` w ${gminy(d.gminy)}`}
+                  {d.withoutGmina > 0 && ` (w tym ${d.withoutGmina} bez podanej gminy)`}.
+                </p>
+                {d.avgFit != null && <p>Najlepsze rozwiązania pasowały średnio w {d.avgFit} na 100.</p>}
                 {d.groups.length > 0 && (
                   <p>Najczęściej: {d.groups.map((g) => GROUP_LABELS[g].toLowerCase()).join(", ")}.</p>
                 )}
