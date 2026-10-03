@@ -13,18 +13,20 @@ import { createAdminClient } from "./supabase/admin";
 type MatchInput = { card: NeedCard; text: string; gmina?: string; teryt?: string };
 
 const CANDIDATES = 15;
-/** Od tej części słów opisu znalezionych w tekście innowacji kandydat zawsze trafia do reranku. */
+/** Od tej części słów opisu znalezionych w problemie innowacji kandydat zawsze trafia do reranku. */
 const STRONG_OVERLAP = 0.6;
-/** Opis prawie dosłownie powtarza tekst innowacji — wtedy nie może skończyć się luką. */
+/** Opis prawie dosłownie powtarza problem innowacji — wtedy nie może skończyć się luką. */
 const VERBATIM_OVERLAP = 0.85;
 const VERBATIM_MIN_WORDS = 4;
 
-// Słowa, które niczego nie rozróżniają (także stały wstęp opisów z Biblioteki: „Innowacja odpowiada na problem”).
+// Słowa, które niczego nie rozróżniają (także stałe wstępy problemów z Biblioteki: „Innowacja odpowiada na problem…”,
+// „Innowacja dotyczy takich problemów jak…”).
 const STOPWORDS = new Set([
   "który", "która", "które", "którzy", "których", "którym", "oraz", "jest", "przez", "jako", "może", "mogą", "mają",
   "bardzo", "tylko", "także", "również", "kiedy", "gdzie", "nawet", "tego", "tych", "temu", "taki", "taka", "takie",
   "jego", "sobie", "swoje", "swój", "swoją", "będzie", "było", "była", "były", "żeby", "ponieważ", "między", "przed",
   "jeszcze", "wtedy", "dlatego", "często", "bardziej", "innowacja", "innowacji", "odpowiada", "problem", "rozwiązanie",
+  "dotyczy", "takich", "problemu", "problemy", "problemów", "problemowi", "problemem",
 ]);
 
 /** Rdzeń bez polskiej końcówki: „seniorów” → „senio”, „przyjmowaniu” → „przyjmowa”, „leki” → „lek”. */
@@ -41,31 +43,38 @@ function contentStems(text: string): string[] {
   return [...new Set(words(text).filter((w) => w.length >= 4 && !STOPWORDS.has(w)).map(stem))];
 }
 
-type Lexical = { candidate: Candidate; overlap: number; named: boolean; score: number };
+type Lexical = { candidate: Candidate; overlap: number; score: number };
 
 /**
- * Dopasowanie po słowach w całej tabeli innowacji — niezależne od search_index i od tego, jak model streścił opis.
- * Łapie opisy wklejone albo przepisane z Biblioteki (słowo w słowo), które karta potrzeby gubi.
+ * Kandydaci wyłącznie po PROBLEMIE: słowa użytkownika i słowa kluczowe karty porównujemy z polem `problem` innowacji
+ * — nie z nazwą, rozwiązaniem ani grupą odbiorców. Działa na całej tabeli, niezależnie od search_index i od tego,
+ * jak model streścił opis, więc łapie też opisy problemu wklejone z Biblioteki słowo w słowo.
  *
  * Każde słowo waży tyle, ile jest rzadkie w Bibliotece (IDF): „osoba” czy „wszystkie” są prawie wszędzie i nic nie
- * mówią, „leki” czy „zapomina” — dużo. overlap = ważona część słów z opisu użytkownika obecnych w tekście innowacji
- * (0–1); opis wklejony słowo w słowo daje ~1. Słowa kluczowe z karty (formy podstawowe z LLM) liczymy tak samo —
+ * mówią, „leki” czy „zapomina” — dużo. overlap = ważona część słów z opisu użytkownika obecnych w problemie innowacji
+ * (0–1); problem wklejony słowo w słowo daje ~1. Słowa kluczowe z karty (formy podstawowe z LLM) liczymy tak samo —
  * to one łapią parafrazy („zapomina o lekach” → „lek”, „pamięć”).
  */
 async function lexicalCandidates(originalText: string, keywords: string[]): Promise<Lexical[]> {
   const { data, error } = await createAdminClient()
     .from("innovations")
-    .select("id, title, solution, problem, beneficiaries, etr_summary")
+    .select("id, title, problem")
+    .not("problem", "is", null)
     .limit(500);
   if (error) throw error;
 
-  const docs = (data ?? []).map((i) => {
-    const body = [i.solution, i.problem && `Problem: ${i.problem}`, i.beneficiaries && `Dla kogo: ${i.beneficiaries}`]
-      .filter(Boolean)
-      .join("\n");
-    const tokens = [...new Set(words(`${i.title} ${body} ${i.etr_summary ?? ""}`))];
-    return { id: i.id as string, title: i.title as string, body, has: (s: string) => tokens.some((t) => t.startsWith(s)) };
-  });
+  // Ta sama innowacja dwa razy w bazie (np. „Dialog ponad kulturami”) zajmowałaby dwa miejsca w reranku.
+  const seen = new Set<string>();
+  const docs = (data ?? [])
+    .filter((i) => {
+      const key = `${(i.title as string).trim().toLowerCase()}|${(i.problem as string).trim().toLowerCase()}`;
+      return !seen.has(key) && seen.add(key);
+    })
+    .map((i) => {
+      const problem = (i.problem as string).trim();
+      const tokens = [...new Set(words(problem))];
+      return { id: i.id as string, title: i.title as string, body: problem, has: (s: string) => tokens.some((t) => t.startsWith(s)) };
+    });
 
   const userStems = contentStems(originalText);
   const keywordStems = [...new Set(keywords.flatMap(words).filter((w) => w.length >= 4).map(stem))];
@@ -79,20 +88,18 @@ async function lexicalCandidates(originalText: string, keywords: string[]): Prom
     const total = stems.reduce((sum, s) => sum + (idf.get(s) ?? 0), 0);
     return total > 0 ? stems.filter(has).reduce((sum, s) => sum + (idf.get(s) ?? 0), 0) / total : 0;
   };
-  const originalLower = originalText.toLowerCase();
 
   return docs
     .map((d) => {
       const overlap = weighted(userStems, d.has);
-      const named = originalLower.includes(d.title.toLowerCase());
-      const score = (named ? 100 : 0) + overlap * 10 + weighted(keywordStems, d.has) * 6;
-      return { candidate: { id: d.id, title: d.title, body: d.body, overlap }, overlap, named, score };
+      const score = overlap * 10 + weighted(keywordStems, d.has) * 6;
+      return { candidate: { id: d.id, title: d.title, body: d.body, overlap }, overlap, score };
     })
     .sort((a, b) => b.score - a.score);
 }
 
-/** Użytkownik wskazał innowację wprost: wpisał jej tytuł albo prawie dosłownie powtórzył jej opis. */
-const pointsAt = (l: Lexical, wordCount: number) => l.named || (l.overlap >= VERBATIM_OVERLAP && wordCount >= VERBATIM_MIN_WORDS);
+/** Opis użytkownika prawie dosłownie powtarza problem tej innowacji. */
+const repeatsProblem = (l: Lexical, wordCount: number) => l.overlap >= VERBATIM_OVERLAP && wordCount >= VERBATIM_MIN_WORDS;
 
 /**
  * Społecznik·Dopasuj (README 5.1, kroki 4–7): wyszukiwanie po lematach → rerank z kontekstem gminy →
@@ -100,66 +107,40 @@ const pointsAt = (l: Lexical, wordCount: number) => l.named || (l.overlap >= VER
  */
 export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promise<MatchResponse> {
   const supabase = createAdminClient();
-  // Oryginalne słowa (np. wklejony tytuł innowacji) trafiają do reranku, ale tylko po anonimizacji.
+  // Oryginalne słowa (np. problem przepisany z Biblioteki) trafiają do reranku, ale tylko po anonimizacji.
   const original = anonymize(text).text;
 
   // Szukamy, zanim zapiszemy nową potrzebę — dzięki temu nie znajdzie samej siebie.
   // Pole „Gmina” ma pierwszeństwo przed tym, co model wyczytał z opisu; gdy go nie znamy (literówka, wieś), bierzemy gminę z opisu.
-  const [gminaRow, innovationHits, expertHits, callHits, similar] = await Promise.all([
+  const [gminaRow, expertHits, callHits, similar, lexical] = await Promise.all([
     findGmina(gmina, teryt).then((g) => g ?? findGmina(card.gmina)),
-    keywordSearch("innowacja", card.keywords, CANDIDATES),
     keywordSearch("ekspert", card.keywords, 5),
     keywordSearch("nabor", card.keywords, 5),
     similarNeeds(card.keywords, SIMILAR_NEED_MIN_SIMILARITY),
-  ]);
-
-  // Bez embeddingów słowa kluczowe mogą się minąć z opisem innowacji („samotność” vs „izolacja”),
-  // więc listę dla reranku dopełniamy innowacjami z tych samych obszarów — znaczenie oceni LLM.
-  const innovationIds = innovationHits.map((h) => h.ref_id);
-  if (innovationIds.length < CANDIDATES) {
-    let fill = supabase
-      .from("search_index")
-      .select("ref_id")
-      .eq("kind", "innowacja")
-      .eq("active", true)
-      .overlaps("areas", [...card.areas])
-      .limit(CANDIDATES - innovationIds.length);
-    if (innovationIds.length) fill = fill.not("ref_id", "in", `(${innovationIds.join(",")})`);
-    const { data: extra, error: fillError } = await fill;
-    if (fillError) throw fillError;
-    innovationIds.push(...(extra ?? []).map((r) => r.ref_id as string));
-  }
-
-  // Kandydaci do reranku: najpierw mocne dopasowania po słowach użytkownika (opis wklejony z Biblioteki nie może
-  // wypaść przez to, że indeks zwrócił 15 innych), potem trafienia z indeksu, na końcu reszta po słowach.
-  const [{ data: bodies, error: bodiesError }, lexical] = await Promise.all([
-    innovationIds.length
-      ? supabase.from("search_index").select("ref_id, title, body").eq("kind", "innowacja").in("ref_id", innovationIds)
-      : Promise.resolve({ data: [], error: null }),
     lexicalCandidates(original, card.keywords),
   ]);
-  if (bodiesError) throw bodiesError;
-  const overlapById = new Map(lexical.map((l) => [l.candidate.id, l.overlap]));
+
+  // Kandydaci do reranku wyłącznie po problemie: najpierw te, których problem mocno pokrywa się z opisem
+  // (np. przepisany z Biblioteki), potem reszta według dopasowania słów i słów kluczowych do problemu.
   const candidates: Candidate[] = [];
   const add = (c: Candidate) => {
     if (candidates.length < CANDIDATES && !candidates.some((x) => x.id === c.id)) candidates.push(c);
   };
-  lexical.filter((l) => l.named || l.overlap >= STRONG_OVERLAP).forEach((l) => add(l.candidate));
-  (bodies ?? []).forEach((r) => add({ id: r.ref_id, title: r.title, body: r.body, overlap: overlapById.get(r.ref_id) }));
+  lexical.filter((l) => l.overlap >= STRONG_OVERLAP).forEach((l) => add(l.candidate));
   lexical.forEach((l) => add(l.candidate));
 
   const ranked = await rerank(card, candidates, gminaRow ? describeGmina(gminaRow) : undefined, original);
 
-  // Siatka bezpieczeństwa: innowacja wskazana wprost (tytuł albo opis słowo w słowo) zostaje w wynikach,
+  // Siatka bezpieczeństwa: innowacja, której problem użytkownik powtórzył prawie słowo w słowo, zostaje w wynikach,
   // nawet gdy model, sugerując się streszczeniem, ocenił ją nisko.
   const wordCount = contentStems(original).length;
-  for (const l of lexical.filter((x) => pointsAt(x, wordCount) && candidates.some((c) => c.id === x.candidate.id))) {
+  for (const l of lexical.filter((x) => repeatsProblem(x, wordCount) && candidates.some((c) => c.id === x.candidate.id))) {
     const r = ranked.find((x) => x.id === l.candidate.id);
     if (r && r.fit >= 80) continue;
     const pinned = {
       id: l.candidate.id,
       fit: 85,
-      why: l.named ? "Wpisany tytuł to nazwa tego rozwiązania." : "Twój opis prawie dosłownie powtarza opis tego rozwiązania.",
+      why: "Twój opis prawie dosłownie powtarza problem, na który odpowiada to rozwiązanie.",
       adapt: r?.adapt || "Porównaj opis rozwiązania z sytuacją w Twojej gminie i sprawdź, czego potrzeba do wdrożenia.",
     };
     if (r) Object.assign(r, pinned);
