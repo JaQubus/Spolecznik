@@ -10,7 +10,7 @@ Bezpieczne formaty kontaktów:
   - NIP/REGON mają poprawną sumę kontrolną (przejdą walidację), ale są losowe,
     KRS zaczyna się od "00009" - wszystkie są oznaczone jako mock.
 
-Uruchomienie:  python generuj_mock.py  ->  innowacje_mock.json, wnioski_mock.json
+Uruchomienie:  python scripts/generuj_mock.py  ->  dane/mock/innowacje_mock.json, wnioski_mock.json
 """
 import json
 import random
@@ -20,7 +20,7 @@ from pathlib import Path
 
 SEED = 42
 LICZBA_WNIOSKOW = 60
-TU = Path(__file__).resolve().parent
+WYJSCIE = Path(__file__).resolve().parent.parent / "dane" / "mock"
 
 # --------------------------------------------------------------------------------------
 # Wymyślone koncepcje innowacji (kategorie jak w bibliotece ROPS)
@@ -465,7 +465,7 @@ def main():
     innowacje = [innowacja(k, rng) for k in KONCEPCJE]
     wnioski = [wniosek(i + 1, rng, innowacje) for i in range(LICZBA_WNIOSKOW)]
     for nazwa, dane in [("innowacje_mock.json", innowacje), ("wnioski_mock.json", wnioski)]:
-        (TU / nazwa).write_text(json.dumps(dane, ensure_ascii=False, indent=2), encoding="utf-8")
+        (WYJSCIE / nazwa).write_text(json.dumps(dane, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Zapisano {nazwa}: {len(dane)} rekordów")
 
 
