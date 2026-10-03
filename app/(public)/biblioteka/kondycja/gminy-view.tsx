@@ -224,13 +224,9 @@ async function GminaCard({ gminy, gmina, topics }: { gminy: Gmina[]; gmina: Gmin
               ))}
             </ul>
           ) : (
-            <p>W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.</p>
-          )}
-          {c.t.innovations.groups[0] && (
             <p>
-              <Link href={`/biblioteka?dla=${c.t.innovations.groups[0]}#innowacje`} className={linkClass}>
-                Zobacz wszystkie rozwiązania w Bibliotece
-              </Link>
+              W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.{" "}
+              <Link href="/biblioteka#innowacje" className={linkClass}>Przeglądaj wszystkie rozwiązania</Link>
             </p>
           )}
         </div>
