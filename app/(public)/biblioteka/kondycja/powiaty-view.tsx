@@ -100,7 +100,7 @@ export async function PowiatyView({ requested }: { requested?: string }) {
         ) : (
           <h3 id="powiaty-wynik-tytul" className="text-2xl font-bold">{indicator.wskaznik}</h3>
         )}
-        {indicator.opis && <p className="max-w-3xl text-muted-foreground">{indicator.opis}</p>}
+        {values[0]?.opis && <p className="max-w-3xl text-muted-foreground">{values[0].opis}</p>}
         {isCount && (
           <p className="max-w-3xl">
             To liczby bezwzględne: większe powiaty mają ich więcej, bo mają więcej mieszkańców. Dlatego nie porównujemy ich z resztą Małopolski.

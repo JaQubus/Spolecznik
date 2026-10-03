@@ -4,14 +4,14 @@ import { createClient } from "./supabase/server";
 export type PowiatIndicator = {
   wskaznik: string;
   kategoria: string;
-  opis: string | null;
   jednostka: string;
-  rok: number;
 };
 
 export type PowiatValue = PowiatIndicator & {
   powiat: string;
   nazwa: string;
+  opis: string | null;
+  rok: number;
   wartosc: number | null;
 };
 
@@ -24,7 +24,8 @@ export async function listPowiatyIndicators(): Promise<PowiatIndicator[]> {
   for (let from = 0; ; ) {
     const { data, error } = await supabase
       .from("powiaty_wskazniki")
-      .select("wskaznik, kategoria, opis, jednostka, rok")
+      // Bez opisu (~500 znaków × 22 powiaty): opis wybranego wskaźnika przychodzi z listPowiatyValues.
+      .select("wskaznik, kategoria, jednostka")
       .order("kategoria")
       .order("wskaznik")
       .order("powiat")
