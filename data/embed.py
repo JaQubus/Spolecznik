@@ -17,7 +17,7 @@ import uuid
 import psycopg
 from psycopg.types.json import Jsonb
 
-from common import OUT, db_url, innovation_text, read_json
+from common import INNOVATION_UPSERT, OUT, db_url, innovation_row, innovation_text, read_json
 
 EXPERT_NS = uuid.UUID("5f0c8a52-3c43-4d8e-9a39-6f1f3b7f2a10")  # stałe ref_id ekspertów między uruchomieniami
 
@@ -59,45 +59,11 @@ def load_innovations(cur) -> dict[str, str]:
     if not enriched:
         print("! brak out/enriched.json — innowacje bez obszarów, lematów i ETR (uruchom enrich.py)")
 
-    rows = []
-    for i in innovations:
-        e, p = enriched.get(i["slug"], {}), pdf.get(i["slug"], {})
-        rows.append({
-            "slug": i["slug"], "title": i["title"],
-            "category": (i.get("categories") or [None])[0],
-            "areas": e.get("areas", []),
-            "target_groups": e.get("groups") or i.get("groups", []),
-            "cross_topics": e.get("cross", []),
-            "solution": i.get("solution"), "problem": i.get("problem"),
-            "beneficiaries": i.get("target_group"), "who_can_use": i.get("who_can_implement"),
-            # Karta PDF jest pełniejsza niż sekcja „Czy to działa?” ze strony.
-            "evidence": p.get("evidence") or i.get("evidence"),
-            "how_to_use": p.get("how_to_use"), "components": p.get("components"),
-            "source_url": i.get("url"), "pdf_url": i.get("pdf_url"), "video_url": i.get("video_url"),
-            "etr_summary": e.get("etr_summary"),
-            "synthetic": bool(i.get("synthetic")),
-            "lemmas": e.get("lemmas") or i["title"].lower().split(),
-        })
+    rows = [innovation_row(i, enriched.get(i["slug"], {}), pdf.get(i["slug"], {})) for i in innovations]
 
     ids: dict[str, str] = {}
     for r in rows:
-        cur.execute(
-            """insert into innovations (slug, title, category, areas, target_groups, cross_topics, solution, problem,
-                 beneficiaries, who_can_use, evidence, how_to_use, components, source_url, pdf_url, video_url,
-                 etr_summary, synthetic, updated_at)
-               values (%(slug)s, %(title)s, %(category)s, %(areas)s, %(target_groups)s, %(cross_topics)s, %(solution)s,
-                 %(problem)s, %(beneficiaries)s, %(who_can_use)s, %(evidence)s, %(how_to_use)s, %(components)s,
-                 %(source_url)s, %(pdf_url)s, %(video_url)s, %(etr_summary)s, %(synthetic)s, now())
-               on conflict (slug) do update set title = excluded.title, category = excluded.category,
-                 areas = excluded.areas, target_groups = excluded.target_groups, cross_topics = excluded.cross_topics,
-                 solution = excluded.solution, problem = excluded.problem, beneficiaries = excluded.beneficiaries,
-                 who_can_use = excluded.who_can_use, evidence = excluded.evidence, how_to_use = excluded.how_to_use,
-                 components = excluded.components, source_url = excluded.source_url, pdf_url = excluded.pdf_url,
-                 video_url = excluded.video_url, etr_summary = excluded.etr_summary, synthetic = excluded.synthetic,
-                 updated_at = now()
-               returning id""",
-            r,
-        )
+        cur.execute(INNOVATION_UPSERT, r)
         ids[r["slug"]] = str(cur.fetchone()[0])
 
     # Korpus to dokładnie out/innovations.json — np. po przejściu z danych prawdziwych na mock.

@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from "@/lib/supabase/env";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Logowanie" };
@@ -27,7 +26,7 @@ export default async function Page(props: PageProps<"/logowanie">) {
   const next = typeof params.next === "string" ? params.next : "/panel";
   const linkError = params.blad === "link";
 
-  if (!SUPABASE_URL || !SUPABASE_PUBLIC_KEY) {
+  if (!isSupabaseConfigured()) {
     return (
       <section className="max-w-2xl space-y-6">
         <h1 className="text-3xl font-bold">Logowanie</h1>

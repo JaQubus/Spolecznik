@@ -46,3 +46,6 @@ data/.venv/
 data/raw/*
 !data/raw/.gitkeep
 __pycache__/
+
+# wynik import_powiaty.py (duży; do bazy idzie out/powiaty.sql albo import bezpośredni)
+data/out/powiaty.json

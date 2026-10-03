@@ -70,6 +70,12 @@
   --flag-white: #ffffff;
   --flag-red: #dc143c;
   --shadow-overlay: 0 8px 28px rgba(34,34,34,0.16);
+  /* Kartogram (Kondycja Małopolski): jeden odcień, jasny → ciemny = mniejsze → większe wyzwanie. */
+  --map-1: #cde2fb;
+  --map-2: #86b6ef;
+  --map-3: #3987e5;
+  --map-4: #1c5cab;
+  --map-5: #0d366b;
 
   /* shadcn/ui aliases */
   --background: var(--surface);      --foreground: var(--ink);
@@ -118,6 +124,12 @@
   --flag-white: #ffffff;
   --flag-red: #dc143c;
   --shadow-overlay: 0 8px 28px rgba(0,0,0,0.55);
+  /* Na ciemnym tle małe wartości gasną w stronę tła, duże świecą. */
+  --map-1: #184f95;
+  --map-2: #256abf;
+  --map-3: #3987e5;
+  --map-4: #6da7ec;
+  --map-5: #b7d3f6;
 }
 
 @layer base {

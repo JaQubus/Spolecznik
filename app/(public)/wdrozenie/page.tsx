@@ -1,6 +1,6 @@
 import { EMPTY_GMINA, type GminaValue } from "@/components/gmina-field";
 import { GMINA_OPTIONS } from "@/lib/gminy";
-import { innovationOptions } from "@/lib/library";
+import { innovationOptions } from "@/lib/innovations";
 import { STATUS_CODE } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ImplementationFlow } from "./implementation-flow";

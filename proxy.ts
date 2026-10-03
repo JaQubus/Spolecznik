@@ -1,19 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from "@/lib/supabase/env";
+import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/key";
 
 // Odświeża sesję Supabase przy każdym żądaniu i chroni /panel.
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   // Bez skonfigurowanego Supabase (np. praca nad samym UI) przepuszczamy żądania.
-  if (!SUPABASE_URL || !SUPABASE_PUBLIC_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
     return response;
   }
 
   const supabase = createServerClient(
     SUPABASE_URL,
-    SUPABASE_PUBLIC_KEY,
+    SUPABASE_KEY,
     {
       cookies: {
         getAll: () => request.cookies.getAll(),
