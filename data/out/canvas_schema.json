@@ -1,0 +1,65 @@
+{
+  "source": "domyślny",
+  "fields": [
+    {
+      "key": "problem",
+      "label": "Problem",
+      "hint": "Jaki problem społeczny rozwiązujesz? Kogo dotyczy i jak bardzo?",
+      "type": "textarea"
+    },
+    {
+      "key": "odbiorcy",
+      "label": "Odbiorcy",
+      "hint": "Kto skorzysta? Opisz grupę i jej potrzeby.",
+      "type": "textarea"
+    },
+    {
+      "key": "rozwiazanie",
+      "label": "Rozwiązanie",
+      "hint": "Na czym polega Twój pomysł?",
+      "type": "textarea"
+    },
+    {
+      "key": "wartosc",
+      "label": "Wartość dla odbiorców",
+      "hint": "Co zmieni się w życiu odbiorców?",
+      "type": "textarea"
+    },
+    {
+      "key": "innowacyjnosc",
+      "label": "Co jest nowego",
+      "hint": "Czym różni się od tego, co już jest?",
+      "type": "textarea"
+    },
+    {
+      "key": "partnerzy",
+      "label": "Partnerzy",
+      "hint": "Kto pomoże we wdrożeniu (OPS, NGO, szkoła, firma)?",
+      "type": "textarea"
+    },
+    {
+      "key": "zasoby",
+      "label": "Zasoby",
+      "hint": "Ludzie, miejsce, sprzęt, wiedza.",
+      "type": "textarea"
+    },
+    {
+      "key": "koszty",
+      "label": "Koszty i finansowanie",
+      "hint": "Ile to kosztuje i skąd pieniądze?",
+      "type": "textarea"
+    },
+    {
+      "key": "wskazniki",
+      "label": "Jak zmierzysz efekt",
+      "hint": "Po czym poznasz, że działa?",
+      "type": "textarea"
+    },
+    {
+      "key": "ryzyka",
+      "label": "Ryzyka",
+      "hint": "Co może pójść nie tak?",
+      "type": "textarea"
+    }
+  ]
+}

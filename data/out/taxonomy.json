@@ -1,0 +1,42 @@
+{
+  "rodzina_piecza": {
+    "label": "Rodzina i piecza zastępcza",
+    "definition": null,
+    "challenges": []
+  },
+  "bezdomnosc": {
+    "label": "Bezdomność",
+    "definition": null,
+    "challenges": []
+  },
+  "niepelnosprawnosc": {
+    "label": "Niepełnosprawność",
+    "definition": null,
+    "challenges": []
+  },
+  "ubostwo": {
+    "label": "Ubóstwo",
+    "definition": null,
+    "challenges": []
+  },
+  "cudzoziemcy": {
+    "label": "Integracja cudzoziemców",
+    "definition": null,
+    "challenges": []
+  },
+  "zdrowie": {
+    "label": "Zdrowie",
+    "definition": null,
+    "challenges": []
+  },
+  "zdrowie_psychiczne": {
+    "label": "Zdrowie psychiczne",
+    "definition": null,
+    "challenges": []
+  },
+  "seniorzy": {
+    "label": "Seniorzy",
+    "definition": null,
+    "challenges": []
+  }
+}

@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Przejdź do treści
         </a>
         <SiteHeader />
-        <main id="tresc" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+        <main id="tresc" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-5">
           {children}
         </main>
         <footer className="bg-secondary px-4 py-8 text-center text-base text-muted-foreground">

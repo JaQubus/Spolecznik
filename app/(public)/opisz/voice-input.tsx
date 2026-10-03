@@ -3,6 +3,7 @@
 import { MicIcon, SquareIcon } from "lucide-react";
 import { useRef, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
+import { FieldError } from "@/components/ui/field";
 
 // Web Speech API nie ma typów w lib.dom — minimalna deklaracja tego, czego używamy.
 type RecognitionEvent = { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> };
@@ -69,21 +70,22 @@ export function VoiceInput({ onText, label = "Opowiedz problem" }: { onText: (ch
 
   return (
     <div className="space-y-2">
+      {/* Drugorzędny (obrys), bo obok jest pole i zielony przycisk wysyłania. Nagrywanie = wypełnienie + puls, nie czerwień. */}
       <Button
         type="button"
-        size="lg"
-        variant={listening ? "destructive" : "secondary"}
+        variant="outline"
+        aria-pressed={listening}
         onClick={() => (listening ? recognition.current?.stop() : start())}
-        className="h-14 gap-3 px-6 text-lg"
+        className="aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:hover:bg-foreground motion-safe:aria-pressed:animate-[mic-pulse_1.4s_ease-in-out_infinite]"
       >
         {listening
-          ? <><SquareIcon aria-hidden className="size-5" /> Zakończ nagrywanie</>
+          ? <><SquareIcon aria-hidden /> Słucham… kliknij, by zakończyć</>
           : <><MicIcon aria-hidden className="size-6" /> {label}</>}
       </Button>
-      <p aria-live="polite" className="min-h-6 text-muted-foreground">
+      <p aria-live="polite" className="min-h-7 text-base text-muted-foreground">
         {listening && (interim || "Słucham… Mów spokojnie, tekst pojawi się w polu poniżej.")}
       </p>
-      {error && <p role="alert" className="text-destructive">{error}</p>}
+      <FieldError role="alert">{error}</FieldError>
     </div>
   );
 }
