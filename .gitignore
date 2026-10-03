@@ -49,3 +49,5 @@ __pycache__/
 
 # Zasobnik wiedzy: lokalne zmiany z panelu w trybie bez bazy
 /.data/
+/test-results/
+/playwright-report/
