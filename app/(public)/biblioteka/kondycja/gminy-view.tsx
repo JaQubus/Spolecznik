@@ -224,11 +224,12 @@ async function GminaCard({ gminy, gmina, topics }: { gminy: Gmina[]; gmina: Gmin
               ))}
             </ul>
           ) : (
-            <p>
-              W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.{" "}
-              <Link href="/biblioteka#innowacje" className={linkClass}>Przeglądaj wszystkie rozwiązania</Link>
-            </p>
+            <p>W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.</p>
           )}
+          {/* Karta pokazuje najwyżej 3 dopasowania; pełna lista jest w Bibliotece. */}
+          <p>
+            <Link href="/biblioteka#innowacje" className={linkClass}>Przeglądaj wszystkie rozwiązania w Bibliotece</Link>
+          </p>
         </div>
       ))}
 
