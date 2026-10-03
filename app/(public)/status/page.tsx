@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { MyNeeds } from "@/components/rozmowa/my-needs";
 import { Button } from "@/components/ui/button";
 import { FieldHint } from "@/components/ui/field";
@@ -15,6 +16,9 @@ async function go(formData: FormData) {
 }
 
 export default async function Page() {
+  // Strona zależy od ciasteczek tej przeglądarki. Bez tego .catch() niżej połyka sygnał Next o odczycie cookies
+  // i build robi z /status stronę statyczną — lista „moje zgłoszenia” nigdy by się nie pokazała.
+  await connection();
   // Kto zapomniał kodu, zobaczy zgłoszenia wysłane z tej przeglądarki. Bez bazy — po prostu sam formularz.
   const mine: MyNeed[] = await rememberedThreads().catch((e) => {
     console.error("[status] moje zgłoszenia:", e);
