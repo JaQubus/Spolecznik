@@ -60,6 +60,37 @@ def polygons(geometry: dict) -> list[list[list[tuple[float, float]]]]:
     return [[[(x, y) for x, y in ring] for ring in poly] for poly in polys]
 
 
+def svg_shapes(shapes: dict[str, list], key: str, tolerance: float, width: int = WIDTH) -> dict:
+    """Wielokąty (lon, lat) → ścieżki SVG w viewBox o szerokości `width` + środek do podpisu.
+    Wspólne dla map powiatów i gmin, żeby obie miały ten sam rzut i format."""
+    project = lambda lon, lat: (lon * math.cos(LAT0), -lat)  # noqa: E731
+    projected = {
+        pid: [[[project(*p) for p in simplify_ring(ring, tolerance)] for ring in poly] for poly in polys]
+        for pid, polys in shapes.items()
+    }
+    xs = [x for polys in projected.values() for poly in polys for ring in poly for x, _ in ring]
+    ys = [y for polys in projected.values() for poly in polys for ring in poly for _, y in ring]
+    scale = width / (max(xs) - min(xs))
+    height = round((max(ys) - min(ys)) * scale)
+    to_svg = lambda x, y: (round((x - min(xs)) * scale, 1), round((y - min(ys)) * scale, 1))  # noqa: E731
+
+    out = []
+    for pid, polys in sorted(projected.items()):
+        parts, area_best, centre = [], -1.0, (0.0, 0.0)
+        for poly in polys:
+            for k, ring in enumerate(poly):
+                pts = [to_svg(x, y) for x, y in ring]
+                parts.append("M" + "L".join(f"{x:g},{y:g}" for x, y in pts) + "Z")
+                if k == 0:  # środek największego pierścienia zewnętrznego — tylko do podpisu
+                    area = abs(sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1]))) / 2
+                    if area > area_best:
+                        area_best = area
+                        centre = (round(sum(p[0] for p in pts) / len(pts), 1), round(sum(p[1] for p in pts) / len(pts), 1))
+        out.append({key: pid, "d": "".join(parts), "cx": centre[0], "cy": centre[1]})
+
+    return {"width": width, "height": height, "shapes": out}
+
+
 def main() -> None:
     if not GEOJSON_PATH.exists():
         GEOJSON_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -83,36 +114,12 @@ def main() -> None:
     if missing:
         raise SystemExit(f"! brak kształtów dla: {sorted(missing)}")
 
-    project = lambda lon, lat: (lon * math.cos(LAT0), -lat)  # noqa: E731
-    projected = {
-        pid: [[[project(*p) for p in simplify_ring(ring, TOLERANCE)] for ring in poly] for poly in polys]
-        for pid, polys in shapes.items()
-    }
-    xs = [x for polys in projected.values() for poly in polys for ring in poly for x, _ in ring]
-    ys = [y for polys in projected.values() for poly in polys for ring in poly for _, y in ring]
-    scale = WIDTH / (max(xs) - min(xs))
-    height = round((max(ys) - min(ys)) * scale)
-    to_svg = lambda x, y: (round((x - min(xs)) * scale, 1), round((y - min(ys)) * scale, 1))  # noqa: E731
-
-    out = []
-    for pid, polys in sorted(projected.items()):
-        parts, area_best, centre = [], -1.0, (0.0, 0.0)
-        for poly in polys:
-            for k, ring in enumerate(poly):
-                pts = [to_svg(x, y) for x, y in ring]
-                parts.append("M" + "L".join(f"{x:g},{y:g}" for x, y in pts) + "Z")
-                if k == 0:  # środek największego pierścienia zewnętrznego — tylko do podpisu
-                    area = abs(sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1]))) / 2
-                    if area > area_best:
-                        area_best = area
-                        centre = (round(sum(p[0] for p in pts) / len(pts), 1), round(sum(p[1] for p in pts) / len(pts), 1))
-        out.append({"powiat": pid, "d": "".join(parts), "cx": centre[0], "cy": centre[1]})
-
+    result = svg_shapes(shapes, "powiat", TOLERANCE)
     OUT_PATH.write_text(
-        json.dumps({"width": WIDTH, "height": height, "shapes": out}, ensure_ascii=False, separators=(",", ":")),
+        json.dumps(result, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
-    print(f"{len(out)} powiatów → {OUT_PATH.relative_to(ROOT.parent)} ({OUT_PATH.stat().st_size // 1024} kB)")
+    print(f"{len(result['shapes'])} powiatów → {OUT_PATH.relative_to(ROOT.parent)} ({OUT_PATH.stat().st_size // 1024} kB)")
 
 
 if __name__ == "__main__":

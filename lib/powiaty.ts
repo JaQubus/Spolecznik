@@ -12,6 +12,18 @@ export type PowiatyData = {
   values: Record<string, Record<string, Value>>;
 };
 
+/** „bocheński”, „m. Kraków”, „powiat m. Nowy Sącz” → „bochenski”, „krakow”, „nowysacz” (jak data/import_powiaty.py). */
+export function powiatId(name: string): string {
+  return name
+    .replace(/^powiat\s+/, "")
+    .replace(/^m\.\s*/, "")
+    .replace(/ł/gi, "l") // ł nie ma rozkładu NFKD
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "") // ogonki i kreski po rozkładzie NFKD
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
 /** „powiat m. Kraków” → „Kraków”, „powiat bocheński” → „bocheński”. */
 export function shortName(nazwa: string): string {
   return nazwa.replace(/^powiat\s+/, "").replace(/^m\.\s*/, "");

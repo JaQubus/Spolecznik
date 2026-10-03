@@ -6,7 +6,7 @@ import { NoDatabase } from "@/components/layout/no-database";
 import { Alert } from "@/components/ui/alert";
 import { innovationsForArea } from "@/lib/innovations";
 import {
-  CHALLENGE_MIN, CHALLENGE_TIE, CLASS_COUNT, KONDYCJA_AREAS, areaLabel, POPULATION_KEY, badness, classOf, compareToRegion, findArea, worseThanRegion, formatBare, formatValue,
+  CHALLENGE_MIN, CHALLENGE_TIE, KONDYCJA_AREAS, classRanges, areaLabel, POPULATION_KEY, badness, classOf, compareToRegion, findArea, findGminaTopic, worseThanRegion, formatBare, formatValue,
   type KondycjaArea,
 } from "@/lib/kondycja";
 import { formatNumber } from "@/lib/pl";
@@ -15,7 +15,13 @@ import { getKondycjaData, longName, shortName, type PowiatyData } from "@/lib/po
 import { GROUP_LABELS } from "@/lib/taxonomy";
 import { LINK as linkClass, first } from "../shared";
 import { FocusHeading } from "./focus-heading";
-import { MAP_FILLS, PowiatyMap } from "./powiaty-map";
+import { ChoroplethMap, MapLegend, POWIAT_SHAPES } from "./choropleth-map";
+import { GminyView } from "./gminy-view";
+
+const LEVELS = [
+  { key: "powiaty", label: "22 powiaty", href: "/biblioteka/kondycja" },
+  { key: "gminy", label: "183 gminy", href: "/biblioteka/kondycja?poziom=gminy" },
+] as const;
 
 export const metadata: Metadata = { title: "Kondycja Małopolski" };
 
@@ -23,6 +29,16 @@ const chipClass =
   "inline-flex min-h-12 max-w-full items-center gap-2 rounded-full py-2 [overflow-wrap:anywhere] border border-border-strong bg-background px-4 text-base hover:border-foreground aria-[current=true]:border-foreground aria-[current=true]:bg-foreground aria-[current=true]:font-bold aria-[current=true]:text-background";
 
 const href = (area: string, powiat?: string) => `/biblioteka/kondycja?obszar=${area}${powiat ? `&powiat=${powiat}#karta` : ""}`;
+
+// Miasta na prawach powiatu leżą w środku powiatów ziemskich.
+const CITIES = new Set(["krakow", "nowysacz", "tarnow"]);
+const LABEL_OFFSETS: Record<string, [number, number]> = {
+  krakowski: [-38, -30], // środek wypada w Krakowie
+  nowosadecki: [0, 18],
+  tarnowski: [0, 28],
+  wielicki: [-14, 0],
+  bochenski: [12, 0],
+};
 
 /** Wartości głównego wskaźnika obszaru we wszystkich powiatach (bez braków danych). */
 function primaryValues(data: PowiatyData, area: KondycjaArea): number[] {
@@ -34,8 +50,9 @@ function primaryValues(data: PowiatyData, area: KondycjaArea): number[] {
 export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
   const params = await props.searchParams;
   const area = findArea(first(params.obszar));
+  const level = first(params.poziom) === "gminy" ? "gminy" : "powiaty";
   const connected = isSupabaseConfigured();
-  const data: PowiatyData = connected ? await getKondycjaData() : { year: null, powiaty: [], values: {} };
+  const data: PowiatyData = connected && level === "powiaty" ? await getKondycjaData() : { year: null, powiaty: [], values: {} };
   const primary = area.indicators[0];
   const all = primaryValues(data, area);
 
@@ -52,14 +69,11 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
   });
   const selected = data.powiaty.find((p) => p.id === first(params.powiat)) ?? null;
 
-  // Legenda: zakres wartości w każdej klasie.
-  const legend = Array.from({ length: CLASS_COUNT }, (_, c) => {
-    const vs = rows.filter((r) => r.cls === c && r.value != null).map((r) => r.value as number);
-    if (!vs.length) return null;
-    const unit = rows.find((r) => r.unit)?.unit ?? "";
-    const lo = Math.min(...vs), hi = Math.max(...vs);
-    return { c, text: lo === hi ? formatBare(lo, unit) : `${formatBare(lo, "")}–${formatBare(hi, unit)}` };
-  }).filter((l) => l != null);
+  const unit = rows.find((r) => r.unit)?.unit ?? "";
+  const legend = classRanges(rows).map(({ c, lo, hi }) => ({
+    c,
+    text: lo === hi ? formatBare(lo, unit) : `${formatBare(lo, "")}–${formatBare(hi, unit)}`,
+  }));
 
   const label = areaLabel(area);
 
@@ -73,12 +87,30 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
       <header className="space-y-3">
         <h1 className="text-4xl font-bold">Kondycja Małopolski</h1>
         <p className="max-w-2xl text-xl">
-          Wybierz temat, a zobaczysz, jak wygląda w każdym z 22 powiatów. Kliknij powiat, żeby zobaczyć jego najważniejsze liczby i pasujące rozwiązania.
+          Wybierz temat, a zobaczysz, jak wygląda w każdym powiecie albo w każdej gminie. Kliknij obszar na mapie, żeby zobaczyć jego najważniejsze liczby i pasujące rozwiązania.
         </p>
       </header>
 
+      {connected && (
+        <nav aria-labelledby="poziom" className="space-y-3">
+          <h2 id="poziom" className="text-lg font-bold">Pokaż</h2>
+          <ul className="flex flex-wrap gap-2">
+            {LEVELS.map((l) => (
+              <li key={l.key} className="max-w-full">
+                <Link href={l.href} aria-current={l.key === level} className={chipClass}>
+                  {l.key === level && <Check aria-hidden className="size-5" />}
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
       {!connected ? (
         <NoDatabase />
+      ) : level === "gminy" ? (
+        <GminyView topic={findGminaTopic(first(params.temat))} selectedId={first(params.gmina)} chipClass={chipClass} />
       ) : data.year == null ? (
         <Alert title="Brak danych o powiatach">
           <p>Dane jeszcze nie zostały wczytane. Instrukcja jest w pliku data/README.md (import powiatów).</p>
@@ -110,7 +142,10 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
 
             <figure className="space-y-4">
               <a href="#tabela" className={cn(linkClass, "sr-only focus:not-sr-only")}>Pomiń mapę i przejdź do tabeli</a>
-              <PowiatyMap
+              <ChoroplethMap
+                shapes={POWIAT_SHAPES}
+                drawLast={CITIES}
+                labels={{ offsets: LABEL_OFFSETS }}
                 title={`Mapa powiatów: ${primary.label}`}
                 selected={selected?.id ?? null}
                 items={rows.map((r) => ({
@@ -121,20 +156,12 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
                   href: href(area.area, r.id),
                 }))}
               />
-              <figcaption className="max-w-2xl space-y-3">
-                <p className="font-bold">{primary.label}</p>
-                <ul aria-label="Legenda mapy" className="flex flex-wrap gap-x-5 gap-y-2 text-base">
-                  {legend.map((l) => (
-                    <li key={l.c} className="inline-flex items-center gap-2">
-                      <span aria-hidden className="size-5 shrink-0 rounded-[4px] border border-border-strong" style={{ background: MAP_FILLS[l.c] }} />
-                      {l.text}
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-base text-muted-foreground">
-                  Im ciemniejszy kolor, tym większe wyzwanie w porównaniu z innymi powiatami. Te same liczby są w tabeli poniżej.
-                </p>
-              </figcaption>
+              <MapLegend
+                title={primary.label}
+                entries={legend}
+                missing={rows.some((r) => r.value == null)}
+                note="Im ciemniejszy kolor, tym większe wyzwanie w porównaniu z innymi powiatami. Te same liczby są w tabeli poniżej."
+              />
             </figure>
 
             {selected && <PowiatCard data={data} powiat={selected} key={selected.id} />}

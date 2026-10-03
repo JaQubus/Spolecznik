@@ -4,11 +4,12 @@
  * deterministycznie — bez LLM — więc zawsze zgadzają się z tabelą obok.
  */
 import { formatNumber } from "./pl";
-import type { GROUPS, MWS_AREAS } from "./schemas";
+import type { CROSS, GROUPS, MWS_AREAS } from "./schemas";
 import { AREA_LABELS } from "./taxonomy";
 
 type Area = (typeof MWS_AREAS)[number];
 type Group = (typeof GROUPS)[number];
+type Cross = (typeof CROSS)[number];
 
 export type Indicator = {
   /** Nazwa wskaźnika dokładnie jak w powiaty_wskazniki.wskaznik. */
@@ -125,6 +126,70 @@ export function areaLabel(a: KondycjaArea): string {
 export const CHALLENGE_MIN = 0.5;
 export const CHALLENGE_TIE = 0.1;
 
+// ── Gminy (tabela gminy, dane BDL z data/bdl.py) ────────────
+
+export type GminaField = "udzial_65plus" | "zmiana_ludnosci_10l";
+
+export type GminaTopic = {
+  key: string;
+  label: string;
+  intro: string;
+  /** Nagłówek kolumny w tabeli. */
+  column: string;
+  field: GminaField;
+  worse: Indicator["worse"];
+  format: (v: number) => string;
+  sentence: (v: number) => string;
+  /** Porównanie z medianą gmin; d jak w regionDirection. */
+  compare: (d: -1 | 0 | 1, v: number) => string;
+  /** Jakie innowacje podsunąć gminie, w której temat wypada źle. */
+  innovations: { area?: Area; groups: Group[]; cross: Cross[] };
+};
+
+const perHundred = (x: number) => (x < 1 ? "mniej niż 1" : formatNumber(Math.round(x), 0));
+
+export const GMINA_TOPICS: [GminaTopic, ...GminaTopic[]] = [
+  {
+    key: "seniorzy",
+    label: "Seniorzy",
+    intro: "Jaka część mieszkańców gminy ma 65 lat lub więcej.",
+    column: "Osoby w wieku 65+ (% mieszkańców)",
+    field: "udzial_65plus",
+    worse: "higher",
+    format: (v) => formatValue(v, "%"),
+    sentence: (v) => `${share(v, { one: "osoba", many: "osób" })} ma 65 lat lub więcej.`,
+    compare: (d) =>
+      d === 0 ? "Podobnie jak w większości gmin Małopolski."
+        : d > 0 ? "To więcej niż w większości gmin Małopolski." : "To mniej niż w większości gmin Małopolski.",
+    innovations: { area: "seniorzy", groups: ["seniorzy"], cross: [] },
+  },
+  {
+    key: "ludnosc",
+    label: "Zmiana liczby mieszkańców",
+    intro:
+      "Czy przez 10 lat mieszkańców przybyło, czy ubyło. Wyludnianie się gmin to jeden z tematów przekrojowych Mapy Wyzwań.",
+    column: "Zmiana liczby mieszkańców w 10 lat (%)",
+    field: "zmiana_ludnosci_10l",
+    worse: "lower",
+    format: (v) => `${v > 0 ? "+" : ""}${formatNumber(v, 1)}%`,
+    sentence: (v) =>
+      Math.abs(v) < 0.5 ? "Przez 10 lat liczba mieszkańców prawie się nie zmieniła."
+        : v < 0 ? `Przez 10 lat ubyło ${perHundred(-v)} na 100 mieszkańców.`
+        : `Przez 10 lat przybyło ${perHundred(v)} na 100 mieszkańców.`,
+    // „Więcej/mniej” zależy od znaku: -0,5% przy medianie -1% to wciąż ubywanie, tylko wolniejsze.
+    compare: (d, v) =>
+      d === 0 ? "Podobnie jak w większości gmin Małopolski."
+        : d > 0 ? (v > 0 ? "Przybywa więcej mieszkańców niż w większości gmin Małopolski." : "Ubywa mniej mieszkańców niż w większości gmin Małopolski.")
+        : v < 0 ? "Ubywa więcej mieszkańców niż w większości gmin Małopolski." : "Przybywa mniej mieszkańców niż w większości gmin Małopolski.",
+    // Wyjeżdżają głównie młodzi za pracą, a zostającym brakuje usług — stąd rynek pracy i dostęp do usług.
+    innovations: { groups: ["rynek_pracy"], cross: ["depopulacja_suburbanizacja", "dostep_do_uslug"] },
+  },
+];
+
+export function findGminaTopic(key: string | undefined): GminaTopic {
+  return GMINA_TOPICS.find((t) => t.key === key) ?? GMINA_TOPICS[0];
+}
+
 export const POPULATION_KEY = "Ludność ogółem";
 
 /** Wszystkie wskaźniki potrzebne na stronie (do jednego zapytania). */
@@ -211,6 +276,14 @@ export function badness(value: number, values: number[], worse: Indicator["worse
   const below = values.filter((v) => (worse === "higher" ? v < value : v > value)).length;
   const equal = values.filter((v) => v === value).length;
   return (below + (equal - 1) / 2) / (values.length - 1);
+}
+
+/** Zakres wartości w każdej klasie kartogramu — do legendy. */
+export function classRanges(rows: { cls: number | null; value: number | null }[]): { c: number; lo: number; hi: number }[] {
+  return Array.from({ length: CLASS_COUNT }, (_, c) => {
+    const vs = rows.filter((r) => r.cls === c && r.value != null).map((r) => r.value as number);
+    return vs.length ? { c, lo: Math.min(...vs), hi: Math.max(...vs) } : null;
+  }).filter((r) => r != null);
 }
 
 /** Pięć klas do kartogramu (0 = najmniejsze wyzwanie). */

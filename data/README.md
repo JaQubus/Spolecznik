@@ -17,6 +17,7 @@ uv run seed_innovations.py # szybki seed Biblioteki z out/innovations.json, bez 
 uv run import_powiaty.py   # 22 powiaty × 112 wskaźników → powiaty_wskazniki (SUPABASE_DB_URL)
 uv run import_powiaty.py --sql  # to samo jako out/powiaty.sql do wklejenia w SQL Editor Supabase
 uv run powiaty_geo.py      # kształty powiatów (PRG GUGiK) → ../lib/powiaty-shapes.json, tylko gdy zmienią się granice
+uv run gminy_geo.py        # kształty 183 gmin z WFS PRG GUGiK → ../lib/gminy-shapes.json (ten sam rzut co powiaty)
 ```
 
 - Przed `embed.py` w Supabase muszą być migracje `0001`–`0006`; przed `import_powiaty.py` także `0007`, a lista „Ucz się” to migracja `0008` (materiały są w tabeli `materials`, nowy materiał = nowy wiersz).
