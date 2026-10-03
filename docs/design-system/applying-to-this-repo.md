@@ -81,7 +81,7 @@ html.a11y-contrast {
 }
 ```
 
-Replace the base layer's `@apply border-border outline-ring/50;` with `@apply border-border;` (the half-opacity ring fails 1.4.11), keep the repo's `:focus-visible` rule but set `outline-offset: 3px`, and add `body { font-size: 1.125rem; line-height: 1.75rem; }` and `html.a11y-simple body { font-size: 1.25rem; line-height: 2rem; }`. Keep `html.a11y-large { font-size: 125%; }`.
+Replace the base layer's `@apply border-border outline-ring/50;` with `@apply border-border;` (the half-opacity ring fails 1.4.11), keep the repo's `:focus-visible` rule but set `outline-offset: 3px`, and add `body { font-size: 1.125rem; line-height: 1.75rem; }`. Keep `html.a11y-large { font-size: 125%; }`; `a11y-simple` changes wording, not type size.
 
 ## 2. `app/layout.tsx`: the font
 

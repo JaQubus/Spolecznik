@@ -167,17 +167,8 @@ html.a11y-contrast {
   --shadow-overlay: 0 0 0 2px #000000;
 }
 
-/* Tryb prosty: tekst co najmniej 20px i luźniejsze wiersze. Nadpisujemy zmienne Tailwinda, bo text-base/text-lg
-   ich używają, więc działa to także na tekstach z jawnym rozmiarem, a nie tylko na dziedziczonych z body. */
-html.a11y-simple {
-  --text-base: 1.25rem;
-  --text-base--line-height: 2rem;
-  --text-lg: 1.375rem;
-  --text-lg--line-height: 2.125rem;
-}
-html.a11y-simple body { font-size: 1.25rem; line-height: 2rem; }
-
-/* simple:hidden chowa metadane drugorzędne w trybie prostym */
+/* Tryb prosty upraszcza język, nie rozmiar (od tego jest Większy tekst): simple:hidden / simple:block
+   podmieniają opis na streszczenie łatwe do czytania i chowają metadane drugorzędne. */
 @custom-variant simple (&:where(.a11y-simple, .a11y-simple *));
 
 /* Pas na całą szerokość okna wewnątrz kontenera main, bez poziomego przewijania (cień nie zwiększa szerokości strony). */

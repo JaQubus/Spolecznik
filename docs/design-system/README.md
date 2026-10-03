@@ -10,7 +10,7 @@ Every rule below serves **WCAG 2.1 level AA**. Where a rule cites a success crit
 - **Numbers as people say them:** "co czwarta osoba ma 65+ lat", "Dopasowanie 86 na 100", not "0.86".
 - **Errors say what to do:** "Wpisz adres e-mail w formacie nazwa@domena.pl", never "Nieprawidłowe dane".
 - **No emoji** in the interface.
-- **Tryb prosty** (`html.a11y-simple`) swaps body copy for the easy-to-read summary, sets it in `lead`, hides secondary metadata.
+- **Tryb prosty** (`html.a11y-simple`) simplifies language, not size (that is Większy tekst): swaps body copy for the easy-to-read summary and hides secondary metadata.
 - `lang="pl"` on `<html>`; mark English terms with `lang="en"`.
 
 ## Colour

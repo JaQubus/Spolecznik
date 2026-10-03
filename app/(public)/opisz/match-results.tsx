@@ -138,8 +138,7 @@ function ResultRow({ match: m, statusCode }: { match: InnovationMatch; statusCod
         <span><strong className="text-foreground">{fitLabel(m.fit)}</strong> · dopasowanie {m.fit} na 100</span>
         {m.category && <Badge className="simple:hidden">{m.category}</Badge>}
       </div>
-      {/* W trybie prostym streszczenie łatwe do czytania jest głównym tekstem. */}
-      {m.etrSummary && <p className="max-w-[68ch] simple:text-xl">{m.etrSummary}</p>}
+      {m.etrSummary && <p className="max-w-[68ch]">{m.etrSummary}</p>}
       <dl className="grid max-w-[68ch] gap-1">
         <dt className="mt-2 font-bold">Dlaczego pasuje</dt>
         <dd>{m.why}</dd>

@@ -182,4 +182,3 @@ button.hm-chip[aria-pressed="true"] { background: var(--ink); border-color: var(
 
 /* user settings hooks (set on <html>) */
 html.a11y-large { font-size: 125%; }
-html.a11y-simple .hm { font-size: 1.25rem; line-height: 2rem; }
