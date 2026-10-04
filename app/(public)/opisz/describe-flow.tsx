@@ -184,7 +184,7 @@ export function DescribeFlow({
       {step.kind === "followUp" && (
         <form className="max-w-2xl space-y-4" noValidate onSubmit={(e) => { e.preventDefault(); submitAnswer(step.card); }}>
           {/* Zwykły <label> zamiast Label z radix: tamten blokuje zaznaczanie tekstu, a pytanie warto móc skopiować. */}
-          <label htmlFor="odp" className="block text-lg leading-6 font-bold">{step.card.followUp}</label>
+          <label htmlFor="odp" className="block text-lg font-bold">{step.card.followUp}</label>
           <VoiceInput label="Odpowiedz głosem" onText={(chunk) => setAnswer((a) => appendText(a, chunk))} />
           <FieldError id="odp-blad">{fieldError}</FieldError>
           <Textarea
