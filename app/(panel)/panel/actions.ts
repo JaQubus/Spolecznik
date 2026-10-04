@@ -3,16 +3,18 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { emailAuthor } from "@/lib/author-contact";
+import { emailAuthor, emailTester } from "@/lib/author-contact";
 import { requireAdmin } from "@/lib/auth";
 import { notifyExpert } from "@/lib/expert";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
+import { innovationHref } from "@/lib/knowledge/hrefs";
 import { notify } from "@/lib/notifications";
 import { logChange } from "@/lib/panel/needs";
 import { anonymize } from "@/lib/pii";
-import { NEED_STATUSES } from "@/lib/schemas";
+import { NEED_STATUSES, TEST_STATUSES } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { TEST_STATUS_LABELS } from "@/lib/test-status";
 import { ensureThread, expertName, needThread, postNeedMessage, setReportStatus, threadPayload } from "@/lib/threads";
 
 export type ActionResult = { ok: boolean; message: string } | null;
@@ -278,6 +280,48 @@ export async function updateIdeaStatus(_prev: ActionResult, formData: FormData):
   }
   refresh();
   return { ok: true, message: `Zapisano status: ${NEED_STATUS_LABELS[status]}.` };
+}
+
+const TestStatusInput = z.object({ testId: z.uuid(), status: z.enum(TEST_STATUSES) });
+
+/** Status testu z Próby, np. „Pilotaż potwierdzony”. Tester z kontem dostaje powiadomienie, tester z adresem — e-mail. */
+export async function updateTestStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = TestStatusInput.safeParse({ testId: formData.get("testId"), status: formData.get("status") });
+  if (!parsed.success) return { ok: false, message: "Wybierz nowy status." };
+  const { testId, status } = parsed.data;
+
+  try {
+    const supabase = createAdminClient();
+    const { data: before, error } = await supabase
+      .from("tests")
+      .select("status, tester_id, contact_email, synthetic, innovations(title, slug)")
+      .eq("id", testId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!before) return { ok: false, message: "Nie znaleziono testu. Odśwież stronę." };
+    if (before.status === status) return { ok: false, message: "Wybierz inny status." };
+    const { error: updateError } = await supabase.from("tests").update({ status }).eq("id", testId);
+    if (updateError) throw updateError;
+    await logChange(user.id, "test.status", "test", testId, { from: before.status, to: status });
+    const innovation = before.innovations as unknown as { title: string; slug: string | null } | null;
+    if (before.contact_email && !before.synthetic) {
+      await emailTester(before.contact_email, innovation?.title ?? null, TEST_STATUS_LABELS[status],
+        innovation?.slug ? innovationHref(innovation.slug) : null);
+    }
+    if (before.tester_id) {
+      await notify({
+        user_id: before.tester_id,
+        kind: "zmiana_statusu_testu",
+        payload: { testId, status, title: innovation?.title ?? null, slug: innovation?.slug ?? null },
+      }).catch((e) => console.error("[panel] powiadomienie testera:", e));
+    }
+  } catch (e) {
+    console.error("[panel] status testu:", e);
+    return SAVE_FAILED;
+  }
+  refresh();
+  return { ok: true, message: `Zapisano status testu: ${TEST_STATUS_LABELS[status]}.` };
 }
 
 /**

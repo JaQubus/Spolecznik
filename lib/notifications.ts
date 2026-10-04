@@ -4,6 +4,7 @@ import { viewerClient, type Viewer } from "./auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "./need-status";
 import { ADMIN_CHANNEL, expertChannel, expertRole, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
 import { createAdminClient } from "./supabase/admin";
+import { testStatusLabel } from "./test-status";
 
 /** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin'). */
 export type NewNotification =
@@ -113,6 +114,21 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
       const label = NEED_STATUS_LABELS[p.status as NeedStatus];
       return { text: `${code ? `Zgłoszenie ${code}` : "Twoje zgłoszenie"} ma nowy status${label ? `: ${label}` : ""}`, href: code ? `/status/${code}` : null };
     }
+    case "nowy_test": {
+      const what = str(p.title) ? ` „${short(str(p.title)!)}”` : "";
+      const where = str(p.gmina) ? ` (${str(p.gmina)})` : "";
+      return {
+        text: p.status === "zakonczony"
+          ? `Nowa ocena testu${what}${where}${typeof p.rating === "number" ? `: ${p.rating} na 5` : ""}`
+          : `Nowe zgłoszenie testu${what}${where}`,
+        href: str(p.innovationId) ? `/panel/testy?innowacja=${str(p.innovationId)}` : "/panel/testy",
+      };
+    }
+    case "zmiana_statusu_testu":
+      return {
+        text: `Twój test${str(p.title) ? ` „${short(str(p.title)!)}”` : ""} ma nowy status: ${testStatusLabel(String(p.status))}`,
+        href: str(p.slug) ? innovationHref(str(p.slug)!) : null,
+      };
     case "wiadomosc":
       return { text: `ROPS dodał wiadomość do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
     case "nowa_innowacja":

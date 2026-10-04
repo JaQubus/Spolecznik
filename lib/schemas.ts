@@ -27,6 +27,9 @@ export const NEED_STATUSES = [
   "zgloszone", "w_analizie", "ekspert", "odpowiedz", "luka", "zamkniete",
 ] as const;
 
+/** Statusy testu (Próba). Tester zgłasza tylko „planowany” albo „zakonczony”, resztę ustawia ROPS w Panelu → Testy. */
+export const TEST_STATUSES = ["planowany", "potwierdzony", "w_trakcie", "zakonczony"] as const;
+
 export const NeedCard = z.object({
   summary: z.string(), // 1–2 zdania, bez danych osobowych
   areas: z.array(z.enum(MWS_AREAS)).min(1).max(3),
@@ -141,9 +144,10 @@ export const TestRequest = z
     innovationId: z.uuid(),
     gmina: z.string().min(2).max(100),
     teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
-    status: z.enum(["planowany", "zakonczony"]),
+    status: z.enum(TEST_STATUSES).extract(["planowany", "zakonczony"]),
     testerOrg: z.string().max(200).optional(),
     plannedFor: z.iso.date().optional(),
+    contactEmail: z.email().max(254).optional(), // powiadomienia o statusie testu bez konta
     rating: z.number().int().min(1).max(5).optional(),
     feedback: z.string().max(2000).optional(), // co działa
     suggestions: z.string().max(2000).optional(), // co poprawić
