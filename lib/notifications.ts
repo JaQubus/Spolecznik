@@ -3,6 +3,7 @@ import type { Viewer } from "./auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "./need-status";
 import { ADMIN_CHANNEL, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
 import { createAdminClient } from "./supabase/admin";
+import { createClient } from "./supabase/server";
 
 /** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin'). */
 export type NewNotification =
@@ -74,7 +75,9 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
     case "nowa_wiadomosc":
       return forAdmin
         ? { text: `Zgłaszający napisał w sprawie ${code ?? "zgłoszenia"}`, href: needId ? `/panel/zgloszenia/${needId}#rozmowa` : "/panel" }
-        : { text: `Nowa odpowiedź w sprawie ${code ?? "Twojego zgłoszenia"}`, href: code ? `/zapytaj?potrzeba=${code}` : null };
+        // Strona statusu, nie /zapytaj: rozmowa wymaga klucza z przeglądarki, z której wysłano zgłoszenie,
+        // a status działa na każdym urządzeniu po samym kodzie i ma link do rozmowy.
+        : { text: `Nowa odpowiedź w sprawie ${code ?? "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
     case "zmiana_statusu": {
       const label = NEED_STATUS_LABELS[p.status as NeedStatus];
       return { text: `${code ? `Zgłoszenie ${code}` : "Twoje zgłoszenie"} ma nowy status${label ? `: ${label}` : ""}`, href: code ? `/status/${code}` : null };
@@ -95,7 +98,9 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
 export async function listNotifications(viewer: Viewer, seenAt: string | null, limit = 20) {
   const filter = audienceFilter(viewer);
   if (!filter) return { items: [] as NotificationItem[], unread: 0 };
-  const supabase = createAdminClient();
+  // Konto Supabase czyta własną sesją, więc granicę pilnuje też RLS („własne powiadomienia”), a filtr wyżej jest
+  // drugą warstwą. Konta testowe nie mają sesji (działają tylko lokalnie albo z TEST_LOGIN=1) — dla nich service role.
+  const supabase = viewer.via === "supabase" ? await createClient() : createAdminClient();
 
   const unreadQuery = supabase.from("notifications").select("id", { count: "exact", head: true }).or(filter);
   const [list, count] = await Promise.all([

@@ -5,9 +5,9 @@ import { channelsFor, listNotifications, notificationsEnabled } from "@/lib/noti
 import { rateLimit } from "@/lib/rate-limit";
 
 /**
- * „Widziane do” zapisujemy w ciasteczku, nie w notifications.read_at: powiadomienia do całej roli admin
- * mają jedno read_at, więc jeden admin oznaczałby je wszystkim. Wartość to „kto|czas”, żeby po zmianie
- * konta w tej samej przeglądarce nie przenosić cudzego stanu.
+ * „Widziane do” zapisujemy w ciasteczku, nie w wierszu powiadomienia: powiadomienia do całej roli admin to jeden
+ * wiersz dla wszystkich adminów, więc jedno pole „przeczytane” oznaczałoby je każdemu (dlatego migracja 0017 usuwa
+ * nieużywane read_at). Wartość to „kto|czas”, żeby po zmianie konta w tej samej przeglądarce nie przenosić cudzego stanu.
  */
 const SEEN_COOKIE = "spolecznik-powiadomienia";
 const viewerKey = (v: Viewer) => v.id ?? `test-${v.role}`;
