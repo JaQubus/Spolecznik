@@ -201,7 +201,7 @@ export function IdeaWorkshop({
         <h2 id="plakat" className="text-2xl font-bold">Plakat pomysłu</h2>
         <p className="max-w-2xl">
           Asystent narysuje z fiszki plakat: jak działa pomysł, co daje i czego potrzeba. Przyda się, gdy pokażesz pomysł
-          sąsiadom, gminie albo w naborze. Wyślemy go razem z pomysłem.
+          sąsiadom, gminie albo w naborze. Plakat nie jest obowiązkowy — jeśli go pokażesz, wyślemy go razem z pomysłem.
         </p>
         <PosterSection fiszka={fiszka} canvas={canvas} state={poster} onChange={setPoster} onMissingTitle={missingTitle} />
       </section>

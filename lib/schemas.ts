@@ -200,7 +200,7 @@ const posterText = (max: number) =>
     return `${cut.slice(0, cut.lastIndexOf(" ") > max / 2 ? cut.lastIndexOf(" ") : cut.length).replace(/[\s,;:–—-]+$/, "")}…`;
   }, z.string().min(1).max(max));
 
-// Limity długości trzymają plakat na jednej stronie A4 (sprawdzone na wydruku z każdym polem pełnym).
+// Limity długości trzymają plakat krótkim: zwykle jedna strona A4; z każdym polem pełnym przy interlinii 1.5 (WCAG) może wejść na drugą.
 export const IdeaPoster = z.object({
   headline: posterText(70),
   oneLiner: posterText(160),
