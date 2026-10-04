@@ -8,6 +8,7 @@ import {
 } from "./schemas";
 import { keywordSearch, similarNeeds, upsertIndex } from "./search";
 import { newAccessKey } from "./need-access";
+import { notify } from "./notifications";
 import { newStatusCode } from "./status-code";
 import { createAdminClient } from "./supabase/admin";
 
@@ -194,11 +195,11 @@ export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promis
       targetGroups: [...card.groups],
       teryt: gminaRow?.teryt ?? null,
     }),
-    supabase.from("notifications").insert({
+    notify({
       role: "admin",
       kind: "nowa_potrzeba",
       payload: { needId: need.id, statusCode: need.status_code, summary: card.summary, isGap },
-    }).then(({ error }) => { if (error) throw error; }),
+    }),
   ]);
   for (const r of sideEffects) if (r.status === "rejected") console.error("[match] efekt uboczny:", r.reason);
 

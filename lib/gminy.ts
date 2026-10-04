@@ -1,7 +1,6 @@
 import "server-only";
 import gminyJson from "@/data/out/gminy.json";
 import { createAdminClient } from "./supabase/admin";
-import { createClient } from "./supabase/server";
 
 /** Podpowiedź w polu „Gmina”: nazwa do wpisania i opis, który rozróżnia np. Bochnię miejską i wiejską. */
 export type GminaOption = { teryt: string; nazwa: string; opis: string };
@@ -78,19 +77,4 @@ export function describeGmina(g: Gmina): string {
 export function gminaLabel(g: Pick<Gmina, "nazwa" | "powiat" | "typ">): string {
   if (g.powiat.startsWith("m. ")) return `${g.nazwa} (miasto na prawach powiatu)`;
   return `${g.nazwa} (gmina ${g.typ ?? ""}, powiat ${g.powiat})`.replace("gmina ,", "gmina,");
-}
-
-/** Wszystkie gminy z tabeli gminy (publiczny odczyt) do mapy gmin w Kondycji Małopolski. */
-export async function listGminy(): Promise<Gmina[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("gminy")
-    .select("teryt, nazwa, powiat, typ, ludnosc, udzial_65plus, zmiana_ludnosci_10l, wskazniki")
-    .order("teryt");
-  if (error) throw error;
-  return (data ?? []).map((g) => ({
-    ...g,
-    udzial_65plus: g.udzial_65plus == null ? null : Number(g.udzial_65plus),
-    zmiana_ludnosci_10l: g.zmiana_ludnosci_10l == null ? null : Number(g.zmiana_ludnosci_10l),
-  })) as Gmina[];
 }

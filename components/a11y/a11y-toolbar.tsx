@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { EyeIcon, MagnifyingGlassPlusIcon } from "@heroicons/react/24/outline";
+import { ReadAloud } from "./read-aloud";
 
 export const A11Y_OPTIONS = [
   { key: "large", label: "Większy tekst", Icon: MagnifyingGlassPlusIcon },
@@ -22,6 +23,10 @@ function toggle(key: string) {
   try { localStorage.setItem(`a11y-${key}`, on ? "1" : "0"); } catch {}
 }
 
+// Obrys jak w filtrach (Chip.md): bez niego niewciśnięty przełącznik na dotyku wygląda jak zwykły tekst.
+const toggleClass =
+  "inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-background px-3 text-base hover:border-foreground aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:font-bold aria-pressed:text-background";
+
 /** Przełączniki dostępności w nagłówku. */
 export function A11yToolbar() {
   const classes = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
@@ -34,13 +39,13 @@ export function A11yToolbar() {
           type="button"
           aria-pressed={classes.split(" ").includes(`a11y-${key}`)}
           onClick={() => toggle(key)}
-          // Obrys jak w filtrach (Chip.md): bez niego niewciśnięty przełącznik na dotyku wygląda jak zwykły tekst.
-          className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-background px-3 text-base hover:border-foreground aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:font-bold aria-pressed:text-background"
+          className={toggleClass}
         >
           <Icon aria-hidden className="size-5" />
           {label}
         </button>
       ))}
+      <ReadAloud className={toggleClass} />
     </div>
   );
 }

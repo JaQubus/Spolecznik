@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { AreaIcon } from "@/components/knowledge/icons";
 import { MaterialList } from "@/components/knowledge/material-list";
-import { areaHref, InnovationTiles } from "@/components/knowledge/tiles";
+import { AreaList, InnovationList } from "@/components/knowledge/tiles";
 import type { KnowledgeResults } from "@/lib/knowledge/search";
 import { plural } from "@/lib/pl";
 
@@ -35,25 +34,13 @@ export function SearchResults({ results: r }: { results: KnowledgeResults }) {
       {r.areas.length > 0 && (
         <section aria-labelledby="wyniki-obszary" className="space-y-4">
           <h3 id="wyniki-obszary" className="text-2xl font-bold">Obszary</h3>
-          <ul className="max-w-[48rem] divide-y divide-border border-y border-border">
-            {r.areas.map((a) => (
-              <li key={a.key} className="flex items-start gap-4 py-5">
-                <AreaIcon area={a.key} className="mt-1 size-8 shrink-0" />
-                <div className="space-y-1">
-                  <h4 className="text-xl font-bold">
-                    <Link href={areaHref(a.slug)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{a.name}</Link>
-                  </h4>
-                  <p>{a.lead}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <AreaList areas={r.areas} level={4} />
         </section>
       )}
       {r.innovations.length > 0 && (
         <section aria-labelledby="wyniki-innowacje" className="space-y-4">
           <h3 id="wyniki-innowacje" className="text-2xl font-bold">Innowacje</h3>
-          <InnovationTiles items={r.innovations} level={4} />
+          <InnovationList items={r.innovations} level={4} />
         </section>
       )}
       {r.materials.length > 0 && (
