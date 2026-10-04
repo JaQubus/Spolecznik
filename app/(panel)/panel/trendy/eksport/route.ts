@@ -1,4 +1,5 @@
 import { isAdmin } from "@/lib/auth";
+import { getClusters } from "@/lib/knowledge/clusters";
 import { gapGminaLabel, getGaps } from "@/lib/knowledge/gaps";
 import { getTrends, parseBucket } from "@/lib/knowledge/trends";
 import { AREA_LABELS } from "@/lib/taxonomy";
@@ -14,7 +15,7 @@ const csv = (rows: (string | number)[][]) => "﻿" + rows.map((r) => r.map(cell)
 export async function GET(request: Request) {
   if (!(await isAdmin())) return new Response("Brak dostępu", { status: 403 });
   const bucket = parseBucket(new URL(request.url).searchParams.get("okres"));
-  const [t, gaps] = await Promise.all([getTrends(bucket), getGaps()]);
+  const [t, gaps, groups] = await Promise.all([getTrends(bucket), getGaps(), getClusters()]);
   const rows: (string | number)[][] = [
     ["Zestaw", "Okres / powiat / słowo", "Obszar", "Liczba", "Poprzednie 30 dni"],
     ...t.series
@@ -26,6 +27,14 @@ export async function GET(request: Request) {
       .sort((a, b) => b[1] - a[1])
       .map(([teryt, n]) => ["luka_gmina", `${gapGminaLabel(teryt)} [${teryt}]`, "", n, ""]),
     ...gaps.directions.map((d) => ["luka_obszar", `${d.gminy} gmin`, AREA_LABELS[d.area], d.needs, ""]),
+    // Grupa bez nazwy z LLM: jej słowa kluczowe. Obszar: najczęstszy w grupie.
+    ...groups.clusters.map((c) => [
+      "klaster",
+      `${c.label ?? c.keywords.join(", ")} (${c.gminy} gmin)`,
+      c.areas[0] ? AREA_LABELS[c.areas[0]] : "",
+      c.ids.length,
+      "",
+    ]),
   ];
   return new Response(csv(rows), {
     headers: {

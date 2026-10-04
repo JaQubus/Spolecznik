@@ -81,6 +81,16 @@ export const CardTags = z.object({
 });
 export type CardTags = z.infer<typeof CardTags>;
 
+// /panel/trendy: etykiety grup podobnych potrzeb, liczone wsadowo i trzymane w need_cluster_labels
+export const ClusterLabels = z.object({
+  clusters: z.array(z.object({
+    n: z.number().int(),           // numer grupy z <grupa n="…">
+    label: z.string().max(80),     // krótkie hasło, np. „Samotność seniorów na wsi”
+    description: z.string().max(300), // jedno zdanie
+  })),
+});
+export type ClusterLabels = z.infer<typeof ClusterLabels>;
+
 // /api/ask: Zapytaj Bibliotekę (RAG po doc_chunks)
 export const AskRequest = z.object({ question: z.string().min(3).max(1000) });
 export const AskAnswer = z.object({
