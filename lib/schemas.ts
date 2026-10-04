@@ -112,6 +112,7 @@ export const IdeaRequest = z.object({
   fiszka: Fiszka,
   canvas: z.record(z.string(), z.string().max(3000)).default({}),
   needCode: z.string().regex(STATUS_CODE).optional(), // pomysł z luki: /pomysl?potrzeba=SPL-…
+  poster: z.lazy(() => IdeaPoster).optional(), // plakat z /api/poster, jeśli autor go wygenerował
 });
 /** accessKey: tajny klucz pomysłu — tylko dla autora (ciasteczko + prywatny link), jak w MatchResponse. */
 export type IdeaResponse = { ideaId: string; statusCode: string; accessKey: string };
@@ -178,6 +179,56 @@ export const ApplicationDraft = z.object({
   checklist: z.array(z.object({ criterion: z.string(), met: z.boolean(), note: z.string() })),
 });
 export type ApplicationDraft = z.infer<typeof ApplicationDraft>;
+
+// /api/poster: plakat pomysłu — wizualizacja z tekstu, bo Groq nie generuje obrazów.
+/** Zamknięta lista ikon kroków; components/pomysl/idea-poster.tsx zamienia nazwy na Heroicons. */
+export const POSTER_ICONS = [
+  "user", "user-group", "home", "map-pin", "phone", "chat-bubble-left-right", "calendar-days", "truck",
+  "heart", "academic-cap", "wrench-screwdriver", "light-bulb", "hand-raised", "building-office",
+  "computer-desktop", "shopping-bag", "book-open", "megaphone", "puzzle-piece", "clipboard-document-check",
+] as const;
+export const POSTER_NEEDS = ["ludzie", "miejsce", "sprzet", "pieniadze", "partnerzy", "inne"] as const;
+export const POSTER_SHAPES = ["prostokat", "pionowy", "plaski", "okragly"] as const;
+
+/** Tekst plakatu: za długi przycinamy na granicy słowa z „…”, zamiast odrzucać całą odpowiedź modelu. */
+const posterText = (max: number) =>
+  z.preprocess((v) => {
+    if (typeof v !== "string") return v;
+    const text = v.trim();
+    if (text.length <= max) return text;
+    const cut = text.slice(0, max - 1);
+    return `${cut.slice(0, cut.lastIndexOf(" ") > max / 2 ? cut.lastIndexOf(" ") : cut.length).replace(/[\s,;:–—-]+$/, "")}…`;
+  }, z.string().min(1).max(max));
+
+// Limity długości trzymają plakat na jednej stronie A4 (sprawdzone na wydruku z każdym polem pełnym).
+export const IdeaPoster = z.object({
+  headline: posterText(70),
+  oneLiner: posterText(160),
+  journey: z
+    .array(z.object({
+      who: posterText(40),
+      action: posterText(110),
+      // Nieznana nazwa ikony nie psuje plakatu — ikona jest tylko obok tekstu.
+      icon: z.enum(POSTER_ICONS).catch("light-bulb"),
+    }))
+    .min(3)
+    .max(4),
+  benefits: z.array(posterText(90)).min(1).max(3),
+  needs: z.array(z.object({ kind: z.enum(POSTER_NEEDS).catch("inne"), text: posterText(90) })).max(5),
+  object: z
+    .object({
+      name: posterText(50),
+      shape: z.enum(POSTER_SHAPES).catch("prostokat"),
+      description: posterText(160),
+      parts: z.array(z.object({ name: posterText(35), purpose: z.string().max(80).catch("") })).min(1).max(6),
+    })
+    .nullable(),
+});
+export type IdeaPoster = z.infer<typeof IdeaPoster>;
+export const PosterRequest = z.object({
+  fiszka: Fiszka,
+  canvas: z.record(z.string(), z.string().max(3000)).default({}),
+});
 
 // Odpowiedź /api/match — wspólny typ dla serwera i klienta.
 export type InnovationMatch = RerankItem & {

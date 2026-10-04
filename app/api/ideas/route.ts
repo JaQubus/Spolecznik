@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return Response.json({ error: "Uzupełnij krótki opis pomysłu", issues: parsed.error.issues }, { status: 400 });
   }
-  const { fiszka, canvas, needCode } = parsed.data;
+  const { fiszka, canvas, needCode, poster } = parsed.data;
   const supabase = createAdminClient();
 
   try {
@@ -35,6 +35,7 @@ export async function POST(request: Request) {
     // Ponowienie przy kolizji kodu, jak w lib/match.ts.
     const access = newAccessKey();
     let idea: { id: string; status_code: string } | null = null;
+    let withPoster = !!poster;
     for (let attempt = 0; attempt < 3 && !idea; attempt++) {
       const { data, error } = await supabase
         .from("ideas")
@@ -46,9 +47,16 @@ export async function POST(request: Request) {
           canvas,
           stage: fiszka.etap || null,
           access_hash: access.hash,
+          ...(withPoster && { poster }),
         })
         .select("id, status_code")
         .single();
+      // Bez migracji 0019 nie ma kolumny poster — pomysł zapisujemy bez plakatu, zamiast go odrzucić.
+      if (error?.code === "PGRST204" && withPoster) {
+        console.error("[ideas] brak kolumny poster (migracja 0019), zapisuję bez plakatu");
+        withPoster = false;
+        continue;
+      }
       if (error && error.code !== "23505") throw error;
       idea = data;
     }
