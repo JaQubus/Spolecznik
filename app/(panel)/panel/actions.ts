@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
@@ -221,6 +222,46 @@ export async function updateIdeaStatus(_prev: ActionResult, formData: FormData):
   }
   refresh();
   return { ok: true, message: `Zapisano status: ${NEED_STATUS_LABELS[status]}.` };
+}
+
+/**
+ * Co usuwamy i co z tym sprzątamy. `kind` to rodzaj w search_index i threads, `payloadKey` — id w powiadomieniach.
+ * Klucze obce (dopasowania, szkice wniosków, powiązanie pomysłu z potrzebą) obsługuje baza: 0014_delete_reports.sql.
+ */
+const DELETABLE = {
+  need: { table: "needs", kind: "potrzeba", payloadKey: "needId", list: "/panel" },
+  idea: { table: "ideas", kind: "pomysl", payloadKey: "ideaId", list: "/panel/pomysly" },
+  call: { table: "calls", kind: "nabor", payloadKey: "callId", list: "/panel/nabory" },
+} as const;
+
+const DeleteInput = z.object({ entity: z.enum(["need", "idea", "call"]), id: z.uuid() });
+
+/** Trwałe usunięcie zgłoszenia, pomysłu albo naboru razem z rozmową, wpisem w wyszukiwarce i powiadomieniami. */
+export async function deleteRecord(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = DeleteInput.safeParse({ entity: formData.get("entity"), id: formData.get("id") });
+  if (!parsed.success) return { ok: false, message: "Nie wiadomo, co usunąć. Odśwież stronę." };
+  const { entity, id } = parsed.data;
+  const target = DELETABLE[entity];
+
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from(target.table).delete().eq("id", id).select("id");
+    if (error) throw error;
+    if (!data?.length) return { ok: false, message: "Tego już nie ma. Odśwież stronę." };
+    const cleanup = await Promise.all([
+      supabase.from("threads").delete().eq("entity_kind", target.kind).eq("entity_id", id),
+      supabase.from("search_index").delete().eq("kind", target.kind).eq("ref_id", id),
+      // Powiadomienia mają kopię opisu, więc znikają razem z rekordem.
+      supabase.from("notifications").delete().eq(`payload->>${target.payloadKey}`, id),
+    ]);
+    for (const r of cleanup) if (r.error) throw r.error;
+    await logChange(user.id, `${entity}.delete`, entity, id, {});
+  } catch (e) {
+    console.error("[panel] usuwanie:", e);
+    return { ok: false, message: "Nie udało się usunąć. Spróbuj ponownie." };
+  }
+  redirect(`${target.list}?usunieto=${entity}`);
 }
 
 /**

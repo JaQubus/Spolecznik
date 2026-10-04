@@ -19,7 +19,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AREA_LABELS, CROSS_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { MessageList } from "@/components/rozmowa/message-list";
 import { needThread } from "@/lib/threads";
-import { ActionForm, SubmitButton } from "../../action-form";
+import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
 import { assignExpert, removePersonalData, replyInThread, updateNeedStatus } from "../../actions";
 import { ThreadLive } from "./thread-live";
 
@@ -257,6 +257,16 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
             ))}
           </ol>
         )}
+      </section>
+
+      <section aria-labelledby="usun" className="space-y-3 border-t pt-8">
+        <h2 id="usun" className="text-2xl font-bold">Usuń zgłoszenie</h2>
+        <DeleteForm
+          entity="need"
+          id={need.id}
+          label={`zgłoszenie ${need.status_code}`}
+          consequence={`Zgłoszenie zniknie z Panelu, mapy potrzeb i wyszukiwarki razem z rozmową i dopasowaniami. Kod ${need.status_code} przestanie działać. Pomysły zgłoszone do tej potrzeby zostaną.`}
+        />
       </section>
     </article>
   );

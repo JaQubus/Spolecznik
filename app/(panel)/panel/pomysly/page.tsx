@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { Alert } from "@/components/ui/alert";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { formatDate } from "@/lib/pl";
 import { NEED_STATUSES } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ActionForm, SubmitButton } from "../action-form";
+import { ActionForm, DeleteForm, SubmitButton } from "../action-form";
 import { updateIdeaStatus } from "../actions";
 
 export const metadata = { title: "Pomysły · Panel ROPS" };
@@ -14,8 +15,9 @@ const linkClass = "text-base underline decoration-1 underline-offset-4 hover:dec
 
 type IdeaRow = { id: string; status_code: string; created_at: string; fiszka: { krotki_opis?: string }; status: NeedStatus };
 
-export default async function Page() {
+export default async function Page(props: PageProps<"/panel/pomysly">) {
   await requireAdmin();
+  const { usunieto } = await props.searchParams;
   const { data, error } = await createAdminClient()
     .from("ideas")
     .select("id, status_code, created_at, fiszka, status")
@@ -28,6 +30,7 @@ export default async function Page() {
   return (
     <section className="space-y-6">
       <h1 className="text-3xl font-bold">Pomysły</h1>
+      {usunieto === "idea" && <Alert tone="success" title="Usunięto pomysł" />}
       {ideas.length === 0 ? (
         <p className="text-muted-foreground">Nie ma otwartych pomysłów.</p>
       ) : (
@@ -55,6 +58,12 @@ export default async function Page() {
                   <Link href={`/status/${i.status_code}`} className={linkClass}>Widok dla autora</Link>
                 </div>
               </ActionForm>
+              <DeleteForm
+                entity="idea"
+                id={i.id}
+                label={`pomysł ${i.status_code}`}
+                consequence={`Pomysł zniknie z Panelu i wyszukiwarki razem ze szkicami wniosków. Kod ${i.status_code} przestanie działać.`}
+              />
             </li>
           ))}
         </ol>
