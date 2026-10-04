@@ -1,6 +1,7 @@
 import canvasSchema from "@/data/out/canvas_schema.json";
 import { STATUS_CODE, type Fiszka } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { todayInPoland } from "@/lib/pl";
 import { GROUP_LABELS } from "@/lib/taxonomy";
 import type { ActiveCall } from "./application-draft";
 import { IdeaWorkshop, type CanvasField } from "./idea-workshop";
@@ -19,7 +20,7 @@ async function prefillFromNeed(code: string): Promise<Partial<Fiszka>> {
 }
 
 async function activeCalls(): Promise<ActiveCall[]> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayInPoland();
   const { data } = await createAdminClient()
     .from("calls")
     .select("id, title, closes_at")

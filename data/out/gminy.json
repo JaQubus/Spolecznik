@@ -774,7 +774,7 @@
     "typ": "wiejska",
     "ludnosc": 5948,
     "udzial_65plus": 14.7,
-    "zmiana_ludnosci_10l": -23.8,
+    "zmiana_ludnosci_10l": null,
     "wskazniki": {
       "rok": 2025
     }

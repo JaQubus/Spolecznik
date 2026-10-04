@@ -1,5 +1,6 @@
 import { draftApplication } from "@/lib/llm";
 import { parseCallFields } from "@/lib/call-schema";
+import { todayInPoland } from "@/lib/pl";
 import { anonymize } from "@/lib/pii";
 import { ApplyRequest } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
     if (call.error) throw call.error;
     if (!idea.data) return Response.json({ error: "Nie znaleziono pomysłu" }, { status: 404 });
     if (!call.data) return Response.json({ error: "Nie znaleziono naboru" }, { status: 404 });
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayInPoland();
     const outsideWindow =
       (call.data.opens_at && call.data.opens_at > today) ||
       (call.data.closes_at && call.data.closes_at < today);

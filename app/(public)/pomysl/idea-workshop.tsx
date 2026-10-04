@@ -187,10 +187,13 @@ export function IdeaWorkshop({
       <div className="space-y-3">
         <p aria-live="polite" className="text-muted-foreground">{busy ? "Zapisuję pomysł…" : ""}</p>
         <Button type="button" onClick={submit} disabled={busy} className="w-full sm:w-auto">Zgłoś pomysł</Button>
-        <p className="max-w-2xl">
-          Chcesz od razu przygotować wniosek o grant?{" "}
-          <Link href={applicationHref} className={linkClass}>Przejdź do formularza — wstępnie uzupełnimy go tym pomysłem</Link>.
-        </p>
+        {/* Bez otwartego naboru /wniosek mówi tylko „Nabór jest zamknięty”, a fiszka przepada po powrocie. */}
+        {calls.length > 0 && (
+          <p className="max-w-2xl">
+            Chcesz od razu przygotować wniosek o grant?{" "}
+            <Link href={applicationHref} className={linkClass}>Przejdź do formularza — wstępnie uzupełnimy go tym pomysłem</Link>.
+          </p>
+        )}
       </div>
     </div>
   );

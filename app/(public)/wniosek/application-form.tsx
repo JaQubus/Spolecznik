@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplicationDocument, WORD_CSS } from "./application-document";
 import type { CallFormContent } from "@/lib/call-schema";
+import { plural } from "@/lib/pl";
 import {
   type Application, type ApplicantType, type Errors, type PlanRow,
   MAX_PARTNERS, STEPS, declarationSets, emptyApplication, emptyPartner, emptyRow, fieldId,
@@ -153,7 +154,12 @@ function GroupFields() {
           {p.rodzaj === "osoba" ? <PersonFields base={`partnerzy.${i}.osoba`} /> : <EntityFields base={`partnerzy.${i}.podmiot`} />}
           {app.partnerzy.length > 2 && (
             <Button type="button" variant="link" className="justify-self-start px-0"
-              onClick={() => update("partnerzy", app.partnerzy.filter((_, j) => j !== i))}>
+              onClick={() => {
+                update("partnerzy", app.partnerzy.filter((_, j) => j !== i));
+                // Przycisk znika razem z partnerem: fokus na partnera, który zajął jego miejsce (albo poprzedniego).
+                const next = Math.min(i, app.partnerzy.length - 2);
+                setTimeout(() => focusField(`partnerzy.${next}.rodzaj.${app.partnerzy[next === i ? i + 1 : next].rodzaj}`), 0);
+              }}>
               <TrashIcon aria-hidden /> Usuń partnera {i + 1}
             </Button>
           )}
@@ -201,7 +207,10 @@ function PlanRows({ path, legend, hint, example, termExample, required }: {
           </div>
           {rows.length > 1 && (
             <Button type="button" variant="link" className="justify-self-start px-0"
-              onClick={() => update(path, rows.filter((_, j) => j !== i))}>
+              onClick={() => {
+                update(path, rows.filter((_, j) => j !== i));
+                setTimeout(() => focusField(`${path}.${Math.min(i, rows.length - 2)}.dzialanie`), 0);
+              }}>
               <TrashIcon aria-hidden /> Usuń działanie {i + 1}
             </Button>
           )}
@@ -276,7 +285,7 @@ function DescribedTextarea({ path, n, title, tip, questions }: { path: string; n
       <TextField path={path} multiline label={`${n}. ${title}`} hint={tip} />
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
         <Questions id={`${fieldId(path)}-pytania`} items={questions} />
-        <p className="text-base text-muted-foreground">{length} znaków</p>
+        <p className="text-base text-muted-foreground">{length} {plural(length, "znak", "znaki", "znaków")}</p>
       </div>
     </section>
   );
@@ -438,6 +447,8 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
   const [reached, setReached] = useState(initial.reached);
   const [errors, setErrors] = useState<Errors>({});
   const [confirmReset, setConfirmReset] = useState(false);
+  const resetButton = useRef<HTMLButtonElement>(null);
+  const keepButton = useRef<HTMLButtonElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const summary = useRef<HTMLDivElement>(null);
   const moved = useRef(false);
@@ -669,10 +680,17 @@ function Form({ initial, call }: { initial: Saved; call: Call }) {
             <div role="group" aria-label="Potwierdź wyczyszczenie" className="flex flex-wrap items-center gap-3">
               <span>Usunąć wszystko, co wpisano?</span>
               <Button type="button" variant="outline" size="sm" onClick={reset}>Tak, wyczyść</Button>
-              <Button type="button" variant="link" size="sm" onClick={() => setConfirmReset(false)}>Nie, zostaw</Button>
+              <Button ref={keepButton} type="button" variant="link" size="sm" onClick={() => {
+                setConfirmReset(false);
+                setTimeout(() => resetButton.current?.focus(), 0);
+              }}>Nie, zostaw</Button>
             </div>
           ) : (
-            <Button type="button" variant="link" size="sm" className="justify-self-start px-0" onClick={() => setConfirmReset(true)}>
+            <Button ref={resetButton} type="button" variant="link" size="sm" className="justify-self-start px-0" onClick={() => {
+              setConfirmReset(true);
+              // Przycisk zamienia się w pytanie: fokus na bezpieczną odpowiedź, nie na początek strony.
+              setTimeout(() => keepButton.current?.focus(), 0);
+            }}>
               <TrashIcon aria-hidden /> Wyczyść formularz
             </Button>
           )}
