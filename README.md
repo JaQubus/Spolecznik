@@ -3,6 +3,13 @@
 Plan hackathonowy · HackYeah 2026 · wyzwanie ROPS Kraków
 Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
 
+## Demo i makiety
+
+- **Demo:** [spolecznik.vercel.app](https://spolecznik.vercel.app). Zacznij od „Opisz problem” na stronie głównej. Wszystkie dane są syntetyczne.
+- **Makiety UX/UI:** [docs/makiety.pdf](docs/makiety.pdf). Siedem modułów w widoku telefonu (390 px) i komputera (1440 px), ułożonych według pętli innowacji, z modułem briefu (I–VII) i decyzjami dostępności przy każdym ekranie. Stany, które w aplikacji powstają po odpowiedzi LLM, oraz Panel ROPS (za logowaniem) są makietami statycznymi złożonymi z komponentów systemu projektowego.
+- **Dodatek: Figma:** [system projektowy i ekrany](https://www.figma.com/design/EEVUaoyAUdKOpkZviBdtaP/Untitled?node-id=0-1&t=u5tO4QMpFF54DP73-1) (zmienne, style tekstu, komponenty, zrzuty ekranów).
+- **Odświeżenie makiet:** `node scripts/makiety/build.mjs`, domyślnie z `localhost:3000`, albo z `BASE_URL=https://spolecznik.vercel.app`. Skrypt nie wywołuje Groq.
+
 ---
 
 ## TL;DR
