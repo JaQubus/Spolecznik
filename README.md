@@ -585,7 +585,7 @@ Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tok
 - **Webhooki** ([`0023_webhooks.sql`](supabase/migrations/0023_webhooks.sql)): baza sama wysyła POST z JSON przez `pg_net`.
   - Zdarzenia: `idea.created` (bez treści pomysłu, bo pomysły są prywatne do moderacji), `call.activated` i `call.deactivated` (Panel → Nabory).
   - Adres dodaje admin w tabeli `webhook_endpoints` i dostaje `secret`. Nagłówek `X-Spolecznik-Signature: sha256=…` to HMAC-SHA256 treści żądania.
-  - Wysyłka jest jednorazowa, bez ponowień. Stan zawsze można pobrać z API.
+  - Wysyłka jest jednorazowa, bez ponowień. Stan katalogu innowacji zawsze można pobrać z API; naborów API jeszcze nie udostępnia, więc pominiętego `call.*` nie da się odtworzyć.
 - Zagregowanych potrzeb celowo nie udostępniamy publicznie: trendy zostają w Panelu (tylko admin).
 
 *Hackathon kosztuje poniżej 20 USD w API.*

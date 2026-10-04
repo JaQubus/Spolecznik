@@ -164,8 +164,9 @@ export default function Page() {
         </p>
         <pre className={code}>{VERIFY_JS}</pre>
         <p className="text-lg">
-          Zdarzenie jest wysyłane raz. Jeśli Twój serwer nie odpowie kodem 2xx, nie ponawiamy go. Aktualny stan zawsze możesz
-          pobrać z API.
+          Zdarzenie jest wysyłane raz. Jeśli Twój serwer nie odpowie kodem 2xx, nie ponawiamy go. Aktualny stan katalogu
+          innowacji zawsze możesz pobrać z API. Naborów API jeszcze nie udostępnia, więc pominiętego zdarzenia{" "}
+          <code className="font-mono">call.*</code> nie da się odtworzyć.
         </p>
       </section>
     </div>
