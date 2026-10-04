@@ -35,6 +35,19 @@ export async function saveContactEmail(code: string, key: string, email: string)
   return true;
 }
 
+/** „ola@example.pl” → „o•••@example.pl”: autor rozpozna swój adres, a ktoś przy cudzym ekranie go nie przepisze. */
+export function maskEmail(email: string): string {
+  const [user, domain] = email.split("@");
+  return domain ? `${user.slice(0, 1)}•••@${domain}` : "•••";
+}
+
+/** Zapisany adres zgłoszenia (zamaskowany) — dla autora z kluczem, na stronie statusu i rozmowy. */
+export async function maskedContactEmail(kind: ReportKind, code: string): Promise<string | null> {
+  const { data, error } = await createAdminClient().from(TABLE[kind]).select("contact_email").eq("status_code", code).maybeSingle();
+  if (error) throw error;
+  return data?.contact_email ? maskEmail(data.contact_email as string) : null;
+}
+
 /** Link do statusu w mailu. Bez SITE_URL piszemy, gdzie wpisać kod, zamiast zgadywać domenę. */
 function statusLine(code: string): string {
   const site = process.env.SITE_URL?.replace(/\/$/, "");

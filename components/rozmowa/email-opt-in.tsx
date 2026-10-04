@@ -10,9 +10,15 @@ import { Label } from "@/components/ui/label";
  * Nieobowiązkowy e-mail do powiadomień o zgłoszeniu (#65): po wysłaniu, obok prywatnego linku, bo dopiero
  * wtedy jest kod i klucz, którym potwierdzamy, że to autor. Cel i sposób rezygnacji napisane przy polu (RODO).
  */
-export function EmailOptIn({ code, accessKey, id = "email-powiadomienia" }: { code: string; accessKey: string; id?: string }) {
+export function EmailOptIn({ code, accessKey, current = null, id = "email-powiadomienia" }: {
+  code: string;
+  accessKey: string;
+  /** Już zapisany adres, zamaskowany (o•••@example.pl) — przy powrocie na status albo do rozmowy. */
+  current?: string | null;
+  id?: string;
+}) {
   const [email, setEmail] = useState("");
-  const [saved, setSaved] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(current);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
@@ -52,10 +58,12 @@ export function EmailOptIn({ code, accessKey, id = "email-powiadomienia" }: { co
         void send(email.trim());
       }}
     >
-      <Label htmlFor={id}>Twój e-mail (nieobowiązkowy)</Label>
+      <Label htmlFor={id}>{saved ? "Zmień e-mail do powiadomień" : "Twój e-mail (nieobowiązkowy)"}</Label>
       <FieldHint id={`${id}-pomoc`}>
-        Napiszemy, gdy ROPS albo ekspert odpowie lub zmieni się status. Użyjemy go tylko do tego zgłoszenia,
-        a w mailu nie będzie jego treści. Adres usuniesz w każdej chwili, tutaj albo z prywatnego linku.
+        {saved && <>Powiadomienia idą teraz na: <strong>{saved}</strong>. </>}
+        Napiszemy, gdy ROPS albo ekspert odpowie lub zmieni się status. Użyjemy adresu tylko do tego zgłoszenia,
+        a w mailu nie będzie jego treści. Zmienisz go albo usuniesz w każdej chwili tutaj, na stronie statusu
+        zgłoszenia albo po otwarciu prywatnego linku.
       </FieldHint>
       <FieldError id={`${id}-blad`}>{error}</FieldError>
       <div className="flex flex-wrap gap-3">
