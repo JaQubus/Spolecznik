@@ -211,6 +211,7 @@ export async function assignIdeaExpert(_prev: ActionResult, formData: FormData):
       await notify({ user_id: thread.authorId, kind: "zmiana_statusu", payload: threadPayload(thread, { status: "ekspert" }) })
         .catch((e) => console.error("[panel] powiadomienie:", e));
     }
+    await emailAuthor("pomysl", ideaId, `Pomysł ma nowy status: ${NEED_STATUS_LABELS.ekspert}`);
   } catch (e) {
     console.error("[panel] ekspert pomysłu:", e);
     return SAVE_FAILED;
@@ -265,6 +266,7 @@ export async function updateIdeaStatus(_prev: ActionResult, formData: FormData):
     const { error: updateError } = await supabase.from("ideas").update({ status }).eq("id", ideaId);
     if (updateError) throw updateError;
     await logChange(user.id, "idea.status", "idea", ideaId, { from: before.status, to: status });
+    await emailAuthor("pomysl", ideaId, `Pomysł ma nowy status: ${NEED_STATUS_LABELS[status]}`);
   } catch (e) {
     console.error("[panel] status pomysłu:", e);
     return SAVE_FAILED;

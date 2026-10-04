@@ -255,7 +255,7 @@ export async function postNeedMessage(
   if (recipient) {
     await notify({ ...recipient, kind: "nowa_wiadomosc", payload }).catch((e) => console.error("[rozmowy] powiadomienie:", e));
   }
-  if (!fromAuthor) await emailAuthor("potrzeba", t.needId, "Masz nową odpowiedź w rozmowie");
+  if (!fromAuthor) await emailAuthor(t.kind, t.id, "Masz nową odpowiedź w rozmowie");
 
   if (!fromAuthor && BEFORE_ANSWER.includes(t.status)) {
     await setReportStatus(t, "odpowiedz", msg.actorId ?? null, `${REPORTS[t.kind].entity}.status`, {
