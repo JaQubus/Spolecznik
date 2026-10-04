@@ -72,6 +72,13 @@ type Row = { id: string; kind: string; payload: Record<string, unknown>; created
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
 const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
 
+/** Co zrobił asystent „Zapytaj ROPS” z wiadomością autora (payload.ai, lib/threads.ts). Brak — starsze powiadomienia. */
+const ASSISTANT_NOTE: Record<string, string> = {
+  odpowiedz: ". Asystent odpowiedział z Zasobnika",
+  przekazano: ". Asystent przekazał pytanie — czeka na człowieka",
+  bez_pytania: ". To nie pytanie, asystent nie odpowiadał",
+};
+
 /** Treść prostym językiem i link — dla każdego rodzaju zapisywanego w aplikacji. */
 function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "text" | "href"> {
   const p = r.payload;
@@ -92,12 +99,17 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
     case "nowa_wiadomosc":
       return forAdmin
         ? {
-            text: `${ideaId ? "Autor pomysłu" : "Zgłaszający"} napisał w sprawie ${code ?? (ideaId ? "pomysłu" : "zgłoszenia")}`,
+            text: `${ideaId ? "Autor pomysłu" : "Zgłaszający"} napisał w sprawie ${code ?? (ideaId ? "pomysłu" : "zgłoszenia")}${ASSISTANT_NOTE[str(p.ai) ?? ""] ?? ""}`,
             href: panelCard ? `${panelCard}#rozmowa` : "/panel",
           }
         // Strona statusu, nie /zapytaj: rozmowa wymaga klucza z przeglądarki, z której wysłano zgłoszenie,
         // a status działa na każdym urządzeniu po samym kodzie i ma link do rozmowy.
         : { text: `Nowa odpowiedź w sprawie ${code ?? "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
+    case "pilne_pytanie":
+      return {
+        text: `Pilne: odpowiedź asystenta nie pomogła w sprawie ${code ?? (ideaId ? "pomysłu" : "zgłoszenia")}. Czeka na człowieka`,
+        href: panelCard ? `${panelCard}#rozmowa` : "/panel",
+      };
     case "zmiana_statusu": {
       const label = NEED_STATUS_LABELS[p.status as NeedStatus];
       return { text: `${code ? `Zgłoszenie ${code}` : "Twoje zgłoszenie"} ma nowy status${label ? `: ${label}` : ""}`, href: code ? `/status/${code}` : null };

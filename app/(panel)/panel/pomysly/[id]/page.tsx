@@ -2,12 +2,13 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { IdeaPoster } from "@/components/pomysl/idea-poster";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { needHistory, needNeighbours, type AuditRow } from "@/lib/panel/needs";
 import { formatDate } from "@/lib/pl";
-import { NEED_STATUSES, type Fiszka } from "@/lib/schemas";
+import { IdeaPoster as PosterSchema, NEED_STATUSES, type Fiszka } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { needThread } from "@/lib/threads";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
@@ -54,11 +55,12 @@ export default async function Page(props: PageProps<"/panel/pomysly/[id]">) {
   const { data: indexed } = await supabase.from("search_index").select("lemmas").eq("kind", "pomysl").eq("ref_id", id).maybeSingle();
   const keywords = ((indexed?.lemmas as string | undefined) ?? "").split(/\s+/).filter(Boolean);
 
-  const [history, experts, thread] = await Promise.all([
+  const [history, experts, thread, poster] = await Promise.all([
     needHistory(id, "idea"),
     needNeighbours({ id, card: { keywords } }, "ekspert", 3).catch((e) => { console.error("[panel] eksperci pomysłu:", e); return []; }),
     // Bez migracji 0011 reszta strony ma działać dalej.
     needThread({ kind: "pomysl", id }).catch((e) => { console.error("[panel] rozmowa:", e); return null; }),
+    ideaPoster(id),
   ]);
 
   const fiszka = idea.fiszka;
@@ -98,6 +100,14 @@ export default async function Page(props: PageProps<"/panel/pomysly/[id]">) {
           ))}
         </dl>
       </section>
+
+      {poster && (
+        <section aria-labelledby="plakat" className="space-y-4">
+          <h2 id="plakat" className="text-2xl font-bold">Plakat pomysłu</h2>
+          <p className="max-w-[68ch] text-muted-foreground">Autor wygenerował go w Pracowni z fiszki przed zgłoszeniem.</p>
+          <IdeaPoster poster={poster} />
+        </section>
+      )}
 
       <section aria-labelledby="ekspert" className="space-y-3">
         <h2 id="ekspert" className="text-2xl font-bold">Ekspert</h2>
@@ -180,6 +190,17 @@ export default async function Page(props: PageProps<"/panel/pomysly/[id]">) {
       </section>
     </article>
   );
+}
+
+/** Plakat z Pracowni (migracja 0021). Bez kolumny albo z uszkodzoną treścią strona działa dalej bez plakatu. */
+async function ideaPoster(id: string) {
+  const { data, error } = await createAdminClient().from("ideas").select("poster").eq("id", id).maybeSingle();
+  if (error) {
+    console.error("[panel] plakat pomysłu:", error);
+    return null;
+  }
+  const parsed = PosterSchema.safeParse(data?.poster);
+  return parsed.success ? parsed.data : null;
 }
 
 function describeChange(h: AuditRow): string {
