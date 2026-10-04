@@ -113,7 +113,8 @@ export const IdeaRequest = z.object({
   canvas: z.record(z.string(), z.string().max(3000)).default({}),
   needCode: z.string().regex(STATUS_CODE).optional(), // pomysł z luki: /pomysl?potrzeba=SPL-…
 });
-export type IdeaResponse = { ideaId: string; statusCode: string };
+/** accessKey: tajny klucz pomysłu — tylko dla autora (ciasteczko + prywatny link), jak w MatchResponse. */
+export type IdeaResponse = { ideaId: string; statusCode: string; accessKey: string };
 
 // /api/tests: Próba — zgłoszenie testu albo ocena po teście (#19)
 export const TestRequest = z

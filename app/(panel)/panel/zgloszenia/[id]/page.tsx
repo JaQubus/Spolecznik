@@ -17,9 +17,10 @@ import { NEED_STATUSES } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { AREA_LABELS, CROSS_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
+import { innovationHref } from "@/components/knowledge/tiles";
 import { MessageList } from "@/components/rozmowa/message-list";
 import { needThread } from "@/lib/threads";
-import { ActionForm, SubmitButton } from "../../action-form";
+import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
 import { assignExpert, removePersonalData, replyInThread, updateNeedStatus } from "../../actions";
 import { ThreadLive } from "./thread-live";
 
@@ -59,11 +60,16 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
       ? supabase.from("needs").select("id, status_code, status, gminy(nazwa)").in("id", duplicateHits.map((d) => d.ref_id))
       : Promise.resolve({ data: [], error: null }),
     innovationIds.length
-      ? supabase.from("innovations").select("id, title").in("id", innovationIds)
+      ? supabase.from("innovations").select("id, title, slug, corpus, published").in("id", innovationIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
   const duplicateById = new Map((duplicates.data ?? []).map((d) => [d.id as string, d as unknown as { status_code: string; status: keyof typeof NEED_STATUS_LABELS; gminy: { nazwa: string } | null }]));
-  const titleById = new Map((innovations.data ?? []).map((i) => [i.id as string, i.title as string]));
+  // Kartę w Bibliotece mają tylko opublikowane innowacje z korpusu „biblioteka” (lib/knowledge/supabase-store.ts);
+  // innowacje samego pipeline'u matchmakingu (data/embed.py) zostają bez linku.
+  const innovationById = new Map((innovations.data ?? []).map((i) => [
+    i.id as string,
+    { title: i.title as string, href: i.slug && i.corpus === "biblioteka" && i.published ? innovationHref(i.slug) : null },
+  ]));
 
   const card = need.card;
   const pii = !!need.raw_text && anonymize(need.raw_text).found;
@@ -233,13 +239,22 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
           <p className="text-muted-foreground">Brak dopasowań — to zgłoszenie jest na mapie luk.</p>
         ) : (
           <ul className="border-t">
-            {(matches.data ?? []).map((m) => (
-              <li key={m.ref_id} className="grid gap-1 border-b py-4">
-                <p className="font-bold">{titleById.get(m.ref_id) ?? "Innowacja usunięta"}</p>
-                <p className="text-base text-muted-foreground">Dopasowanie {m.fit} na 100</p>
-                {m.why && <p>{m.why}</p>}
-              </li>
-            ))}
+            {(matches.data ?? []).map((m) => {
+              const innovation = innovationById.get(m.ref_id);
+              return (
+                <li key={m.ref_id} className="grid gap-1 border-b py-4">
+                  <p className="font-bold">
+                    {innovation?.href ? (
+                      <Link href={innovation.href} className={linkClass}>{innovation.title}</Link>
+                    ) : (
+                      innovation?.title ?? "Innowacja usunięta"
+                    )}
+                  </p>
+                  <p className="text-base text-muted-foreground">Dopasowanie {m.fit} na 100</p>
+                  {m.why && <p>{m.why}</p>}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -257,6 +272,22 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
             ))}
           </ol>
         )}
+      </section>
+
+      <section aria-labelledby="usun" className="max-w-2xl space-y-3 border-t pt-8">
+        <h2 id="usun" className="text-2xl font-bold">Usuń zgłoszenie</h2>
+        <DeleteForm
+          entity="need"
+          id={need.id}
+          label={`zgłoszenie ${need.status_code}`}
+          consequence={
+            <>
+              Znikną też rozmowa, dopasowania i powiadomienia, a kod{" "}
+              <span className="font-mono tracking-wider">{need.status_code}</span> przestanie działać. Pomysły zgłoszone
+              do tej potrzeby zostaną. Używaj do zgłoszeń testowych i spamu — prawdziwe zgłoszenie lepiej zamknąć.
+            </>
+          }
+        />
       </section>
     </article>
   );

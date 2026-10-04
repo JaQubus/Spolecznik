@@ -10,8 +10,29 @@ import { privateLinkPath } from "@/lib/thread-types";
 
 const noSubscribe = () => () => {};
 
-/** Prywatny link do rozmowy: pole tylko do odczytu + „Kopiuj link” (z tekstem, nie sama ikona). */
-export function PrivateLink({ code, accessKey, id = "prywatny-link" }: { code: string; accessKey: string; id?: string }) {
+const COPY = {
+  potrzeba: {
+    label: "Prywatny link do rozmowy",
+    hint: "Zapisz go, żeby wrócić do rozmowy z innego telefonu albo komputera. Nie pokazuj go innym — kto ma link, może czytać rozmowę.",
+  },
+  pomysl: {
+    label: "Prywatny link do pomysłu",
+    hint: "Zapisz go, żeby mieć pomysł na liście swoich zgłoszeń także na innym telefonie albo komputerze. Nie pokazuj go innym.",
+  },
+};
+
+/** Prywatny link do zgłoszenia: pole tylko do odczytu + „Kopiuj link” (z tekstem, nie sama ikona). */
+export function PrivateLink({
+  code,
+  accessKey,
+  kind = "potrzeba",
+  id = "prywatny-link",
+}: {
+  code: string;
+  accessKey: string;
+  kind?: keyof typeof COPY;
+  id?: string;
+}) {
   const origin = useSyncExternalStore(noSubscribe, () => window.location.origin, () => "");
   const [copied, setCopied] = useState<string | null>(null);
   const link = `${origin}${privateLinkPath(code, accessKey)}`;
@@ -27,11 +48,8 @@ export function PrivateLink({ code, accessKey, id = "prywatny-link" }: { code: s
 
   return (
     <div className="max-w-2xl space-y-2">
-      <Label htmlFor={id}>Prywatny link do rozmowy</Label>
-      <FieldHint id={`${id}-pomoc`}>
-        Zapisz go, żeby wrócić do rozmowy z innego telefonu albo komputera. Nie pokazuj go innym — kto ma link,
-        może czytać rozmowę.
-      </FieldHint>
+      <Label htmlFor={id}>{COPY[kind].label}</Label>
+      <FieldHint id={`${id}-pomoc`}>{COPY[kind].hint}</FieldHint>
       <div className="flex flex-wrap gap-3">
         <Input
           id={id}
