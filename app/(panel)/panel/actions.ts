@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
+import { notify } from "@/lib/notifications";
 import { logChange } from "@/lib/panel/needs";
 import { anonymize } from "@/lib/pii";
 import { NEED_STATUSES } from "@/lib/schemas";
@@ -40,12 +41,11 @@ async function setStatus(
     if (iError) throw iError;
   }
   if (authorId) {
-    const { error: nError } = await supabase.from("notifications").insert({
+    await notify({
       user_id: authorId,
       kind: from === patch.status ? "wiadomosc" : "zmiana_statusu",
       payload: { needId, status: patch.status },
-    });
-    if (nError) console.error("[panel] powiadomienie:", nError);
+    }).catch((e) => console.error("[panel] powiadomienie:", e));
   }
 }
 
@@ -249,9 +249,7 @@ export async function setCallActive(formData: FormData) {
         const { data: ideas } = await supabase.from("ideas").select("author_id").in("id", hits.map((h) => h.ref_id)).not("author_id", "is", null);
         const authors = [...new Set((ideas ?? []).map((i) => i.author_id as string))];
         if (authors.length) {
-          await supabase.from("notifications").insert(
-            authors.map((user_id) => ({ user_id, kind: "nowy_nabor", payload: { callId: call.id, title: call.title } })),
-          );
+          await notify(authors.map((user_id) => ({ user_id, kind: "nowy_nabor", payload: { callId: call.id, title: call.title } })));
         }
       }
     } catch (e) {

@@ -367,7 +367,7 @@ sequenceDiagram
 | `applications` | idea_id, call_id, draft jsonb, status |
 | `tests` | innovation_id, tester_id, teryt, status, rating, feedback, suggestions |
 | `threads`, `messages`, `thread_participants` | entity_kind, entity_id; treść; uczestnicy |
-| `notifications` | user_id albo role, kind, payload, read_at |
+| `notifications` | user_id albo role, kind, payload (stan „widziane” per osoba w ciasteczku dzwonka, nie w wierszu) |
 | `doc_chunks` | doc_title, year, url, page, text, fts (Q&A po raportach: wyszukiwanie po prefiksach słów) |
 | `search_index` | wspólny indeks kart (sekcja 5.3) |
 | `audit_log` | kto, co, kiedy (zmiany w Panelu) |

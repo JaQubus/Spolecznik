@@ -1,4 +1,5 @@
 import { reindexCard } from "@/lib/index-card";
+import { notify } from "@/lib/notifications";
 import { rateLimit } from "@/lib/rate-limit";
 import { IdeaRequest, type IdeaResponse } from "@/lib/schemas";
 import { newStatusCode } from "@/lib/status-code";
@@ -46,11 +47,11 @@ export async function POST(request: Request) {
     // Indeks i powiadomienie nie mogą zablokować potwierdzenia dla autora.
     const sideEffects = await Promise.allSettled([
       reindexCard("pomysl", idea.id),
-      supabase.from("notifications").insert({
+      notify({
         role: "admin",
         kind: "nowy_pomysl",
         payload: { ideaId: idea.id, statusCode: idea.status_code, title: fiszka.krotki_opis },
-      }).then(({ error }) => { if (error) throw error; }),
+      }),
     ]);
     for (const r of sideEffects) if (r.status === "rejected") console.error("[ideas] efekt uboczny:", r.reason);
 
