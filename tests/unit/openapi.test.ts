@@ -22,7 +22,7 @@ function propertyNames(node: unknown, out = new Set<string>()): Set<string> {
 }
 
 const ROW: InnovationDetailRow = {
-  id: "5b0c8f2e-1d3a-4c6b-9e7f-2a1b3c4d5e6f", slug: "kamienica", title: "Kamienica", corpus: "biblioteka",
+  id: "5b0c8f2e-1d3a-4c6b-9e7f-2a1b3c4d5e6f", slug: "kamienica", title: "Kamienica",
   category: null, innovation_type: "usluga", areas: ["seniorzy"], target_groups: null, cross_topics: [],
   solution: "Opis", etr_summary: null, tests_count: 2, avg_rating: "4.333", synthetic: true,
   updated_at: "2026-10-04T10:00:00+00:00", problem: null, beneficiaries: null, who_can_use: null, evidence: null,
@@ -76,9 +76,10 @@ describe("mapowanie wierszy", () => {
     ]);
   });
 
-  test("link prowadzi do karty z właściwego korpusu", () => {
+  test("link prowadzi do kanonicznej strony opisu, nie do starego /biblioteka/[slug]", () => {
     assert.equal(toSummary(ROW, "https://s.example").url, "https://s.example/biblioteka/innowacja/kamienica");
-    assert.equal(toSummary({ ...ROW, corpus: "pipeline", slug: null }, "https://s.example").url, `https://s.example/biblioteka/${ROW.id}`);
+    assert.equal(toSummary({ ...ROW, slug: null }, "https://s.example").url, `https://s.example/biblioteka/innowacja/${ROW.id}`);
+    assert.equal(toSummary({ ...ROW, slug: "dom/ogród" }, "https://s.example").url, "https://s.example/biblioteka/innowacja/dom%2Fogr%C3%B3d");
   });
 
   test("teryt przyjmuje tylko powiat z Małopolski", () => {

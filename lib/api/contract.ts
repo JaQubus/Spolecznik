@@ -131,14 +131,13 @@ export const CallChangedEvent = z
 
 // ── Wiersze bazy → odpowiedzi (tylko kolumny z listy, nigdy select("*")) ──
 export const SUMMARY_COLUMNS =
-  "id, slug, title, corpus, category, innovation_type, areas, target_groups, cross_topics, solution, etr_summary, tests_count, avg_rating, synthetic, updated_at";
+  "id, slug, title, category, innovation_type, areas, target_groups, cross_topics, solution, etr_summary, tests_count, avg_rating, synthetic, updated_at";
 export const DETAIL_COLUMNS = `${SUMMARY_COLUMNS}, problem, beneficiaries, who_can_use, evidence, how_to_use, components, source_url, pdf_url, video_url, license_url`;
 
 export type InnovationRow = {
   id: string;
   slug: string | null;
   title: string;
-  corpus: string;
   category: string | null;
   innovation_type: string | null;
   areas: string[] | null;
@@ -165,9 +164,13 @@ export type InnovationDetailRow = InnovationRow & {
   license_url: string | null;
 };
 
-/** Ta sama strona co w aplikacji: Zasobnik (corpus = biblioteka) ma własną kartę, korpus pipeline'u — starszą. */
-export function innovationPath(row: Pick<InnovationRow, "id" | "slug" | "corpus">): string {
-  return row.corpus === "biblioteka" && row.slug ? `/biblioteka/innowacja/${row.slug}` : `/biblioteka/${row.slug ?? row.id}`;
+/**
+ * Kanoniczna strona opisu, jak innovationHref w lib/knowledge/hrefs.ts: jedna dla Zasobnika i pipeline'u dopasowań,
+ * innowacja bez sluga — po id. Stare /biblioteka/[slug] tylko przekierowuje, więc go nie zwracamy.
+ * Własna kopia, bo ten plik czyta też test jednostkowy (node --test, bez aliasu @/).
+ */
+export function innovationPath(row: Pick<InnovationRow, "id" | "slug">): string {
+  return `/biblioteka/innowacja/${encodeURIComponent(row.slug ?? row.id)}`;
 }
 
 export function toSummary(row: InnovationRow, origin: string): InnovationSummary {
