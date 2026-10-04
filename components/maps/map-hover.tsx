@@ -17,7 +17,9 @@ export type HoverDetail = {
  * Karta po najechaniu na obszar mapy. To dodatek dla myszy: te same liczby są w nazwie linku
  * (czytnik ekranu) i w tabeli pod mapą. Esc chowa kartę (SC 1.4.13), a karta nie przykrywa kursora.
  */
-export function MapHover({ details, children }: { details: Record<string, HoverDetail>; children: React.ReactNode }) {
+export function MapHover({ details, cta = "Kliknij, żeby zobaczyć kartę gminy", children }: {
+  details: Record<string, HoverDetail>; cta?: string; children: React.ReactNode;
+}) {
   const box = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<{ id: string; left: number; top: number } | null>(null);
 
@@ -64,17 +66,18 @@ export function MapHover({ details, children }: { details: Record<string, HoverD
           </div>
           <dl className="space-y-1">
             {d.rows.map((r) => (
-              <div key={r.label} className="flex items-baseline justify-between gap-3">
-                <dt className="flex items-center gap-2">
-                  {r.swatch && <span className="size-3 shrink-0 rounded-[3px] border border-border-strong" style={{ background: r.swatch }} />}
+              // Długa wartość (np. „390 na 10 tys. mieszkańców”) zawija się pod etykietę zamiast wychodzić poza kartę.
+              <div key={r.label} className="flex flex-wrap items-baseline justify-between gap-x-3">
+                <dt className="flex min-w-0 items-baseline gap-2">
+                  {r.swatch && <span className="size-3 shrink-0 self-center rounded-[3px] border border-border-strong" style={{ background: r.swatch }} />}
                   <span className={r.current ? "font-bold" : undefined}>{r.label}</span>
                 </dt>
-                <dd className="font-bold whitespace-nowrap">{r.value}</dd>
+                <dd className="ml-auto text-right font-bold">{r.value}</dd>
               </div>
             ))}
           </dl>
           <p className="flex items-center gap-2 text-muted-foreground">
-            <CursorArrowRaysIcon aria-hidden className="size-4 shrink-0" /> Kliknij, żeby zobaczyć kartę gminy
+            <CursorArrowRaysIcon aria-hidden className="size-4 shrink-0" /> {cta}
           </p>
         </div>
       )}
