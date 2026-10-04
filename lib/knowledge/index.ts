@@ -1,6 +1,8 @@
 import "server-only";
 import { fileStore } from "./file-store";
+import { innovationFromRow } from "./rows";
 import { queries, type Entity, type EntityKind, type KnowledgeStore } from "./store";
+import type { Innovation } from "./types";
 import { supabaseStore } from "./supabase-store";
 
 export const isSupabaseConfigured = () =>
@@ -40,3 +42,24 @@ const store: KnowledgeStore = {
 export const knowledge = queries(store);
 
 export type { Knowledge } from "./store";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Jedna strona opisu dla każdej innowacji (/biblioteka/innowacja/[slug]): najpierw Zasobnik (corpus
+ * „biblioteka”), a gdy jej tam nie ma — innowacja z pipeline'u dopasowań (corpus „pipeline”), do której
+ * prowadzą wyniki „Opisz problem”, asystent Pracowni, Próba i Kondycja.
+ */
+export async function innovationPage(slugOrId: string): Promise<Innovation | null> {
+  const found = await knowledge.innovation(slugOrId);
+  if (found || !isSupabaseConfigured()) return found;
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const { data, error } = await createAdminClient()
+    .from("innovations")
+    .select("*")
+    .eq(UUID.test(slugOrId) ? "id" : "slug", slugOrId)
+    .eq("corpus", "pipeline")
+    .maybeSingle();
+  if (error) throw error;
+  return data ? innovationFromRow(data) : null;
+}
