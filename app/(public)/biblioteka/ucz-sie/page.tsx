@@ -38,7 +38,7 @@ export default async function Page() {
   return (
     <div className="space-y-10">
       <p>
-        <Link href="/biblioteka" className={linkClass}>
+        <Link href="/biblioteka" className={`inline-flex min-h-12 items-center gap-2 ${linkClass}`}>
           <ArrowLeftIcon aria-hidden className="size-5" /> Biblioteka i wiedza
         </Link>
       </p>

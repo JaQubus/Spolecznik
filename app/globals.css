@@ -153,6 +153,12 @@
   .font-mono {
     white-space: nowrap;
   }
+  /* Nagłówki często stoją obok ikony w wierszu flex, a tam break-word nie działa (minimalna szerokość to całe słowo).
+     „Niepełnosprawność” w text-4xl ma przy 320 px ponad 400 px — dzielimy po polsku, a w ostateczności w dowolnym miejscu. */
+  h1, h2, h3 {
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
 }
 /* ── Dostępność (WCAG 2.1 AA) ─────────────────────────────── */
 html.a11y-large { font-size: 125%; }
