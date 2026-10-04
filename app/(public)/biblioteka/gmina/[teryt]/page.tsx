@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { gminaProfile, loadReport, type FocusArea, type GminaReport } from "@/lib/gmina-report";
 import type { IndicatorRow } from "@/lib/gmina-report/score";
 import { comparisonText, formatNumber, leadIndicator, withUnit } from "@/lib/gmina-report/summary";
-import { innovationHref } from "@/lib/knowledge/hrefs";
+import { areaHref, innovationHref } from "@/lib/knowledge/hrefs";
 import { TYPE_LABELS } from "@/lib/knowledge/labels";
 import { formatDate, plural } from "@/lib/pl";
 import { AREA_LABELS } from "@/lib/taxonomy";
@@ -69,9 +69,13 @@ export default async function Page(props: PageProps<"/biblioteka/gmina/[teryt]">
           <h2 id="w-skrocie" className="sr-only">W skrócie</h2>
           <p className="text-xl">{report.summary.text}</p>
           <p className="text-base text-muted-foreground">
-            {report.summary.source === "llm"
-              ? "Podsumowanie napisał model językowy wyłącznie z liczb tego raportu; każdą liczbę sprawdziliśmy automatycznie."
-              : "Podsumowanie złożone automatycznie z liczb tego raportu."}
+            <span className="print:hidden">
+              {report.summary.source === "llm"
+                ? "Podsumowanie napisał model językowy wyłącznie z liczb tego raportu; każdą liczbę sprawdziliśmy automatycznie."
+                : "Podsumowanie złożone automatycznie z liczb tego raportu."}{" "}
+            </span>
+            {/* Na pierwszej stronie wydruku, nie tylko w „Źródła i metoda” na końcu — kartka krąży bez reszty raportu. */}
+            To materiał wyjściowy, nie ocena gminy. Dane: GUS i ROPS (IOSS); źródła i metoda na końcu raportu.
           </p>
         </section>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 print:hidden">
@@ -155,9 +159,17 @@ function Profile({ report }: { report: GminaReport }) {
       </dl>
       {p.source && <p className="text-base text-muted-foreground">Źródło: {p.source.title}, {p.source.year}.</p>}
       {p.small && (
-        <Alert title="Mała liczba mieszkańców: wynik orientacyjny">
-          <p>W gminie poniżej 5 tysięcy mieszkańców kilka zdarzeń w roku mocno zmienia wskaźniki. Traktuj porównania jako wskazówkę.</p>
-        </Alert>
+        <>
+          <div className="print:hidden">
+            <Alert title="Mała liczba mieszkańców: wynik orientacyjny">
+              <p>W gminie poniżej 5 tysięcy mieszkańców kilka zdarzeń w roku mocno zmienia wskaźniki. Traktuj porównania jako wskazówkę.</p>
+            </Alert>
+          </div>
+          {/* Na kartce ramka zajmowała kilka linii i wypychała koniec raportu na trzecią stronę. */}
+          <p className="hidden print:block">
+            <strong>Mała liczba mieszkańców: wynik orientacyjny.</strong> Kilka zdarzeń w roku mocno zmienia wskaźniki.
+          </p>
+        </>
       )}
     </section>
   );
@@ -229,6 +241,12 @@ function FocusSection({ focus, report, n, gminaQuery }: { focus: FocusArea; repo
           ) : (
             <p>W Bibliotece nie ma jeszcze rozwiązania dla tego obszaru. To dobry temat na nowy pomysł albo nabór.</p>
           )}
+          <p className="print:hidden">
+            {focus.innovations.length > 0 && "To punkt wyjścia. "}
+            <Link href={areaHref(focus.area.replace(/_/g, "-"))} className={linkClass}>
+              Wszystkie rozwiązania z Biblioteki: {label.toLowerCase()}
+            </Link>
+          </p>
         </div>
 
         {focus.similarGminy.length > 0 && (
@@ -262,7 +280,14 @@ function AreasTable({ report }: { report: GminaReport }) {
     <section aria-labelledby="osiem-obszarow" className="space-y-4">
       <h2 id="osiem-obszarow" className="text-3xl font-bold">Osiem obszarów Mapy Wyzwań</h2>
       <p className="max-w-[44rem] text-lg">
-        „Typowo” to mediana, czyli wartość środkowa: połowa gmin ma więcej, połowa mniej. Duże miasta, takie jak Kraków, jej nie zawyżają.
+        „Typowo” to mediana, czyli wartość środkowa: połowa gmin ma więcej, połowa mniej.
+        <span className="print:hidden"> Duże miasta, takie jak Kraków, jej nie zawyżają.</span>
+        {p.areas.some((a) => a.level === "powiat") && (
+          <>
+            {" "}<strong>Obszary oznaczone „dane powiatu”</strong> nie mają danych o gminach: pokazujemy cały powiat i porównujemy go z innymi
+            powiatami. Sytuacja w gminie może być inna niż w powiecie.
+          </>
+        )}
       </p>
       <div role="region" aria-labelledby="tabela-obszarow" tabIndex={0} className="relative overflow-x-auto">
         <table className="w-full min-w-[40rem] border-collapse text-base">

@@ -14,7 +14,7 @@
   .gmina-report :is(.space-y-14, .space-y-12, .space-y-8, .space-y-6, .space-y-5, .space-y-4, .space-y-3, .space-y-2) > :not(:last-child) {
     margin-block-end: 0.3rem !important;
   }
-  .gmina-report > :not(:last-child) { margin-block-end: 0.9rem !important; }
+  .gmina-report > :not(:last-child) { margin-block-end: 0.7rem !important; }
   .gmina-report :is(li, dt, dd) { padding-block: 0.15rem !important; }
   .gmina-report :is(th, td) { padding: 0.2rem 0.35rem !important; }
 
