@@ -1,4 +1,6 @@
+import Link from "next/link";
 import type { Innovation } from "@/lib/knowledge/types";
+import { formatNumber, plural } from "@/lib/pl";
 
 /** Tekst ze strony ROPS: akapity po nowych liniach, wiersze z „•” jako lista. */
 function Prose({ text }: { text: string }) {
@@ -28,11 +30,27 @@ function Prose({ text }: { text: string }) {
  * Kroki to <ol> z nagłówkami h2, więc czytnik ekranu ogłasza „lista, 4 elementy” i można skakać po nagłówkach.
  */
 export function StorySteps({ innovation: i }: { innovation: Innovation }) {
+  const tests = i.testsCount ?? 0;
+  // Wyniki z Próby (/przetestuj) wracają tutaj. Przy zerze testów mówimy to wprost i zapraszamy do testu,
+  // zamiast milczeć — brak zdania wyglądałby jak brak takiej możliwości.
+  const testsLine = tests > 0
+    ? `W Społeczniku przetestowano ją ${tests} ${plural(tests, "raz", "razy", "razy")}${i.avgRating != null ? `, średnia ocena ${formatNumber(i.avgRating)} na 5` : ""}.`
+    : (
+      <>
+        W Społeczniku nikt jeszcze jej nie przetestował.{" "}
+        <Link href={`/przetestuj?innowacja=${i.slug ?? i.id}`} className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+          Przetestuj ją u siebie i oceń
+        </Link>
+      </>
+    );
   const steps = [
     { title: "Jaki problem rozwiązuje", body: i.problem, extra: i.beneficiaries && { label: "Dla kogo", text: i.beneficiaries } },
-    { title: "Na czym polega rozwiązanie", body: i.solution },
-    { title: "Skąd wiemy, że działa", body: i.evidence ?? "ROPS nie opisał jeszcze wyników testu tej innowacji." },
-    { title: "Jak skorzystać i kto może to wdrożyć", body: i.whoCanUse },
+    { title: "Na czym polega rozwiązanie", body: i.solution, extra: i.components && { label: "Z czego się składa", text: i.components } },
+    { title: "Skąd wiemy, że działa", body: i.evidence ?? "ROPS nie opisał jeszcze wyników testu tej innowacji.", note: testsLine },
+    // Dwa różne pola (z karty PDF i ze strony ROPS) — każde ze swoją etykietą, gdy są oba.
+    i.howToUse
+      ? { title: "Jak skorzystać i kto może to wdrożyć", body: i.howToUse, extra: i.whoCanUse && { label: "Kto może to wdrożyć", text: i.whoCanUse } }
+      : { title: "Jak skorzystać i kto może to wdrożyć", body: i.whoCanUse },
   ];
   return (
     <ol className="space-y-10">
@@ -46,6 +64,7 @@ export function StorySteps({ innovation: i }: { innovation: Innovation }) {
               <span className="sr-only">Krok {n + 1}: </span>{s.title}
             </h2>
             {s.body ? <Prose text={s.body} /> : <p>Brak opisu.</p>}
+            {"note" in s && s.note && <p className="max-w-[44rem]">{s.note}</p>}
             {s.extra && (
               <div className="max-w-[44rem]">
                 <h3 className="text-lg font-bold">{s.extra.label}</h3>

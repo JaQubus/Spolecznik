@@ -85,6 +85,9 @@ export type Innovation = {
   solution: string | null;
   evidence: string | null;
   whoCanUse: string | null;
+  /** Z karty PDF (pipeline dopasowań); w Zasobniku zwykle puste. */
+  howToUse?: string | null;
+  components?: string | null;
   beneficiaries: string | null;
   etrSummary: string | null;
   video: Video | null;
@@ -95,6 +98,9 @@ export type Innovation = {
   dissemination: boolean;
   published: boolean;
   synthetic: boolean;
+  /** Liczone triggerem z tabeli tests (Próba); brak w trybie plików. */
+  testsCount?: number;
+  avgRating?: number | null;
 };
 
 export type Persona = {
