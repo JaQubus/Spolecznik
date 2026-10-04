@@ -51,18 +51,23 @@ export const MATERIAL_ICONS: Record<MaterialKind, Icon> = {
   publikacja: NewspaperIcon,
 };
 
-/** Grupa odbiorców nosi kolor najbliższego obszaru, żeby ten sam temat miał ten sam kolor w całym serwisie. */
-export const GROUP_AREA: Record<GroupKey, AreaKey> = {
+/**
+ * Grupa odbiorców nosi kolor swojego obszaru, żeby ten sam temat miał ten sam kolor w całym serwisie.
+ * Grupa bez jasnego obszaru (rynek pracy to nie to samo co ubóstwo) zostaje neutralna: --ink na --surface-alt.
+ */
+export const GROUP_AREA: Partial<Record<GroupKey, AreaKey>> = {
   seniorzy: "seniorzy",
   dzieci_mlodziez_rodzina: "rodzina_piecza",
   ograniczona_mobilnosc: "niepelnosprawnosc",
   niepelnosprawnosc_sensoryczna: "niepelnosprawnosc",
   zdrowie_medycyna: "zdrowie",
-  rynek_pracy: "ubostwo",
   cudzoziemcy: "cudzoziemcy",
   bezdomnosc: "bezdomnosc",
   niepelnosprawnosc_intelektualna: "niepelnosprawnosc",
 };
+
+/** Wartość data-area dla grupy; pusty napis daje neutralne kolory z reguły [data-area] w globals.css. */
+export const groupArea = (group: GroupKey) => GROUP_AREA[group] ?? "";
 
 /**
  * Ikona obszaru po kluczu (areas.icon w bazie trzymał nazwę ikony Lucide — dziś decyduje klucz obszaru),
@@ -81,7 +86,7 @@ export function AreaIcon({ area, className, iconClassName }: { area: string; cla
 export function GroupIcon({ group, className }: { group: GroupKey; className?: string }) {
   const Icon = GROUP_ICONS[group];
   if (!Icon) return null;
-  return <Icon aria-hidden data-area={GROUP_AREA[group]} className={cn("text-area", className)} />;
+  return <Icon aria-hidden data-area={groupArea(group)} className={cn("text-area", className)} />;
 }
 
 /** Etykieta obszaru: miękkie tło i ikona w kolorze obszaru, tekst zawsze w kolorze tekstu. */

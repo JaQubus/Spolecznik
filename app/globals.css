@@ -79,15 +79,17 @@
   --info-soft: #e9f0fa;
   --warning: #8a5700;
   --warning-soft: #fbf0d9;
-  /* Obszary: jeden odcień na obszar, ten sam na ikonach i etykietach w całym serwisie. */
-  --area-seniorzy: #7240b8;             --area-seniorzy-soft: #f1ebfa;
-  --area-niepelnosprawnosc: #1f67b0;    --area-niepelnosprawnosc-soft: #e6f0f9;
-  --area-rodzina_piecza: #b0480c;       --area-rodzina_piecza-soft: #fcece2;
-  --area-zdrowie_psychiczne: #0e7368;   --area-zdrowie_psychiczne-soft: #e0f2ef;
-  --area-zdrowie: #b42a55;              --area-zdrowie-soft: #fbe8ee;
-  --area-ubostwo: #8a5f00;              --area-ubostwo-soft: #f9f0d8;
-  --area-bezdomnosc: #4d5e78;           --area-bezdomnosc-soft: #eaeef4;
-  --area-cudzoziemcy: #5c6b10;          --area-cudzoziemcy-soft: #eff2dc;
+  /* Obszary: jeden odcień na obszar, ten sam na ikonach i etykietach w całym serwisie. Tylko na ikony (≥3:1),
+     tekst na miękkim tle zostaje w kolorze --ink. Dobrane tak, żeby różniły się też przy deuteranopii i protanopii
+     (jasność, nie tylko odcień): najbliższa para ΔE ≈ 15 w symulacji Machado 2009. */
+  --area-seniorzy: #8968a4;             --area-seniorzy-soft: #f6ebff;
+  --area-niepelnosprawnosc: #0c3e87;    --area-niepelnosprawnosc-soft: #e5f1ff;
+  --area-rodzina_piecza: #a94512;       --area-rodzina_piecza-soft: #ffebe2;
+  --area-zdrowie_psychiczne: #1e7f75;   --area-zdrowie_psychiczne-soft: #dcf7f2;
+  --area-zdrowie: #742d4f;              --area-zdrowie-soft: #ffe9f1;
+  --area-ubostwo: #9e7745;              --area-ubostwo-soft: #fdeedc;
+  --area-bezdomnosc: #563e31;           --area-bezdomnosc-soft: #ffebe0;
+  --area-cudzoziemcy: #2c3c06;          --area-cudzoziemcy-soft: #ecf4e0;
   --focus: #222222;
   --flag-white: #ffffff;
   --flag-red: #dc143c;
@@ -150,14 +152,14 @@
   --info-soft: #1c2b40;
   --warning: #f0c060;
   --warning-soft: #3a2e14;
-  --area-seniorzy: #c3a3f2;             --area-seniorzy-soft: #2d2440;
-  --area-niepelnosprawnosc: #8cbcec;    --area-niepelnosprawnosc-soft: #1c2c3f;
-  --area-rodzina_piecza: #f5a875;       --area-rodzina_piecza-soft: #3d2619;
-  --area-zdrowie_psychiczne: #6fd2c3;   --area-zdrowie_psychiczne-soft: #163330;
-  --area-zdrowie: #f39ab3;              --area-zdrowie-soft: #3d1e28;
-  --area-ubostwo: #e9c46a;              --area-ubostwo-soft: #382e15;
-  --area-bezdomnosc: #aebdd3;           --area-bezdomnosc-soft: #252c37;
-  --area-cudzoziemcy: #c3d173;          --area-cudzoziemcy-soft: #2d3116;
+  --area-seniorzy: #cf9df7;             --area-seniorzy-soft: #31263b;
+  --area-niepelnosprawnosc: #bbd5fe;    --area-niepelnosprawnosc-soft: #1f2c3f;
+  --area-rodzina_piecza: #de8560;       --area-rodzina_piecza-soft: #3c251b;
+  --area-zdrowie_psychiczne: #4fd1c2;   --area-zdrowie_psychiczne-soft: #10322e;
+  --area-zdrowie: #c888a2;              --area-zdrowie-soft: #3b232d;
+  --area-ubostwo: #f0a830;              --area-ubostwo-soft: #382814;
+  --area-bezdomnosc: #e5bfac;           --area-bezdomnosc-soft: #3c2519;
+  --area-cudzoziemcy: #aed467;          --area-cudzoziemcy-soft: #272f18;
   --focus: #f2efea;
   --flag-white: #ffffff;
   --flag-red: #dc143c;

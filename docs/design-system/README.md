@@ -19,9 +19,10 @@ Neutral grounds, colour that means something. Pages stay mostly `surface` and `s
 - `surface` (white) is the page; `surface-alt` (warm cream) makes bands: hero, accessibility strip, footer. Separate areas by shifting the ground, never by outlined boxes.
 - `ink` (#222) is text and the neutral emphasis colour: secondary button outline, selected chips, checked radios and checkboxes.
 - `link` (blue) colours every underlined link (`a.underline` / `button.underline` get it from a base rule; Button `link` variant uses `text-link`). Links stay underlined, so the blue only speeds up recognition.
-- `brand` green is the **one** primary button per view, the SearchBar submit, the VoiceInput mic when it is the primary action, and success marks (success icons, done timeline steps). Never two green buttons on one screen.
-- `info` (blue) with `info-soft`: info alerts and the current timeline step. `warning` (amber) with `warning-soft`: warnings for the team (possible personal data, possible duplicate). `danger` is for errors and nothing else.
-- **Area colours** `area-<key>` / `area-<key>-soft`: each of the eight challenge areas has one hue, used on its icon disc, its badge and the tiles of its innovations, so a topic looks the same everywhere (library, results, status, panel). Set `data-area="<key>"` on an element and use `text-area` / `bg-area-soft`; groups map to areas via `GROUP_AREA` (`components/knowledge/icons.tsx`). Text on area grounds stays `ink`.
+- `brand` green is the **one** primary button per view, the SearchBar submit, the VoiceInput mic when it is the primary action, and success icons. If you see two green things on one screen, one of them is wrong (done timeline steps are `ink` for this reason).
+- `info` (blue) with `info-soft`: info alerts and the current timeline step. `danger` is for errors and nothing else.
+- `warning` (amber) with `warning-soft` is **only for risks the system detects for the team** in the panel (possible personal data, possible duplicate). Not on public pages: a caution for residents ("pamiętaj…", "sesja wygaśnie") is an `info` Alert.
+- **Area colours** `area-<key>` / `area-<key>-soft`: each of the eight challenge areas has one hue, used on its icon disc, its badge and the tiles of its innovations, so a topic looks the same everywhere (library, results, status, panel). Set `data-area="<key>"` on an element and use `text-area` / `bg-area-soft`. Icons only (3:1); text on area grounds stays `ink`. The eight differ in lightness as well as hue, so they stay apart for deuteranopia and protanopia too (closest pair ΔE ≈ 15 light / 10.5 dark, Machado 2009 simulation). Groups take their area's colour via `GROUP_AREA` (`components/knowledge/icons.tsx`); a group without a clear area (rynek pracy) stays neutral (`data-area=""` → `ink` on `surface-alt`).
 - `flag-white` / `flag-red` appear once, as the 4px band at the top of Header.
 - **No gradients.** Flat fills only. One shadow, `shadow-overlay`, for menus, sheets and toasts; nothing in the page flow.
 
@@ -38,8 +39,8 @@ Measured pairs; each token's usage note lists the grounds it is safe on.
 | `danger` on any surface (worst case) | 5.0:1 | 5.5:1 | 8.5:1 |
 | `link` / `info` on any surface or soft ground (worst case) | 5.5:1 | 6.5:1 | 18.4:1 (black) |
 | `warning` on `warning-soft` / any surface | 4.9:1 | 7.8:1 | 18.4:1 (black) |
-| `area-*` on its soft ground / any surface (worst of the eight) | 4.5:1 | 6.8:1 | 18.4:1 (black) |
-| `ink` on `info-soft` / `warning-soft` / `area-*-soft` (worst case) | 13.5:1 | 11.6:1 | 21:1 |
+| `area-*` icon on its soft ground / any surface (worst of the eight; icons only) | 3.3:1 | 5.1:1 | 18.4:1 (black) |
+| `ink` on `info-soft` / `warning-soft` / `area-*-soft` (worst case) | 13.8:1 | 11.6:1 | 21:1 |
 | `border-strong` on `surface` / `surface-alt` / `surface-sunken` | 3.7 / 3.4 / 3.0:1 | 4.9 / 4.5 / 4.0:1 | 21:1 |
 | `focus` ring on any surface | ≥12.9:1 | ≥10.8:1 | ≥18.4:1 |
 

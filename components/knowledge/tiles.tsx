@@ -3,7 +3,7 @@ import { StoryTile, StoryTiles } from "@/components/ui/story-tile";
 import { TYPE_LABELS } from "@/lib/knowledge/labels";
 import type { Area, Innovation } from "@/lib/knowledge/types";
 import { GROUP_LABELS } from "@/lib/taxonomy";
-import { AreaIcon, GROUP_AREA, GroupIcon } from "./icons";
+import { AreaIcon, GroupIcon, groupArea } from "./icons";
 
 import { areaHref, innovationHref } from "@/lib/knowledge/hrefs";
 
@@ -22,7 +22,7 @@ export function InnovationTiles({ items, className, level }: { items: Innovation
             href={innovationHref(i.slug)}
             title={i.title}
             placeholder={group && (
-              <div data-area={GROUP_AREA[group]} className="flex size-full items-center justify-center bg-area-soft">
+              <div data-area={groupArea(group)}className="flex size-full items-center justify-center bg-area-soft">
                 <GroupIcon group={group} className="size-16" />
               </div>
             )}
