@@ -371,6 +371,7 @@ sequenceDiagram
 | `doc_chunks` | doc_title, year, url, page, text, fts (Q&A po raportach: wyszukiwanie po prefiksach słów) |
 | `search_index` | wspólny indeks kart (sekcja 5.3) |
 | `audit_log` | kto, co, kiedy (zmiany w Panelu) |
+| `webhook_endpoints` | url (https), events, secret (klucz HMAC), active — adresy systemów Hubu na webhooki (tylko admin) |
 
 **Typ gminy liczymy z kodu TERYT** (7. cyfra: 1 miejska, 2 wiejska, 3 miejsko-wiejska), więc nie trzeba go nigdzie pobierać.
 
@@ -560,6 +561,17 @@ Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tok
 **Brak uzależnienia od dostawcy:** Postgres, Supabase (open source, self-host) i Next.js (Docker) dają się przenieść na infrastrukturę Urzędu Marszałkowskiego.
 
 **Integracje:** REST API ze specyfikacją OpenAPI, webhooki i kody TERYT jako wspólny klucz. To przygotowuje grunt pod bazę grantową i inne systemy Hubu.
+
+- **Publiczne API v1** (opis po polsku na stronie `/api-docs`, specyfikacja OpenAPI 3.1: `/api/v1/openapi.json`):
+  - `GET /api/v1/innowacje`: katalog opublikowanych innowacji z filtrami `obszar`, `grupa`, `teryt` (gmina: 7 cyfr, powiat: 4) i stronicowaniem `limit` / `offset`;
+  - `GET /api/v1/innowacje/{slug}`: pełny opis i gminy (TERYT), w których innowację testowano.
+  - Bez klucza i bez danych osobowych. Limit 60 zapytań na minutę z IP, pamięć podręczna 5 minut, CORS dla wszystkich.
+  - Specyfikację generujemy ze schematów zod w [`lib/api/contract.ts`](lib/api/contract.ts), więc nie rozjeżdża się z kodem. Sprawdzenie: `npx @redocly/cli lint http://localhost:3000/api/v1/openapi.json`.
+- **Webhooki** ([`0019_webhooks.sql`](supabase/migrations/0019_webhooks.sql)): baza sama wysyła POST z JSON przez `pg_net`.
+  - Zdarzenia: `idea.created` (bez treści pomysłu, bo pomysły są prywatne do moderacji), `call.activated` i `call.deactivated` (Panel → Nabory).
+  - Adres dodaje admin w tabeli `webhook_endpoints` i dostaje `secret`. Nagłówek `X-Spolecznik-Signature: sha256=…` to HMAC-SHA256 treści żądania.
+  - Wysyłka jest jednorazowa, bez ponowień. Stan zawsze można pobrać z API.
+- Zagregowanych potrzeb celowo nie udostępniamy publicznie: trendy zostają w Panelu (tylko admin).
 
 *Hackathon kosztuje poniżej 20 USD w API.*
 
