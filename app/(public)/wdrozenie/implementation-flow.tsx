@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { PlanDocument } from "@/components/wdrozenie/plan-document";
-import { flags } from "@/lib/flags";
 import type { GminaOption } from "@/lib/gminy";
 import { planToText } from "@/lib/implementation-plan";
 import {
@@ -29,7 +28,10 @@ export function ImplementationFlow({
   gminy,
   initialInnovation,
   initialGmina,
+  grantCall,
 }: {
+  /** Stan naboru „Usługa Wrażliwa”: przy przycisku do wniosku, żeby nikt nie wypełniał 8 kroków w ciemno. */
+  grantCall: { closesAt: string; open: boolean };
   innovations: { id: string; title: string }[];
   gminy: GminaOption[];
   initialInnovation: string;
@@ -129,7 +131,7 @@ export function ImplementationFlow({
           <PlanDocument doc={result} headingRef={heading} />
           <div className="space-y-3 print:hidden">
             <div className="flex flex-wrap items-center gap-3">
-              {flags.wniosekUslugaWrazliwa && result.id && (
+              {result.id && (
                 <Button asChild><Link href={`/wniosek-o-grant?plan=${result.id}`}><DocumentTextIcon aria-hidden className="size-5" /> Przejdź do wniosku o grant</Link></Button>
               )}
               <Button type="button" variant="outline" onClick={() => window.print()}><PrinterIcon aria-hidden className="size-5" /> Drukuj / zapisz PDF</Button>
@@ -137,6 +139,13 @@ export function ImplementationFlow({
               <Button asChild variant="link"><Link href={`/przetestuj?innowacja=${result.innovation.id}`}>Chcę przetestować</Link></Button>
               <Button type="button" variant="link" onClick={() => setResult(null)}>Zmień dane w formularzu</Button>
             </div>
+            {result.id && (
+              <p className="max-w-[68ch] text-base">
+                {grantCall.open
+                  ? `Wniosek o grant do naboru „Usługa Wrażliwa” wypełni się z tego planu. Wnioski do ${grantCall.closesAt}.`
+                  : `Nabór „Usługa Wrażliwa” zakończył się ${grantCall.closesAt}. Wniosek z tego planu możesz przygotować na kolejny nabór.`}
+              </p>
+            )}
             <p aria-live="polite" className="text-base">{copied}</p>
           </div>
         </div>

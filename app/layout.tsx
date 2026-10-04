@@ -42,7 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <footer className="bg-secondary print:hidden px-4 py-8 text-center text-base text-muted-foreground">
-          Społecznik · Małopolski Hub Innowacji Społecznych · dane demonstracyjne są syntetyczne ·{" "}
+          Społecznik · Małopolski Hub Innowacji Społecznych · dane demonstracyjne nie są prawdziwe ·{" "}
           <Link href="/api-docs" className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
             API dla integracji
           </Link>
