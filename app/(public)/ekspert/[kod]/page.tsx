@@ -39,7 +39,7 @@ export default async function Page(props: PageProps<"/ekspert/[kod]">) {
   return (
     <article className="space-y-10">
       <p>
-        <Link href="/ekspert" className="inline-flex items-center gap-2 font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+        <Link href="/ekspert" className="inline-flex min-h-12 items-center gap-2 font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
           <ArrowLeftIcon aria-hidden className="size-5" /> Wszystkie zgłoszenia do pomocy
         </Link>
       </p>

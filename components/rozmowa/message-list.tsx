@@ -45,7 +45,7 @@ export function MessageList({
                     <time dateTime={m.createdAt}>{formatTime(m.createdAt)}</time>
                   </span>
                 </p>
-                <p className="max-w-[68ch] whitespace-pre-wrap">{m.body}</p>
+                <p className="max-w-[68ch] whitespace-pre-wrap break-words">{m.body}</p>
                 {ai && m.sources?.length ? <Sources sources={m.sources} /> : null}
                 {ai && <p className="max-w-[68ch] text-base text-muted-foreground">{AI_DISCLAIMER}</p>}
               </li>

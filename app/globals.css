@@ -183,6 +183,18 @@
     @apply bg-background text-foreground;
     font-size: 1.125rem;
     line-height: 1.75rem;
+    /* Długi link albo słowo (np. w wiadomości) nie może rozepchnąć strony na telefonie (SC 1.4.10). */
+    overflow-wrap: break-word;
+  }
+  /* Kod do przepisania (SPL-TST3) nie łamie się na myślniku — jest krótki, mieści się przy 320 px. */
+  .font-mono {
+    white-space: nowrap;
+  }
+  /* Nagłówki często stoją obok ikony w wierszu flex, a tam break-word nie działa (minimalna szerokość to całe słowo).
+     „Niepełnosprawność” w text-4xl ma przy 320 px ponad 400 px — dzielimy po polsku, a w ostateczności w dowolnym miejscu. */
+  h1, h2, h3 {
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 }
 /* ── Dostępność (WCAG 2.1 AA) ─────────────────────────────── */

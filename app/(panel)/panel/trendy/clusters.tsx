@@ -54,7 +54,7 @@ export function ClusterList({ data }: { data: Clusters }) {
               <p className="text-base">Wspólne słowa: {c.keywords.join(", ")}</p>
               {source === "baza" && (
                 <p>
-                  <Link href={`/panel?grupa=${c.key}`} className={linkClass}>
+                  <Link href={`/panel?grupa=${c.key}`} className={`inline-flex min-h-12 items-center ${linkClass}`}>
                     Zobacz zgłoszenia z grupy<span className="sr-only">: {c.label ?? c.keywords.join(", ")}</span>
                   </Link>
                 </p>

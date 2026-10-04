@@ -78,9 +78,10 @@ export function SiteHeader() {
         className="mx-auto max-w-6xl px-4 md:px-5 lg:flex lg:items-center lg:justify-between lg:gap-4"
         onKeyDown={closeMenu}
       >
-        {/* Wiersz o stałej wysokości: otwarte menu pojawia się pod nim i niczego w nim nie przesuwa. */}
-        <div className="flex min-h-20 items-center justify-between gap-4">
-          <Link href="/" className="inline-flex items-center gap-3 rounded-lg text-xl font-bold tracking-tight sm:text-2xl">
+        {/* Wiersz o stałej wysokości: otwarte menu pojawia się pod nim i niczego w nim nie przesuwa. Przy 320 px z „Większym
+            tekstem” logo i „Menu” się nie mieszczą — wtedy „Menu” schodzi do drugiego wiersza (po prawej), zamiast wystawać. */}
+        <div className="flex min-h-20 flex-wrap items-center justify-between gap-x-4 gap-y-2 py-2">
+          <Link href="/" className="inline-flex min-h-12 items-center gap-3 rounded-lg text-xl font-bold tracking-tight sm:text-2xl">
             <LogoMark className="size-9 shrink-0 sm:size-10" />
             Społecznik
           </Link>
@@ -90,7 +91,7 @@ export function SiteHeader() {
             aria-expanded={menuOpen}
             aria-controls="menu-glowne"
             onClick={() => setMenuOpen((o) => !o)}
-            className={cn(disclosureButton, "lg:hidden")}
+            className={cn(disclosureButton, "ml-auto lg:hidden")}
           >
             {menuOpen ? <XMarkIcon aria-hidden className="size-5" /> : <Bars3Icon aria-hidden className="size-5" />}
             Menu

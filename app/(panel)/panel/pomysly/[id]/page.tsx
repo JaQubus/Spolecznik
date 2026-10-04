@@ -71,7 +71,7 @@ export default async function Page(props: PageProps<"/panel/pomysly/[id]">) {
   return (
     <article className="max-w-4xl space-y-10">
       <div className="space-y-3">
-        <Link href="/panel/pomysly" className={`inline-flex items-center gap-2 text-lg font-bold ${linkClass}`}>
+        <Link href="/panel/pomysly" className={`inline-flex min-h-12 items-center gap-2 text-lg font-bold ${linkClass}`}>
           <ArrowLeftIcon aria-hidden className="size-5" /> Wszystkie pomysły
         </Link>
         <h1 className="text-3xl font-bold">Pomysł <span className="font-mono tracking-wider">{idea.status_code}</span></h1>

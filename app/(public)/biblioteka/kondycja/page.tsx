@@ -16,7 +16,7 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
   return (
     <div className="space-y-10">
       <p>
-        <Link href="/biblioteka" className={cn(linkClass, "inline-flex items-center gap-2")}>
+        <Link href="/biblioteka" className={cn(linkClass, "inline-flex min-h-12 items-center gap-2")}>
           <ArrowLeftIcon aria-hidden className="size-5" /> Biblioteka i wiedza
         </Link>
       </p>

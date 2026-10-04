@@ -116,7 +116,7 @@ export function NotificationBell({ buttonClassName }: { buttonClassName: string 
         <BellIcon aria-hidden className="size-5" />
         Powiadomienia
         {unread > 0 && (
-          <span className={cn("rounded-full px-2 text-sm", open ? "bg-background text-foreground" : "bg-foreground text-background")}>
+          <span className={cn("rounded-full px-2 text-base", open ? "bg-background text-foreground" : "bg-foreground text-background")}>
             {unread > 99 ? "99+" : unread}
             <span className="sr-only"> {unread === 1 ? "nowe" : "nowych"}</span>
           </span>
