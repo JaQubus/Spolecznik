@@ -245,23 +245,25 @@ export async function deleteRecord(_prev: ActionResult, formData: FormData): Pro
   const { entity, id } = parsed.data;
   const target = DELETABLE[entity];
 
+  const supabase = createAdminClient();
   try {
-    const supabase = createAdminClient();
     const { data, error } = await supabase.from(target.table).delete().eq("id", id).select("id");
     if (error) throw error;
     if (!data?.length) return { ok: false, message: "Tego już nie ma. Odśwież stronę." };
-    const cleanup = await Promise.all([
-      supabase.from("threads").delete().eq("entity_kind", target.kind).eq("entity_id", id),
-      supabase.from("search_index").delete().eq("kind", target.kind).eq("ref_id", id),
-      // Powiadomienia mają kopię opisu, więc znikają razem z rekordem.
-      supabase.from("notifications").delete().eq(`payload->>${target.payloadKey}`, id),
-    ]);
-    for (const r of cleanup) if (r.error) throw r.error;
-    await logChange(user.id, `${entity}.delete`, entity, id, {});
   } catch (e) {
     console.error("[panel] usuwanie:", e);
     return { ok: false, message: "Nie udało się usunąć. Spróbuj ponownie." };
   }
+
+  // Rekord już zniknął: błąd sprzątania tylko logujemy, bo ponowna próba skończyłaby się na „Tego już nie ma”.
+  const followUp = await Promise.allSettled([
+    supabase.from("threads").delete().eq("entity_kind", target.kind).eq("entity_id", id).throwOnError(),
+    supabase.from("search_index").delete().eq("kind", target.kind).eq("ref_id", id).throwOnError(),
+    // Powiadomienia mają kopię opisu, więc znikają razem z rekordem.
+    supabase.from("notifications").delete().eq(`payload->>${target.payloadKey}`, id).throwOnError(),
+    logChange(user.id, `${entity}.delete`, entity, id, {}),
+  ]);
+  for (const r of followUp) if (r.status === "rejected") console.error(`[panel] sprzątanie po usunięciu ${entity} ${id}:`, r.reason);
   redirect(`${target.list}?usunieto=${entity}`);
 }
 
