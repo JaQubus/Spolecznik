@@ -128,6 +128,7 @@ export const TestRequest = z
     status: z.enum(TEST_STATUSES).extract(["planowany", "zakonczony"]),
     testerOrg: z.string().max(200).optional(),
     plannedFor: z.iso.date().optional(),
+    contactEmail: z.email().max(254).optional(), // powiadomienia o statusie testu bez konta
     rating: z.number().int().min(1).max(5).optional(),
     feedback: z.string().max(2000).optional(), // co działa
     suggestions: z.string().max(2000).optional(), // co poprawić

@@ -36,6 +36,7 @@ export async function POST(request: Request) {
       suggestions: clean(t.suggestions),
       tester_org: t.testerOrg?.trim() || null,
       planned_for: t.plannedFor ?? null,
+      contact_email: t.contactEmail ?? null,
     }).select("id, innovations(title)").single();
     if (error) {
       if (error.code === "23503") return Response.json({ error: "Nie znaleziono tego rozwiązania" }, { status: 404 });

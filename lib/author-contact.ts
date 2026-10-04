@@ -90,3 +90,29 @@ export async function emailAuthor(kind: ReportKind, id: string, what: string): P
     console.error("[e-mail] autor zgłoszenia:", e);
   }
 }
+
+/**
+ * E-mail do testera bez konta (Próba, #96), jeśli podał adres: ROPS zmienił status testu. Jak emailAuthor — tylko
+ * tytuł rozwiązania i status, bez opinii. Błędy tylko logujemy: brak maila nie może zatrzymać zmiany statusu.
+ */
+export async function emailTester(to: string, title: string | null, status: string, href: string | null): Promise<void> {
+  const site = process.env.SITE_URL?.replace(/\/$/, "");
+  try {
+    await sendEmail({
+      to,
+      subject: `Społecznik: ${status} — test rozwiązania`,
+      text: [
+        "Dzień dobry,",
+        "",
+        `ROPS zmienił status Waszego testu${title ? ` rozwiązania „${title}”` : ""}: ${status}.`,
+        ...(site && href ? [`Opis rozwiązania: ${site}${href}`] : []),
+        "",
+        "To wiadomość automatyczna, nie odpowiadaj na nią. Adres służy tylko do powiadomień o tym teście.",
+        "",
+        "Społecznik — Regionalny Ośrodek Polityki Społecznej w Krakowie",
+      ].join("\n"),
+    });
+  } catch (e) {
+    console.error("[e-mail] tester:", e);
+  }
+}
