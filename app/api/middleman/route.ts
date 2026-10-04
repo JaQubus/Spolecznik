@@ -4,6 +4,7 @@ import { MiddlemanRequest, RELATED_MIN_SIMILARITY } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit } from "@/lib/rate-limit";
+import { aiErrorResponse } from "@/lib/groq";
 
 /** Karta wdrożeniowa: innowacja z Biblioteki + profil gminy z BDL + partnerzy z indeksu ekspertów. */
 export async function POST(request: Request) {
@@ -65,7 +66,6 @@ export async function POST(request: Request) {
       },
     });
   } catch (e) {
-    console.error("[middleman]", e);
-    return Response.json({ error: "Nie udało się przygotować karty wdrożeniowej" }, { status: 500 });
+    return aiErrorResponse("middleman", e, "Nie udało się przygotować karty wdrożeniowej");
   }
 }

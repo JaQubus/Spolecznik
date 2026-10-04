@@ -4,6 +4,7 @@ import { anonymize } from "@/lib/pii";
 import { ApplyRequest } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit } from "@/lib/rate-limit";
+import { aiErrorResponse } from "@/lib/groq";
 
 /** Generator wniosków: tylko przy aktywnym naborze. Szkic zapisujemy w applications. */
 export async function POST(request: Request) {
@@ -48,7 +49,6 @@ export async function POST(request: Request) {
     if (error) throw error;
     return Response.json({ applicationId: application.id, draft });
   } catch (e) {
-    console.error("[apply]", e);
-    return Response.json({ error: "Nie udało się przygotować szkicu wniosku" }, { status: 500 });
+    return aiErrorResponse("apply", e, "Nie udało się przygotować szkicu wniosku");
   }
 }

@@ -3,6 +3,7 @@ import { anonymize } from "@/lib/pii";
 import { AskRequest, type AskResponse } from "@/lib/schemas";
 import { searchDocChunks } from "@/lib/search";
 import { rateLimit } from "@/lib/rate-limit";
+import { aiErrorResponse } from "@/lib/groq";
 
 const NO_ANSWER = "Raporty w Bibliotece nie zawierają odpowiedzi na to pytanie.";
 
@@ -36,7 +37,6 @@ export async function POST(request: Request) {
     };
     return Response.json(response);
   } catch (e) {
-    console.error("[ask]", e);
-    return Response.json({ error: "Nie udało się odpowiedzieć na pytanie" }, { status: 500 });
+    return aiErrorResponse("ask", e, "Nie udało się odpowiedzieć na pytanie");
   }
 }

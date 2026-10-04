@@ -72,3 +72,9 @@ export function describeGmina(g: Gmina): string {
   if (g.wskazniki && Object.keys(g.wskazniki).length > 0) parts.push(`Inne wskaźniki: ${JSON.stringify(g.wskazniki)}.`);
   return parts.join(" ");
 }
+
+/** „Bochnia (gmina wiejska, powiat bocheński)”, „Kraków (miasto na prawach powiatu)”. */
+export function gminaLabel(g: Pick<Gmina, "nazwa" | "powiat" | "typ">): string {
+  if (g.powiat.startsWith("m. ")) return `${g.nazwa} (miasto na prawach powiatu)`;
+  return `${g.nazwa} (gmina ${g.typ ?? ""}, powiat ${g.powiat})`.replace("gmina ,", "gmina,");
+}

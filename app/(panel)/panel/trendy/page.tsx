@@ -8,17 +8,21 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { requireAdmin } from "@/lib/auth";
 import { formatDate } from "@/lib/pl";
+import { getGaps } from "@/lib/knowledge/gaps";
 import { getTrends, parseBucket } from "@/lib/knowledge/trends";
+import { GapMap } from "./gap-map";
 
 export const metadata: Metadata = { title: "Trendy potrzeb · Panel ROPS", robots: { index: false } };
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
-/** Widok tylko dla administratora: zgłoszone potrzeby zagregowane w obszarach, powiatach i słowach. */
+/** Widok tylko dla administratora: zgłoszone potrzeby zagregowane w obszarach, powiatach i słowach, plus mapa luk. */
 export default async function Page(props: PageProps<"/panel/trendy">) {
   await requireAdmin("/panel/trendy");
-  const bucket = parseBucket(first((await props.searchParams).okres));
-  const t = await getTrends(bucket);
+  const sp = await props.searchParams;
+  const bucket = parseBucket(first(sp.okres));
+  const gmina = /^\d{7}$/.test(first(sp.gmina)) ? first(sp.gmina) : null;
+  const [t, gaps] = await Promise.all([getTrends(bucket), getGaps()]);
   const maxPowiat = Math.max(1, ...t.byPowiat.map((p) => p.needs));
 
   return (
@@ -27,6 +31,7 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
         <h1 className="text-3xl font-bold">Trendy potrzeb</h1>
         <p className="max-w-[44rem] text-lg">
           Co mieszkańcy, gminy i organizacje zgłaszają w „Opisz problem”: {t.total} zgłoszeń, pogrupowanych według obszarów Mapy Wyzwań.
+          Niżej mapa luk: gdzie zgłoszenia nie mają gotowego rozwiązania i w jakich obszarach otworzyć nabór.
         </p>
         {t.synthetic && (
           <Alert title="Dane przykładowe">
@@ -60,6 +65,8 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
         <AreaTrendCharts trends={t} />
         <AreaTrendTable trends={t} />
       </section>
+
+      <GapMap gaps={gaps} selected={gmina} hrefFor={(teryt) => `/panel/trendy?okres=${bucket}&gmina=${teryt}#luki-gmina`} />
 
       <section aria-labelledby="powiaty" className="space-y-4">
         <h2 id="powiaty" className="text-2xl font-bold">Zgłoszenia według powiatu</h2>

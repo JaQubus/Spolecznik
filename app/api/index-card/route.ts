@@ -4,6 +4,7 @@ import { reindexCard } from "@/lib/index-card";
 import { knowledge } from "@/lib/knowledge";
 import { canUseHybridSearch, indexEntity } from "@/lib/knowledge/indexing";
 import { rateLimit } from "@/lib/rate-limit";
+import { aiErrorResponse } from "@/lib/groq";
 import { IndexCardRequest } from "@/lib/schemas";
 
 // Karty Zasobnika wiedzy (panel „Zarządzaj wiedzą”): { kind: "biblioteka" | "obszar" | "material", id }.
@@ -32,8 +33,7 @@ export async function POST(request: Request) {
     }
     return Response.json({ ok: true });
   } catch (e) {
-    console.error("[index-card]", e);
-    return Response.json({ error: "Nie udało się zaktualizować indeksu" }, { status: 500 });
+    return aiErrorResponse("index-card", e, "Nie udało się zaktualizować indeksu");
   }
 }
 
@@ -56,7 +56,6 @@ async function indexKnowledgeCard({ kind, id }: z.infer<typeof KnowledgeCard>): 
     const m = (await knowledge.materials({}, all)).find((x) => x.id === id);
     return m ? Response.json({ indexed: await indexEntity("material", m) }) : notFound();
   } catch (e) {
-    console.error("[index-card]", e);
-    return Response.json({ error: "Nie udało się zaindeksować karty" }, { status: 500 });
+    return aiErrorResponse("index-card", e, "Nie udało się zaindeksować karty");
   }
 }

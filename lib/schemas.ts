@@ -130,6 +130,13 @@ export const TestRequest = z
   })
   .refine((t) => t.status !== "zakonczony" || t.rating != null, { path: ["rating"], message: "Wybierz ocenę od 1 do 5" });
 
+// /api/rozmowy: wiadomość autora w wątku zgłoszenia (wchodzi po kodzie, bez konta)
+export const ThreadPostRequest = z.object({
+  code: z.string().regex(STATUS_CODE),
+  body: z.string().trim().min(2, "Wpisz wiadomość").max(2000, "Wiadomość może mieć najwyżej 2000 znaków"),
+  expertId: z.uuid().optional(), // „Zapytaj eksperta” z wyników dopasowania
+});
+
 // /api/assistant: asystent Pracowni
 export const AssistantRequest = z.object({
   messages: z
@@ -183,7 +190,8 @@ export type InnovationMatch = RerankItem & {
 };
 
 export type MatchResponse = {
-  need: { id: string; statusCode: string; gmina: string | null };
+  /** accessKey: tajny klucz do rozmowy — tylko dla autora (ciasteczko + prywatny link). */
+  need: { id: string; statusCode: string; accessKey: string; gmina: string | null };
   matches: InnovationMatch[];
   isGap: boolean;
   similarNeeds: { count: number; gminy: string[] };

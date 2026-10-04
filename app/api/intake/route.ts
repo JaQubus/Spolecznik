@@ -2,6 +2,7 @@ import { intake } from "@/lib/llm";
 import { anonymize } from "@/lib/pii";
 import { CLARITY_THRESHOLD, IntakeRequest } from "@/lib/schemas";
 import { rateLimit } from "@/lib/rate-limit";
+import { aiErrorResponse } from "@/lib/groq";
 import { AREA_LABELS } from "@/lib/taxonomy";
 
 export async function POST(request: Request) {
@@ -23,7 +24,6 @@ export async function POST(request: Request) {
     const needsFollowUp = !previousCard && card.clarity < CLARITY_THRESHOLD && !!card.followUp;
     return Response.json({ card, needsFollowUp, piiFound });
   } catch (e) {
-    console.error("[intake]", e);
-    return Response.json({ error: "Nie udało się przeanalizować opisu" }, { status: 500 });
+    return aiErrorResponse("intake", e, "Nie udało się przeanalizować opisu");
   }
 }

@@ -9,9 +9,9 @@ import { formatNumber, plural } from "@/lib/pl";
 import { AREA_LABELS } from "@/lib/taxonomy";
 import mapJson from "@/public/mapa/malopolska.json";
 import { LINK as linkClass } from "../shared";
-import { FocusHeading } from "./focus-heading";
+import { FocusHeading } from "@/components/a11y/focus-heading";
 import { IndicatorSelect } from "./indicator-select";
-import type { HoverDetail } from "./map-hover";
+import type { HoverDetail } from "@/components/maps/map-hover";
 import { NO_DATA_FILL, TerritoryMap } from "./territory-map";
 import { UnitPicker } from "./unit-picker";
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { LayerKey, MapData } from "@/lib/knowledge/map";
-import { MapHover, type HoverDetail } from "./map-hover";
+import { MapHover, type HoverDetail } from "@/components/maps/map-hover";
 
 export type TerritoryItem = {
   id: string;

@@ -13,11 +13,34 @@ type ChatOptions = {
   json?: boolean; // tryb JSON: odpowiedź to zawsze poprawny obiekt JSON
 };
 
+/** Groq odrzuca zapytania z powodu limitu na minutę (429) mimo ponowień. */
+export class GroqBusyError extends Error {
+  constructor(detail: string) {
+    super(`Groq 429: ${detail}`);
+    this.name = "GroqBusyError";
+  }
+}
+
+/**
+ * Odpowiedź trasy API na błąd: limit Groq → 503 z komunikatem, co zrobić; inne błędy → 500 z `message`.
+ */
+export function aiErrorResponse(tag: string, e: unknown, message: string): Response {
+  console.error(`[${tag}]`, e);
+  if (e instanceof GroqBusyError) {
+    return Response.json({ error: "Za dużo zapytań do AI naraz. Spróbuj ponownie za minutę" }, { status: 503 });
+  }
+  return Response.json({ error: message }, { status: 500 });
+}
+
+/** Ile łącznie czekamy na limit Groq w jednym wywołaniu, zanim oddamy 503. */
+const RATE_LIMIT_BUDGET_MS = 20_000;
+
 /** Jedno wywołanie Groq (API zgodne z OpenAI). Klucz tylko po stronie serwera. */
 export async function groqChat({ model, messages, temperature = 0.5, maxTokens = 4096, json }: ChatOptions): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Brak GROQ_API_KEY w .env.local");
 
+  let waited = 0;
   for (let attempt = 0; ; attempt++) {
     const response = await fetch(GROQ_URL, {
       method: "POST",
@@ -36,10 +59,14 @@ export async function groqChat({ model, messages, temperature = 0.5, maxTokens =
       }),
       signal: AbortSignal.timeout(60_000),
     });
-    // Darmowy plan ma niskie limity na minutę — krótko czekamy i ponawiamy.
-    if (response.status === 429 && attempt < 2) {
-      const wait = Math.min(Number(response.headers.get("retry-after")) || 2, 10);
-      await new Promise((r) => setTimeout(r, wait * 1000));
+    // Darmowy plan ma 8 tys. tokenów na minutę, a pełne dopasowanie zużywa ok. 6 tys. — czekamy tyle, ile każe
+    // Groq, ale łącznie najwyżej RATE_LIMIT_BUDGET_MS na wywołanie. Dłuższe czekanie zgłaszamy od razu jako 503
+    // („Spróbuj ponownie za minutę”), zamiast trzymać użytkownika minutami przy „Szukam rozwiązań…”.
+    if (response.status === 429) {
+      const wait = (Number(response.headers.get("retry-after")) || 5) * 1000;
+      if (attempt >= 2 || waited + wait > RATE_LIMIT_BUDGET_MS) throw new GroqBusyError(await response.text());
+      waited += wait;
+      await new Promise((r) => setTimeout(r, wait));
       continue;
     }
     if (!response.ok) throw new Error(`Groq ${response.status}: ${await response.text()}`);
