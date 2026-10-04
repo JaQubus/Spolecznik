@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import { ApplicationForm } from "./application-form";
 import type { ApplicationPrefill } from "./model";
 import { CallFormContent } from "@/lib/call-schema";
+import { todayInPoland } from "@/lib/pl";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
@@ -15,29 +16,32 @@ async function activeCall(): Promise<ActiveCall | null> {
   // jako „Nabór jest zamknięty” i zostaje taka po otwarciu naboru w Panelu.
   await connection();
   if (!isSupabaseConfigured()) return null;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayInPoland();
+  // Kilka otwartych naborów: najpierw ten, który kończy się najwcześniej (tak samo jak lista w /pomysl),
+  // i tylko z gotowym formularzem; bez order() Postgres oddawał je w przypadkowej kolejności.
   const { data, error } = await createAdminClient()
     .from("calls")
     .select("id, title, form_schema")
     .eq("active", true)
     .or(`opens_at.is.null,opens_at.lte.${today}`)
     .or(`closes_at.is.null,closes_at.gte.${today}`)
-    .limit(1)
-    .maybeSingle();
+    .order("closes_at", { nullsFirst: false })
+    .order("id");
   if (error) {
     console.error("[wniosek] Nie udało się sprawdzić aktywnego naboru", error);
     return null;
   }
-  if (!data) return null;
+  if (!data?.length) return null;
   // Formularz potrzebuje tylko `content`; błąd w `fields` (generator /api/apply) go nie wyłącza.
-  const raw = (data.form_schema as { content?: unknown } | null)?.content;
-  if (raw === undefined) {
-    console.error(`[wniosek] Aktywny nabór ${data.id} nie ma treści formularza (form_schema.content)`);
-    return { id: data.id, title: data.title };
+  for (const call of data) {
+    const raw = (call.form_schema as { content?: unknown } | null)?.content;
+    if (raw === undefined) continue;
+    const parsed = CallFormContent.safeParse(raw);
+    if (parsed.success) return { id: call.id, title: call.title, content: parsed.data };
+    console.error(`[wniosek] Nieprawidłowa treść formularza naboru ${call.id}`, parsed.error);
   }
-  const parsed = CallFormContent.safeParse(raw);
-  if (!parsed.success) console.error("[wniosek] Nieprawidłowa treść formularza aktywnego naboru", parsed.error);
-  return { id: data.id, title: data.title, content: parsed.success ? parsed.data : undefined };
+  console.error(`[wniosek] Żaden otwarty nabór nie ma poprawnej treści formularza (form_schema.content)`);
+  return { id: data[0].id, title: data[0].title };
 }
 
 export default async function Page(props: PageProps<"/wniosek">) {
