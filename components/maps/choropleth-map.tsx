@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cn } from "cn";
-import gminyShapes from "@/lib/gminy-shapes.json";
+import type { MapData } from "@/lib/knowledge/map";
+import mapJson from "@/public/mapa/malopolska.json";
 import { MapHover, type HoverDetail } from "./map-hover";
 
 export type MapItem = {
@@ -12,11 +13,18 @@ export type MapItem = {
   href: string;
 };
 
-type Shape = { id: string; d: string; cx: number; cy: number };
+type Shape = { id: string; d: string };
 type Shapes = { width: number; height: number; shapes: Shape[] };
 
-/** Kształty gmin z PRG GUGiK (data/gminy_geo.py). */
-export const GMINA_SHAPES: Shapes = { ...gminyShapes, shapes: gminyShapes.shapes.map((s) => ({ ...s, id: s.teryt })) };
+const mapData = mapJson as unknown as MapData;
+const [, , mapWidth, mapHeight] = mapData.viewBox.split(" ").map(Number);
+
+/** Kształty gmin z PRG GUGiK — te same co na mapie Kondycji (public/mapa/malopolska.json, data/knowledge_map.py). */
+export const GMINA_SHAPES: Shapes = {
+  width: mapWidth,
+  height: mapHeight,
+  shapes: mapData.layers.gminy.units.map((u) => ({ id: u.id, d: u.d })),
+};
 
 // Sekwencyjna skala jednego odcienia (dataviz: niebieski 150→700), ciemniej = większe wyzwanie.
 export const MAP_FILLS = ["var(--map-1)", "var(--map-2)", "var(--map-3)", "var(--map-4)", "var(--map-5)"];

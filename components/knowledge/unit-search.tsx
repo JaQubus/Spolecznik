@@ -2,6 +2,7 @@
 
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useId, useMemo, useState } from "react";
+import { cn } from "cn";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { MapUnit } from "@/lib/knowledge/map";
@@ -16,7 +17,7 @@ const norm = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").replace(/�
  * Pole „Znajdź gminę / powiat” z podpowiedziami (wzorzec ARIA combobox z listą). 183 gminy to za dużo na listę
  * rozwijaną — tu wystarczy wpisać kilka liter. Strzałki wybierają podpowiedź, Enter zatwierdza, Escape zamyka.
  */
-export function UnitSearch({ id, label, units, describe, selected, onSelect }: {
+export function UnitSearch({ id, label, units, describe, selected, onSelect, className }: {
   id: string;
   label: string;
   units: MapUnit[];
@@ -24,6 +25,7 @@ export function UnitSearch({ id, label, units, describe, selected, onSelect }: {
   describe: (u: MapUnit) => string | null;
   selected?: string;
   onSelect: (id: string | undefined) => void;
+  className?: string;
 }) {
   // null = pole pokazuje nazwę wybranej jednostki; tekst = to, co ktoś właśnie wpisuje.
   const [typed, setTyped] = useState<string | null>(null);
@@ -76,7 +78,7 @@ export function UnitSearch({ id, label, units, describe, selected, onSelect }: {
   }
 
   return (
-    <div className="relative flex w-full max-w-xl flex-col gap-2">
+    <div className={cn("relative grid w-full max-w-xl gap-2", className)}>
       <Label htmlFor={id}>{label}</Label>
       <p id={hintId} className="text-base text-muted-foreground">Wpisz kilka liter nazwy, np. Wieliczka.</p>
       <div className="relative">

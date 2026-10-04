@@ -8,7 +8,7 @@ export const TABS = [
 ] as const;
 export type TabKey = (typeof TABS)[number]["key"];
 
-export const parseTab = (v: string): TabKey => (TABS.some((t) => t.key === v) ? (v as TabKey) : "library");
+export const parseTab = (v: string): TabKey => (TABS.some((t) => t.key === v) ? (v as TabKey) : "challenges");
 
 /**
  * Zakładki jako linki z ?tab= (stan w adresie: działa „Wstecz”, można wysłać link).
