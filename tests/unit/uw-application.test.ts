@@ -5,7 +5,8 @@ import { checkPlan } from "../../lib/implementation-plan.ts";
 import type { ImplementationPlan, PlanDocument } from "../../lib/schemas.ts";
 import { UwContent } from "../../lib/uw-content.ts";
 import {
-  addMonths, firstInvalidStep, formalChecks, fromPlan, monthSpan, rangeLabel, restore, spreadByYear, syncYears, validateStep, STEPS,
+  addMonths, firstInvalidStep, formalChecks, fromPlan, maskSensitive, monthSpan, rangeLabel, restore, sensitiveFindings,
+  spreadByYear, syncYears, validateStep, STEPS,
 } from "../../lib/uw-application.ts";
 
 const content = UwContent.parse(JSON.parse(readFileSync(new URL("../../data/usluga_wrazliwa_wniosek.json", import.meta.url), "utf8")));
@@ -143,11 +144,53 @@ describe("formalChecks", () => {
 
 describe("restore", () => {
   test("szkic ze starszej wersji wzoru: brakujące pola puste, oświadczenia od nowa przy innej liczbie", () => {
-    const app = restore({ tytul: "Mój tytuł", oswiadczenia: [true, true], przygotowanie: [{ dzialanie: "A" }] }, content, "2027-01");
+    const app = restore({
+      tytul: "Mój tytuł", oswiadczenia: [true, true], przygotowanie: [{ dzialanie: "A" }],
+      wnioskodawca: { nazwa: "GOPS", reprezentant: { imieNazwisko: "Jan Kowalski" } },
+    }, content, "2027-01");
+    // Dane osób ze starszych szkiców nie wracają (zasada: bez danych osobowych).
+    assert.equal(JSON.stringify(app).includes("Kowalski"), false);
+    assert.equal(app.wnioskodawca.nazwa, "GOPS");
     assert.equal(app.tytul, "Mój tytuł");
     assert.equal(app.oswiadczenia.length, content.declarations.items.length);
     assert.ok(app.oswiadczenia.every((v) => v === false));
     assert.deepEqual(app.przygotowanie, [{ dzialanie: "A", termin: "", koszt: "", uzasadnienie: "" }]);
-    assert.equal(app.wnioskodawca.kontaktTenSam, true);
+    assert.equal(app.wnioskodawca.korespondencjaTaSama, true);
+  });
+});
+
+describe("dane osobowe w opisach", () => {
+  const app = fromPlan(doc, content, "terapeuta-przestrzeni", "2027-01");
+  const usluga = STEPS.findIndex((s) => s.id === "usluga");
+
+  test("plan z BDL nie zawiera danych osobowych (numery wskaźników i kwoty to nie PESEL ani telefon)", () => {
+    assert.deepEqual(sensitiveFindings(app), []);
+  });
+
+  test("PESEL, dowód i numer konta blokują krok, telefon i e-mail nie", () => {
+    const leaked = {
+      ...app, grupy: app.grupy.map(() => true),
+      diagnoza: "Pani Anna, PESEL 44051401359, dowód ABC123456, konto PL61 1090 1014 0000 0712 1981 2874.",
+      rekrutacja: "Zapisy w GOPS: tel. 18 351 40 10, gops@bobowa.pl.",
+    };
+    const e = validateStep(usluga, leaked, content);
+    assert.match(e.diagnoza, /Usuń numer konta bankowego/);
+    assert.equal(e.rekrutacja, undefined);
+    const kinds = sensitiveFindings(leaked).map((f) => `${f.path}:${f.kind}:${f.block}`);
+    assert.deepEqual(kinds, [
+      "diagnoza:numer konta bankowego:true", "diagnoza:numer PESEL:true", "diagnoza:numer dowodu osobistego:true",
+      "rekrutacja:adres e-mail:false", "rekrutacja:numer telefonu:false",
+    ]);
+  });
+
+  test("lista kontrolna: błąd przy PESEL, do sprawdzenia przy telefonie; maskowanie usuwa tylko blokujące", () => {
+    const leaked = { ...app, diagnoza: "PESEL 44051401359", rekrutacja: "tel. 18 351 40 10" };
+    const check = (a: typeof app) => formalChecks(a, content, "2026-06-01").find((c) => /danych osobowych/.test(c.label))!;
+    assert.equal(check(leaked).status, "blad");
+    const masked = maskSensitive(leaked);
+    assert.equal(masked.diagnoza, "PESEL [usunięto: numer PESEL]");
+    assert.equal(masked.rekrutacja, "tel. 18 351 40 10");
+    assert.equal(check(masked).status, "sprawdz");
+    assert.equal(check(app).status, "ok");
   });
 });

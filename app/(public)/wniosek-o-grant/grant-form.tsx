@@ -22,8 +22,8 @@ import type { SectionKey, UwContent } from "@/lib/uw-content";
 import { GrantDocument, applicationToText } from "./grant-document";
 import {
   type Errors, type GrantApplication, type Row,
-  STEPS, defaultStart, emptyApplication, emptyRow, filledRows, firstInvalidStep, formalChecks, fromPlan, indicatorTotals,
-  monthLabel, planTotal, restore, syncYears, validateStep,
+  STEPS, defaultStart, descriptivePaths, emptyApplication, emptyRow, filledRows, firstInvalidStep, formalChecks, fromPlan,
+  indicatorTotals, maskSensitive, monthLabel, planTotal, restore, sensitiveFindings, syncYears, validateStep,
 } from "@/lib/uw-application";
 
 // Szkic żyje tylko w localStorage tej przeglądarki: dane wnioskodawcy nie trafiają na serwer. Klucz per plan,
@@ -101,22 +101,6 @@ function CheckGroup({ path, legend, hint, items }: { path: string; legend: strin
   );
 }
 
-function ContactFields({ base, legend }: { base: string; legend: string }) {
-  return (
-    <fieldset className="grid gap-6">
-      <legend className="mb-2 text-xl font-bold">{legend}</legend>
-      <div className="grid gap-6 sm:grid-cols-2">
-        <TextField path={`${base}.imieNazwisko`} label="Imię i nazwisko" />
-        <TextField path={`${base}.funkcja`} label="Funkcja" placeholder="np. kierownik ośrodka" />
-      </div>
-      <div className="grid gap-6 sm:grid-cols-2">
-        <TextField path={`${base}.telefon`} label="Telefon" type="tel" />
-        <TextField path={`${base}.email`} label="E-mail" type="email" />
-      </div>
-    </fieldset>
-  );
-}
-
 // ---- Krok: dane kontaktowe
 
 function ContactStep() {
@@ -132,8 +116,8 @@ function ContactStep() {
           onChange={(e) => update("wnioskodawca.korespondencjaTaSama", e.target.checked)} label="Adres do korespondencji jest taki sam jak adres siedziby" />
         {!w.korespondencjaTaSama && <TextField path="wnioskodawca.adresKorespondencji" label="Adres do korespondencji" />}
         <div className="grid gap-6 sm:grid-cols-2">
-          <TextField path="wnioskodawca.telefon" label="Telefon" type="tel" />
-          <TextField path="wnioskodawca.email" label="E-mail" type="email" />
+          <TextField path="wnioskodawca.telefon" label="Telefon instytucji" type="tel" hint="Sekretariat albo telefon ogólny, nie prywatny." />
+          <TextField path="wnioskodawca.email" label="E-mail instytucji" type="email" hint="Np. sekretariat@gmina.pl, nie prywatny adres." />
         </div>
         <div className="grid gap-6 sm:grid-cols-2">
           <TextField path="wnioskodawca.nip" label="NIP (jeśli dotyczy)" inputMode="numeric" />
@@ -144,12 +128,12 @@ function ContactStep() {
           <TextField path="wnioskodawca.social" label="Media społecznościowe (jeśli są)" />
         </div>
       </div>
-      <ContactFields base="wnioskodawca.reprezentant" legend="Osoba upoważniona do reprezentowania podmiotu" />
-      <div className="grid gap-6">
-        <CheckboxOption id={fieldId("wnioskodawca.kontaktTenSam")} checked={w.kontaktTenSam}
-          onChange={(e) => update("wnioskodawca.kontaktTenSam", e.target.checked)} label="Ta sama osoba odpowiada za kontakty robocze" />
-        {!w.kontaktTenSam && <ContactFields base="wnioskodawca.kontakt" legend="Osoba do kontaktów roboczych" />}
-      </div>
+      <Alert title="Bez danych osobowych">
+        <p>
+          Pytamy tylko o dane instytucji. Imię, nazwisko i kontakt osoby upoważnionej oraz osoby do kontaktów roboczych
+          wpiszesz dopiero w formularzu elektronicznym ROPS. We wniosku zostawimy na nie puste miejsce.
+        </p>
+      </Alert>
       <div className="grid gap-6 border-t pt-6">
         <CheckboxOption id={fieldId("maRealizatora")} checked={app.maRealizatora}
           onChange={(e) => update("maRealizatora", e.target.checked)}
@@ -161,8 +145,8 @@ function ContactStep() {
             <TextField path="realizator.adres" label="Adres podmiotu" />
             <TextField path="realizator.adresKorespondencji" label="Adres do korespondencji (jeśli inny)" />
             <div className="grid gap-6 sm:grid-cols-2">
-              <TextField path="realizator.telefon" label="Telefon" type="tel" />
-              <TextField path="realizator.email" label="E-mail" type="email" />
+              <TextField path="realizator.telefon" label="Telefon instytucji" type="tel" />
+              <TextField path="realizator.email" label="E-mail instytucji" type="email" />
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
               <TextField path="realizator.nip" label="NIP (jeśli dotyczy)" inputMode="numeric" />
@@ -433,12 +417,21 @@ function MeritSection({ slugOfInnovation }: { slugOfInnovation: string | null })
 }
 
 function FinishStep({ goTo, today, planSlug }: { goTo: (step: number) => void; today: string; planSlug: string | null }) {
-  const { app, content } = useForm();
+  const { app, content, update } = useForm();
   const doc = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState("");
   const checks = formalChecks(app, content, today);
   const invalid = firstInvalidStep(app, content);
   const failed = checks.filter((c) => c.status === "blad").length;
+  const blocking = sensitiveFindings(app).filter((f) => f.block);
+
+  function removeSensitive() {
+    const masked = maskSensitive(app);
+    for (const path of descriptivePaths(app)) {
+      if (getAt(masked, path) !== getAt(app, path)) update(path, getAt(masked, path));
+    }
+    setCopied(`Usunięto dane osobowe z ${blocking.length} ${plural(blocking.length, "pola", "pól", "pól")}. W ich miejscu jest „[usunięto: …]”.`);
+  }
 
   function downloadWord() {
     const html = `<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>${app.tytul}</title><style>${WORD_CSS}</style></head><body>${doc.current?.innerHTML ?? ""}</body></html>`;
@@ -479,6 +472,11 @@ function FinishStep({ goTo, today, planSlug }: { goTo: (step: number) => void; t
           <p className="max-w-[68ch]" aria-live="polite">
             {failed === 0 ? "Wszystkie warunki z karty oceny formalnej, które da się sprawdzić tutaj, są spełnione." : `Do poprawy: ${failed} ${plural(failed, "warunek", "warunki", "warunków")}.`}
           </p>
+          {blocking.length > 0 && (
+            <Button type="button" variant="outline" className="justify-self-start" onClick={removeSensitive}>
+              <TrashIcon aria-hidden /> Usuń te dane z opisów automatycznie
+            </Button>
+          )}
           <ul className="grid max-w-[68ch] gap-2">
             {checks.map((c) => {
               const Icon = c.status === "ok" ? CheckIcon : c.status === "blad" ? XCircleIcon : ExclamationTriangleIcon;
@@ -711,7 +709,7 @@ function Form(props: Props) {
                 <>
                   <CheckGroup path="doswiadczenie.obszary" legend={content.experience.lead} hint={content.experience.tip} items={content.experience.areas} />
                   <TextField path="doswiadczenie.opis" multiline label="Opis posiadanego doświadczenia w odniesieniu do wybranych obszarów"
-                    hint="Co robicie, od kiedy, dla ilu osób. Komisja premiuje tylko doświadczenie wykazane jednoznacznie." />
+                    hint="Co robicie, od kiedy, dla ilu osób, bez imion i nazwisk. Komisja premiuje tylko doświadczenie wykazane jednoznacznie." />
                 </>
               )}
 
