@@ -13,6 +13,7 @@ import { innovationPage, knowledge } from "@/lib/knowledge";
 import { formatBytes, isHugeFile, TYPE_LABELS } from "@/lib/knowledge/labels";
 import { similarInnovations } from "@/lib/knowledge/similar";
 import { GROUP_LABELS } from "@/lib/taxonomy";
+import { frameworkPlan } from "@/lib/usluga-wrazliwa";
 import { safeDecode } from "../../shared";
 
 export async function generateMetadata(props: PageProps<"/biblioteka/innowacja/[slug]">): Promise<Metadata> {
@@ -27,6 +28,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
   const i = await innovationPage(safeDecode((await props.params).slug));
   if (!i) notFound();
   const [areas, similar] = await Promise.all([knowledge.areas(), similarInnovations(i)]);
+  const framework = frameworkPlan(i.slug);
   const firstArea = areas.find((a) => a.key === i.areas[0]);
   const TypeIcon = i.innovationType ? TYPE_ICONS[i.innovationType] : null;
   const zipSize = formatBytes(i.materialsZip?.sizeBytes);
@@ -146,6 +148,19 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
           <Button asChild size="lg"><Link href={`/wdrozenie?innowacja=${i.slug ?? i.id}`}>Jak to wdrożyć u nas?</Link></Button>
           <Button asChild size="lg" variant="outline"><Link href={`/przetestuj?innowacja=${i.slug ?? i.id}`}>Chcę przetestować</Link></Button>
         </div>
+        {framework && (
+          <div className="max-w-[48rem] space-y-2 text-lg">
+            <p>
+              ROPS w Krakowie wybrał tę innowację do {framework.call} naboru „Usługa Wrażliwa”: gmina, ośrodek pomocy
+              społecznej albo organizacja może dostać do 600 tys. zł na jej wdrożenie. „Jak to wdrożyć u nas?” przygotuje plan,
+              a z niego szkic wniosku o grant.
+            </p>
+            <a href={framework.url} className={`inline-flex items-start gap-2 ${link}`}>
+              <ArrowDownTrayIcon aria-hidden className="mt-1 size-5 shrink-0" />
+              Pobierz Ramowy Plan Wdrożenia tej innowacji (PDF, rops.krakow.pl)
+            </a>
+          </div>
+        )}
       </section>
 
       {similar.length > 0 && (

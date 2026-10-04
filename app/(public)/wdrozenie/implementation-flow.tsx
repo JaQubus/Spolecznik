@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { PlanDocument } from "@/components/wdrozenie/plan-document";
-import { flags } from "@/lib/flags";
 import type { GminaOption } from "@/lib/gminy";
 import { planToText } from "@/lib/implementation-plan";
 import {
@@ -129,7 +128,7 @@ export function ImplementationFlow({
           <PlanDocument doc={result} headingRef={heading} />
           <div className="space-y-3 print:hidden">
             <div className="flex flex-wrap items-center gap-3">
-              {flags.wniosekUslugaWrazliwa && result.id && (
+              {result.id && (
                 <Button asChild><Link href={`/wniosek-o-grant?plan=${result.id}`}><DocumentTextIcon aria-hidden className="size-5" /> Przejdź do wniosku o grant</Link></Button>
               )}
               <Button type="button" variant="outline" onClick={() => window.print()}><PrinterIcon aria-hidden className="size-5" /> Drukuj / zapisz PDF</Button>

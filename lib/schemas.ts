@@ -276,6 +276,43 @@ export type PlanDocument = {
   plan: CheckedPlan;
 };
 
+// /api/wniosek-uw/ocena: podpowiedzi pod kartę oceny merytorycznej wniosku „Usługa Wrażliwa” (#105).
+// Kryteria i punkty z „Wzoru karty oceny merytorycznej” (zał. 4 do ogłoszenia naboru IS-430-6/26).
+export const MERIT_CRITERIA = ["adekwatnosc", "efektywnosc", "zasieg", "utrzymanie", "doswiadczenie"] as const;
+export type MeritCriterion = (typeof MERIT_CRITERIA)[number];
+export const MERIT_LABELS: Record<MeritCriterion, { title: string; points: string; what: string }> = {
+  adekwatnosc: { title: "Adekwatność koncepcji wdrożenia innowacji", points: "0–20 pkt", what: "czy grupa docelowa i działania pasują do celu grantu oraz do problemów i potrzeb odbiorców" },
+  efektywnosc: { title: "Efektywność wdrożenia innowacji", points: "0–20 pkt", what: "czy koszty są racjonalne i niezawyżone wobec cen rynkowych i planowanych efektów" },
+  zasieg: { title: "Zasięg wdrożenia innowacji społecznej", points: "0–20 pkt", what: "na jakim terenie i dla ilu osób będzie świadczona usługa" },
+  utrzymanie: { title: "Koncepcja utrzymania efektów wdrożenia innowacji", points: "0–20 pkt", what: "jak efekty usługi przetrwają po zakończeniu finansowania" },
+  doswiadczenie: { title: "Doświadczenie Wnioskodawcy (kryterium premiujące)", points: "+10 pkt za 2 obszary, +20 za 3", what: "czy wniosek jednoznacznie wykazuje doświadczenie w więcej niż jednym obszarze" },
+};
+export const MERIT_VERDICTS = ["mocne", "do_poprawy", "slabe"] as const;
+export type MeritVerdict = (typeof MERIT_VERDICTS)[number];
+
+const meritText = z.string().trim().max(8000);
+export const MeritRequest = z.object({
+  innovation: z.string().trim().max(200),
+  innovationSlug: z.string().max(120).nullable(),
+  experienceAreas: z.number().int().min(0).max(3),
+  sections: z.object({
+    opis: meritText, diagnoza: meritText, rekrutacja: meritText, liczba: meritText, obszar: meritText,
+    efekty: meritText, plan: meritText, kwota: z.string().max(40), utrzymanie: meritText, doswiadczenie: meritText,
+  }),
+});
+export type MeritRequest = z.infer<typeof MeritRequest>;
+
+export const MeritReview = z.object({
+  criteria: z.array(z.object({
+    key: z.enum(MERIT_CRITERIA),
+    verdict: z.enum(MERIT_VERDICTS),
+    why: z.string(),
+    tips: z.array(z.string()).max(3),
+  })).min(1).max(MERIT_CRITERIA.length),
+  frameworkGaps: z.array(z.string()).max(5), // czego z Ramowego Planu ROPS brakuje w szkicu
+});
+export type MeritReview = z.infer<typeof MeritReview>;
+
 // /api/apply: szkic wniosku do aktywnego naboru
 export const ApplyRequest = z.object({ ideaId: z.uuid(), callId: z.uuid() });
 export const ApplicationDraft = z.object({

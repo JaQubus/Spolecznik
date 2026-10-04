@@ -3,6 +3,4 @@
 export const flags = {
   /** „Moja gmina” i mapa gmin — osobne zadanie. */
   mojaGmina: process.env.NEXT_PUBLIC_FLAG_MOJA_GMINA === "1",
-  /** „Przejdź do wniosku o grant” pod planem wdrożenia: generator wniosku do „Usługi Wrażliwej” — osobne zadanie (#99). */
-  wniosekUslugaWrazliwa: process.env.NEXT_PUBLIC_FLAG_WNIOSEK_UW === "1",
 };

@@ -8,6 +8,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { MiddlemanRequest, RELATED_MIN_SIMILARITY, type PlanDocument } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { frameworkContext } from "@/lib/usluga-wrazliwa";
 
 /**
  * Szkic planu wdrożenia pod nabór „Usługa Wrażliwa”: innowacja z Biblioteki + fakty o gminie z BDL
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
     const [{ data: innovation, error }, gminaRow] = await Promise.all([
       supabase
         .from("innovations")
-        .select("id, title, problem, solution, beneficiaries, who_can_use, evidence, how_to_use, components")
+        .select("id, slug, title, problem, solution, beneficiaries, who_can_use, evidence, how_to_use, components")
         .eq("id", innovationId)
         .maybeSingle(),
       findGmina(gmina, teryt),
@@ -65,7 +66,9 @@ export async function POST(request: Request) {
 
     const label = gminaLabel(gminaRow);
     const facts = gminaFacts(gminaRow);
-    const raw = await implementationPlan(innovationText, { label, facts }, input, partners);
+    // Innowacje z naborów „Usługa Wrażliwa” mają Ramowy Plan Wdrożenia ROPS: model dostaje, czego nie można zgubić.
+    const framework = frameworkContext(innovation.slug as string | null, 1800);
+    const raw = await implementationPlan(innovationText, { label, facts }, input, partners, framework);
     const plan = checkPlan(raw, { facts, partners, budget: input.budget });
 
     // Zapis nie blokuje wyniku: gdy się nie uda, użytkownik i tak dostaje plan (bez id).

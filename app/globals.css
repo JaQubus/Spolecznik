@@ -286,6 +286,8 @@ html.a11y-contrast [data-area] { --area: var(--ink); --area-soft: var(--surface)
   /* Sekcja z tabelą (plan wdrożenia) może przejść na następną stronę między wierszami — inaczej cała skacze
      na nową kartkę i zostawia pół pustej strony. Wiersz tabeli dalej się nie dzieli (.doc tr). */
   [data-print-root] section:has(table) { break-inside: auto; }
+  /* Części wniosku (/wniosek-o-grant) są wielostronicowe: dzielą się między strony, nie skaczą w całości. */
+  [data-print-root] :is(.doc-sections > li, .doc-clause) { break-inside: auto; }
   [data-print-root] :is(caption, thead) { break-after: avoid; }
   [data-print-root] tbody tr:first-child { break-before: avoid; }
 }
