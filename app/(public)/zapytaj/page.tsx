@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { NoDatabase } from "@/components/layout/no-database";
 import { MyNeeds } from "@/components/rozmowa/my-needs";
 import { EmailOptIn } from "@/components/rozmowa/email-opt-in";
@@ -6,6 +7,8 @@ import { PrivateLink } from "@/components/rozmowa/private-link";
 import { maskedContactEmail } from "@/lib/author-contact";
 import { Alert } from "@/components/ui/alert";
 import { rememberedKey } from "@/lib/need-access";
+import { plural } from "@/lib/pl";
+import { needPartnerships, type Partnership } from "@/lib/partnerships";
 import { STATUS_CODE } from "@/lib/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { canOpen, expertName, needThread, rememberedThreads, type MyNeed, type NeedThread } from "@/lib/threads";
@@ -23,6 +26,8 @@ export default async function Page(props: PageProps<"/zapytaj">) {
   const raw = typeof asked === "string" ? asked.trim().toUpperCase() : "";
   const askedExpert = typeof params.ekspert === "string" && UUID.test(params.ekspert) ? params.ekspert : undefined;
   const badLink = params.link === "nieaktualny";
+  // Starsze linki „Połącz się z tymi gminami” prowadziły tutaj — partnerstwo ma własną stronę.
+  if (params.partnerstwo && STATUS_CODE.test(raw)) redirect(`/partnerstwo?potrzeba=${raw}`);
 
   if (!isSupabaseConfigured()) return <NoDatabase />;
 
@@ -31,6 +36,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
   let key: string | null = null;
   let contact: string | null = null;
   let chosenName: string | null = null;
+  let partnerships: Partnership[] = [];
   try {
     if (STATUS_CODE.test(raw)) {
       const found = await needThread({ code: raw });
@@ -40,6 +46,8 @@ export default async function Page(props: PageProps<"/zapytaj">) {
       if (thread && key) contact = await maskedContactEmail("potrzeba", thread.code).catch(() => null);
       // Ekspert z wyników dopasowania — tylko podpowiedź, dopóki ROPS nie przypisze kogoś w Panelu.
       if (thread && !thread.expert && askedExpert) chosenName = await expertName(askedExpert);
+      // Bez migracji 0023 rozmowa ma działać dalej.
+      if (thread?.kind === "potrzeba" && key) partnerships = await needPartnerships(thread.id).catch((e) => { console.error("[zapytaj] partnerstwa:", e); return []; });
     }
     if (!thread) mine = await rememberedThreads();
   } catch (e) {
@@ -80,6 +88,8 @@ export default async function Page(props: PageProps<"/zapytaj">) {
         </p>
       </div>
 
+      <PartnershipNotice code={thread.code} partnerships={partnerships} />
+
       <Conversation
         code={thread.code}
         expertId={chosenName ? askedExpert : undefined}
@@ -90,6 +100,28 @@ export default async function Page(props: PageProps<"/zapytaj">) {
 
       <PrivateLink code={thread.code} accessKey={key} kind={thread.kind} />
     </section>
+  );
+}
+
+/** Zaproszenia do partnerstwa i rozmowy gmin, w których jest to zgłoszenie — zaproszony dowiaduje się o nich tutaj. */
+function PartnershipNotice({ code, partnerships }: { code: string; partnerships: Partnership[] }) {
+  const href = `/partnerstwo?potrzeba=${code}`;
+  const invitations = partnerships.filter((p) => p.myStatus === "zaproszone");
+  if (invitations.length > 0) {
+    const first = invitations[0];
+    return (
+      <Alert title={`${first.initiator} chce porozmawiać o podobnym problemie`}>
+        {invitations.length > 1 && <p>Masz {invitations.length} {plural(invitations.length, "zaproszenie", "zaproszenia", "zaproszeń")} do rozmowy z innymi gminami.</p>}
+        <p>Bez Twojej zgody nikt nie zobaczy Twojego zgłoszenia.</p>
+        <p><Link href={href} className={linkClass}>Zobacz zaproszenie</Link></p>
+      </Alert>
+    );
+  }
+  if (!partnerships.some((p) => p.myStatus === "przyjete")) return null;
+  return (
+    <p>
+      Rozmawiasz też z innymi gminami. <Link href={href} className={linkClass}>Partnerstwo gmin</Link>
+    </p>
   );
 }
 

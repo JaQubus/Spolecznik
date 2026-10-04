@@ -24,7 +24,7 @@ export function MessageList({
           {messages.map((m) => (
             <li key={m.id} className={`space-y-1 border-b px-3 py-4 ${m.role === "autor" ? "" : "bg-secondary"}`}>
               <p className="flex flex-wrap items-baseline gap-x-3">
-                <strong>{m.role === own ? `Ty (${m.name})` : m.name}</strong>
+                <strong>{(m.mine ?? m.role === own) ? `Ty (${m.name})` : m.name}</strong>
                 <span className="text-base text-muted-foreground">
                   <time dateTime={m.createdAt}>{formatTime(m.createdAt)}</time>
                 </span>

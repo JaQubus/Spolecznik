@@ -35,6 +35,13 @@ export function MyNeeds({ mine, primary }: { mine: MyNeed[]; primary: "rozmowa" 
                     </span>
                   </p>
                   {n.summary && <p className="line-clamp-2">{n.summary}</p>}
+                  {n.invitations > 0 && (
+                    <p>
+                      <Link href={`/partnerstwo?potrzeba=${n.code}`} className={linkClass} aria-label={`Zaproszenie do partnerstwa gmin: zgłoszenie ${n.code}`}>
+                        {n.invitations === 1 ? "Inna gmina zaprasza Cię do rozmowy" : `Zaproszenia do rozmowy z innymi gminami: ${n.invitations}`}
+                      </Link>
+                    </p>
+                  )}
                   {other && (
                     <p>
                       <Link href={other.href} className={linkClass} aria-label={`${other.label}: ${what} ${n.code}`}>

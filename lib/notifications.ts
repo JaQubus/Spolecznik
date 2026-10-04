@@ -113,6 +113,20 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
         text: `ROPS prosi Cię o pomoc przy ${p.kind === "pomysl" ? "pomyśle" : "zgłoszeniu"}${code ? ` ${code}` : ""}`,
         href: code ? `/ekspert/${code}` : "/ekspert",
       };
+    // Partnerstwa: autor wchodzi na /partnerstwo (wymaga klucza z tej przeglądarki), admin do Panelu zgłoszenia, które zaprasza.
+    case "partnerstwo_zaproszenie":
+      return { text: `${str(p.gmina) ?? "Inna gmina"} chce porozmawiać o podobnym problemie`, href: code ? `/partnerstwo?potrzeba=${code}` : null };
+    case "partnerstwo_nowe":
+      return {
+        text: `${str(p.gmina) ?? "Gmina"} zaprasza inne gminy do partnerstwa${typeof p.invited === "number" ? ` (zaproszenia: ${p.invited})` : ""}`,
+        href: needId ? `/panel/zgloszenia/${needId}#partnerstwo` : "/panel",
+      };
+    case "partnerstwo_dolaczenie":
+      return { text: `${str(p.gmina) ?? "Gmina"} dołączyła do partnerstwa`, href: needId ? `/panel/zgloszenia/${needId}#partnerstwo` : "/panel" };
+    case "partnerstwo_wiadomosc":
+      return forAdmin
+        ? { text: `${str(p.gmina) ?? "Gmina"} napisała w partnerstwie`, href: needId ? `/panel/zgloszenia/${needId}#partnerstwo` : "/panel" }
+        : { text: "Nowa wiadomość w partnerstwie gmin", href: code ? `/partnerstwo?potrzeba=${code}${str(p.threadId) ? `&watek=${str(p.threadId)}` : ""}` : null };
     case "nowy_nabor":
       return { text: `Ruszył nabór${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Możesz złożyć wniosek.`, href: "/wniosek" };
     default:

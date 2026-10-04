@@ -68,9 +68,12 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
             {similarNeeds.count} {plural(similarNeeds.count, "inna gmina zgłosiła", "inne gminy zgłosiły", "innych gmin zgłosiło")} podobny problem
           </h2>
           <p>{similarNeeds.gminy.slice(0, 6).join(", ")}{similarNeeds.gminy.length > 6 ? " i inne" : ""}.</p>
-          <p className="text-muted-foreground">Razem łatwiej znaleźć rozwiązanie i pieniądze na nie.</p>
+          <p className="text-muted-foreground">
+            Razem łatwiej znaleźć rozwiązanie i pieniądze na nie. Zaprosimy te gminy do wspólnej rozmowy z ROPS —
+            dołączą, jeśli się zgodzą.
+          </p>
           <Button asChild variant="outline">
-            <Link href={`/zapytaj?potrzeba=${need.statusCode}&partnerstwo=1`}>Połącz się z tymi gminami</Link>
+            <Link href={`/partnerstwo?potrzeba=${need.statusCode}`}>Połącz się z tymi gminami</Link>
           </Button>
         </section>
       )}

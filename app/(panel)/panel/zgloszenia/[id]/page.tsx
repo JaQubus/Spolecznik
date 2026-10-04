@@ -17,9 +17,11 @@ import { NEED_STATUSES } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AREA_LABELS, CROSS_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { innovationHref } from "@/components/knowledge/tiles";
+import { panelPartnerships, type PanelPartnership } from "@/lib/partnerships";
 import { needThread } from "@/lib/threads";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
 import { assignExpert, removePersonalData, updateNeedStatus } from "../../actions";
+import { PartnershipSection } from "../../partnership-section";
 import { ThreadSection } from "../../thread-section";
 
 export const metadata = { title: "Zgłoszenie · Panel ROPS" };
@@ -38,7 +40,7 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
   const need = data as unknown as NeedRow;
 
   const admin = createAdminClient();
-  const [history, experts, neighbours, matches, assigned, thread] = await Promise.all([
+  const [history, experts, neighbours, matches, assigned, thread, partnerships] = await Promise.all([
     needHistory(id),
     needNeighbours(need, "ekspert", 3),
     needNeighbours(need, "potrzeba", 5),
@@ -48,6 +50,8 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
       : Promise.resolve({ data: null, error: null }),
     // Bez migracji 0011 reszta strony ma działać dalej.
     needThread({ kind: "potrzeba", id }).catch((e) => { console.error("[panel] rozmowa:", e); return null; }),
+    // Bez migracji 0023 tak samo.
+    panelPartnerships(id).catch((e) => { console.error("[panel] partnerstwa:", e); return [] as PanelPartnership[]; }),
   ]);
   if (matches.error) throw matches.error;
 
@@ -151,6 +155,8 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
       </section>
 
       <ThreadSection kind="potrzeba" id={need.id} thread={thread} closed={need.status === "zamkniete"} />
+
+      <PartnershipSection partnerships={partnerships} needId={need.id} />
 
       <section aria-labelledby="status" className="space-y-3">
         <h2 id="status" className="text-2xl font-bold">Status</h2>

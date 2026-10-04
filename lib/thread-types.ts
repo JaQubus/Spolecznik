@@ -3,7 +3,8 @@
 export const AUTHOR_ROLES = ["autor", "rops", "ekspert", "ai"] as const;
 export type AuthorRole = (typeof AUTHOR_ROLES)[number];
 
-export type ThreadMessage = { id: string; role: AuthorRole; name: string; body: string; createdAt: string };
+/** `mine` ustawia serwer, gdy w wątku pisze kilku autorów (partnerstwo) — sama rola nie mówi, czy to „Ty”. */
+export type ThreadMessage = { id: string; role: AuthorRole; name: string; body: string; createdAt: string; mine?: boolean };
 
 export const ROLE_LABELS: Record<AuthorRole, string> = {
   autor: "Zgłaszający",
