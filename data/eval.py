@@ -3,29 +3,50 @@
 Wejście: golden_set.jsonl, linia = {"query": "...", "relevant": ["slug", ...]}
 (pusta lista relevant = oczekiwana luka).
 Metryki: hit@3, MRR@5, trafność wykrywania luk.
-Konfiguracje: BM25 na problemie innowacji, BM25 + rerank. Bez embeddingów — cały AI idzie przez Groq,
-który nie ma modeli embeddingów.
+Konfiguracje (bez embeddingów — cały AI idzie przez Groq, który nie ma modeli embeddingów):
+- BM25 (problem): klasyczny BM25 na polu `problem` — punkt odniesienia, bez AI poza intake,
+- Słowa (problem): pierwszy etap produkcji, lexicalCandidates z lib/match.ts (rdzenie słów ważone IDF),
+- Słowa + rerank: cała produkcja — 15 kandydatów → rerank (Groq) → siatka bezpieczeństwa dla opisów
+  powtarzających problem słowo w słowo → luka, gdy najlepszy fit < 50.
 
-Liczy offline na out/innovations.json (bez bazy), odtwarzając produkcyjny przepływ: intake (Groq, jak
-lib/llm.ts) → słowa z opisu i słowa kluczowe porównane z polem `problem` innowacji (jak lib/match.ts)
-→ top 15 → rerank po samym problemie (Groq, jak lib/llm.ts).
-Prompty są kopią tych z lib/llm.ts — po zmianie tam zaktualizuj je tutaj.
+Korpus: tabela innovations z bazy (SUPABASE_DB_URL), tak jak w lexicalCandidates — prawdziwe innowacje z Biblioteki
+i syntetyczne, do których odwołuje się golden_set.jsonl. Z --offline: same out/innovations.json (bez bazy), czyli
+tylko innowacje syntetyczne — mniej rozpraszaczy, więc wynik wychodzi lepszy niż w aplikacji.
+Dalej przepływ jak w lib/match.ts i lib/llm.ts. Prompty, stałe i logika słów są kopią — po zmianie tam zaktualizuj je tutaj.
 
-Uruchomienie: uv run eval.py [--no-rerank]"""
+Uruchomienie: uv run eval.py [--no-rerank] [--offline]"""
 import hashlib
 import json
 import math
 import os
 import re
+import subprocess
 import sys
 from collections import Counter
+from datetime import date
 
-from common import CROSS, AREAS, GROUPS, GROQ_QUALITY, OUT, RAW, ROOT, read_json, taxonomy_prompt, write_json
+import psycopg
+
+from common import CROSS, AREAS, GROUPS, GROQ_QUALITY, OUT, RAW, ROOT, db_url, read_json, taxonomy_prompt, write_json
 from enrich import call_tool
 
-GAP_THRESHOLD = 50   # lib/schemas.ts
-CANDIDATES = 15      # lib/match.ts: CANDIDATES
+GAP_THRESHOLD = 50       # lib/schemas.ts
+CANDIDATES = 15          # lib/match.ts
+STRONG_OVERLAP = 0.6     # lib/match.ts
+VERBATIM_OVERLAP = 0.85  # lib/match.ts
+VERBATIM_MIN_WORDS = 4   # lib/match.ts
 INTAKE_CACHE = RAW / "eval_intake_cache.json"
+# Odpowiedzi reranku po treści promptu: przerwany przebieg (limit Groq) wznawia się bez płacenia drugi raz.
+RERANK_CACHE = RAW / "eval_rerank_cache.json"
+
+# lib/match.ts: STOPWORDS
+STOPWORDS = {
+    "który", "która", "które", "którzy", "których", "którym", "oraz", "jest", "przez", "jako", "może", "mogą", "mają",
+    "bardzo", "tylko", "także", "również", "kiedy", "gdzie", "nawet", "tego", "tych", "temu", "taki", "taka", "takie",
+    "jego", "sobie", "swoje", "swój", "swoją", "będzie", "było", "była", "były", "żeby", "ponieważ", "między", "przed",
+    "jeszcze", "wtedy", "dlatego", "często", "bardziej", "innowacja", "innowacji", "odpowiada", "problem", "rozwiązanie",
+    "dotyczy", "takich", "problemu", "problemy", "problemów", "problemowi", "problemem",
+}
 
 INTAKE_SYSTEM = f"""Jesteś asystentem Małopolskiego Hubu Innowacji Społecznych.
 Zamieniasz opis problemu społecznego na kartę potrzeby.
@@ -98,7 +119,7 @@ def tokens(text: str) -> list[str]:
 
 
 class Bm25:
-    """BM25 na tytule + lematach — odpowiednik FTS 'simple' na kolumnie fts (title || lemmas)."""
+    """Klasyczny BM25 na tokenach pola `problem` — punkt odniesienia bez reranku."""
 
     def __init__(self, docs: list[list[str]], k1: float = 1.2, b: float = 0.75) -> None:
         self.docs, self.k1, self.b = [Counter(d) for d in docs], k1, b
@@ -117,10 +138,81 @@ class Bm25:
         return [i for _, i in sorted(scores, reverse=True)]
 
 
+def words(text: str) -> list[str]:
+    """lib/match.ts: words — same litery (\\p{L}+), bez cyfr i podkreślników."""
+    return re.findall(r"[^\W\d_]+", text.lower())
+
+
+def stem(word: str) -> str:
+    """lib/match.ts: stem — rdzeń bez polskiej końcówki."""
+    if len(word) >= 7:
+        return word[:-3]
+    if len(word) >= 5:
+        return word[:-2]
+    return word[:3]
+
+
+def unique(items) -> list[str]:
+    return list(dict.fromkeys(items))
+
+
+def content_stems(text: str) -> list[str]:
+    return unique(stem(w) for w in words(text) if len(w) >= 4 and w not in STOPWORDS)
+
+
+def lexical_candidates(problems: list[str], original: str, keywords: list[str]) -> list[tuple[int, float, float]]:
+    """lib/match.ts: lexicalCandidates — (indeks innowacji, overlap, score), od najlepszego."""
+    docs = [unique(words(p)) for p in problems]
+    has = lambda d, s: any(t.startswith(s) for t in d)  # noqa: E731
+    user = content_stems(original)
+    kw = unique(stem(w) for k in keywords for w in words(k) if len(w) >= 4)
+    idf = {s: math.log((len(docs) + 1) / (sum(1 for d in docs if has(d, s)) + 1)) for s in unique(user + kw)}
+
+    def weighted(stems: list[str], d: list[str]) -> float:
+        total = sum(idf[s] for s in stems)
+        return sum(idf[s] for s in stems if has(d, s)) / total if total > 0 else 0.0
+
+    scored = [(i, weighted(user, d), weighted(user, d) * 10 + weighted(kw, d) * 6) for i, d in enumerate(docs)]
+    return sorted(scored, key=lambda x: -x[2])  # stabilne, jak Array.sort w JS
+
+
+def clip(text: str, max_len: int) -> str:
+    """lib/llm.ts: clip — skrót na granicy słowa z „…”."""
+    if len(text) <= max_len:
+        return text
+    cut = text[:max_len]
+    return f"{cut[:max(cut.rfind(' '), max_len - 40)]}…"
+
+
 def metrics(ranked: list[str], relevant: list[str]) -> tuple[float, float]:
     hit3 = float(any(s in relevant for s in ranked[:3]))
     mrr = next((1 / r for r, s in enumerate(ranked[:5], 1) if s in relevant), 0.0)
     return hit3, mrr
+
+
+def load_corpus(offline: bool) -> list[dict]:
+    """Innowacje z polem problem. lib/match.ts: lexicalCandidates — ta sama para tytuł + problem tylko raz."""
+    if offline:
+        rows = [{"slug": i["slug"], "title": i["title"], "problem": i.get("problem")} for i in read_json(OUT / "innovations.json")]
+    else:
+        with psycopg.connect(db_url()) as conn:
+            cur = conn.execute("select slug, title, problem from innovations where problem is not null order by slug limit 500")
+            rows = [{"slug": s, "title": t, "problem": p} for s, t, p in cur.fetchall()]
+    seen, corpus = set(), []
+    for r in rows:
+        problem = (r["problem"] or "").strip()
+        key = (r["title"].strip().lower(), problem.lower())
+        if problem and key not in seen:
+            seen.add(key)
+            corpus.append({**r, "problem": problem})
+    return corpus
+
+
+def git_commit() -> str:
+    try:
+        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
+    except OSError:
+        return "?"
 
 
 def intake_all(queries: list[str]) -> dict[str, dict]:
@@ -133,47 +225,84 @@ def intake_all(queries: list[str]) -> dict[str, dict]:
     return {q: cache[hashlib.sha1(q.encode()).hexdigest()] for q in queries}
 
 
+def cached_rerank(prompt: str) -> dict:
+    cache: dict = read_json(RERANK_CACHE) if RERANK_CACHE.exists() else {}
+    key = hashlib.sha1((GROQ_QUALITY + RERANK_SYSTEM + prompt).encode()).hexdigest()
+    if key not in cache:
+        cache[key] = call_tool(RERANK_SYSTEM, RERANK_TOOL, prompt, model=GROQ_QUALITY)
+        write_json(RERANK_CACHE, cache)
+    return cache[key]
+
+
 def main() -> None:
+    # Konsola Windows (cp1252) nie ma „ł” ani „ń” — bez tego tabela wyników wywróciłaby skrypt po wszystkich wywołaniach Groq.
+    sys.stdout.reconfigure(encoding="utf-8")
     if not os.environ.get("GROQ_API_KEY"):
         sys.exit("Brak GROQ_API_KEY w ../.env.local")
     use_rerank = "--no-rerank" not in sys.argv
+    offline = "--offline" in sys.argv
 
     gold = [json.loads(l) for l in (ROOT / "golden_set.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
-    innovations = read_json(OUT / "innovations.json")
+    innovations = load_corpus(offline)
     slugs = [i["slug"] for i in innovations]
     unknown = {s for g in gold for s in g["relevant"]} - set(slugs)
     if unknown:
         sys.exit(f"golden_set.jsonl odwołuje się do innowacji spoza korpusu: {sorted(unknown)}")
 
-    problems = [(i.get("problem") or "").strip() for i in innovations]
+    problems = [i["problem"] for i in innovations]
     bm25 = Bm25([tokens(p) for p in problems])
 
     cards = intake_all([g["query"] for g in gold])
 
-    configs = ["BM25 (problem)"] + (["BM25 + rerank"] if use_rerank else [])
+    configs = ["BM25 (problem)", "Słowa (problem)"] + (["Słowa + rerank"] if use_rerank else [])
     scores = {c: [] for c in configs}
     gap_hits, per_query = [], []
-    for g in gold:
+    for n, g in enumerate(gold, 1):
+        print(f"  {n}/{len(gold)} {g['query'][:60]}", flush=True)
         card = cards[g["query"]]
-        kw = [t for k in card["keywords"] for t in tokens(k)] + tokens(g["query"])
-        r_bm = bm25.rank(kw)
-        ranked = {"BM25 (problem)": r_bm}
-        row = {"query": g["query"], "relevant": g["relevant"], "keywords": card["keywords"]}
+        original = g["query"]
+        r_bm = bm25.rank([t for k in card["keywords"] for t in tokens(k)] + tokens(original))
+        lexical = lexical_candidates(problems, original, card["keywords"])
+        ranked = {"BM25 (problem)": r_bm, "Słowa (problem)": [i for i, _, score in lexical if score > 0]}
+        row = {"query": original, "relevant": g["relevant"], "keywords": card["keywords"]}
 
         if use_rerank:
-            pool = (r_bm + [i for i in range(len(innovations)) if i not in r_bm])[:CANDIDATES]
-            cands = "\n".join(f'<kandydat id="{slugs[i]}"><problem>{problems[i][:600]}</problem></kandydat>' for i in pool)
+            # lib/match.ts: najpierw kandydaci z mocnym pokryciem słów, potem reszta według score.
+            pool = unique([i for i, overlap, _ in lexical if overlap >= STRONG_OVERLAP] + [i for i, _, _ in lexical])[:CANDIDATES]
+            overlap_of = {i: overlap for i, overlap, _ in lexical}
+
+            def attr(i: int) -> str:
+                o = overlap_of[i]
+                return f' zgodnosc_slow="{int(o * 100 + 0.5)}%"' if o >= 0.3 else ""
+
+            cands = "\n".join(f'<kandydat id="{slugs[i]}"{attr(i)}><problem>{clip(problems[i], 600)}</problem></kandydat>' for i in pool)
             need = {"problem": card["summary"], "keywords": card["keywords"]}
-            out = call_tool(RERANK_SYSTEM, RERANK_TOOL,
-                            f"<potrzeba>{json.dumps(need, ensure_ascii=False)}</potrzeba>\n<opis>{g['query']}</opis>\n"
-                            f"<gmina>brak danych</gmina>\n<kandydaci>\n{cands}\n</kandydaci>",
-                            model=GROQ_QUALITY)
+            out = cached_rerank(f"<potrzeba>{json.dumps(need, ensure_ascii=False)}</potrzeba>\n<opis>{original[:2000]}</opis>\n"
+                                f"<gmina>brak danych</gmina>\n<kandydaci>\n{cands}\n</kandydaci>")
             allowed = {slugs[i] for i in pool}
-            items = sorted((x for x in out["items"] if x["id"] in allowed), key=lambda x: -x["fit"])
+            items = [{"id": x["id"], "fit": x["fit"]} for x in out["items"] if x["id"] in allowed]
+            rerank_raw = sorted(items, key=lambda x: -x["fit"])
+
+            # lib/match.ts: siatka bezpieczeństwa — opis prawie dosłownie powtarzający problem nie kończy się luką.
+            pinned = []
+            if len(content_stems(original)) >= VERBATIM_MIN_WORDS:
+                for i in pool:
+                    if overlap_of[i] < VERBATIM_OVERLAP:
+                        continue
+                    hit = next((x for x in items if x["id"] == slugs[i]), None)
+                    if hit and hit["fit"] >= 80:
+                        continue
+                    if hit:
+                        hit["fit"] = 85
+                    else:
+                        items.append({"id": slugs[i], "fit": 85})
+                    pinned.append(slugs[i])
+            items.sort(key=lambda x: -x["fit"])
+
             is_gap = (items[0]["fit"] if items else 0) < GAP_THRESHOLD
             gap_hits.append(is_gap == (not g["relevant"]))
-            row.update(rerank=[(x["id"], x["fit"]) for x in items], predicted_gap=is_gap)
-            ranked["BM25 + rerank"] = [x["id"] for x in items if x["fit"] >= GAP_THRESHOLD]
+            row.update(rerank=[(x["id"], x["fit"]) for x in rerank_raw], pinned=pinned, predicted_gap=is_gap)
+            ranked["Słowa + rerank"] = [x["id"] for x in items if x["fit"] >= GAP_THRESHOLD]
 
         if g["relevant"]:  # hit@3 i MRR liczymy tylko dla zapytań, na które jest odpowiedź
             for c in configs:
@@ -183,7 +312,11 @@ def main() -> None:
         per_query.append(row)
 
     n_pos = sum(1 for g in gold if g["relevant"])
-    print(f"\nZbiór testowy: {len(gold)} zapytań ({n_pos} z odpowiedzią, {len(gold) - n_pos} luk), korpus: {len(innovations)} innowacji\n")
+    synthetic = sum(1 for s in slugs if s in {i["slug"] for i in read_json(OUT / "innovations.json")})
+    corpus = {"source": "out/innovations.json" if offline else "baza (innovations)", "innovations": len(innovations),
+              "synthetic": synthetic}
+    print(f"\nZbiór testowy: {len(gold)} zapytań ({n_pos} z odpowiedzią, {len(gold) - n_pos} luk), "
+          f"korpus: {len(innovations)} innowacji ({synthetic} syntetycznych, {corpus['source']})\n")
     print(f"{'konfiguracja':<20} {'hit@3':>7} {'MRR@5':>7}")
     summary = {}
     for c in configs:
@@ -195,8 +328,12 @@ def main() -> None:
         acc = sum(gap_hits) / len(gap_hits)
         summary["gap_accuracy"] = round(acc, 3)
         print(f"\nTrafność wykrywania luk (rerank, próg {GAP_THRESHOLD}): {acc:.0%}")
-    write_json(OUT / "eval_results.json", {"summary": summary, "queries": per_query})
-    print("Szczegóły: out/eval_results.json")
+    summary["queries"] = {"total": len(gold), "with_answer": n_pos, "gaps": len(gold) - n_pos}
+    summary["corpus"] = corpus
+    summary["date"], summary["commit"] = date.today().isoformat(), git_commit()
+    name = "eval_results_offline.json" if offline else "eval_results.json"
+    write_json(OUT / name, {"summary": summary, "queries": per_query})
+    print(f"Szczegóły: out/{name}")
 
 
 if __name__ == "__main__":
