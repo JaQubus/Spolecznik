@@ -53,3 +53,6 @@ __pycache__/
 /playwright-report/
 # wynik import_powiaty.py (duży; do bazy idzie out/powiaty.sql albo import bezpośredni)
 data/out/powiaty.json
+/lighthouse-report/
+# Worktree agentów Claude Code (pełne kopie repo) — nigdy do commita
+/.claude/worktrees/
