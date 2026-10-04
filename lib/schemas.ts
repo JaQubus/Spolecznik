@@ -176,25 +176,102 @@ export type AssistantResponse = {
   similar: { kind: "innowacja" | "pomysl"; id: string; title: string; similarity: number; slug: string | null }[];
 };
 
-// /api/middleman: karta wdrożeniowa
+// /api/middleman: szkic planu wdrożenia pod nabór ROPS „Usługa Wrażliwa” (FEM 2021–2027, Działanie 6.23).
+// Sekcje odpowiadają częściom III–VI „Wniosku o grant” (zał. 2 do ogłoszenia naboru IS-430-3/25).
+
+/** Limity z ogłoszenia naboru: grant do 600 tys. zł, wdrożenie do 18 miesięcy, w tym przygotowanie do 6. */
+export const GRANT = { maxPln: 600_000, maxMonths: 18, maxPreparationMonths: 6 } as const;
+
+export const INSTITUTION_TYPES = ["jst", "ops", "pcpr", "cus", "ngo", "pes"] as const;
+export type InstitutionType = (typeof INSTITUTION_TYPES)[number];
+export const INSTITUTION_LABELS: Record<InstitutionType, string> = {
+  jst: "Urząd gminy lub starostwo",
+  ops: "Ośrodek pomocy społecznej (OPS, GOPS, MOPS)",
+  pcpr: "Powiatowe centrum pomocy rodzinie (PCPR)",
+  cus: "Centrum usług społecznych (CUS)",
+  ngo: "Organizacja pozarządowa",
+  pes: "Podmiot ekonomii społecznej",
+};
+
+export const BUDGET_RANGES = ["do_100", "100_300", "300_600", "nie_wiem"] as const;
+export type BudgetRange = (typeof BUDGET_RANGES)[number];
+export const BUDGET_LABELS: Record<BudgetRange, string> = {
+  do_100: "do 100 tys. zł",
+  "100_300": "100–300 tys. zł",
+  "300_600": "300–600 tys. zł",
+  nie_wiem: "Jeszcze nie wiem",
+};
+/** Górna granica widełek w złotych; „nie wiem” to limit grantu. */
+export const BUDGET_MAX_PLN: Record<BudgetRange, number> = {
+  do_100: 100_000, "100_300": 300_000, "300_600": GRANT.maxPln, nie_wiem: GRANT.maxPln,
+};
+
 export const MiddlemanRequest = z.object({
   innovationId: z.uuid(),
   gmina: z.string().min(1).max(100),
   teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
+  institutionType: z.enum(INSTITUTION_TYPES),
+  audienceSize: z.number().int().min(1).max(1_000_000).optional(), // przybliżona liczba odbiorców
+  staff: z.string().trim().max(300).optional(), // dostępna kadra
+  budget: z.enum(BUDGET_RANGES),
 });
-export const ImplementationCard = z.object({
-  goal: z.string(),
-  audience: z.string(), // odbiorcy w tej gminie, z liczbami z profilu BDL
+export type MiddlemanRequest = z.infer<typeof MiddlemanRequest>;
+
+/** Liczba z profilu gminy z podanym źródłem (lib/gminy.ts → gminaFacts). Model wskazuje ją po id, nie przepisuje. */
+export type GminaFact = { id: string; label: string; value: number; unit: string; source: string };
+
+export const PLAN_STAGES = ["przygotowanie", "wdrozenie"] as const;
+
+/** Odpowiedź modelu. Liczby o gminie tylko przez factId; liczby od modelu (osoby, koszty) są szacunkiem. */
+export const ImplementationPlan = z.object({
+  goal: z.string(), // cel usługi
+  description: z.string(), // III.2: na czym polega usługa i jak wykorzystuje innowację
   serviceForm: z.string(), // np. w ramach Centrum Usług Społecznych
-  steps: z.array(z.string()).min(3).max(10),
+  audience: z.object({
+    summary: z.string(), // kto skorzysta w tej gminie, bez liczb
+    facts: z.array(z.object({ factId: z.string(), why: z.string() })).max(6),
+  }),
+  peopleSupported: z.object({ women: z.number().int().min(0), men: z.number().int().min(0), basis: z.string() }), // III.7
+  recruitment: z.string(), // III.6
+  steps: z.array(z.object({
+    stage: z.enum(PLAN_STAGES),
+    title: z.string(),
+    details: z.string(),
+    monthFrom: z.number().int(),
+    monthTo: z.number().int(),
+    costPln: z.number().min(0),
+    costBasis: z.string(), // sposób kalkulacji, np. „12 h × 100 zł”
+  })).min(3).max(10),
   staffAndResources: z.string(),
   costEstimate: z.object({ minPln: z.number(), maxPln: z.number(), basis: z.string() }), // zawsze szacunek
   partners: z.array(z.object({ id: z.string(), role: z.string() })).max(5),
-  risks: z.array(z.string()).max(6),
+  partnerTypes: z.array(z.string()).max(5), // gdy w bazie nie ma partnerów: typy, bez nazw
+  risks: z.array(z.object({ risk: z.string(), mitigation: z.string() })).max(6),
   successIndicators: z.array(z.string()).max(6),
+  horizontalPrinciples: z.string(), // IV: równość szans, dostępność, DNSH
+  sustainability: z.string(), // V: utrzymanie efektów po grancie
+  deinstitutionalization: z.string(), // VI
   assumptions: z.array(z.string()), // jawnie oznaczone założenia
 });
-export type ImplementationCard = z.infer<typeof ImplementationCard>;
+export type ImplementationPlan = z.infer<typeof ImplementationPlan>;
+
+/** Plan po sprawdzeniu na serwerze (lib/implementation-plan.ts): fakty z wartościami, partnerzy z nazwami, suma i uwagi. */
+export type CheckedPlan = Omit<ImplementationPlan, "audience" | "partners"> & {
+  audience: { summary: string; facts: (GminaFact & { why: string })[] };
+  partners: { id: string; name: string; role: string }[];
+  totalPln: number; // suma kosztów działań
+  warnings: string[]; // niezgodności z limitami naboru, wykryte przez serwer
+};
+
+/** Dokument zwracany przez /api/middleman i zapisywany w implementation_plans. */
+export type PlanDocument = {
+  id: string | null; // null, gdy zapis się nie udał
+  createdAt: string;
+  innovation: { id: string; title: string };
+  gmina: { teryt: string; nazwa: string; label: string };
+  input: Omit<MiddlemanRequest, "innovationId" | "gmina" | "teryt">;
+  plan: CheckedPlan;
+};
 
 // /api/apply: szkic wniosku do aktywnego naboru
 export const ApplyRequest = z.object({ ideaId: z.uuid(), callId: z.uuid() });

@@ -80,7 +80,7 @@ export async function groqChat({ model, messages, temperature = 0.5, maxTokens =
   }
 }
 
-type ObjectOptions = { model: string; system: string; prompt: string; temperature?: number };
+type ObjectOptions = { model: string; system: string; prompt: string; temperature?: number; maxTokens?: number };
 
 /**
  * Obiekt strukturalny: tryb JSON + JSON Schema w prompcie + walidacja zod.
@@ -88,7 +88,7 @@ type ObjectOptions = { model: string; system: string; prompt: string; temperatur
  */
 export async function groqObject<T extends z.ZodType>(
   schema: T,
-  { model, system, prompt, temperature }: ObjectOptions,
+  { model, system, prompt, temperature, maxTokens }: ObjectOptions,
 ): Promise<z.output<T>> {
   const messages: ChatMessage[] = [
     {
@@ -102,7 +102,7 @@ ${JSON.stringify(z.toJSONSchema(schema))}`,
   ];
 
   for (let attempt = 0; ; attempt++) {
-    const raw = await groqChat({ model, messages, temperature, json: true });
+    const raw = await groqChat({ model, messages, temperature, maxTokens, json: true });
     let problem: string;
     try {
       const parsed = schema.safeParse(JSON.parse(raw));
