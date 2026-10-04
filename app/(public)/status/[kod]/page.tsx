@@ -126,7 +126,11 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
   }
 
   const closed = report.status === "zamkniete";
-  const withExpert = report.status === "ekspert" || report.status === "odpowiedz";
+  // Etykieta zależy od tego, co już się wydarzyło: ekspert przypisany, odpowiedź w rozmowie albo jeszcze nic.
+  const conversationLabel =
+    report.status === "ekspert" ? "Przejdź do rozmowy z ekspertem"
+      : report.status === "odpowiedz" ? "Przejdź do rozmowy"
+        : `Napisz do ROPS w sprawie ${report.kind === "pomysl" ? "pomysłu" : "zgłoszenia"}`;
 
   return (
     <section className="space-y-10">
@@ -169,10 +173,10 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         </div>
       )}
 
-      {report.kind === "potrzeba" && !closed && (
+      {!closed && (
         <Button asChild variant="outline">
           <Link href={`/zapytaj?potrzeba=${code}`}>
-            {withExpert ? "Przejdź do rozmowy z ekspertem" : "Napisz do ROPS w sprawie zgłoszenia"}
+            {conversationLabel}
           </Link>
         </Button>
       )}

@@ -6,7 +6,7 @@ import { Alert } from "@/components/ui/alert";
 import { rememberedKey } from "@/lib/need-access";
 import { STATUS_CODE } from "@/lib/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
-import { canOpen, expertName, needThread, rememberedThreads, type MyNeed, type NeedThread } from "@/lib/threads";
+import { canOpen, expertName, rememberedThreads, reportThread, type MyNeed, type ReportThread } from "@/lib/threads";
 import { Conversation } from "./conversation";
 
 export const metadata = { title: "Zapytaj eksperta" };
@@ -22,21 +22,20 @@ export default async function Page(props: PageProps<"/zapytaj">) {
 
   if (!isSupabaseConfigured()) return <NoDatabase />;
 
-  let thread: NeedThread | null = null;
+  let thread: ReportThread | null = null;
   let mine: MyNeed[] = [];
   let key: string | null = null;
   let chosenName: string | null = null;
   try {
     if (STATUS_CODE.test(raw)) {
-      const found = await needThread({ code: raw });
+      const found = await reportThread({ code: raw });
       // Brak zgłoszenia i brak klucza wyglądają tak samo — po stronie nie da się sprawdzać, które kody istnieją.
       thread = found && (await canOpen(found)) ? found : null;
       key = thread ? await rememberedKey(thread.code) : null;
       // Ekspert z wyników dopasowania — tylko podpowiedź, dopóki ROPS nie przypisze kogoś w Panelu.
       if (thread && !thread.expert && askedExpert) chosenName = await expertName(askedExpert);
     }
-    // Pomysły nie mają rozmowy — ich listę pokazuje /status.
-    if (!thread) mine = (await rememberedThreads()).filter((n) => n.kind === "potrzeba");
+    if (!thread) mine = await rememberedThreads();
   } catch (e) {
     console.error("[zapytaj]", e);
     return (
@@ -52,22 +51,26 @@ export default async function Page(props: PageProps<"/zapytaj">) {
   if (!thread || !key) return <MyConversations mine={mine} askedCode={raw} badLink={badLink} />;
 
   const expert = thread.expert?.name ?? chosenName;
+  const idea = thread.kind === "pomysl";
+  const what = idea ? "pomysłem" : "zgłoszeniem";
 
   return (
     <section className="space-y-8">
       <div className="space-y-3">
         <h1 className="text-3xl font-bold">
-          Rozmowa o zgłoszeniu <span className="font-mono tracking-wider whitespace-nowrap">{thread.code}</span>
+          Rozmowa o {idea ? "pomyśle" : "zgłoszeniu"} <span className="font-mono tracking-wider whitespace-nowrap">{thread.code}</span>
         </h1>
         <p className="max-w-[68ch] text-lg">
           {thread.expert
-            ? <>Twoim zgłoszeniem zajmuje się <strong>{thread.expert.name}</strong>. W rozmowie jest też pracownik ROPS.</>
+            ? <>Twoim {what} zajmuje się <strong>{thread.expert.name}</strong>. W rozmowie jest też pracownik ROPS.</>
             : chosenName
               ? <>Piszesz do: <strong>{chosenName}</strong>. Wiadomość najpierw zobaczy pracownik ROPS i zaprosi eksperta do rozmowy.</>
-              : <>Napisz, o co chcesz zapytać. Pracownik ROPS odpowie albo zaprosi do rozmowy eksperta.</>}
+              : idea
+                ? <>Pracownik ROPS przeczyta pomysł i odpowie tutaj. Możesz dopisać szczegóły albo zapytać, co dalej.</>
+                : <>Napisz, o co chcesz zapytać. Pracownik ROPS odpowie albo zaprosi do rozmowy eksperta.</>}
         </p>
         <p>
-          <Link href={`/status/${thread.code}`} className={linkClass}>Zobacz status zgłoszenia</Link>
+          <Link href={`/status/${thread.code}`} className={linkClass}>Zobacz status {idea ? "pomysłu" : "zgłoszenia"}</Link>
         </p>
       </div>
 
@@ -79,7 +82,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
         initial={{ threadId: thread.threadId, messages: thread.messages }}
       />
 
-      <PrivateLink code={thread.code} accessKey={key} />
+      <PrivateLink code={thread.code} accessKey={key} kind={thread.kind} />
     </section>
   );
 }
@@ -94,7 +97,7 @@ function MyConversations({ mine, askedCode, badLink }: { mine: MyNeed[]; askedCo
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Zapytaj eksperta</h1>
         <p className="text-lg">
-          Rozmowa z ekspertem i pracownikiem ROPS jest przypięta do Twojego zgłoszenia i widzisz ją tylko Ty.
+          Rozmowa z ekspertem i pracownikiem ROPS jest przypięta do Twojego zgłoszenia albo pomysłu i widzisz ją tylko Ty.
         </p>
       </div>
 

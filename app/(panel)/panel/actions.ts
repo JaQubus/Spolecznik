@@ -11,12 +11,13 @@ import { anonymize } from "@/lib/pii";
 import { NEED_STATUSES } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { needThread, postNeedMessage } from "@/lib/threads";
+import { assignThreadExpert, expertName, postReportMessage, reportThread } from "@/lib/threads";
 
 export type ActionResult = { ok: boolean; message: string } | null;
 
 const SAVE_FAILED: ActionResult = { ok: false, message: "Nie udało się zapisać. Spróbuj ponownie." };
 const NOT_FOUND: ActionResult = { ok: false, message: "Nie znaleziono zgłoszenia. Odśwież stronę." };
+const IDEA_NOT_FOUND: ActionResult = { ok: false, message: "Nie znaleziono pomysłu. Odśwież stronę." };
 
 /** Zapis zmiany statusu (albo samej wiadomości, gdy status bez zmian) + ślad w audit_log + powiadomienie autora, jeśli ma konto. */
 async function setStatus(
@@ -136,26 +137,32 @@ export async function assignExpert(_prev: ActionResult, formData: FormData): Pro
 }
 
 const ReplyInput = z.object({
-  needId: z.uuid(),
+  kind: z.enum(["potrzeba", "pomysl"]),
+  id: z.uuid(),
   as: z.enum(["rops", "ekspert"]),
   body: z.string().trim().min(2).max(2000),
 });
 
 /**
- * Odpowiedź w rozmowie o zgłoszeniu. Eksperci są na razie tylko w indeksie (bez kont),
+ * Odpowiedź w rozmowie o zgłoszeniu albo pomyśle. Eksperci są na razie tylko w indeksie (bez kont),
  * więc w demo admin może napisać w imieniu eksperta wątku — podpis to jego nazwa.
  */
 export async function replyInThread(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const user = await requireAdmin();
-  const parsed = ReplyInput.safeParse({ needId: formData.get("needId"), as: formData.get("as"), body: formData.get("body") });
+  const parsed = ReplyInput.safeParse({
+    kind: formData.get("kind"),
+    id: formData.get("id"),
+    as: formData.get("as"),
+    body: formData.get("body"),
+  });
   if (!parsed.success) return { ok: false, message: "Wpisz wiadomość (od 2 do 2000 znaków)." };
-  const { needId, as, body } = parsed.data;
+  const { kind, id, as, body } = parsed.data;
 
   try {
-    const thread = await needThread({ needId });
-    if (!thread) return NOT_FOUND;
+    const thread = await reportThread({ kind, id });
+    if (!thread) return kind === "pomysl" ? IDEA_NOT_FOUND : NOT_FOUND;
     if (as === "ekspert" && !thread.expert) return { ok: false, message: "Ta rozmowa nie ma eksperta. Najpierw go przypisz." };
-    await postNeedMessage(thread, {
+    await postReportMessage(thread, {
       role: as,
       name: as === "ekspert" ? thread.expert!.name : undefined,
       // Bez anonymize(): odpowiedź ROPS może celowo podawać telefon albo adres instytucji.
@@ -167,7 +174,8 @@ export async function replyInThread(_prev: ActionResult, formData: FormData): Pr
     return { ok: false, message: "Nie udało się wysłać. Spróbuj ponownie." };
   }
   refresh();
-  return { ok: true, message: "Wysłano. Zgłaszający zobaczy wiadomość po wpisaniu kodu." };
+  const who = kind === "pomysl" ? "Autor pomysłu" : "Zgłaszający";
+  return { ok: true, message: `Wysłano. ${who} zobaczy wiadomość w rozmowie.` };
 }
 
 const NeedIdInput = z.object({ needId: z.uuid() });
@@ -211,7 +219,7 @@ export async function updateIdeaStatus(_prev: ActionResult, formData: FormData):
     const supabase = createAdminClient();
     const { data: before, error } = await supabase.from("ideas").select("status").eq("id", ideaId).maybeSingle();
     if (error) throw error;
-    if (!before) return { ok: false, message: "Nie znaleziono pomysłu. Odśwież stronę." };
+    if (!before) return IDEA_NOT_FOUND;
     if (before.status === status) return { ok: false, message: "Wybierz inny status." };
     const { error: updateError } = await supabase.from("ideas").update({ status }).eq("id", ideaId);
     if (updateError) throw updateError;
@@ -222,6 +230,44 @@ export async function updateIdeaStatus(_prev: ActionResult, formData: FormData):
   }
   refresh();
   return { ok: true, message: `Zapisano status: ${NEED_STATUS_LABELS[status]}.` };
+}
+
+const IdeaAssignInput = z.object({ ideaId: z.uuid(), expertId: z.uuid() });
+
+/**
+ * Ekspert do pomysłu. Pomysł nie ma kolumny z ekspertem, więc zapisujemy go w wątku rozmowy (threads.expert_id):
+ * od teraz ROPS może pisać w jego imieniu, a autor widzi, kto się zajmuje pomysłem.
+ */
+export async function assignIdeaExpert(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = IdeaAssignInput.safeParse({ ideaId: formData.get("ideaId"), expertId: formData.get("expertId") });
+  if (!parsed.success) return { ok: false, message: "Wybierz eksperta." };
+  const { ideaId, expertId } = parsed.data;
+
+  let name: string | null;
+  try {
+    const thread = await reportThread({ kind: "pomysl", id: ideaId });
+    if (!thread) return IDEA_NOT_FOUND;
+    name = await expertName(expertId);
+    if (!name) return { ok: false, message: "Nie znaleziono tego eksperta. Odśwież stronę." };
+    await assignThreadExpert(thread, expertId);
+    if (thread.status !== "ekspert") {
+      const { error } = await createAdminClient().from("ideas").update({ status: "ekspert" }).eq("id", ideaId);
+      if (error) throw error;
+    }
+    await logChange(user.id, "idea.assign_expert", "idea", ideaId, {
+      from: thread.status, to: "ekspert", expertId, note: `Zajmie się tym: ${name}`,
+    });
+    if (thread.authorId) {
+      await notify({ user_id: thread.authorId, kind: "zmiana_statusu", payload: { ideaId, code: thread.code, status: "ekspert" } })
+        .catch((e) => console.error("[panel] powiadomienie:", e));
+    }
+  } catch (e) {
+    console.error("[panel] ekspert pomysłu:", e);
+    return SAVE_FAILED;
+  }
+  refresh();
+  return { ok: true, message: `Przypisano eksperta: ${name}.` };
 }
 
 /**

@@ -62,6 +62,7 @@ const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n - 1).trimEn
 function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "text" | "href"> {
   const p = r.payload;
   const needId = str(p.needId);
+  const ideaId = str(p.ideaId);
   const code = str(p.statusCode) ?? str(p.code) ?? (needId ? codes.get(needId) ?? null : null);
   const forAdmin = r.role === "admin";
   switch (r.kind) {
@@ -71,10 +72,15 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
         href: needId ? `/panel/zgloszenia/${needId}` : "/panel",
       };
     case "nowy_pomysl":
-      return { text: `Nowy pomysł${code ? ` ${code}` : ""}${str(p.title) ? `: ${short(str(p.title)!)}` : ""}`, href: "/panel/pomysly" };
+      return {
+        text: `Nowy pomysł${code ? ` ${code}` : ""}${str(p.title) ? `: ${short(str(p.title)!)}` : ""}`,
+        href: ideaId ? `/panel/pomysly/${ideaId}` : "/panel/pomysly",
+      };
     case "nowa_wiadomosc":
       return forAdmin
-        ? { text: `Zgłaszający napisał w sprawie ${code ?? "zgłoszenia"}`, href: needId ? `/panel/zgloszenia/${needId}#rozmowa` : "/panel" }
+        ? ideaId
+          ? { text: `Autor pomysłu napisał w sprawie ${code ?? "pomysłu"}`, href: `/panel/pomysly/${ideaId}#rozmowa` }
+          : { text: `Zgłaszający napisał w sprawie ${code ?? "zgłoszenia"}`, href: needId ? `/panel/zgloszenia/${needId}#rozmowa` : "/panel" }
         // Strona statusu, nie /zapytaj: rozmowa wymaga klucza z przeglądarki, z której wysłano zgłoszenie,
         // a status działa na każdym urządzeniu po samym kodzie i ma link do rozmowy.
         : { text: `Nowa odpowiedź w sprawie ${code ?? "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };

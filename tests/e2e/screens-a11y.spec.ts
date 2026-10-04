@@ -82,6 +82,25 @@ test.describe("ekrany publiczne", () => {
 test.describe("panel ROPS (konto testowe admina)", () => {
   screens(PANEL, loginAsAdmin);
 
+  // #58: strona pomysłu z rozmową. Id bierzemy z listy, bo pomysły w bazie demo się zmieniają.
+  test("szczegóły pomysłu: axe, wysoki kontrast, 320 px i nagłówki", async ({ page }) => {
+    await loginAsAdmin(page);
+    await page.goto("/panel/pomysly");
+    const first = page.locator("main ol h2 a").first();
+    test.skip((await first.count()) === 0, "W bazie nie ma otwartych pomysłów");
+    const url = (await first.getAttribute("href"))!;
+    await page.goto(url);
+    expect(await axe(page)).toEqual([]);
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.reload();
+    expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
+    await checkHeadings(page, url);
+    await page.addInitScript(() => localStorage.setItem("a11y-contrast", "1"));
+    await page.goto(url);
+    await expect(page.locator("html")).toHaveClass(/a11y-contrast/);
+    expect(await axe(page)).toEqual([]);
+  });
+
   test("otwarty dzwonek powiadomień", async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto("/panel");

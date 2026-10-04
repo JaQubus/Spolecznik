@@ -1,22 +1,22 @@
 import { anonymize } from "@/lib/pii";
 import { rateLimit } from "@/lib/rate-limit";
 import { STATUS_CODE, ThreadPostRequest } from "@/lib/schemas";
-import { canOpen, expertName, needThread, postNeedMessage, type NeedThread } from "@/lib/threads";
+import { canOpen, expertName, postReportMessage, reportThread, type ReportThread } from "@/lib/threads";
 
 const NOT_FOUND = "Nie znaleźliśmy zgłoszenia o tym kodzie";
 const PRIVATE = "Ta rozmowa jest prywatna. Otwórz ją na urządzeniu, z którego wysłano zgłoszenie, albo prywatnym linkiem";
 
 /** Tylko to, co widzi autor: bez id zgłoszenia, id autora i skrótu klucza. */
-function view(t: NeedThread) {
+function view(t: ReportThread) {
   return { threadId: t.threadId, status: t.status, expert: t.expert, messages: t.messages };
 }
 
 /**
- * Wątek tylko dla przeglądarki z kluczem (ciasteczko httpOnly, lib/need-access.ts).
+ * Wątek problemu albo pomysłu, tylko dla przeglądarki z kluczem (ciasteczko httpOnly, lib/need-access.ts).
  * Brak zgłoszenia i brak klucza dają tę samą odpowiedź, żeby po odpowiedzi nie dało się sprawdzać, które kody istnieją.
  */
-async function authorized(code: string): Promise<NeedThread | null> {
-  const thread = await needThread({ code });
+async function authorized(code: string): Promise<ReportThread | null> {
+  const thread = await reportThread({ code });
   return thread && (await canOpen(thread)) ? thread : null;
 }
 
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   }
 }
 
-/** Wiadomość od autora zgłoszenia. Dane osobowe (telefony, e-maile, PESEL) usuwamy przed zapisem. */
+/** Wiadomość od autora zgłoszenia albo pomysłu. Dane osobowe (telefony, e-maile, PESEL) usuwamy przed zapisem. */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "rozmowy", 10);
   if (limited) return limited;
@@ -49,13 +49,15 @@ export async function POST(request: Request) {
     const thread = await authorized(code);
     if (!thread) return Response.json({ error: `${NOT_FOUND}. ${PRIVATE}` }, { status: 404 });
     if (thread.status === "zamkniete") {
-      return Response.json({ error: "To zgłoszenie jest zamknięte. Jeśli problem wrócił, opisz go jeszcze raz" }, { status: 409 });
+      const again = thread.kind === "pomysl" ? "Jeśli chcesz wrócić do pomysłu, zgłoś go jeszcze raz" : "Jeśli problem wrócił, opisz go jeszcze raz";
+      return Response.json({ error: `To zgłoszenie jest zamknięte. ${again}` }, { status: 409 });
     }
     // Ekspert z linku musi istnieć w indeksie; przypisanego w Panelu autor nie zmienia.
     const chosen = expertId && !thread.expert && (await expertName(expertId)) ? expertId : null;
     const clean = anonymize(body);
-    await postNeedMessage(thread, { role: "autor", body: clean.text, expertId: chosen });
-    const updated = await needThread({ code });
+    const name = thread.kind === "pomysl" ? "Autor pomysłu" : undefined;
+    await postReportMessage(thread, { role: "autor", name, body: clean.text, expertId: chosen });
+    const updated = await reportThread({ code });
     return Response.json({ ...view(updated!), removedPersonalData: clean.found });
   } catch (e) {
     console.error("[rozmowy]", e);

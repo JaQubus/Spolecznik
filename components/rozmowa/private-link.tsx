@@ -16,8 +16,8 @@ const COPY = {
     hint: "Zapisz go, żeby wrócić do rozmowy z innego telefonu albo komputera. Nie pokazuj go innym — kto ma link, może czytać rozmowę.",
   },
   pomysl: {
-    label: "Prywatny link do pomysłu",
-    hint: "Zapisz go, żeby mieć pomysł na liście swoich zgłoszeń także na innym telefonie albo komputerze. Nie pokazuj go innym.",
+    label: "Prywatny link do pomysłu i rozmowy",
+    hint: "Zapisz go, żeby wrócić do pomysłu i rozmowy z ROPS z innego telefonu albo komputera. Nie pokazuj go innym — kto ma link, może czytać rozmowę.",
   },
 };
 
