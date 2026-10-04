@@ -7,7 +7,7 @@ import { buildOpenApi } from "../../lib/api/openapi.ts";
 
 /** Pola, które nie mogą trafić do publicznego API (dane osobowe, treści zgłoszeń, klucze). */
 const SENSITIVE = ["raw_text", "rawText", "contact_email", "contactEmail", "author_id", "authorId", "tester_id", "testerId",
-  "tester_org", "testerOrg", "feedback", "suggestions", "access_key", "accessKey", "secret", "published"];
+  "tester_org", "testerOrg", "feedback", "suggestions", "access_key", "accessKey", "secret", "published", "gmina", "planned_for"];
 
 /** Nazwy wszystkich właściwości w schematach JSON (rekurencyjnie). */
 function propertyNames(node: unknown, out = new Set<string>()): Set<string> {
@@ -58,15 +58,22 @@ describe("mapowanie wierszy", () => {
   test("odpowiedź ma tylko pola z kontraktu i przechodzi jego walidację", () => {
     const withExtra = { ...ROW, raw_text: "tajne", published: false, author_id: "x" };
     const testedIn = summarizeTests(
-      [{ teryt: "1201011", status: "zakonczony" }, { teryt: "1201011", status: "planowany" }, { teryt: null, status: "planowany" }],
-      new Map([["1201011", { nazwa: "Bochnia", powiat: "bocheński" }]]),
+      [{ teryt: "1201011", status: "zakonczony" }, { teryt: "1201022", status: "planowany" }, { teryt: null, status: "planowany" }],
+      new Map([["1201", "bocheński"]]),
     );
     const out = toInnovation(withExtra, testedIn, "https://spolecznik.example");
     assert.deepEqual(Object.keys(out).sort(), Object.keys(Innovation.shape).sort());
     Innovation.parse(out);
     assert.equal(out.avgRating, 4.3);
     assert.deepEqual(out.targetGroups, []);
-    assert.deepEqual(out.testedIn, [{ teryt: "1201011", gmina: "Bochnia", powiat: "bocheński", planned: 1, completed: 1 }]);
+    // Dwie gminy powiatu bocheńskiego łączą się w jeden wiersz: na zewnątrz nie ma kodu gminy.
+    assert.deepEqual(out.testedIn, [{ teryt: "1201", powiat: "bocheński", planned: 1, completed: 1 }]);
+  });
+
+  test("testy bez znanego powiatu dostają null zamiast nazwy", () => {
+    assert.deepEqual(summarizeTests([{ teryt: "1299011", status: "planowany" }], new Map()), [
+      { teryt: "1299", powiat: null, planned: 1, completed: 0 },
+    ]);
   });
 
   test("link prowadzi do karty z właściwego korpusu", () => {
@@ -74,9 +81,9 @@ describe("mapowanie wierszy", () => {
     assert.equal(toSummary({ ...ROW, corpus: "pipeline", slug: null }, "https://s.example").url, `https://s.example/biblioteka/${ROW.id}`);
   });
 
-  test("teryt przyjmuje gminę i powiat z Małopolski", () => {
-    for (const ok of ["1201011", "1261"]) assert.ok(InnovationsQuery.safeParse({ teryt: ok }).success, ok);
-    for (const bad of ["0201011", "12010", "abc"]) assert.ok(!InnovationsQuery.safeParse({ teryt: bad }).success, bad);
+  test("teryt przyjmuje tylko powiat z Małopolski", () => {
+    for (const ok of ["1201", "1261"]) assert.ok(InnovationsQuery.safeParse({ teryt: ok }).success, ok);
+    for (const bad of ["1201011", "0201", "12010", "abc"]) assert.ok(!InnovationsQuery.safeParse({ teryt: bad }).success, bad);
   });
 
   test("limit ma domyślną wartość i górną granicę", () => {

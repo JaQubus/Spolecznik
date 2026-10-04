@@ -56,7 +56,7 @@ export default function Page() {
         <h1 className="text-4xl font-bold">API dla integracji</h1>
         <p className="text-xl">
           Katalog innowacji Społecznika jest otwarty do odczytu dla gmin, organizacji i systemów Hubu, np. bazy grantowej.
-          Odpowiedzi są w JSON, a gminy i powiaty mają kody TERYT.
+          Odpowiedzi są w JSON, a powiaty mają kody TERYT.
         </p>
         <p className="text-lg">
           <a href="/api/v1/openapi.json" className={`${link} inline-flex items-center gap-2`}>
@@ -118,10 +118,14 @@ export default function Page() {
       <section aria-labelledby="teryt" className="space-y-4">
         <h2 id="teryt" className="text-3xl font-bold">Kody TERYT</h2>
         <p className="text-lg">
-          TERYT to wspólny klucz z innymi systemami. Gmina ma 7 cyfr, np. <code className="font-mono">1201011</code> (Bochnia,
-          gmina miejska). Pierwsze 4 cyfry to powiat, np. <code className="font-mono">1201</code> (bocheński). Ostatnia cyfra
-          mówi o typie gminy: 1 miejska, 2 wiejska, 3 miejsko-wiejska. Filtr <code className="font-mono">teryt</code> przyjmuje
-          oba warianty.
+          TERYT to wspólny klucz z innymi systemami. API posługuje się kodem powiatu: 4 cyfry, np.{" "}
+          <code className="font-mono">1201</code> (bocheński) albo <code className="font-mono">1261</code> (Kraków). To pierwsze 4
+          cyfry 7-cyfrowego kodu gminy, więc dane z innych systemów łatwo do niego sprowadzić.
+        </p>
+        <p className="text-lg">
+          Gmin, w których testowano innowację, nie podajemy. Razem z nazwą innowacji wskazywałyby konkretną instytucję.
+          Dlatego filtr <code className="font-mono">teryt</code> i pole <code className="font-mono">testedIn</code> działają na
+          poziomie powiatu.
         </p>
       </section>
 

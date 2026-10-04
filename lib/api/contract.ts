@@ -20,9 +20,9 @@ export const InnovationsQuery = z.object({
     .meta({ description: "Grupa docelowa z Biblioteki Innowacji." }),
   teryt: z
     .string()
-    .regex(/^12\d{2}(\d{3})?$/, "Podaj kod TERYT gminy (7 cyfr) albo powiatu (4 cyfry) z Małopolski")
+    .regex(/^12\d{2}$/, "Podaj kod TERYT powiatu z Małopolski: 4 cyfry, np. 1201")
     .optional()
-    .meta({ description: "Innowacje testowane w gminie (7 cyfr, np. 1201011) albo w powiecie (4 cyfry, np. 1201).", examples: ["1201"] }),
+    .meta({ description: "Innowacje testowane w powiecie (kod TERYT, 4 cyfry). Gmin nie podajemy: wskazywałyby instytucję.", examples: ["1201"] }),
   limit: z.coerce
     .number("Podaj liczbę od 1 do 100")
     .int("Podaj liczbę od 1 do 100")
@@ -63,9 +63,8 @@ export type InnovationSummary = z.infer<typeof InnovationSummary>;
 
 export const TestedIn = z
   .object({
-    teryt: z.string().meta({ description: "Kod TERYT gminy (7 cyfr).", examples: ["1201011"] }),
-    gmina: z.string().nullable(),
-    powiat: z.string().nullable(),
+    teryt: z.string().meta({ description: "Kod TERYT powiatu (4 cyfry).", examples: ["1201"] }),
+    powiat: z.string().nullable().meta({ examples: ["bocheński"] }),
     planned: z.int().meta({ description: "Testy zaplanowane." }),
     completed: z.int().meta({ description: "Testy zakończone." }),
   })
@@ -82,7 +81,7 @@ export const Innovation = InnovationSummary.extend({
   pdfUrl: z.string().nullable(),
   videoUrl: z.string().nullable(),
   licenseUrl: z.string().nullable(),
-  testedIn: z.array(TestedIn).meta({ description: "Gminy, w których innowację testowano, z kodami TERYT." }),
+  testedIn: z.array(TestedIn).meta({ description: "Powiaty, w których innowację testowano, z kodami TERYT." }),
 }).meta({ id: "Innovation" });
 export type Innovation = z.infer<typeof Innovation>;
 
@@ -208,20 +207,24 @@ export function toInnovation(row: InnovationDetailRow, testedIn: Innovation["tes
   };
 }
 
-/** Testy (teryt, status) → liczby na gminę. Treść ocen i dane testujących zostają w bazie. */
+/**
+ * Testy (teryt gminy, status) → liczby na powiat (pierwsze 4 cyfry kodu). Gmina z innowacją wskazywałaby
+ * instytucję (migracja 0022_tests_private), więc nie wychodzi z serwera — tak samo jak treść ocen i dane testujących.
+ */
 export function summarizeTests(
   tests: { teryt: string | null; status: string }[],
-  gminy: ReadonlyMap<string, { nazwa: string; powiat: string }>,
+  powiaty: ReadonlyMap<string, string>,
 ): Innovation["testedIn"] {
-  const byTeryt = new Map<string, { planned: number; completed: number }>();
+  const byPowiat = new Map<string, { planned: number; completed: number }>();
   for (const t of tests) {
     if (!t.teryt) continue;
-    const c = byTeryt.get(t.teryt) ?? { planned: 0, completed: 0 };
+    const teryt = t.teryt.slice(0, 4);
+    const c = byPowiat.get(teryt) ?? { planned: 0, completed: 0 };
     if (t.status === "zakonczony") c.completed++;
     else c.planned++;
-    byTeryt.set(t.teryt, c);
+    byPowiat.set(teryt, c);
   }
-  return [...byTeryt]
-    .map(([teryt, c]) => ({ teryt, gmina: gminy.get(teryt)?.nazwa ?? null, powiat: gminy.get(teryt)?.powiat ?? null, ...c }))
+  return [...byPowiat]
+    .map(([teryt, c]) => ({ teryt, powiat: powiaty.get(teryt) ?? null, ...c }))
     .sort((a, b) => b.completed + b.planned - (a.completed + a.planned) || a.teryt.localeCompare(b.teryt));
 }

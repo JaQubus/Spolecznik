@@ -82,7 +82,7 @@ export function buildOpenApi() {
       summary: "Katalog innowacji społecznych Małopolski do odczytu i webhooki dla systemów Hubu.",
       description:
         "Publiczne API Społecznika (Małopolski Hub Innowacji Społecznych). Bez klucza i bez danych osobowych: " +
-        "zwraca tylko opublikowane innowacje. Gminy i powiaty identyfikuje kod TERYT. " +
+        "zwraca tylko opublikowane innowacje. Powiaty identyfikuje kod TERYT. " +
         `Limit: ${API_LIMIT_PER_MINUTE} zapytań na minutę z jednego adresu IP. Opis po polsku: /api-docs.`,
       contact: { name: "Dział Innowacji Społecznych ROPS w Krakowie", url: "https://rops.krakow.pl" },
     },
@@ -112,7 +112,7 @@ export function buildOpenApi() {
         get: {
           operationId: "getInnovation",
           summary: "Jedna innowacja",
-          description: "Pełny opis innowacji i gminy (TERYT), w których ją testowano.",
+          description: "Pełny opis innowacji i powiaty (TERYT), w których ją testowano.",
           tags: ["Innowacje"],
           parameters: [
             { name: "slug", in: "path", required: true, description: "Slug z pola slug albo id (UUID).", schema: { type: "string" } },

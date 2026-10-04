@@ -563,8 +563,8 @@ Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tok
 **Integracje:** REST API ze specyfikacją OpenAPI, webhooki i kody TERYT jako wspólny klucz. To przygotowuje grunt pod bazę grantową i inne systemy Hubu.
 
 - **Publiczne API v1** (opis po polsku na stronie `/api-docs`, specyfikacja OpenAPI 3.1: `/api/v1/openapi.json`):
-  - `GET /api/v1/innowacje`: katalog opublikowanych innowacji z filtrami `obszar`, `grupa`, `teryt` (gmina: 7 cyfr, powiat: 4) i stronicowaniem `limit` / `offset`;
-  - `GET /api/v1/innowacje/{slug}`: pełny opis i gminy (TERYT), w których innowację testowano.
+  - `GET /api/v1/innowacje`: katalog opublikowanych innowacji z filtrami `obszar`, `grupa`, `teryt` (kod powiatu, 4 cyfry) i stronicowaniem `limit` / `offset`;
+  - `GET /api/v1/innowacje/{slug}`: pełny opis i powiaty (TERYT), w których innowację testowano. Gmin nie podajemy, bo z innowacją wskazywałyby instytucję (0022_tests_private); `tests` czytamy kluczem service_role i zwracamy tylko liczby na powiat.
   - Bez klucza i bez danych osobowych. Limit 60 zapytań na minutę z IP, pamięć podręczna 5 minut, CORS dla wszystkich.
   - Specyfikację generujemy ze schematów zod w [`lib/api/contract.ts`](lib/api/contract.ts), więc nie rozjeżdża się z kodem. Sprawdzenie: `npx @redocly/cli lint http://localhost:3000/api/v1/openapi.json`.
 - **Webhooki** ([`0023_webhooks.sql`](supabase/migrations/0023_webhooks.sql)): baza sama wysyła POST z JSON przez `pg_net`.
