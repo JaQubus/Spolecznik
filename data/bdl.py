@@ -41,6 +41,13 @@ EXTRA_VARS = {
 # 4/5 to miasto i obszar wiejski w gminie miejsko-wiejskiej, 8/9 dzielnice/delegatury — pomijamy.
 GMINA_KINDS = {"1", "2", "3"}
 
+# Podziały gmin w ostatnich 10 latach: nowa gmina (TERYT) → gmina, z której ją wydzielono.
+# Gmina-matka ma pod tym samym ID liczbę ludności sprzed podziału, więc „zmiana w 10 lat” pokazałaby
+# odejście mieszkańców nowej gminy jako wyludnianie. Dla obu gmin nie liczymy zmiany (brak danych).
+SPLITS = {
+    "1207132": "1207052",  # Szczawa wydzielona z Kamienicy (pow. limanowski), 1.01.2025
+}
+
 
 def bdl_to_teryt(unit_id: str) -> str:
     """011212001011 → 1201011 (woj. + powiat + gmina + rodzaj)."""
@@ -188,6 +195,11 @@ def main() -> None:
             "zmiana_ludnosci_10l": round(100 * (pop - pop_base) / pop_base, 1) if pop and pop_base else None,
             "wskazniki": {"rok": year},
         })
+
+    split_donors = set(SPLITS.values())
+    for g in gminy:
+        if g["teryt"] in split_donors:
+            g["zmiana_ludnosci_10l"] = None
 
     extra = fetch_extra(bdl)
     for g in gminy:
