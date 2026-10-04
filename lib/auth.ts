@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { forbidden, redirect } from "next/navigation";
 import { cache } from "react";
+import { createAdminClient } from "./supabase/admin";
 import { createClient, isSupabaseConfigured } from "./supabase/server";
 
 /** id i email są tylko przy sesji Supabase; konto testowe ich nie ma. */
@@ -76,4 +77,13 @@ export async function requireAdmin(nextPath = "/panel"): Promise<Viewer> {
   if (!viewer) redirect(`/logowanie?next=${encodeURIComponent(nextPath)}`);
   if (viewer.role !== "admin") forbidden();
   return viewer;
+}
+
+/**
+ * Klient do odczytu „jako ta osoba”. Konto Supabase czyta własną sesją, więc dostępu pilnuje też RLS.
+ * Konto testowe nie ma sesji — RLS widziałby je jako anonima i zwracał puste listy — więc dostaje service role.
+ * Granicę dla konta testowego trzyma wtedy tylko kod: requireAdmin() i filtry w zapytaniu.
+ */
+export async function viewerClient(viewer: Viewer) {
+  return viewer.via === "supabase" ? await createClient() : createAdminClient();
 }
