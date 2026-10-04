@@ -1,6 +1,7 @@
 import "server-only";
 import { keyMatches, rememberedKey, rememberedNeeds } from "./need-access";
 import type { NeedStatus } from "./need-status";
+import { notify } from "./notifications";
 import { logChange } from "./panel/needs";
 import { createAdminClient } from "./supabase/admin";
 import { channelName, NEW_MESSAGE_EVENT, ROLE_LABELS, type AuthorRole, type ThreadMessage } from "./thread-types";
@@ -170,14 +171,9 @@ export async function postNeedMessage(
   const fromAuthor = msg.role === "autor";
   const fromHuman = msg.role === "rops" || msg.role === "ekspert";
   const payload = { needId: t.needId, code: t.code, threadId };
-  const notify = fromAuthor
-    ? supabase.from("notifications").insert({ role: "admin", kind: "nowa_wiadomosc", payload })
-    : fromHuman && t.authorId
-      ? supabase.from("notifications").insert({ user_id: t.authorId, kind: "nowa_wiadomosc", payload })
-      : null;
-  if (notify) {
-    const { error: nError } = await notify;
-    if (nError) console.error("[rozmowy] powiadomienie:", nError);
+  const recipient = fromAuthor ? { role: "admin" as const } : fromHuman && t.authorId ? { user_id: t.authorId } : null;
+  if (recipient) {
+    await notify({ ...recipient, kind: "nowa_wiadomosc", payload }).catch((e) => console.error("[rozmowy] powiadomienie:", e));
   }
 
   if (fromHuman && BEFORE_ANSWER.includes(t.status)) {
