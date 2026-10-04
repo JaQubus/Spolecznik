@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/key";
 
-// Odświeża sesję Supabase przy każdym żądaniu i chroni /panel.
+// Odświeża sesję Supabase przy każdym żądaniu i chroni /panel oraz /ekspert.
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -30,7 +30,8 @@ export async function proxy(request: NextRequest) {
 
   // Konto testowe (lib/auth.ts) nie ma sesji Supabase; podpis i rolę sprawdza strona panelu (requireAdmin).
   const testSession = request.cookies.has("spolecznik-test");
-  if (!user && !testSession && request.nextUrl.pathname.startsWith("/panel")) {
+  const path = request.nextUrl.pathname;
+  if (!user && !testSession && (path.startsWith("/panel") || path.startsWith("/ekspert"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/logowanie";
     url.search = `?next=${encodeURIComponent(request.nextUrl.pathname)}`;
