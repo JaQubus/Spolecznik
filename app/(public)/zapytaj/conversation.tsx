@@ -45,6 +45,9 @@ export function Conversation({
 
   useLiveThread(thread.threadId, reload);
 
+  // Dopóki nie odpisał człowiek, na wiadomość od razu odpowiada asystent AI (lib/rops-first-line.ts).
+  const aiFirst = !thread.messages.some((m) => m.role === "rops" || m.role === "ekspert");
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (body.trim().length < 2) {
@@ -72,7 +75,10 @@ export function Conversation({
           json.removedPersonalData && "Usunęliśmy z wiadomości numery telefonów, adresy e-mail i inne dane osobowe.",
           json.aiReplied
             ? "Asystent AI odpowiedział w rozmowie. Pracownik ROPS też przeczyta Twoją wiadomość."
-            : "Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.",
+            : aiFirst
+              // Asystent milczy po wcześniejszym przekazaniu do ROPS albo gdy nie miał nic nowego — mówimy wprost, kto odpowie.
+              ? "Asystent AI nie ma nic do dodania z Zasobnika. Wiadomość czeka na pracownika ROPS — odpowie tutaj, nie musisz odświeżać strony."
+              : "Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.",
         ].filter(Boolean).join(" "),
       );
     } catch (e) {
@@ -83,7 +89,6 @@ export function Conversation({
   }
 
   const recipient = expertName ? `ekspert (${expertName}) i pracownik ROPS` : "pracownik ROPS";
-  const aiFirst = !thread.messages.some((m) => m.role === "rops" || m.role === "ekspert");
 
   return (
     <div className="space-y-8">

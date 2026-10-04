@@ -4,10 +4,12 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { requireAdmin, viewerClient } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
+import { waitingForHuman, type Waiting } from "@/lib/panel/conversations";
 import { NEED_COLUMNS, needTriage, type NeedRow, type Triage } from "@/lib/panel/needs";
 import { formatDate, plural } from "@/lib/pl";
 import { anonymize } from "@/lib/pii";
 import { AREA_LABELS } from "@/lib/taxonomy";
+import { WaitingBadges } from "./waiting-badges";
 
 export const metadata = { title: "Panel ROPS" };
 
@@ -45,7 +47,7 @@ export default async function Page(props: PageProps<"/panel">) {
   if (error) throw error;
 
   const needs = (data ?? []) as unknown as NeedRow[];
-  const triage = await needTriage(needs);
+  const [triage, waiting] = await Promise.all([needTriage(needs), waitingForHuman("potrzeba", needs.map((n) => n.id))]);
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const href = (p: number) => `/panel?status=${filter.key}${p > 1 ? `&strona=${p}` : ""}`;
@@ -76,7 +78,7 @@ export default async function Page(props: PageProps<"/panel">) {
         <p className="text-muted-foreground">Nie ma tu żadnych zgłoszeń.</p>
       ) : (
         <ol className="max-w-4xl border-t">
-          {needs.map((n) => <NeedItem key={n.id} need={n} triage={triage.get(n.id)} />)}
+          {needs.map((n) => <NeedItem key={n.id} need={n} triage={triage.get(n.id)} waiting={waiting.get(n.id)} />)}
         </ol>
       )}
 
@@ -91,7 +93,7 @@ export default async function Page(props: PageProps<"/panel">) {
 }
 
 /** Wiersz skrzynki (jak ResultList): bez ramek, linie między wierszami, analiza AI jako etykiety ze słowami. */
-function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
+function NeedItem({ need: n, triage, waiting }: { need: NeedRow; triage?: Triage; waiting?: Waiting }) {
   const pii = !!n.raw_text && anonymize(n.raw_text).found;
   const dups = triage?.duplicates.length ?? 0;
   return (
@@ -110,6 +112,7 @@ function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
         {n.card.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
         {pii && <li><Badge variant="outline"><ShieldExclamationIcon aria-hidden className="size-4" /> Może zawierać dane osobowe</Badge></li>}
         {dups > 0 && <li><Badge variant="outline"><DocumentDuplicateIcon aria-hidden className="size-4" /> Możliwy duplikat ({dups})</Badge></li>}
+        <WaitingBadges waiting={waiting} />
       </ul>
       {triage?.expertName && <p className="text-base">Sugerowany ekspert: <strong>{triage.expertName}</strong></p>}
     </li>

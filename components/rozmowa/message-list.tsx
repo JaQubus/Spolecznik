@@ -1,4 +1,6 @@
+import { CpuChipIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { formatTime, type ThreadMessage } from "@/lib/thread-types";
 
 const LINK = /\[([^\]\n]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g;
@@ -29,6 +31,7 @@ function withLinks(body: string) {
  * Wiadomości wątku jako wiersze oddzielone liniami (ResultList), bez dymków i ramek.
  * role="log": nowe wiadomości czytnik ekranu ogłasza sam (aria-live polite), bez przerywania.
  * Odpowiedzi ROPS, eksperta i AI na kremowym tle; kto pisze, mówi zawsze podpis, nie kolor.
+ * Wiadomość AI ma dodatkowo etykietę „Odpowiedź automatyczna”, żeby nie wzięto jej za odpowiedź pracownika.
  * `own` to rola, której wiadomości podpisujemy „Ty”.
  */
 export function MessageList({
@@ -50,6 +53,9 @@ export function MessageList({
             <li key={m.id} className={`space-y-1 border-b px-3 py-4 ${m.role === "autor" ? "" : "bg-secondary"}`}>
               <p className="flex flex-wrap items-baseline gap-x-3">
                 <strong>{m.role === own ? `Ty (${m.name})` : m.name}</strong>
+                {m.role === "ai" && (
+                  <Badge variant="outline"><CpuChipIcon aria-hidden className="size-4" /> Odpowiedź automatyczna</Badge>
+                )}
                 <span className="text-base text-muted-foreground">
                   <time dateTime={m.createdAt}>{formatTime(m.createdAt)}</time>
                 </span>

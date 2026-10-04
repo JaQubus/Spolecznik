@@ -2,11 +2,13 @@ import Link from "next/link";
 import { Alert } from "@/components/ui/alert";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
+import { waitingForHuman } from "@/lib/panel/conversations";
 import { formatDate } from "@/lib/pl";
 import { NEED_STATUSES } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ActionForm, DeleteForm, SubmitButton } from "../action-form";
 import { updateIdeaStatus } from "../actions";
+import { WaitingBadges } from "../waiting-badges";
 
 export const metadata = { title: "Pomysły · Panel ROPS" };
 
@@ -26,6 +28,7 @@ export default async function Page(props: PageProps<"/panel/pomysly">) {
     .limit(50);
   if (error) throw error;
   const ideas = (data ?? []) as IdeaRow[];
+  const waiting = await waitingForHuman("pomysl", ideas.map((i) => i.id));
 
   return (
     <section className="space-y-6">
@@ -47,6 +50,11 @@ export default async function Page(props: PageProps<"/panel/pomysly">) {
                   {i.fiszka.krotki_opis || `Pomysł ${i.status_code} (brak opisu)`}
                 </Link>
               </p>
+              {waiting.has(i.id) && (
+                <ul className="flex flex-wrap gap-2" aria-label="Rozmowa">
+                  <WaitingBadges waiting={waiting.get(i.id)} />
+                </ul>
+              )}
               <ActionForm action={updateIdeaStatus} className="space-y-2">
                 <input type="hidden" name="ideaId" value={i.id} />
                 <div className="flex flex-wrap items-end gap-3">
