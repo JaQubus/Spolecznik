@@ -2,12 +2,11 @@ import { DocumentDuplicateIcon, ShieldExclamationIcon } from "@heroicons/react/2
 import Link from "next/link";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, viewerClient } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { NEED_COLUMNS, needTriage, type NeedRow, type Triage } from "@/lib/panel/needs";
 import { formatDate, plural } from "@/lib/pl";
 import { anonymize } from "@/lib/pii";
-import { createClient } from "@/lib/supabase/server";
 import { AREA_LABELS } from "@/lib/taxonomy";
 
 export const metadata = { title: "Panel ROPS" };
@@ -29,13 +28,13 @@ const chipLink =
   "inline-flex min-h-12 items-center rounded-full border border-border-strong px-4 text-base hover:border-foreground aria-[current=page]:border-foreground aria-[current=page]:bg-foreground aria-[current=page]:font-bold aria-[current=page]:text-background";
 
 export default async function Page(props: PageProps<"/panel">) {
-  await requireAdmin();
+  const viewer = await requireAdmin();
   const params = await props.searchParams;
   const filter = FILTERS.find((f) => f.key === params.status) ?? FILTERS[0];
   const page = Math.max(1, Number(params.strona) || 1);
 
-  // Odczyt sesją użytkownika: RLS (is_admin) pilnuje dostępu drugi raz.
-  const supabase = await createClient();
+  // Odczyt sesją użytkownika: RLS (is_admin) pilnuje dostępu drugi raz (konto testowe: service role, lib/auth.ts).
+  const supabase = await viewerClient(viewer);
   let query = supabase
     .from("needs")
     .select(NEED_COLUMNS, { count: "exact" })

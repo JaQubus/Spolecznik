@@ -8,14 +8,13 @@ import { FieldHint } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, viewerClient } from "@/lib/auth";
 import { NEED_STATUS_LABELS } from "@/lib/need-status";
 import { DUPLICATE_MIN, NEED_COLUMNS, needHistory, needNeighbours, type AuditRow, type NeedRow } from "@/lib/panel/needs";
 import { anonymize } from "@/lib/pii";
 import { formatDate } from "@/lib/pl";
 import { NEED_STATUSES } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { AREA_LABELS, CROSS_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { innovationHref } from "@/components/knowledge/tiles";
 import { MessageList } from "@/components/rozmowa/message-list";
@@ -29,11 +28,11 @@ export const metadata = { title: "Zgłoszenie · Panel ROPS" };
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 
 export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
-  await requireAdmin();
+  const viewer = await requireAdmin();
   const { id } = await props.params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const supabase = await createClient();
+  const supabase = await viewerClient(viewer);
   const { data, error } = await supabase.from("needs").select(NEED_COLUMNS).eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) notFound();
