@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { formatDate } from "@/lib/pl";
 import type { ApplicationDraft as Draft } from "@/lib/schemas";
+import { PrintHeader } from "@/components/print-header";
+import { printAs } from "@/lib/print";
 
 export type ActiveCall = { id: string; title: string; closesAt: string | null };
 
 /** Generator wniosków (#17): widoczny tylko przy aktywnym naborze, eksport przez druk do PDF. */
-export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: ActiveCall[] }) {
+export function ApplicationDraft({ ideaId, statusCode, calls }: { ideaId: string; statusCode: string; calls: ActiveCall[] }) {
   const [callId, setCallId] = useState(calls[0]?.id ?? "");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
@@ -44,7 +46,8 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
   if (draft) {
     const missing = draft.checklist.filter((c) => !c.met).length;
     return (
-      <div className="space-y-8">
+      <div className="print-sheet space-y-8 print:space-y-6">
+        <PrintHeader title="Szkic wniosku" details={[`Kod zgłoszenia pomysłu: ${statusCode}`]} />
         <div className="space-y-2">
           <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold outline-none">Szkic wniosku{call ? `: ${call.title}` : ""}</h2>
           <p className="text-muted-foreground">To szkic do poprawienia. Miejsca oznaczone „DO UZUPEŁNIENIA” wymagają Twoich danych.</p>
@@ -77,7 +80,7 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
             </ul>
           </section>
         )}
-        <Button type="button" variant="outline" onClick={() => window.print()} className="print:hidden">
+        <Button type="button" variant="outline" onClick={() => printAs(`Szkic wniosku – ${call?.title ?? statusCode}`)} className="print:hidden">
           <PrinterIcon aria-hidden className="size-4" /> Wydrukuj albo zapisz jako PDF
         </Button>
       </div>

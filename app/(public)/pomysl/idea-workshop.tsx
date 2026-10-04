@@ -86,7 +86,7 @@ export function IdeaWorkshop({
   if (result) {
     return (
       <div className="space-y-12">
-        <div className="space-y-4">
+        <div className="space-y-4 print:hidden">
           <h2 ref={doneHeading} tabIndex={-1} className="text-2xl font-bold outline-none">Dziękujemy, pomysł jest zgłoszony</h2>
           <div className="max-w-[44rem] space-y-1 rounded-[16px] bg-secondary px-5 py-4">
             <p className="text-lg">
@@ -99,7 +99,7 @@ export function IdeaWorkshop({
           </div>
           <p className="max-w-2xl">Pracownik ROPS przeczyta pomysł i może zaprosić eksperta do rozmowy z Tobą.</p>
         </div>
-        {calls.length > 0 && <ApplicationDraft ideaId={result.ideaId} calls={calls} />}
+        {calls.length > 0 && <ApplicationDraft ideaId={result.ideaId} statusCode={result.statusCode} calls={calls} />}
       </div>
     );
   }

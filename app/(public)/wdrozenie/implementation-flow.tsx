@@ -4,12 +4,14 @@ import { PrinterIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { GminaField, type GminaValue } from "@/components/gmina-field";
+import { PrintHeader } from "@/components/print-header";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import type { GminaOption } from "@/lib/gminy";
 import { formatNumber } from "@/lib/pl";
+import { printAs } from "@/lib/print";
 import type { ImplementationCard } from "@/lib/schemas";
 
 type Result = {
@@ -79,7 +81,8 @@ export function ImplementationFlow({
   if (result) {
     const c = result.card;
     return (
-      <article className="space-y-10">
+      <article className="print-sheet space-y-10 print:space-y-6">
+        <PrintHeader title="Karta wdrożeniowa" details={["Koszty i założenia to szacunek — sprawdź je przed decyzją."]} />
         <div className="space-y-2">
           <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold outline-none">
             {result.innovation.title} w gminie {result.gmina.nazwa}
@@ -135,7 +138,7 @@ export function ImplementationFlow({
 
         <div className="flex flex-wrap items-center gap-3 print:hidden">
           <Button asChild variant="outline"><Link href={`/przetestuj?innowacja=${result.innovation.id}`}>Chcę przetestować</Link></Button>
-          <Button type="button" variant="link" onClick={() => window.print()}><PrinterIcon aria-hidden className="size-4" /> Wydrukuj kartę</Button>
+          <Button type="button" variant="link" onClick={() => printAs(`Karta wdrożeniowa – ${result.innovation.title} – ${result.gmina.nazwa}`)}><PrinterIcon aria-hidden className="size-4" /> Wydrukuj kartę</Button>
           <Button type="button" variant="link" onClick={() => setResult(null)}>Inna gmina albo rozwiązanie</Button>
         </div>
       </article>

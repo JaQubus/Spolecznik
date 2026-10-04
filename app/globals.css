@@ -202,6 +202,15 @@ html.a11y-contrast {
     .doc { font-size: 11pt; color: #000; }
     .doc tr, .doc-checks li, .doc-signature { break-inside: avoid; }
   }
+
+  /* Kartki drukowane z wyniku AI (karta wdrożeniowa, szkic wniosku): czarno na białym, bez kolorowych teł,
+     nagłówek nie zostaje sam na dole strony, sekcja nie jest rozcinana między stronami. */
+  @media print {
+    .print-sheet { font-size: 11pt; color: #000; }
+    .print-sheet * { background: transparent !important; box-shadow: none !important; }
+    .print-sheet section, .print-sheet li, .print-sheet dd, .print-sheet [role="status"] { break-inside: avoid; }
+    .print-sheet h2, .print-sheet h3, .print-sheet dt { break-after: avoid; }
+  }
 }
 
 /* Pas na całą szerokość okna wewnątrz kontenera main, bez poziomego przewijania (cień nie zwiększa szerokości strony). */

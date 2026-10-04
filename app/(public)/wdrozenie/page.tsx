@@ -28,7 +28,7 @@ export default async function Page(props: PageProps<"/wdrozenie">) {
 
   return (
     <section className="space-y-8">
-      <div className="space-y-4">
+      <div className="space-y-4 print:hidden">
         <h1 className="text-3xl font-bold">Jak to wdrożyć u nas?</h1>
         <p className="max-w-2xl text-lg">
           Wybierz rozwiązanie i swoją gminę. Przygotujemy kartę: kto skorzysta, jakie kroki, ile może kosztować
