@@ -88,6 +88,14 @@ export const AskAnswer = z.object({
   answer: z.string(),
   sources: z.array(z.number().int()).max(5), // numery fragmentów z <fragment n="…">
 });
+// Rozmowa: asystent jako pierwsza linia „Zapytaj ROPS” (lib/first-line.ts)
+export const FirstLineAnswer = z.object({
+  // odpowiedz: źródła zawierają odpowiedź · przekaz: nie zawierają albo pytanie o własną sprawę · bez_pytania: to nie pytanie
+  decision: z.enum(["odpowiedz", "przekaz", "bez_pytania"]),
+  answer: z.string().max(2000),
+  sources: z.array(z.number().int()).max(5), // numery źródeł z <zrodlo n="…">
+});
+
 export type AskResponse = {
   answered: boolean;
   answer: string;
@@ -137,6 +145,8 @@ export const ThreadPostRequest = z.object({
   body: z.string().trim().min(2, "Wpisz wiadomość").max(2000, "Wiadomość może mieć najwyżej 2000 znaków"),
   expertId: z.uuid().optional(), // „Zapytaj eksperta” z wyników dopasowania
 });
+
+export const ThreadNotHelpfulRequest = z.object({ code: z.string().trim().toUpperCase().regex(STATUS_CODE) });
 
 // /api/assistant: asystent Pracowni
 export const AssistantRequest = z.object({
