@@ -567,7 +567,7 @@ Ceny wg cenników z października 2026: Claude Haiku 4.5 to 1 / 5 USD za mln tok
   - `GET /api/v1/innowacje/{slug}`: pełny opis i gminy (TERYT), w których innowację testowano.
   - Bez klucza i bez danych osobowych. Limit 60 zapytań na minutę z IP, pamięć podręczna 5 minut, CORS dla wszystkich.
   - Specyfikację generujemy ze schematów zod w [`lib/api/contract.ts`](lib/api/contract.ts), więc nie rozjeżdża się z kodem. Sprawdzenie: `npx @redocly/cli lint http://localhost:3000/api/v1/openapi.json`.
-- **Webhooki** ([`0019_webhooks.sql`](supabase/migrations/0019_webhooks.sql)): baza sama wysyła POST z JSON przez `pg_net`.
+- **Webhooki** ([`0023_webhooks.sql`](supabase/migrations/0023_webhooks.sql)): baza sama wysyła POST z JSON przez `pg_net`.
   - Zdarzenia: `idea.created` (bez treści pomysłu, bo pomysły są prywatne do moderacji), `call.activated` i `call.deactivated` (Panel → Nabory).
   - Adres dodaje admin w tabeli `webhook_endpoints` i dostaje `secret`. Nagłówek `X-Spolecznik-Signature: sha256=…` to HMAC-SHA256 treści żądania.
   - Wysyłka jest jednorazowa, bez ponowień. Stan zawsze można pobrać z API.

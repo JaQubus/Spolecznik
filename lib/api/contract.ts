@@ -98,7 +98,7 @@ export type InnovationList = z.infer<typeof InnovationList>;
 
 export const ApiError = z.object({ error: z.string() }).meta({ id: "Error" });
 
-// ── Webhooki (wysyła baza: supabase/migrations/0019_webhooks.sql) ──
+// ── Webhooki (wysyła baza: supabase/migrations/0023_webhooks.sql) ──
 export const WEBHOOK_EVENTS = ["idea.created", "call.activated", "call.deactivated"] as const;
 
 export const IdeaCreatedEvent = z
