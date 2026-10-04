@@ -81,6 +81,16 @@ export const CardTags = z.object({
 });
 export type CardTags = z.infer<typeof CardTags>;
 
+// /panel/trendy: etykiety grup podobnych potrzeb, liczone wsadowo i trzymane w need_cluster_labels
+export const ClusterLabels = z.object({
+  clusters: z.array(z.object({
+    n: z.number().int(),           // numer grupy z <grupa n="…">
+    label: z.string().max(80),     // krótkie hasło, np. „Samotność seniorów na wsi”
+    description: z.string().max(300), // jedno zdanie
+  })),
+});
+export type ClusterLabels = z.infer<typeof ClusterLabels>;
+
 // /api/ask: Zapytaj Bibliotekę (RAG po doc_chunks)
 export const AskRequest = z.object({ question: z.string().min(3).max(1000) });
 export const AskAnswer = z.object({
@@ -88,6 +98,14 @@ export const AskAnswer = z.object({
   answer: z.string(),
   sources: z.array(z.number().int()).max(5), // numery fragmentów z <fragment n="…">
 });
+// Rozmowa: asystent jako pierwsza linia „Zapytaj ROPS” (lib/first-line.ts)
+export const FirstLineAnswer = z.object({
+  // odpowiedz: źródła zawierają odpowiedź · przekaz: nie zawierają albo pytanie o własną sprawę · bez_pytania: to nie pytanie
+  decision: z.enum(["odpowiedz", "przekaz", "bez_pytania"]),
+  answer: z.string().max(2000),
+  sources: z.array(z.number().int()).max(5), // numery źródeł z <zrodlo n="…">
+});
+
 export type AskResponse = {
   answered: boolean;
   answer: string;
@@ -138,6 +156,8 @@ export const ThreadPostRequest = z.object({
   body: z.string().trim().min(2, "Wpisz wiadomość").max(2000, "Wiadomość może mieć najwyżej 2000 znaków"),
   expertId: z.uuid().optional(), // „Zapytaj eksperta” z wyników dopasowania
 });
+
+export const ThreadNotHelpfulRequest = z.object({ code: z.string().trim().toUpperCase().regex(STATUS_CODE) });
 
 // /api/assistant: asystent Pracowni
 export const AssistantRequest = z.object({

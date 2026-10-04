@@ -192,7 +192,7 @@ export default async function Page(props: PageProps<"/panel/pomysly/[id]">) {
   );
 }
 
-/** Plakat z Pracowni (migracja 0019). Bez kolumny albo z uszkodzoną treścią strona działa dalej bez plakatu. */
+/** Plakat z Pracowni (migracja 0021). Bez kolumny albo z uszkodzoną treścią strona działa dalej bez plakatu. */
 async function ideaPoster(id: string) {
   const { data, error } = await createAdminClient().from("ideas").select("poster").eq("id", id).maybeSingle();
   if (error) {

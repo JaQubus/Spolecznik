@@ -51,9 +51,9 @@ export async function POST(request: Request) {
         })
         .select("id, status_code")
         .single();
-      // Bez migracji 0019 nie ma kolumny poster — pomysł zapisujemy bez plakatu, zamiast go odrzucić.
+      // Bez migracji 0021 nie ma kolumny poster — pomysł zapisujemy bez plakatu, zamiast go odrzucić.
       if (error?.code === "PGRST204" && withPoster) {
-        console.error("[ideas] brak kolumny poster (migracja 0019), zapisuję bez plakatu");
+        console.error("[ideas] brak kolumny poster (migracja 0021), zapisuję bez plakatu");
         withPoster = false;
         continue;
       }
