@@ -42,7 +42,11 @@ export default async function Page(props: PageProps<"/panel/pomysly">) {
                 {" · "}{formatDate(i.created_at)}
                 {" · "}<strong className="text-foreground">{NEED_STATUS_LABELS[i.status]}</strong>
               </p>
-              <p className="max-w-[68ch]">{i.fiszka.krotki_opis || "Brak opisu."}</p>
+              <p className="max-w-[68ch]">
+                <Link href={`/panel/pomysly/${i.id}`} className="underline decoration-1 underline-offset-4 hover:decoration-2">
+                  {i.fiszka.krotki_opis || `Pomysł ${i.status_code} (brak opisu)`}
+                </Link>
+              </p>
               <ActionForm action={updateIdeaStatus} className="space-y-2">
                 <input type="hidden" name="ideaId" value={i.id} />
                 <div className="flex flex-wrap items-end gap-3">
@@ -64,7 +68,7 @@ export default async function Page(props: PageProps<"/panel/pomysly">) {
                 label={`pomysł ${i.status_code}`}
                 consequence={
                   <>
-                    Znikną też szkice wniosków, a kod <span className="font-mono tracking-wider">{i.status_code}</span>{" "}
+                    Znikną też rozmowa i szkice wniosków, a kod <span className="font-mono tracking-wider">{i.status_code}</span>{" "}
                     przestanie działać. Używaj do pomysłów testowych i spamu — prawdziwy pomysł lepiej zamknąć.
                   </>
                 }

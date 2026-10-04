@@ -35,8 +35,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
       // Ekspert z wyników dopasowania — tylko podpowiedź, dopóki ROPS nie przypisze kogoś w Panelu.
       if (thread && !thread.expert && askedExpert) chosenName = await expertName(askedExpert);
     }
-    // Pomysły nie mają rozmowy — ich listę pokazuje /status.
-    if (!thread) mine = (await rememberedThreads()).filter((n) => n.kind === "potrzeba");
+    if (!thread) mine = await rememberedThreads();
   } catch (e) {
     console.error("[zapytaj]", e);
     return (
@@ -52,22 +51,26 @@ export default async function Page(props: PageProps<"/zapytaj">) {
   if (!thread || !key) return <MyConversations mine={mine} askedCode={raw} badLink={badLink} />;
 
   const expert = thread.expert?.name ?? chosenName;
+  const idea = thread.kind === "pomysl";
 
   return (
     <section className="space-y-8">
       <div className="space-y-3">
         <h1 className="text-3xl font-bold">
-          Rozmowa o zgłoszeniu <span className="font-mono tracking-wider whitespace-nowrap">{thread.code}</span>
+          {idea ? "Rozmowa o pomyśle" : "Rozmowa o zgłoszeniu"}{" "}
+          <span className="font-mono tracking-wider whitespace-nowrap">{thread.code}</span>
         </h1>
         <p className="max-w-[68ch] text-lg">
           {thread.expert
-            ? <>Twoim zgłoszeniem zajmuje się <strong>{thread.expert.name}</strong>. W rozmowie jest też pracownik ROPS.</>
+            ? <>Twoim {idea ? "pomysłem" : "zgłoszeniem"} zajmuje się <strong>{thread.expert.name}</strong>. W rozmowie jest też pracownik ROPS.</>
             : chosenName
               ? <>Piszesz do: <strong>{chosenName}</strong>. Wiadomość najpierw zobaczy pracownik ROPS i zaprosi eksperta do rozmowy.</>
-              : <>Napisz, o co chcesz zapytać. Pracownik ROPS odpowie albo zaprosi do rozmowy eksperta.</>}
+              : idea
+                ? <>Tu odpisze Ci ROPS w sprawie pomysłu. Możesz też zapytać, np. o wsparcie mentora albo nabór.</>
+                : <>Napisz, o co chcesz zapytać. Pracownik ROPS odpowie albo zaprosi do rozmowy eksperta.</>}
         </p>
         <p>
-          <Link href={`/status/${thread.code}`} className={linkClass}>Zobacz status zgłoszenia</Link>
+          <Link href={`/status/${thread.code}`} className={linkClass}>Zobacz status {idea ? "pomysłu" : "zgłoszenia"}</Link>
         </p>
       </div>
 
@@ -79,7 +82,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
         initial={{ threadId: thread.threadId, messages: thread.messages }}
       />
 
-      <PrivateLink code={thread.code} accessKey={key} />
+      <PrivateLink code={thread.code} accessKey={key} kind={thread.kind} />
     </section>
   );
 }

@@ -18,11 +18,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { AREA_LABELS, CROSS_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { innovationHref } from "@/components/knowledge/tiles";
-import { MessageList } from "@/components/rozmowa/message-list";
 import { needThread } from "@/lib/threads";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
-import { assignExpert, removePersonalData, replyInThread, updateNeedStatus } from "../../actions";
-import { ThreadLive } from "./thread-live";
+import { assignExpert, removePersonalData, updateNeedStatus } from "../../actions";
+import { ThreadSection } from "../../thread-section";
 
 export const metadata = { title: "Zgłoszenie · Panel ROPS" };
 
@@ -49,7 +48,7 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
       ? admin.from("search_index").select("title").eq("kind", "ekspert").eq("ref_id", need.assigned_expert).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
     // Bez migracji 0011 reszta strony ma działać dalej.
-    needThread({ needId: id }).catch((e) => { console.error("[panel] rozmowa:", e); return null; }),
+    needThread({ kind: "potrzeba", id }).catch((e) => { console.error("[panel] rozmowa:", e); return null; }),
   ]);
   if (matches.error) throw matches.error;
 
@@ -152,41 +151,7 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
         )}
       </section>
 
-      <section aria-labelledby="rozmowa" className="space-y-4">
-        <h2 id="rozmowa" className="text-2xl font-bold">Rozmowa ze zgłaszającym</h2>
-        <ThreadLive threadId={thread?.threadId ?? null} />
-        <MessageList
-          messages={thread?.messages ?? []}
-          empty="Nikt jeszcze nie napisał. Zgłaszający zobaczy Twoją wiadomość po wpisaniu kodu na stronie „Zapytaj eksperta”."
-        />
-        {need.status === "zamkniete" ? (
-          <p className="text-muted-foreground">Zgłoszenie jest zamknięte — w rozmowie nie można już pisać.</p>
-        ) : (
-          <ActionForm action={replyInThread} className="max-w-2xl space-y-4">
-            <input type="hidden" name="needId" value={need.id} />
-            {thread?.expert ? (
-              <fieldset className="space-y-2">
-                <legend className="mb-2 text-lg font-bold">Podpis</legend>
-                <RadioGroup name="as" defaultValue="rops">
-                  <RadioGroupOption id="as-rops" value="rops" label="ROPS Kraków" />
-                  <RadioGroupOption id="as-ekspert" value="ekspert" label={`W imieniu eksperta: ${thread.expert.name}`} />
-                </RadioGroup>
-              </fieldset>
-            ) : (
-              <input type="hidden" name="as" value="rops" />
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="reply">Odpowiedź</Label>
-              <FieldHint id="reply-pomoc">
-                Pierwsza odpowiedź zmienia status na „{NEED_STATUS_LABELS.odpowiedz}”. Kontakt do instytucji możesz podać;
-                nie wpisuj danych osobowych zgłaszającego ani innych osób.
-              </FieldHint>
-              <Textarea id="reply" name="body" required minLength={2} maxLength={2000} aria-describedby="reply-pomoc" className="min-h-24" />
-            </div>
-            <SubmitButton variant="outline" pendingText="Wysyłanie…">Wyślij odpowiedź</SubmitButton>
-          </ActionForm>
-        )}
-      </section>
+      <ThreadSection kind="potrzeba" id={need.id} thread={thread} closed={need.status === "zamkniete"} />
 
       <section aria-labelledby="status" className="space-y-3">
         <h2 id="status" className="text-2xl font-bold">Status</h2>

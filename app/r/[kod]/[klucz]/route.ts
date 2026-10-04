@@ -6,7 +6,7 @@ import { reportForKey } from "@/lib/threads";
 
 /**
  * Prywatny link (/r/SPL-4K7Q/klucz): zapamiętuje zgłoszenie w tej przeglądarce i przekierowuje bez klucza w adresie,
- * żeby nie został w historii ani w odnośnikach. Potrzeba → rozmowa na /zapytaj, pomysł → jego status.
+ * żeby nie został w historii ani w odnośnikach. Potrzeba i pomysł otwierają się w rozmowie na /zapytaj.
  */
 export async function GET(request: Request, ctx: RouteContext<"/r/[kod]/[klucz]">) {
   const limited = rateLimit(request, "prywatny-link", 20);
@@ -24,5 +24,5 @@ export async function GET(request: Request, ctx: RouteContext<"/r/[kod]/[klucz]"
   }
   if (!kind) redirect("/zapytaj?link=nieaktualny");
   await rememberNeed(code, klucz);
-  redirect(kind === "pomysl" ? `/status/${code}` : `/zapytaj?potrzeba=${code}`);
+  redirect(`/zapytaj?potrzeba=${code}`);
 }

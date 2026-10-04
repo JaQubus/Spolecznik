@@ -105,7 +105,11 @@ export function IdeaWorkshop({
             </div>
             <PrivateLink code={result.statusCode} accessKey={result.accessKey} kind="pomysl" />
           </div>
-          <p className="max-w-2xl">Pracownik ROPS przeczyta pomysł i może zaprosić eksperta do rozmowy z Tobą.</p>
+          <p className="max-w-2xl">
+            Pracownik ROPS przeczyta pomysł i odpisze w{" "}
+            <Link href={`/zapytaj?potrzeba=${result.statusCode}`} className={linkClass}>rozmowie o pomyśle</Link>. Może też
+            zaprosić do niej eksperta.
+          </p>
         </div>
         {calls.length > 0 && <ApplicationDraft ideaId={result.ideaId} calls={calls} />}
       </div>
