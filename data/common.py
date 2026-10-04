@@ -112,8 +112,11 @@ def db_url() -> str:
 
 
 def groq_chat(messages: list[dict], *, model: str = GROQ_FAST, json_mode: bool = False, temperature: float = 0.5) -> str:
-    """Jedno wywołanie Groq (API zgodne z OpenAI). Przy 429 i błędach serwera czeka i ponawia."""
-    for attempt in range(6):
+    """Jedno wywołanie Groq (API zgodne z OpenAI). Przy 429 i błędach serwera czeka i ponawia.
+
+    Darmowy plan ma 8 tys. tokenów na minutę na cały klucz, a aplikacja korzysta z tego samego klucza —
+    stąd do 12 prób (łącznie do ok. 10 minut czekania), zanim skrypt się podda."""
+    for attempt in range(12):
         response = httpx.post(
             GROQ_URL,
             headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY']}"},
@@ -129,7 +132,7 @@ def groq_chat(messages: list[dict], *, model: str = GROQ_FAST, json_mode: bool =
             timeout=120,
         )
         if response.status_code == 429 or response.status_code >= 500:
-            time.sleep(min(float(response.headers.get("retry-after", 2 ** attempt)), 60))
+            time.sleep(min(max(float(response.headers.get("retry-after", 0)), 2 ** attempt), 60))
             continue
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"]
