@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { innovationHref } from "@/lib/knowledge/hrefs";
 import { useEffect, useRef, useState } from "react";
 import { EMPTY_GMINA, GminaField, type GminaValue } from "@/components/gmina-field";
 import { Alert } from "@/components/ui/alert";
@@ -110,7 +111,7 @@ export function TestForm({
           </p>
         </Alert>
         {innovation?.slug && (
-          <Button asChild variant="outline"><Link href={`/biblioteka/${innovation.slug}`}>Wróć do opisu rozwiązania</Link></Button>
+          <Button asChild variant="outline"><Link href={innovationHref(innovation.slug)}>Wróć do opisu rozwiązania</Link></Button>
         )}
       </div>
     );

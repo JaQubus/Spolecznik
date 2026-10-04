@@ -75,6 +75,23 @@ export const materialToRow = (m: Material): Row => ({
   size_bytes: m.sizeBytes, language: m.language, areas: m.areas, year: m.year, sort: m.sort, published: m.published,
 });
 
+/**
+ * Innowacje pipeline'u dopasowań mają film jako zwykły adres (video_url), a karta Zasobnika czyta obiekt
+ * `video`. YouTube zamieniamy na ten obiekt; innych serwisów karta nie osadza.
+ */
+function videoFromUrl(url: unknown, title: unknown): Innovation["video"] {
+  if (typeof url !== "string") return null;
+  let u: URL;
+  try { u = new URL(url); } catch { return null; }
+  const host = u.hostname.replace(/^www\.|^m\./, "");
+  const id = host === "youtu.be" ? u.pathname.slice(1)
+    : host === "youtube.com" || host === "youtube-nocookie.com"
+      ? u.searchParams.get("v") ?? u.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)?.[1] ?? null
+      : null;
+  if (!id || !/^[\w-]{6,20}$/.test(id)) return null;
+  return { youtubeId: id, title: typeof title === "string" ? title : "", thumbnailUrl: null, signLanguage: false, captions: false };
+}
+
 export const innovationFromRow = (r: Row): Innovation => ({
   id: r.id,
   slug: r.slug,
@@ -88,6 +105,8 @@ export const innovationFromRow = (r: Row): Innovation => ({
   solution: r.solution ?? null,
   evidence: r.evidence ?? null,
   whoCanUse: r.who_can_use ?? null,
+  howToUse: r.how_to_use ?? null,
+  components: r.components ?? null,
   beneficiaries: r.beneficiaries ?? null,
   etrSummary: r.etr_summary ?? null,
   video: r.video
@@ -98,7 +117,7 @@ export const innovationFromRow = (r: Row): Innovation => ({
         signLanguage: !!r.video.sign_language,
         captions: !!r.video.captions,
       }
-    : null,
+    : videoFromUrl(r.video_url, r.title),
   pdfUrl: r.pdf_url ?? null,
   materialsZip: r.materials_zip
     ? { url: r.materials_zip.url, sizeBytes: r.materials_zip.size_bytes ?? null, linkOk: r.materials_zip.link_ok !== false }
@@ -108,12 +127,15 @@ export const innovationFromRow = (r: Row): Innovation => ({
   dissemination: !!r.dissemination,
   published: r.published ?? true,
   synthetic: !!r.synthetic,
+  testsCount: Number(r.tests_count ?? 0),
+  avgRating: r.avg_rating == null ? null : Number(r.avg_rating),
 });
 
 export const innovationToRow = (i: Innovation, groupsColumn: "groups" | "target_groups"): Row => ({
   id: i.id, slug: i.slug, title: i.title, [groupsColumn]: i.groups, areas: i.areas, areas_auto: i.areasAuto,
   innovation_type: i.innovationType, type_auto: i.typeAuto, problem: i.problem, solution: i.solution,
-  evidence: i.evidence, who_can_use: i.whoCanUse, beneficiaries: i.beneficiaries, etr_summary: i.etrSummary,
+  evidence: i.evidence, who_can_use: i.whoCanUse, how_to_use: i.howToUse ?? null, components: i.components ?? null,
+  beneficiaries: i.beneficiaries, etr_summary: i.etrSummary,
   video: i.video && {
     youtube_id: i.video.youtubeId, title: i.video.title, thumbnail_url: i.video.thumbnailUrl,
     sign_language: i.video.signLanguage, captions: i.video.captions,

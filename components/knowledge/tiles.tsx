@@ -5,8 +5,9 @@ import type { Area, Innovation } from "@/lib/knowledge/types";
 import { GROUP_LABELS } from "@/lib/taxonomy";
 import { AreaIcon, GROUP_ICONS } from "./icons";
 
-export const innovationHref = (slug: string) => `/biblioteka/innowacja/${slug}`;
-export const areaHref = (slug: string) => `/biblioteka/obszar/${slug}`;
+import { areaHref, innovationHref } from "@/lib/knowledge/hrefs";
+
+export { areaHref, innovationHref };
 
 /** Kafle innowacji: ikona kategorii (bez miniatur filmów); jeden link na kafel (tytuł). */
 export function InnovationTiles({ items, className, level }: { items: Innovation[]; className?: string; level?: 3 | 4 }) {
