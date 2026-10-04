@@ -51,6 +51,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
   if (!thread || !key) return <MyConversations mine={mine} askedCode={raw} badLink={badLink} />;
 
   const expert = thread.expert?.name ?? chosenName;
+  const aiFirst = !thread.messages.some((m) => m.role === "rops" || m.role === "ekspert");
 
   return (
     <section className="space-y-8">
@@ -65,6 +66,12 @@ export default async function Page(props: PageProps<"/zapytaj">) {
               ? <>Piszesz do: <strong>{chosenName}</strong>. Wiadomość najpierw zobaczy pracownik ROPS i zaprosi eksperta do rozmowy.</>
               : <>Napisz, o co chcesz zapytać. Pracownik ROPS odpowie albo zaprosi do rozmowy eksperta.</>}
         </p>
+        {aiFirst && (
+          <p className="max-w-[68ch]">
+            Zanim odpisze człowiek, od razu odpowie Ci asystent AI — tylko na podstawie innowacji i materiałów
+            z <Link href="/biblioteka" className={linkClass}>Zasobnika</Link>.
+          </p>
+        )}
         <p>
           <Link href={`/status/${thread.code}`} className={linkClass}>Zobacz status zgłoszenia</Link>
         </p>

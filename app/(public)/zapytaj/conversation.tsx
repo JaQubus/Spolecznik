@@ -67,9 +67,13 @@ export function Conversation({
       setThread({ threadId: json.threadId, messages: json.messages });
       setBody("");
       setNotice(
-        json.removedPersonalData
-          ? "Wysłano. Usunęliśmy z wiadomości numery telefonów, adresy e-mail i inne dane osobowe."
-          : "Wysłano. Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.",
+        [
+          "Wysłano.",
+          json.removedPersonalData && "Usunęliśmy z wiadomości numery telefonów, adresy e-mail i inne dane osobowe.",
+          json.aiReplied
+            ? "Asystent AI odpowiedział w rozmowie. Pracownik ROPS też przeczyta Twoją wiadomość."
+            : "Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.",
+        ].filter(Boolean).join(" "),
       );
     } catch (e) {
       setError(`${e instanceof Error ? e.message : "Coś poszło nie tak"}. Spróbuj ponownie.`);
@@ -79,6 +83,7 @@ export function Conversation({
   }
 
   const recipient = expertName ? `ekspert (${expertName}) i pracownik ROPS` : "pracownik ROPS";
+  const aiFirst = !thread.messages.some((m) => m.role === "rops" || m.role === "ekspert");
 
   return (
     <div className="space-y-8">
@@ -112,7 +117,7 @@ export function Conversation({
               aria-describedby={fieldError ? "wiadomosc-pomoc wiadomosc-blad" : "wiadomosc-pomoc"}
             />
           </div>
-          <p role="status" className="font-bold">{busy ? "Wysyłam…" : notice}</p>
+          <p role="status" className="font-bold">{busy ? (aiFirst ? "Wysyłam… Asystent AI szuka odpowiedzi w Zasobniku." : "Wysyłam…") : notice}</p>
           <Button type="submit" disabled={busy} className="w-full sm:w-auto">Wyślij wiadomość</Button>
         </form>
       )}

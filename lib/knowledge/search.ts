@@ -3,7 +3,7 @@ import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { knowledge } from "./index";
 
 import { MATERIAL_KIND_LABELS, TYPE_LABELS } from "./labels";
-import { queryStems, scoreDocument } from "./text-search";
+import { queryStems, scoreDocument, type Field } from "./text-search";
 import type { Area, Innovation, Material } from "./types";
 
 export type KnowledgeResults = {
@@ -24,40 +24,61 @@ export async function searchKnowledge(query: string): Promise<KnowledgeResults> 
   return textSearch(q);
 }
 
+const areaFields = (a: Area): Field[] => [
+  { text: a.name, weight: 4 }, { text: a.lead, weight: 3 }, { text: a.definition, weight: 2 },
+  { text: a.challenges.join(" "), weight: 1 },
+];
+const innovationFields = (i: Innovation): Field[] => [
+  { text: i.title, weight: 4 }, { text: i.problem, weight: 2 }, { text: i.solution, weight: 2 },
+  { text: i.beneficiaries, weight: 2 }, { text: i.whoCanUse, weight: 1 }, { text: i.etrSummary, weight: 2 },
+  { text: i.groups.map((g) => GROUP_LABELS[g]).join(" "), weight: 2 },
+  { text: i.areas.map((a) => AREA_LABELS[a]).join(" "), weight: 1 },
+  { text: i.innovationType && TYPE_LABELS[i.innovationType], weight: 1 },
+];
+const materialFields = (m: Material): Field[] => [
+  { text: m.title, weight: 3 }, { text: m.description, weight: 2 }, { text: MATERIAL_KIND_LABELS[m.kind], weight: 2 },
+  { text: m.areas.map((a) => AREA_LABELS[a]).join(" "), weight: 1 },
+];
+
+/** Najlepsze `limit` pozycji, które trafiły co najmniej `needed` słów zapytania. */
+function rank<T>(groups: string[][], needed: number, items: T[], fields: (t: T) => Field[], limit: number): T[] {
+  return items
+    .map((item) => {
+      const f = fields(item);
+      const matched = groups.filter((g) => scoreDocument([g], f) > 0).length;
+      return { item, matched, score: scoreDocument(groups, f) };
+    })
+    .filter((r) => r.matched >= needed && r.score > 0)
+    .sort((a, b) => b.matched - a.matched || b.score - a.score)
+    .slice(0, limit)
+    .map((r) => r.item);
+}
+
 async function textSearch(q: string): Promise<KnowledgeResults> {
   const groups = queryStems(q);
   const [areas, innovations, materials] = await Promise.all([knowledge.areas(), knowledge.innovations(), knowledge.materials()]);
   // Wymagamy trafienia większości słów z zapytania (przy 1–2 słowach: wszystkich), żeby nie zalać wyników.
   const needed = groups.length <= 2 ? groups.length : Math.ceil(groups.length / 2);
-  const rank = <T,>(items: T[], fields: (t: T) => { text: string | null | undefined; weight: number }[], limit: number) =>
-    items
-      .map((item) => {
-        const f = fields(item);
-        const matched = groups.filter((g) => scoreDocument([g], f) > 0).length;
-        return { item, matched, score: scoreDocument(groups, f) };
-      })
-      .filter((r) => r.matched >= needed && r.score > 0)
-      .sort((a, b) => b.matched - a.matched || b.score - a.score)
-      .slice(0, limit)
-      .map((r) => r.item);
-
   return {
     query: q,
     engine: "słowa",
-    areas: rank(areas, (a) => [
-      { text: a.name, weight: 4 }, { text: a.lead, weight: 3 }, { text: a.definition, weight: 2 },
-      { text: a.challenges.join(" "), weight: 1 },
-    ], LIMITS.areas),
-    innovations: rank(innovations, (i) => [
-      { text: i.title, weight: 4 }, { text: i.problem, weight: 2 }, { text: i.solution, weight: 2 },
-      { text: i.beneficiaries, weight: 2 }, { text: i.whoCanUse, weight: 1 }, { text: i.etrSummary, weight: 2 },
-      { text: i.groups.map((g) => GROUP_LABELS[g]).join(" "), weight: 2 },
-      { text: i.areas.map((a) => AREA_LABELS[a]).join(" "), weight: 1 },
-      { text: i.innovationType && TYPE_LABELS[i.innovationType], weight: 1 },
-    ], LIMITS.innovations),
-    materials: rank(materials, (m) => [
-      { text: m.title, weight: 3 }, { text: m.description, weight: 2 }, { text: MATERIAL_KIND_LABELS[m.kind], weight: 2 },
-      { text: m.areas.map((a) => AREA_LABELS[a]).join(" "), weight: 1 },
-    ], LIMITS.materials),
+    areas: rank(groups, needed, areas, areaFields, LIMITS.areas),
+    innovations: rank(groups, needed, innovations, innovationFields, LIMITS.innovations),
+    materials: rank(groups, needed, materials, materialFields, LIMITS.materials),
+  };
+}
+
+/**
+ * Kontekst dla asystenta „Zapytaj ROPS”: wiadomość to zdanie, a nie hasło do wyszukiwarki,
+ * więc wystarczą dwa trafione słowa — o tym, co naprawdę pasuje, decyduje model.
+ */
+export async function relatedKnowledge(text: string): Promise<{ innovations: Innovation[]; materials: Material[] }> {
+  const groups = queryStems(text.slice(0, 1500));
+  if (groups.length === 0) return { innovations: [], materials: [] };
+  const [innovations, materials] = await Promise.all([knowledge.innovations(), knowledge.materials()]);
+  const needed = Math.min(2, groups.length);
+  return {
+    innovations: rank(groups, needed, innovations, innovationFields, 5),
+    materials: rank(groups, needed, materials, materialFields, 3),
   };
 }

@@ -145,7 +145,8 @@ async function nudge(threadId: string) {
 
 /**
  * Zapis wiadomości + powiadomienia: od autora → dzwonek admina; od ROPS albo eksperta → autor (jeśli ma konto)
- * i status „Odpowiedź” na osi czasu. `actorId` to admin piszący z Panelu (null przy koncie testowym).
+ * i status „Odpowiedź” na osi czasu. Odpowiedź AI (pierwsza linia) nie jest odpowiedzią człowieka: bez powiadomień
+ * i bez zmiany statusu. `actorId` to admin piszący z Panelu (null przy koncie testowym).
  */
 export async function postNeedMessage(
   t: NeedThread,
@@ -167,10 +168,11 @@ export async function postNeedMessage(
   if (uError) console.error("[rozmowy] updated_at:", uError);
 
   const fromAuthor = msg.role === "autor";
+  const fromHuman = msg.role === "rops" || msg.role === "ekspert";
   const payload = { needId: t.needId, code: t.code, threadId };
   const notify = fromAuthor
     ? supabase.from("notifications").insert({ role: "admin", kind: "nowa_wiadomosc", payload })
-    : t.authorId
+    : fromHuman && t.authorId
       ? supabase.from("notifications").insert({ user_id: t.authorId, kind: "nowa_wiadomosc", payload })
       : null;
   if (notify) {
@@ -178,7 +180,7 @@ export async function postNeedMessage(
     if (nError) console.error("[rozmowy] powiadomienie:", nError);
   }
 
-  if (!fromAuthor && BEFORE_ANSWER.includes(t.status)) {
+  if (fromHuman && BEFORE_ANSWER.includes(t.status)) {
     const { error: sError } = await supabase.from("needs").update({ status: "odpowiedz", updated_at: now }).eq("id", t.needId);
     if (sError) throw sError;
     await logChange(msg.actorId ?? null, "need.status", "need", t.needId, {

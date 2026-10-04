@@ -1,6 +1,7 @@
 import { anonymize } from "@/lib/pii";
 import { rateLimit } from "@/lib/rate-limit";
 import { STATUS_CODE, ThreadPostRequest } from "@/lib/schemas";
+import { replyFirstLine } from "@/lib/rops-first-line";
 import { canOpen, expertName, needThread, postNeedMessage, type NeedThread } from "@/lib/threads";
 
 const NOT_FOUND = "Nie znaleźliśmy zgłoszenia o tym kodzie";
@@ -35,7 +36,10 @@ export async function GET(request: Request) {
   }
 }
 
-/** Wiadomość od autora zgłoszenia. Dane osobowe (telefony, e-maile, PESEL) usuwamy przed zapisem. */
+/**
+ * Wiadomość od autora zgłoszenia. Dane osobowe (telefony, e-maile, PESEL) usuwamy przed zapisem.
+ * Dopóki nie odpisał człowiek, od razu odpowiada asystent AI z Zasobnika (lib/rops-first-line.ts).
+ */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "rozmowy", 10);
   if (limited) return limited;
@@ -55,8 +59,11 @@ export async function POST(request: Request) {
     const chosen = expertId && !thread.expert && (await expertName(expertId)) ? expertId : null;
     const clean = anonymize(body);
     await postNeedMessage(thread, { role: "autor", body: clean.text, expertId: chosen });
-    const updated = await needThread({ code });
-    return Response.json({ ...view(updated!), removedPersonalData: clean.found });
+    // Świeży wątek: ma już id i eksperta wybranego przy tej wiadomości.
+    const withMessage = (await needThread({ code }))!;
+    const aiReplied = await replyFirstLine(withMessage, clean.text);
+    const updated = aiReplied ? (await needThread({ code }))! : withMessage;
+    return Response.json({ ...view(updated), removedPersonalData: clean.found, aiReplied });
   } catch (e) {
     console.error("[rozmowy]", e);
     return Response.json({ error: "Nie udało się wysłać wiadomości" }, { status: 500 });
