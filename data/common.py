@@ -112,25 +112,30 @@ def db_url() -> str:
 
 
 def groq_chat(messages: list[dict], *, model: str = GROQ_FAST, json_mode: bool = False, temperature: float = 0.5) -> str:
-    """Jedno wywołanie Groq (API zgodne z OpenAI). Przy 429 i błędach serwera czeka i ponawia.
+    """Jedno wywołanie Groq (API zgodne z OpenAI). Przy 429, błędach serwera i zerwanym połączeniu czeka i ponawia.
 
     Darmowy plan ma 8 tys. tokenów na minutę na cały klucz, a aplikacja korzysta z tego samego klucza —
     stąd do 12 prób (łącznie do ok. 10 minut czekania), zanim skrypt się podda."""
+    response = None
     for attempt in range(12):
-        response = httpx.post(
-            GROQ_URL,
-            headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY']}"},
-            json={
-                "model": model,
-                "messages": messages,
-                "temperature": temperature,
-                "max_tokens": 4096,  # obejmuje też tokeny rozumowania
-                **({"response_format": {"type": "json_object"}} if json_mode else {}),
-                # gpt-oss to modele rozumujące: krótkie rozumowanie i bez jego treści w odpowiedzi.
-                **({"reasoning_effort": "low", "include_reasoning": False} if model.startswith("openai/gpt-oss") else {}),
-            },
-            timeout=120,
-        )
+        try:
+            response = httpx.post(
+                GROQ_URL,
+                headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY']}"},
+                json={
+                    "model": model,
+                    "messages": messages,
+                    "temperature": temperature,
+                    "max_tokens": 4096,  # obejmuje też tokeny rozumowania
+                    **({"response_format": {"type": "json_object"}} if json_mode else {}),
+                    # gpt-oss to modele rozumujące: krótkie rozumowanie i bez jego treści w odpowiedzi.
+                    **({"reasoning_effort": "low", "include_reasoning": False} if model.startswith("openai/gpt-oss") else {}),
+                },
+                timeout=120,
+            )
+        except httpx.TransportError:  # „Server disconnected without sending a response” w trakcie długiego przebiegu
+            time.sleep(min(2 ** attempt, 60))
+            continue
         if response.status_code == 429 and "tokens per day" in response.text:
             # Dzienny limit (200 tys. tokenów) w oknie kroczącym 24 h — czekanie minutami nic nie da.
             # Wyniki zapisane w cache przetrwają, więc po zwolnieniu limitu skrypt wznowi się od tego miejsca.
@@ -140,8 +145,9 @@ def groq_chat(messages: list[dict], *, model: str = GROQ_FAST, json_mode: bool =
             continue
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"]
-    response.raise_for_status()
-    raise RuntimeError(f"Groq: {response.status_code} po {attempt + 1} próbach")
+    if response is not None:
+        response.raise_for_status()
+    raise RuntimeError(f"Groq: {response.status_code if response is not None else 'brak odpowiedzi'} po {attempt + 1} próbach")
 
 
 def groq_json(system: str, schema: dict, prompt: str, *, model: str = GROQ_FAST) -> dict:

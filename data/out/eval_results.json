@@ -1,0 +1,1437 @@
+{
+  "summary": {
+    "BM25 (problem)": {
+      "hit@3": 0.31,
+      "mrr@5": 0.295
+    },
+    "Słowa (problem)": {
+      "hit@3": 0.621,
+      "mrr@5": 0.554
+    },
+    "Słowa + rerank": {
+      "hit@3": 0.759,
+      "mrr@5": 0.736
+    },
+    "gap_accuracy": 0.909,
+    "queries": {
+      "total": 33,
+      "with_answer": 29,
+      "gaps": 4
+    },
+    "corpus": {
+      "source": "baza (innovations)",
+      "innovations": 144,
+      "synthetic": 29
+    },
+    "date": "2026-10-04",
+    "commit": "813f0fa"
+  },
+  "queries": [
+    {
+      "query": "babcia mieszka sama na wsi i nikt do niej nie zagląda całymi tygodniami",
+      "relevant": [
+        "sasiedzki-dzwonek"
+      ],
+      "keywords": [
+        "senior",
+        "wieś",
+        "samotność",
+        "izolacja",
+        "brak kontaktu"
+      ],
+      "rerank": [
+        [
+          "sasiedzki-dzwonek",
+          95
+        ],
+        [
+          "centrum-antydepresyjne",
+          85
+        ],
+        [
+          "wirtualne-izby-pamieci",
+          80
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "sasiedzki-dzwonek",
+        "sasiad-z-daleka",
+        "autyzm-i-ja",
+        "mobilna-pomoc-terapeutyczna",
+        "kawa-bez-slow"
+      ],
+      "Słowa (problem)": [
+        "sasiedzki-dzwonek",
+        "centrum-antydepresyjne",
+        "senior-cuder",
+        "obu-obuwie-po-domu",
+        "talerze-zdrowia"
+      ],
+      "Słowa + rerank": [
+        "sasiedzki-dzwonek",
+        "centrum-antydepresyjne",
+        "wirtualne-izby-pamieci"
+      ]
+    },
+    {
+      "query": "dziadek ma alzheimera, chcemy go jakoś pobudzać w domu ale nie wiemy czym",
+      "relevant": [
+        "pudelko-wspomnien"
+      ],
+      "keywords": [
+        "alzheimer",
+        "senior",
+        "pobudzanie",
+        "dom",
+        "aktywnosc"
+      ],
+      "rerank": [
+        [
+          "mobilne-centrum-pomocy-dla-osob-starszych",
+          75
+        ],
+        [
+          "sciezka-motosensoryczna",
+          65
+        ],
+        [
+          "kody-qr-na-pomoc-seniorom",
+          55
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "organizator-kompleksowej-opieki-w-miejscu-zamieszkania",
+        "obu-obuwie-po-domu",
+        "podroz-poza-domem-w-wirtualnej-rzeczywistosci",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "cloudleg"
+      ],
+      "Słowa (problem)": [
+        "obu-obuwie-po-domu",
+        "rodzinny-system-wzajemnej-pomocy",
+        "mobilne-centrum-pomocy-dla-osob-starszych",
+        "kody-qr-na-pomoc-seniorom",
+        "sciezka-motosensoryczna"
+      ],
+      "Słowa + rerank": [
+        "mobilne-centrum-pomocy-dla-osob-starszych",
+        "sciezka-motosensoryczna",
+        "kody-qr-na-pomoc-seniorom"
+      ]
+    },
+    {
+      "query": "starsi nie umią zamówić wizyty przez internet ani odebrać e-recepty",
+      "relevant": [
+        "senior-w-sieci-gminy"
+      ],
+      "keywords": [
+        "senior",
+        "internet",
+        "e‑recepta",
+        "wizyta",
+        "technologia"
+      ],
+      "rerank": [
+        [
+          "senior-w-sieci-gminy",
+          96
+        ],
+        [
+          "merkury",
+          72
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "senior-w-sieci-gminy",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "paszport-pacjenta-z-choroba-rzadka",
+        "cloudleg",
+        "opiekun-na-zmiane"
+      ],
+      "Słowa (problem)": [
+        "senior-w-sieci-gminy",
+        "talerze-zdrowia",
+        "autyzm-i-ja",
+        "czas-na-aktywnosc",
+        "go-ahead-mow-smialo"
+      ],
+      "Słowa + rerank": [
+        "senior-w-sieci-gminy",
+        "merkury"
+      ]
+    },
+    {
+      "query": "opiekuje sie mamą 24h na dobę, jestem wykończona i nie mam kiedy odpocząć",
+      "relevant": [
+        "opiekun-na-zmiane"
+      ],
+      "keywords": [
+        "opieka",
+        "mama",
+        "zmęczenie",
+        "brak odpoczynku"
+      ],
+      "rerank": [
+        [
+          "opiekun-na-zmiane",
+          95
+        ],
+        [
+          "inteligentny-organizer-do-lekow",
+          70
+        ],
+        [
+          "organizator-kompleksowej-opieki-w-miejscu-zamieszkania",
+          60
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "opiekun-na-zmiane",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "kaski-binauralne",
+        "mobilna-pomoc-terapeutyczna",
+        "rodzinny-system-wzajemnej-pomocy"
+      ],
+      "Słowa (problem)": [
+        "opiekun-na-zmiane",
+        "rodzinny-system-wzajemnej-pomocy",
+        "czas-na-aktywnosc",
+        "hop-hop-mobilny-plac-zabaw",
+        "terapeuta-przestrzeni"
+      ],
+      "Słowa + rerank": [
+        "opiekun-na-zmiane",
+        "inteligentny-organizer-do-lekow",
+        "organizator-kompleksowej-opieki-w-miejscu-zamieszkania"
+      ]
+    },
+    {
+      "query": "syn z autyzmem nie wytrzymuje hałasu w sklepie i przychodni",
+      "relevant": [
+        "mapa-ciszy"
+      ],
+      "keywords": [
+        "autyzm",
+        "hałas",
+        "sklep",
+        "przychodnia",
+        "wrażliwość"
+      ],
+      "rerank": [
+        [
+          "mapa-ciszy",
+          95
+        ],
+        [
+          "himalaje-autyzmu",
+          65
+        ],
+        [
+          "sciezka-motosensoryczna",
+          45
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "rodzinny-system-wzajemnej-pomocy",
+        "jezykolamacz",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "sciezka-motosensoryczna",
+        "cloudleg"
+      ],
+      "Słowa (problem)": [
+        "sciezka-motosensoryczna",
+        "zakupy-bez-barier",
+        "himalaje-autyzmu",
+        "jezykolamacz",
+        "mapa-ciszy"
+      ],
+      "Słowa + rerank": [
+        "mapa-ciszy",
+        "himalaje-autyzmu"
+      ]
+    },
+    {
+      "query": "dorośli z upośledzeniem umysłowym dostają pracę i po tygodniu rezygnują",
+      "relevant": [
+        "krok-po-kroku-do-pracy"
+      ],
+      "keywords": [
+        "niepełnosprawność",
+        "praca",
+        "rezygnacja",
+        "wsparcie",
+        "integracja",
+        "zatrudnienie"
+      ],
+      "rerank": [
+        [
+          "krok-po-kroku-do-pracy",
+          95
+        ],
+        [
+          "niewypaleni",
+          85
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "glowa-do-gory",
+        "bajkala",
+        "bez-presji-z-depresji",
+        "oncotriada",
+        "klucz-na-start"
+      ],
+      "Słowa (problem)": [
+        "krok-po-kroku-do-pracy",
+        "gra-o-zdrowie",
+        "rodzinny-system-wzajemnej-pomocy",
+        "bajkala",
+        "e-rzecznik-konsumenta-seniora"
+      ],
+      "Słowa + rerank": [
+        "krok-po-kroku-do-pracy",
+        "niewypaleni"
+      ]
+    },
+    {
+      "query": "podopieczni wychodzą z DPS do własnego mieszkania i nie umieją gotować ani płacić rachunków",
+      "relevant": [
+        "moje-mieszkanie-moj-plan"
+      ],
+      "keywords": [
+        "podopieczny",
+        "DPS",
+        "gotowanie",
+        "rachunki",
+        "mieszkanie"
+      ],
+      "rerank": [
+        [
+          "talerze-zdrowia",
+          82
+        ],
+        [
+          "terapeuta-przestrzeni",
+          68
+        ],
+        [
+          "senior-cuder",
+          55
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "rodzinny-system-wzajemnej-pomocy",
+        "cloudleg",
+        "stworzenie-narzedzia-ulatwiajacego-seniorom-prawidlowe-regulowanie-spraw-spadkowych",
+        "piosenki-uczestniczace"
+      ],
+      "Słowa (problem)": [
+        "reka-na-klamce",
+        "centrum-antydepresyjne",
+        "sasiedzki-dzwonek",
+        "zdrowie-na-kolkach",
+        "stworzenie-narzedzia-ulatwiajacego-seniorom-prawidlowe-regulowanie-spraw-spadkowych"
+      ],
+      "Słowa + rerank": [
+        "talerze-zdrowia",
+        "terapeuta-przestrzeni",
+        "senior-cuder"
+      ]
+    },
+    {
+      "query": "niewidomy sąsiad nie wie kiedy przyjedzie autobus bo rozkład jest tylko na kartce",
+      "relevant": [
+        "glosny-przystanek"
+      ],
+      "keywords": [
+        "niewidomy",
+        "autobus",
+        "rozkład",
+        "druk",
+        "dostępność"
+      ],
+      "rerank": [
+        [
+          "glosny-przystanek",
+          95
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "therapy-set",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "mobilna-pomoc-terapeutyczna",
+        "zakupy-bez-barier",
+        "piosenki-uczestniczace"
+      ],
+      "Słowa (problem)": [
+        "puzzle-3d",
+        "himalaje-autyzmu",
+        "zrozum-moja-kulture-zrozum-mnie",
+        "dotykowy-przewodnik",
+        "kaski-binauralne"
+      ],
+      "Słowa + rerank": [
+        "glosny-przystanek"
+      ]
+    },
+    {
+      "query": "głucha pani przychodzi do gminy i nie da się z nią dogadać",
+      "relevant": [
+        "migowy-urzad",
+        "kawa-bez-slow"
+      ],
+      "keywords": [
+        "głuchy",
+        "komunikacja",
+        "urząd"
+      ],
+      "rerank": [
+        [
+          "migowy-urzad",
+          95
+        ],
+        [
+          "dostepny-wniosek-dla-ggluchych",
+          85
+        ],
+        [
+          "mobilne-centrum-pomocy-dla-osob-starszych",
+          70
+        ],
+        [
+          "wielodziedzinowy-slownik-terminow-specjalistycznych-pl-pjm",
+          60
+        ],
+        [
+          "nakreceni-na-aktywnosc",
+          55
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "piosenki-uczestniczace",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "osa-i-eco-puzzle",
+        "stworzenie-narzedzia-ulatwiajacego-seniorom-prawidlowe-regulowanie-spraw-spadkowych",
+        "rodzinny-system-wzajemnej-pomocy"
+      ],
+      "Słowa (problem)": [
+        "migowy-urzad",
+        "dostepny-wniosek-dla-ggluchych",
+        "wielodziedzinowy-slownik-terminow-specjalistycznych-pl-pjm",
+        "mobilne-centrum-pomocy-dla-osob-starszych",
+        "glucha-ankieta"
+      ],
+      "Słowa + rerank": [
+        "migowy-urzad",
+        "dostepny-wniosek-dla-ggluchych",
+        "mobilne-centrum-pomocy-dla-osob-starszych",
+        "wielodziedzinowy-slownik-terminow-specjalistycznych-pl-pjm",
+        "nakreceni-na-aktywnosc"
+      ]
+    },
+    {
+      "query": "osoby niewidome nie mają po co przychodzić do muzeum, nic nie mogą dotknąć",
+      "relevant": [
+        "dotykowy-przewodnik"
+      ],
+      "keywords": [
+        "niewidomy",
+        "muzeum",
+        "dostęp",
+        "dotyk",
+        "bariera"
+      ],
+      "rerank": [
+        [
+          "ngoz-nawigacja-glosowa-osob-zaleznych",
+          92
+        ],
+        [
+          "my-way-to-culture",
+          88
+        ],
+        [
+          "dotykowy-przewodnik",
+          85
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "cloudleg",
+        "my-way-to-culture",
+        "opiekun-na-zmiane",
+        "rodzinny-system-wzajemnej-pomocy"
+      ],
+      "Słowa (problem)": [
+        "ngoz-nawigacja-glosowa-osob-zaleznych",
+        "my-way-to-culture",
+        "nakreceni-na-aktywnosc",
+        "kaski-binauralne",
+        "teleasystent"
+      ],
+      "Słowa + rerank": [
+        "ngoz-nawigacja-glosowa-osob-zaleznych",
+        "my-way-to-culture",
+        "dotykowy-przewodnik"
+      ]
+    },
+    {
+      "query": "głusi u nas są odizolowani, nikt w miasteczku nie zna migowego",
+      "relevant": [
+        "kawa-bez-slow",
+        "migowy-urzad"
+      ],
+      "keywords": [
+        "głuchy",
+        "izolacja",
+        "język migowy"
+      ],
+      "rerank": [
+        [
+          "kawa-bez-slow",
+          95
+        ],
+        [
+          "migowy-urzad",
+          80
+        ],
+        [
+          "dostepny-wniosek-dla-ggluchych",
+          70
+        ],
+        [
+          "glucha-ankieta",
+          50
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "wirtualne-izby-pamieci",
+        "cloudleg",
+        "piosenki-uczestniczace",
+        "kawa-bez-slow",
+        "sasiad-z-daleka"
+      ],
+      "Słowa (problem)": [
+        "dostepny-wniosek-dla-ggluchych",
+        "kawa-bez-slow",
+        "glucha-ankieta",
+        "gluchy-czytelnik-w-bibliotece",
+        "hear-it"
+      ],
+      "Słowa + rerank": [
+        "kawa-bez-slow",
+        "migowy-urzad",
+        "dostepny-wniosek-dla-ggluchych",
+        "glucha-ankieta"
+      ]
+    },
+    {
+      "query": "na wózku nie da się wejść do starego domu kultury, są schody",
+      "relevant": [
+        "podjazd-na-telefon"
+      ],
+      "keywords": [
+        "wózek",
+        "schody",
+        "dom kultury",
+        "dostępność",
+        "niepełnosprawność"
+      ],
+      "rerank": [
+        [
+          "my-way-to-culture",
+          95
+        ],
+        [
+          "spotkania-kulturlove",
+          90
+        ],
+        [
+          "puzzles-ramp",
+          85
+        ],
+        [
+          "ogrod-na-wysokosci",
+          60
+        ],
+        [
+          "ev-modul-do-wozkow-inwalidzkich",
+          55
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "spotkania-kulturlove",
+        "my-way-to-culture",
+        "piosenki-uczestniczace",
+        "ngoz-nawigacja-glosowa-osob-zaleznych",
+        "ev-modul-do-wozkow-inwalidzkich"
+      ],
+      "Słowa (problem)": [
+        "ogrod-na-wysokosci",
+        "puzzles-ramp",
+        "ngoz-nawigacja-glosowa-osob-zaleznych",
+        "ev-modul-do-wozkow-inwalidzkich",
+        "zakupy-bez-barier"
+      ],
+      "Słowa + rerank": [
+        "my-way-to-culture",
+        "spotkania-kulturlove",
+        "puzzles-ramp",
+        "ogrod-na-wysokosci",
+        "ev-modul-do-wozkow-inwalidzkich"
+      ]
+    },
+    {
+      "query": "ludzie z wiosek nie mają czym dojechać do lekarza, autobus nie jeździ",
+      "relevant": [
+        "wspolny-kurs",
+        "zdrowie-na-kolkach"
+      ],
+      "keywords": [
+        "transport",
+        "wieś",
+        "lekarz",
+        "autobus",
+        "dostęp"
+      ],
+      "rerank": [
+        [
+          "wspolny-kurs",
+          96
+        ],
+        [
+          "puzzles-ramp",
+          48
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "opiekun-na-zmiane",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "wibraap",
+        "piosenki-uczestniczace",
+        "cloudleg"
+      ],
+      "Słowa (problem)": [
+        "apteczka-pamieci",
+        "paszport-pacjenta-z-choroba-rzadka",
+        "himalaje-autyzmu",
+        "zrozum-moja-kulture-zrozum-mnie",
+        "wspolny-kurs"
+      ],
+      "Słowa + rerank": [
+        "wspolny-kurs"
+      ]
+    },
+    {
+      "query": "mieszkańcy na wózkach chcieliby coś robić na dworze, np. ogródek",
+      "relevant": [
+        "ogrod-na-wysokosci"
+      ],
+      "keywords": [
+        "wózek",
+        "ogród",
+        "aktywność",
+        "dostępność",
+        "rekreacja",
+        "przestrzeń zielona"
+      ],
+      "rerank": [
+        [
+          "ogrod-na-wysokosci",
+          95
+        ],
+        [
+          "sciezka-motosensoryczna",
+          55
+        ],
+        [
+          "puzzles-ramp",
+          50
+        ],
+        [
+          "dostepny-stol-targowy",
+          30
+        ],
+        [
+          "lekki-wozek-aktywny",
+          30
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "puzzles-ramp",
+        "therapy-set",
+        "krok-po-kroku-do-pracy",
+        "zakupy-bez-barier",
+        "innotextil"
+      ],
+      "Słowa (problem)": [
+        "ogrod-na-wysokosci",
+        "puzzles-ramp",
+        "lekki-wozek-aktywny",
+        "dostepna-szermierka",
+        "ev-modul-do-wozkow-inwalidzkich"
+      ],
+      "Słowa + rerank": [
+        "ogrod-na-wysokosci",
+        "sciezka-motosensoryczna",
+        "puzzles-ramp"
+      ]
+    },
+    {
+      "query": "po udarze tata ma niesprawną rękę i nie otworzy sam drzwi",
+      "relevant": [
+        "reka-na-klamce"
+      ],
+      "keywords": [
+        "udar",
+        "niepełnosprawność",
+        "ręka",
+        "samodzielność",
+        "otwieranie drzwi"
+      ],
+      "rerank": [
+        [
+          "biustspinka",
+          68
+        ],
+        [
+          "zakupy-bez-barier",
+          52
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "obu-obuwie-po-domu",
+        "cloudleg",
+        "rodzinny-system-wzajemnej-pomocy",
+        "opiekun-na-zmiane",
+        "bez-presji-z-depresji"
+      ],
+      "Słowa (problem)": [
+        "biustspinka",
+        "mix-ar-i-vr-dla-koordynacji-ruchowej",
+        "czas-na-aktywnosc",
+        "dostepna-polska",
+        "ev-modul-do-wozkow-inwalidzkich"
+      ],
+      "Słowa + rerank": [
+        "biustspinka",
+        "zakupy-bez-barier"
+      ]
+    },
+    {
+      "query": "rodzice w rodzinach z asystentem nie spędzają czasu z dziećmi, zero więzi",
+      "relevant": [
+        "rodzinne-popoludnia",
+        "tata-w-akcji"
+      ],
+      "keywords": [
+        "rodzic",
+        "dziecko",
+        "asystent",
+        "więź",
+        "rodzina"
+      ],
+      "rerank": [
+        [
+          "rodzinne-popoludnia",
+          95
+        ],
+        [
+          "to-nie-koniec-swiata-to-poczatek-swiata",
+          65
+        ],
+        [
+          "nasz-wspolny-rodzinny-swiat-poznaje-ucze-reaguje",
+          60
+        ],
+        [
+          "uwaznione-rodzienstwo",
+          50
+        ],
+        [
+          "tata-w-akcji",
+          40
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "rodzinne-popoludnia",
+        "uwaznione-rodzienstwo",
+        "cloudleg",
+        "senior-cuder",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac"
+      ],
+      "Słowa (problem)": [
+        "rodzinne-popoludnia",
+        "to-nie-koniec-swiata-to-poczatek-swiata",
+        "nasz-wspolny-rodzinny-swiat-poznaje-ucze-reaguje",
+        "uwaznione-rodzienstwo",
+        "hop-hop-mobilny-plac-zabaw"
+      ],
+      "Słowa + rerank": [
+        "rodzinne-popoludnia",
+        "to-nie-koniec-swiata-to-poczatek-swiata",
+        "nasz-wspolny-rodzinny-swiat-poznaje-ucze-reaguje",
+        "uwaznione-rodzienstwo"
+      ]
+    },
+    {
+      "query": "dzieciaki z domu dziecka kończą 18 lat i zostają z niczym, nie wiedzą co dalej",
+      "relevant": [
+        "starszy-brat-starsza-siostra",
+        "kieszonkowy-budzet"
+      ],
+      "keywords": [
+        "dziecko",
+        "dom dziecka",
+        "przejście",
+        "wsparcie",
+        "edukacja",
+        "praca"
+      ],
+      "rerank": [],
+      "pinned": [],
+      "predicted_gap": true,
+      "BM25 (problem)": [
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "zakupy-na-jednym-wozku-z-dzieckiem-z-niepelnosprawnoscia-ruchowa",
+        "obu-obuwie-po-domu",
+        "autyzm-i-ja",
+        "kieszonkowy-budzet"
+      ],
+      "Słowa (problem)": [
+        "piosenki-uczestniczace",
+        "puzzle-3d",
+        "edki-kredki-terapeutyczne",
+        "rodzinny-system-wzajemnej-pomocy",
+        "bajkala"
+      ],
+      "Słowa + rerank": []
+    },
+    {
+      "query": "nastolatki z biednych rodzin nie umieją gospodarować pieniędzmi",
+      "relevant": [
+        "kieszonkowy-budzet"
+      ],
+      "keywords": [
+        "nastolatka",
+        "bieda",
+        "gospodarowanie pieniędzmi",
+        "edukacja",
+        "finanse"
+      ],
+      "rerank": [
+        [
+          "kieszonkowy-budzet",
+          95
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "kieszonkowy-budzet",
+        "nasz-wspolny-rodzinny-swiat-poznaje-ucze-reaguje",
+        "cloudleg",
+        "osa-i-eco-puzzle",
+        "uwaznione-rodzienstwo"
+      ],
+      "Słowa (problem)": [
+        "kieszonkowy-budzet",
+        "czas-na-aktywnosc",
+        "senior-cuder",
+        "talerze-zdrowia",
+        "terapeuta-przestrzeni"
+      ],
+      "Słowa + rerank": [
+        "kieszonkowy-budzet"
+      ]
+    },
+    {
+      "query": "młodzież ma depresje, a do psychologa czeka się pół roku, najbliższy w Krakowie",
+      "relevant": [
+        "bezpieczny-przystanek",
+        "glowa-do-gory"
+      ],
+      "keywords": [
+        "młodzież",
+        "depresja",
+        "psycholog",
+        "kryzys",
+        "konsultacja"
+      ],
+      "rerank": [
+        [
+          "bezpieczny-przystanek",
+          78
+        ],
+        [
+          "bez-presji-z-depresji",
+          45
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "dialog-ponad-kulturami-1",
+        "bez-stresu-do-sukcesu-terapia-neurologiczna-przyjazna-dziecku",
+        "obu-obuwie-po-domu",
+        "terapeuta-przestrzeni",
+        "szablony-piekna"
+      ],
+      "Słowa (problem)": [
+        "bezpieczny-przystanek",
+        "bajkala",
+        "centrum-antydepresyjne",
+        "senior-cuder",
+        "rodzina-adopcyjna-dorasta"
+      ],
+      "Słowa + rerank": [
+        "bezpieczny-przystanek"
+      ]
+    },
+    {
+      "query": "w programach dla rodzin są tylko mamy, ojcowie w ogóle się nie pojawiają",
+      "relevant": [
+        "tata-w-akcji"
+      ],
+      "keywords": [
+        "rodzina",
+        "ojciec",
+        "program",
+        "uczestnictwo",
+        "płeć"
+      ],
+      "rerank": [
+        [
+          "tata-w-akcji",
+          95
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "piosenki-uczestniczace",
+        "uwaznione-rodzienstwo",
+        "tata-w-akcji",
+        "paszport-pacjenta-z-choroba-rzadka",
+        "rodzinny-system-wzajemnej-pomocy"
+      ],
+      "Słowa (problem)": [
+        "tata-w-akcji",
+        "organizator-kompleksowej-opieki-w-miejscu-zamieszkania",
+        "hear-it",
+        "pacjent-pro",
+        "dialog-ponad-kulturami"
+      ],
+      "Słowa + rerank": [
+        "tata-w-akcji"
+      ]
+    },
+    {
+      "query": "ukraińska rodzina nie umie się dogadać w przychodni i w szkole",
+      "relevant": [
+        "dzien-dobry-po-polsku",
+        "sasiad-z-daleka"
+      ],
+      "keywords": [
+        "ukraiński",
+        "rodzina",
+        "przychodnia",
+        "szkoła",
+        "komunikacja"
+      ],
+      "rerank": [
+        [
+          "dialog-ponad-kulturami",
+          88
+        ],
+        [
+          "moj-pomocny-virtual-world",
+          72
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "piosenki-uczestniczace",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "sciezka-motosensoryczna",
+        "rodzinny-system-wzajemnej-pomocy",
+        "paszport-pacjenta-z-choroba-rzadka"
+      ],
+      "Słowa (problem)": [
+        "moj-pomocny-virtual-world",
+        "sciezka-motosensoryczna",
+        "bez-presji-z-depresji",
+        "czas-na-aktywnosc",
+        "dialog-ponad-kulturami"
+      ],
+      "Słowa + rerank": [
+        "dialog-ponad-kulturami",
+        "moj-pomocny-virtual-world"
+      ]
+    },
+    {
+      "query": "obcokrajowcy którzy się sprowadzili nikogo tu nie znają i są sami",
+      "relevant": [
+        "sasiad-z-daleka"
+      ],
+      "keywords": [
+        "obcokrajowiec",
+        "samotność",
+        "integracja",
+        "brak znajomych",
+        "nowy kraj"
+      ],
+      "rerank": [
+        [
+          "bajkala",
+          65
+        ],
+        [
+          "sasiedzki-dzwonek",
+          55
+        ],
+        [
+          "centrum-antydepresyjne",
+          50
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "opiekun-na-zmiane",
+        "sasiedzki-dzwonek",
+        "piosenki-uczestniczace",
+        "rodzinny-system-wzajemnej-pomocy",
+        "dialog-ponad-kulturami-1"
+      ],
+      "Słowa (problem)": [
+        "health-guide-pl",
+        "rodzinny-system-wzajemnej-pomocy",
+        "pacjent-pro",
+        "czas-na-aktywnosc",
+        "bajkala"
+      ],
+      "Słowa + rerank": [
+        "bajkala",
+        "sasiedzki-dzwonek",
+        "centrum-antydepresyjne"
+      ]
+    },
+    {
+      "query": "długo bezrobotni odzwyczaili się od wstawania do pracy",
+      "relevant": [
+        "pierwszy-etat"
+      ],
+      "keywords": [
+        "bezrobocie",
+        "motywacja",
+        "praca"
+      ],
+      "rerank": [
+        [
+          "pierwszy-etat",
+          95
+        ],
+        [
+          "agencja-pracy-incydentalnej",
+          78
+        ],
+        [
+          "gra-o-zdrowie",
+          62
+        ],
+        [
+          "krok-po-kroku-do-pracy",
+          45
+        ],
+        [
+          "niewypaleni",
+          38
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "pierwszy-etat",
+        "korytarz-wspomnien",
+        "gra-o-zdrowie",
+        "osoby-niewidome-i-niedowidzace-jako-nauczyciele-jezyka-polskiego",
+        "centrum-antydepresyjne"
+      ],
+      "Słowa (problem)": [
+        "pierwszy-etat",
+        "agencja-pracy-incydentalnej",
+        "bajkala",
+        "centrum-antydepresyjne",
+        "e-rzecznik-konsumenta-seniora"
+      ],
+      "Słowa + rerank": [
+        "pierwszy-etat",
+        "agencja-pracy-incydentalnej",
+        "gra-o-zdrowie"
+      ]
+    },
+    {
+      "query": "po CIS ludzie nie mają gdzie się zatrudnić i wracają do zasiłku",
+      "relevant": [
+        "spoldzielnia-smaku",
+        "pierwszy-etat"
+      ],
+      "keywords": [
+        "bezrobocie",
+        "praca",
+        "zasiłek",
+        "rynek pracy",
+        "ubóstwo"
+      ],
+      "rerank": [
+        [
+          "pierwszy-etat",
+          95
+        ],
+        [
+          "agencja-pracy-incydentalnej",
+          90
+        ],
+        [
+          "gra-o-zdrowie",
+          70
+        ],
+        [
+          "krok-po-kroku-do-pracy",
+          55
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "agencja-pracy-incydentalnej",
+        "opiekun-na-zmiane",
+        "rodzinny-system-wzajemnej-pomocy",
+        "pierwszy-etat"
+      ],
+      "Słowa (problem)": [
+        "gra-o-zdrowie",
+        "obu-obuwie-po-domu",
+        "pierwszy-etat",
+        "agencja-pracy-incydentalnej",
+        "rodzinny-system-wzajemnej-pomocy"
+      ],
+      "Słowa + rerank": [
+        "pierwszy-etat",
+        "agencja-pracy-incydentalnej",
+        "gra-o-zdrowie",
+        "krok-po-kroku-do-pracy"
+      ]
+    },
+    {
+      "query": "bezdomni w małych miastach nie mają gdzie się umyć ani wyprać rzeczy",
+      "relevant": [
+        "cieply-kat"
+      ],
+      "keywords": [
+        "bezdomny",
+        "małe miasto",
+        "mycie",
+        "pranie",
+        "dostęp do wody"
+      ],
+      "rerank": [
+        [
+          "cieply-kat",
+          96
+        ],
+        [
+          "szlakiem-ludzi-bezdomnych",
+          92
+        ],
+        [
+          "wiejski-program-pomocy-osobom-w-kryzysie-bezdomnosci-sciezka-feniksa",
+          68
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "opiekun-na-zmiane",
+        "piosenki-uczestniczace",
+        "kawa-bez-slow",
+        "wibraap"
+      ],
+      "Słowa (problem)": [
+        "wiejski-program-pomocy-osobom-w-kryzysie-bezdomnosci-sciezka-feniksa",
+        "cieply-kat",
+        "bezpieczny-przystanek",
+        "glosny-przystanek",
+        "kawa-bez-slow"
+      ],
+      "Słowa + rerank": [
+        "cieply-kat",
+        "szlakiem-ludzi-bezdomnych",
+        "wiejski-program-pomocy-osobom-w-kryzysie-bezdomnosci-sciezka-feniksa"
+      ]
+    },
+    {
+      "query": "po schronisku ludzie i tak wracają na ulicę",
+      "relevant": [
+        "klucz-na-start"
+      ],
+      "keywords": [
+        "schronisko",
+        "ulica",
+        "bezdomność"
+      ],
+      "rerank": [
+        [
+          "klucz-na-start",
+          92
+        ],
+        [
+          "wiejski-program-pomocy-osobom-w-kryzysie-bezdomnosci-sciezka-feniksa",
+          68
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "klucz-na-start",
+        "bez-presji-z-depresji",
+        "oncotriada",
+        "kompleksowa-pomoc-dla-osob-po-amputacji-konczyny-dolnej",
+        "spoldzielnia-smaku"
+      ],
+      "Słowa (problem)": [
+        "klucz-na-start",
+        "obu-obuwie-po-domu",
+        "cieply-kat",
+        "szlakiem-ludzi-bezdomnych",
+        "wiejski-program-pomocy-osobom-w-kryzysie-bezdomnosci-sciezka-feniksa"
+      ],
+      "Słowa + rerank": [
+        "klucz-na-start",
+        "wiejski-program-pomocy-osobom-w-kryzysie-bezdomnosci-sciezka-feniksa"
+      ]
+    },
+    {
+      "query": "na wsi nikt się nie bada, ludzie idą do lekarza jak jest już za późno",
+      "relevant": [
+        "zdrowie-na-kolkach"
+      ],
+      "keywords": [
+        "wieś",
+        "lekarz",
+        "badanie",
+        "zdrowie",
+        "profilaktyka"
+      ],
+      "rerank": [
+        [
+          "zdrowie-na-kolkach",
+          95
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "paszport-pacjenta-z-choroba-rzadka",
+        "stworzenie-narzedzia-ulatwiajacego-seniorom-prawidlowe-regulowanie-spraw-spadkowych",
+        "rodzinny-system-wzajemnej-pomocy",
+        "piosenki-uczestniczace"
+      ],
+      "Słowa (problem)": [
+        "zdrowie-na-kolkach",
+        "apteczka-pamieci",
+        "paszport-pacjenta-z-choroba-rzadka",
+        "obu-obuwie-po-domu",
+        "glucha-ankieta"
+      ],
+      "Słowa + rerank": [
+        "zdrowie-na-kolkach"
+      ]
+    },
+    {
+      "query": "babcia bierze 8 leków i ciągle się myli co i kiedy",
+      "relevant": [
+        "apteczka-pamieci"
+      ],
+      "keywords": [
+        "senior",
+        "leki",
+        "pomylka",
+        "zdrowie",
+        "samodzielność"
+      ],
+      "rerank": [
+        [
+          "apteczka-pamieci",
+          95
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "cold-box",
+        "przewodnik-dla-osob-z-asd-moje-potrzeby-gdzie-i-jak-je-realizowac",
+        "apteczka-pamieci",
+        "chlap-pro",
+        "teleasystent"
+      ],
+      "Słowa (problem)": [
+        "cold-box",
+        "pelnia-zdrowia",
+        "apteczka-pamieci",
+        "dostepna-polska",
+        "czas-na-aktywnosc"
+      ],
+      "Słowa + rerank": [
+        "apteczka-pamieci"
+      ]
+    },
+    {
+      "query": "po wyjściu z psychiatryka nie ma żadnego wsparcia i znowu jest nawrót",
+      "relevant": [
+        "glowa-do-gory"
+      ],
+      "keywords": [
+        "psychiatryka",
+        "wsparcie",
+        "nawrót",
+        "zdrowie psychiczne"
+      ],
+      "rerank": [
+        [
+          "glowa-do-gory",
+          95
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false,
+      "BM25 (problem)": [
+        "mobilna-pomoc-terapeutyczna",
+        "rodzinny-system-wzajemnej-pomocy",
+        "obu-obuwie-po-domu",
+        "glowa-do-gory",
+        "cloudleg"
+      ],
+      "Słowa (problem)": [
+        "glowa-do-gory",
+        "podroz-poza-domem-w-wirtualnej-rzeczywistosci",
+        "ngoz-nawigacja-glosowa-osob-zaleznych",
+        "bez-presji-z-depresji",
+        "gra-o-zdrowie"
+      ],
+      "Słowa + rerank": [
+        "glowa-do-gory"
+      ]
+    },
+    {
+      "query": "w gminie brakuje miejsc w żłobku, rodzice czekają rok",
+      "relevant": [],
+      "keywords": [
+        "żłobek",
+        "rodzice",
+        "miejsca",
+        "gmina",
+        "oczekiwanie"
+      ],
+      "rerank": [],
+      "pinned": [],
+      "predicted_gap": true
+    },
+    {
+      "query": "rolnicy po sprzedaży ziemi piją i popadają w depresję",
+      "relevant": [],
+      "keywords": [
+        "rolnik",
+        "ziemia",
+        "alkohol",
+        "depresja"
+      ],
+      "rerank": [
+        [
+          "centrum-antydepresyjne",
+          65
+        ],
+        [
+          "bez-presji-z-depresji",
+          55
+        ],
+        [
+          "bezpieczny-przystanek",
+          50
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false
+    },
+    {
+      "query": "na nowym osiedlu nikt nikogo nie zna, ludzie się nie angażują w życie gminy",
+      "relevant": [],
+      "keywords": [
+        "osiedle",
+        "brak zaangażowania",
+        "sąsiedztwo",
+        "izolacja",
+        "integracja"
+      ],
+      "rerank": [
+        [
+          "sasiad-z-daleka",
+          75
+        ]
+      ],
+      "pinned": [],
+      "predicted_gap": false
+    },
+    {
+      "query": "psy bez właściciela biegają po wsi i straszą dzieci",
+      "relevant": [],
+      "keywords": [
+        "pies",
+        "wioska",
+        "dziecko",
+        "strach",
+        "bez właściciela"
+      ],
+      "rerank": [],
+      "pinned": [],
+      "predicted_gap": true
+    }
+  ]
+}
