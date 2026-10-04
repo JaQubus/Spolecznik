@@ -39,7 +39,7 @@ export function MessageList({
                       {m.name} · Odpowiedź automatyczna
                     </strong>
                   ) : (
-                    <strong>{m.role === own ? `Ty (${m.name})` : m.name}</strong>
+                    <strong>{(m.mine ?? m.role === own) ? `Ty (${m.name})` : m.name}</strong>
                   )}
                   <span className="text-base text-muted-foreground">
                     <time dateTime={m.createdAt}>{formatTime(m.createdAt)}</time>

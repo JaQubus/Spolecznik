@@ -175,13 +175,21 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
       )}
 
       {!closed && (
-        <Button asChild variant="outline">
-          <Link href={`/zapytaj?kod=${code}`}>
-            {withExpert
-              ? "Przejdź do rozmowy z ekspertem"
-              : `Napisz do ROPS w sprawie ${report.kind === "pomysl" ? "pomysłu" : "zgłoszenia"}`}
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild variant="outline">
+            <Link href={`/zapytaj?kod=${code}`}>
+              {withExpert
+                ? "Przejdź do rozmowy z ekspertem"
+                : `Napisz do ROPS w sprawie ${report.kind === "pomysl" ? "pomysłu" : "zgłoszenia"}`}
+            </Link>
+          </Button>
+          {/* Zaproszenia i rozmowa gmin. Sam kod nie otwiera partnerstwa — /partnerstwo sprawdza klucz z przeglądarki. */}
+          {report.kind === "potrzeba" && (
+            <Button asChild variant="outline">
+              <Link href={`/partnerstwo?potrzeba=${code}`}>Partnerstwo gmin</Link>
+            </Button>
+          )}
+        </div>
       )}
 
       {key && <PrivateLink code={code} accessKey={key} kind={report.kind} />}

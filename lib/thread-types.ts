@@ -20,6 +20,8 @@ export type ThreadMessage = {
   createdAt: string;
   /** Tylko odpowiedzi asystenta (role = "ai") z Zasobnika. */
   sources?: MessageSource[];
+  /** Ustawia serwer, gdy w wątku pisze kilku autorów (partnerstwo) — sama rola nie mówi, czy to „Ty”. */
+  mine?: boolean;
 };
 
 /** Na kogo czeka rozmowa: na człowieka (asystent przekazał pytanie), pilnie (odpowiedź asystenta nie pomogła) albo na nikogo. */

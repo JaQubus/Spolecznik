@@ -9,13 +9,14 @@ import { notifyExpert } from "@/lib/expert";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { innovationHref } from "@/lib/knowledge/hrefs";
 import { notify } from "@/lib/notifications";
+import { postPartnershipMessage } from "@/lib/partnerships";
 import { logChange } from "@/lib/panel/needs";
 import { anonymize } from "@/lib/pii";
 import { NEED_STATUSES, TEST_STATUSES } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TEST_STATUS_LABELS } from "@/lib/test-status";
-import { ensureThread, expertName, needThread, postNeedMessage, setReportStatus, threadPayload } from "@/lib/threads";
+import { ensureThread, expertName, needThread, nudge, postNeedMessage, setReportStatus, threadPayload } from "@/lib/threads";
 
 export type ActionResult = { ok: boolean; message: string } | null;
 
@@ -225,6 +226,47 @@ export async function assignIdeaExpert(_prev: ActionResult, formData: FormData):
   }
   refresh();
   return { ok: true, message: `Przypisano eksperta: ${name}.` };
+}
+
+const PartnershipReplyInput = z.object({ threadId: z.uuid(), body: z.string().trim().min(2).max(2000) });
+
+/** ROPS prowadzi każde partnerstwo gmin: pisze jako „ROPS Kraków”, gminy z kontem dostają powiadomienie. */
+export async function replyInPartnership(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = PartnershipReplyInput.safeParse({ threadId: formData.get("threadId"), body: formData.get("body") });
+  if (!parsed.success) return { ok: false, message: "Wpisz wiadomość (od 2 do 2000 znaków)." };
+  try {
+    await postPartnershipMessage(parsed.data.threadId, { actorId: user.id }, parsed.data.body);
+  } catch (e) {
+    console.error("[panel] partnerstwo:", e);
+    return { ok: false, message: "Nie udało się wysłać. Spróbuj ponownie." };
+  }
+  refresh();
+  return { ok: true, message: "Wysłano. Zobaczą ją wszystkie gminy w partnerstwie." };
+}
+
+const ModerateInput = z.object({ threadId: z.uuid(), messageId: z.uuid() });
+
+/** Moderacja: wiadomość gminy znika z partnerstwa (np. dane osobowe, których nie wyłapała anonimizacja). Ślad w audit_log. */
+export async function removePartnershipMessage(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = ModerateInput.safeParse({ threadId: formData.get("threadId"), messageId: formData.get("messageId") });
+  if (!parsed.success) return { ok: false, message: "Nie znaleziono wiadomości. Odśwież stronę." };
+  const { threadId, messageId } = parsed.data;
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("messages").delete().eq("id", messageId).eq("thread_id", threadId).select("author_name").maybeSingle();
+    if (error) throw error;
+    if (!data) return { ok: false, message: "Nie znaleziono wiadomości. Odśwież stronę." };
+    await logChange(user.id, "partnership.remove_message", "thread", threadId, { author: data.author_name });
+    await nudge(threadId);
+  } catch (e) {
+    console.error("[panel] moderacja:", e);
+    return SAVE_FAILED;
+  }
+  refresh();
+  return { ok: true, message: "Usunięto wiadomość z partnerstwa." };
 }
 
 const NeedIdInput = z.object({ needId: z.uuid() });

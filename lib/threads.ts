@@ -159,8 +159,11 @@ export function authorView(t: NeedThread) {
   return { threadId: t.threadId, status: t.status, expert: t.expert, messages: t.messages, waiting: t.waiting };
 }
 
-/** Zgłoszenie z listy „Twoje zgłoszenia na tym urządzeniu”. Potrzeba i pomysł mają rozmowę i status. */
-export type MyNeed = { kind: ReportKind; code: string; status: NeedStatus; summary: string; createdAt: string };
+/**
+ * Zgłoszenie z listy „Twoje zgłoszenia na tym urządzeniu”. Potrzeba i pomysł mają rozmowę i status.
+ * `invitations`: zaproszenia do partnerstwa gmin bez odpowiedzi (tylko potrzeby, lib/partnerships.ts).
+ */
+export type MyNeed = { kind: ReportKind; code: string; status: NeedStatus; summary: string; createdAt: string; invitations: number };
 
 /** „Twoje zgłoszenia na tym urządzeniu”: pary kod–klucz z ciasteczka, sprawdzone z bazą, najnowsze pierwsze. */
 export async function rememberedThreads(): Promise<MyNeed[]> {
@@ -169,7 +172,7 @@ export async function rememberedThreads(): Promise<MyNeed[]> {
   const codes = remembered.map((r) => r.code);
   const supabase = createAdminClient();
   const [needs, ideas] = await Promise.all([
-    supabase.from("needs").select("status_code, status, card, created_at, access_hash").in("status_code", codes),
+    supabase.from("needs").select("id, status_code, status, card, created_at, access_hash").in("status_code", codes),
     supabase.from("ideas").select("status_code, status, fiszka, created_at, access_hash").in("status_code", codes),
   ]);
   if (needs.error) throw needs.error;
@@ -178,18 +181,31 @@ export async function rememberedThreads(): Promise<MyNeed[]> {
   const rows = [
     ...(needs.data ?? []).map((n) => ({
       hash: n.access_hash as string | null,
-      mine: { kind: "potrzeba", code: n.status_code, status: n.status, summary: (n.card as { summary?: string }).summary ?? "", createdAt: n.created_at } satisfies MyNeed,
+      needId: n.id as string,
+      mine: { kind: "potrzeba", code: n.status_code, status: n.status, summary: (n.card as { summary?: string }).summary ?? "", createdAt: n.created_at, invitations: 0 } satisfies MyNeed,
     })),
     ...(ideas.data ?? []).map((i) => ({
       hash: i.access_hash as string | null,
-      mine: { kind: "pomysl", code: i.status_code, status: i.status, summary: (i.fiszka as { krotki_opis?: string }).krotki_opis ?? "", createdAt: i.created_at } satisfies MyNeed,
+      needId: null,
+      mine: { kind: "pomysl", code: i.status_code, status: i.status, summary: (i.fiszka as { krotki_opis?: string }).krotki_opis ?? "", createdAt: i.created_at, invitations: 0 } satisfies MyNeed,
     })),
   ];
   // Kody są unikalne w obrębie tabeli; gdyby potrzeba i pomysł miały ten sam, rozstrzyga klucz.
-  return remembered.flatMap(({ code, key }) => {
+  const mine = remembered.flatMap(({ code, key }) => {
     const row = rows.find((r) => r.mine.code === code && keyMatches(r.hash, key));
-    return row ? [row.mine] : [];
+    return row ? [row] : [];
   });
+
+  // Bez migracji 0023 lista ma działać dalej, tylko bez zaproszeń.
+  const needIds = mine.flatMap((r) => (r.needId ? [r.needId] : []));
+  const invitations = new Map<string, number>();
+  const { data: invited, error: iError } = needIds.length
+    ? await supabase.from("thread_participants").select("need_id").in("need_id", needIds).eq("status", "zaproszone")
+    : { data: [], error: null };
+  if (iError) console.error("[rozmowy] zaproszenia:", iError);
+  for (const r of invited ?? []) invitations.set(r.need_id as string, (invitations.get(r.need_id as string) ?? 0) + 1);
+
+  return mine.map((r) => ({ ...r.mine, invitations: r.needId ? invitations.get(r.needId) ?? 0 : 0 }));
 }
 
 /** Co otwiera para kod–klucz (prywatny link, ciasteczko): potrzebę albo pomysł. null, gdy klucz nie pasuje. */
@@ -232,7 +248,7 @@ export async function ensureThread(t: NeedThread, expertId: string | null, repla
 }
 
 /** Sygnał „jest nowa wiadomość” bez treści — klient sam pobiera wątek przez API (po kodzie albo w Panelu). */
-async function nudge(threadId: string) {
+export async function nudge(threadId: string) {
   const supabase = createAdminClient();
   const channel = supabase.channel(channelName(threadId));
   try {

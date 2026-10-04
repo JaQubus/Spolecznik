@@ -141,6 +141,21 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
         text: `ROPS prosi Cię o pomoc przy ${p.kind === "pomysl" ? "pomyśle" : "zgłoszeniu"}${code ? ` ${code}` : ""}`,
         href: code ? `/ekspert/${code}` : "/ekspert",
       };
+    // Partnerstwa: autor trafia na stronę statusu (jak przy nowa_wiadomosc: /partnerstwo wymaga klucza z przeglądarki,
+    // z której wysłano zgłoszenie, a status działa wszędzie i ma link do partnerstwa). Admin do Panelu zgłoszenia, które zaprasza.
+    case "partnerstwo_zaproszenie":
+      return { text: `${str(p.gmina) ?? "Inna gmina"} chce porozmawiać o podobnym problemie`, href: code ? `/status/${code}` : null };
+    case "partnerstwo_nowe":
+      return {
+        text: `${str(p.gmina) ?? "Gmina"} zaprasza inne gminy do partnerstwa${typeof p.invited === "number" ? ` (zaproszenia: ${p.invited})` : ""}`,
+        href: needId ? `/panel/zgloszenia/${needId}#partnerstwo` : "/panel",
+      };
+    case "partnerstwo_dolaczenie":
+      return { text: `${str(p.gmina) ?? "Gmina"} dołączyła do partnerstwa`, href: needId ? `/panel/zgloszenia/${needId}#partnerstwo` : "/panel" };
+    case "partnerstwo_wiadomosc":
+      return forAdmin
+        ? { text: `${str(p.gmina) ?? "Gmina"} napisała w partnerstwie`, href: needId ? `/panel/zgloszenia/${needId}#partnerstwo` : "/panel" }
+        : { text: "Nowa wiadomość w partnerstwie gmin", href: code ? `/status/${code}` : null };
     case "nowy_nabor":
       return { text: `Ruszył nabór${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Możesz złożyć wniosek.`, href: "/wniosek" };
     default:
