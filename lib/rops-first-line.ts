@@ -10,7 +10,7 @@ import { postNeedMessage, type NeedThread } from "./threads";
  * Linki zapisujemy jako [tytuł](adres); MessageList zamienia je na odnośniki tylko w wiadomościach AI.
  */
 
-export const HANDOFF = "To automatyczna odpowiedź. Twoją wiadomość przeczyta też pracownik ROPS i odpowie w tej rozmowie.";
+export const HANDOFF = "To automatyczna odpowiedź. Rozmowę widzi też pracownik ROPS — jeśli trzeba, odpowie tutaj.";
 export const NO_ANSWER =
   "Nie znalazłem odpowiedzi w Zasobniku. Przekazałem Twoją wiadomość pracownikowi ROPS — odpowie w tej rozmowie.";
 
@@ -28,8 +28,9 @@ async function needContext(needId: string): Promise<{ summary: string; keywords:
 /** Treść wiadomości AI albo null, gdy asystent ma milczeć. `message` musi być już zanonimizowana. */
 export async function firstLineBody(t: NeedThread, message: string): Promise<string | null> {
   if (t.messages.some((m) => m.role === "rops" || m.role === "ekspert")) return null;
-  // Bez odpowiedzi z Zasobnika informujemy o przekazaniu tylko raz, a nie po każdej wiadomości.
-  const handoffOnce = () => (t.messages.some((m) => m.role === "ai") ? null : NO_ANSWER);
+  // Bez odpowiedzi z Zasobnika informujemy o przekazaniu tylko raz, a nie po każdej wiadomości —
+  // ale wcześniejsza odpowiedź merytoryczna nie liczy się jako przekazanie.
+  const handoffOnce = () => (t.messages.some((m) => m.role === "ai" && m.body === NO_ANSWER) ? null : NO_ANSWER);
 
   const need = await needContext(t.needId);
   const found = await relatedKnowledge(`${message} ${need.keywords.join(" ")}`);
