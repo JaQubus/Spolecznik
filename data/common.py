@@ -131,6 +131,10 @@ def groq_chat(messages: list[dict], *, model: str = GROQ_FAST, json_mode: bool =
             },
             timeout=120,
         )
+        if response.status_code == 429 and "tokens per day" in response.text:
+            # Dzienny limit (200 tys. tokenów) w oknie kroczącym 24 h — czekanie minutami nic nie da.
+            # Wyniki zapisane w cache przetrwają, więc po zwolnieniu limitu skrypt wznowi się od tego miejsca.
+            raise RuntimeError(f"Groq: wyczerpany dzienny limit tokenów. {response.json()['error']['message']}")
         if response.status_code == 429 or response.status_code >= 500:
             time.sleep(min(max(float(response.headers.get("retry-after", 0)), 2 ** attempt), 60))
             continue

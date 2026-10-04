@@ -9,19 +9,25 @@ Konfiguracje (bez embeddingów — cały AI idzie przez Groq, który nie ma mode
 - Słowa + rerank: cała produkcja — 15 kandydatów → rerank (Groq) → siatka bezpieczeństwa dla opisów
   powtarzających problem słowo w słowo → luka, gdy najlepszy fit < 50.
 
-Liczy offline na out/innovations.json (bez bazy), odtwarzając produkcyjny przepływ z lib/match.ts i lib/llm.ts.
-Prompty, stałe i logika słów są kopią — po zmianie tam zaktualizuj je tutaj.
+Korpus: tabela innovations z bazy (SUPABASE_DB_URL), tak jak w lexicalCandidates — prawdziwe innowacje z Biblioteki
+i syntetyczne, do których odwołuje się golden_set.jsonl. Z --offline: same out/innovations.json (bez bazy), czyli
+tylko innowacje syntetyczne — mniej rozpraszaczy, więc wynik wychodzi lepszy niż w aplikacji.
+Dalej przepływ jak w lib/match.ts i lib/llm.ts. Prompty, stałe i logika słów są kopią — po zmianie tam zaktualizuj je tutaj.
 
-Uruchomienie: uv run eval.py [--no-rerank]"""
+Uruchomienie: uv run eval.py [--no-rerank] [--offline]"""
 import hashlib
 import json
 import math
 import os
 import re
+import subprocess
 import sys
 from collections import Counter
+from datetime import date
 
-from common import CROSS, AREAS, GROUPS, GROQ_QUALITY, OUT, RAW, ROOT, read_json, taxonomy_prompt, write_json
+import psycopg
+
+from common import CROSS, AREAS, GROUPS, GROQ_QUALITY, OUT, RAW, ROOT, db_url, read_json, taxonomy_prompt, write_json
 from enrich import call_tool
 
 GAP_THRESHOLD = 50       # lib/schemas.ts
@@ -113,7 +119,7 @@ def tokens(text: str) -> list[str]:
 
 
 class Bm25:
-    """BM25 na tytule + lematach — odpowiednik FTS 'simple' na kolumnie fts (title || lemmas)."""
+    """Klasyczny BM25 na tokenach pola `problem` — punkt odniesienia bez reranku."""
 
     def __init__(self, docs: list[list[str]], k1: float = 1.2, b: float = 0.75) -> None:
         self.docs, self.k1, self.b = [Counter(d) for d in docs], k1, b
@@ -184,6 +190,31 @@ def metrics(ranked: list[str], relevant: list[str]) -> tuple[float, float]:
     return hit3, mrr
 
 
+def load_corpus(offline: bool) -> list[dict]:
+    """Innowacje z polem problem. lib/match.ts: lexicalCandidates — ta sama para tytuł + problem tylko raz."""
+    if offline:
+        rows = [{"slug": i["slug"], "title": i["title"], "problem": i.get("problem")} for i in read_json(OUT / "innovations.json")]
+    else:
+        with psycopg.connect(db_url()) as conn:
+            cur = conn.execute("select slug, title, problem from innovations where problem is not null order by slug limit 500")
+            rows = [{"slug": s, "title": t, "problem": p} for s, t, p in cur.fetchall()]
+    seen, corpus = set(), []
+    for r in rows:
+        problem = (r["problem"] or "").strip()
+        key = (r["title"].strip().lower(), problem.lower())
+        if problem and key not in seen:
+            seen.add(key)
+            corpus.append({**r, "problem": problem})
+    return corpus
+
+
+def git_commit() -> str:
+    try:
+        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
+    except OSError:
+        return "?"
+
+
 def intake_all(queries: list[str]) -> dict[str, dict]:
     cache: dict = read_json(INTAKE_CACHE) if INTAKE_CACHE.exists() else {}
     for q in queries:
@@ -209,15 +240,16 @@ def main() -> None:
     if not os.environ.get("GROQ_API_KEY"):
         sys.exit("Brak GROQ_API_KEY w ../.env.local")
     use_rerank = "--no-rerank" not in sys.argv
+    offline = "--offline" in sys.argv
 
     gold = [json.loads(l) for l in (ROOT / "golden_set.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
-    innovations = read_json(OUT / "innovations.json")
+    innovations = load_corpus(offline)
     slugs = [i["slug"] for i in innovations]
     unknown = {s for g in gold for s in g["relevant"]} - set(slugs)
     if unknown:
         sys.exit(f"golden_set.jsonl odwołuje się do innowacji spoza korpusu: {sorted(unknown)}")
 
-    problems = [(i.get("problem") or "").strip() for i in innovations]
+    problems = [i["problem"] for i in innovations]
     bm25 = Bm25([tokens(p) for p in problems])
 
     cards = intake_all([g["query"] for g in gold])
@@ -225,7 +257,8 @@ def main() -> None:
     configs = ["BM25 (problem)", "Słowa (problem)"] + (["Słowa + rerank"] if use_rerank else [])
     scores = {c: [] for c in configs}
     gap_hits, per_query = [], []
-    for g in gold:
+    for n, g in enumerate(gold, 1):
+        print(f"  {n}/{len(gold)} {g['query'][:60]}", flush=True)
         card = cards[g["query"]]
         original = g["query"]
         r_bm = bm25.rank([t for k in card["keywords"] for t in tokens(k)] + tokens(original))
@@ -279,7 +312,11 @@ def main() -> None:
         per_query.append(row)
 
     n_pos = sum(1 for g in gold if g["relevant"])
-    print(f"\nZbiór testowy: {len(gold)} zapytań ({n_pos} z odpowiedzią, {len(gold) - n_pos} luk), korpus: {len(innovations)} innowacji\n")
+    synthetic = sum(1 for s in slugs if s in {i["slug"] for i in read_json(OUT / "innovations.json")})
+    corpus = {"source": "out/innovations.json" if offline else "baza (innovations)", "innovations": len(innovations),
+              "synthetic": synthetic}
+    print(f"\nZbiór testowy: {len(gold)} zapytań ({n_pos} z odpowiedzią, {len(gold) - n_pos} luk), "
+          f"korpus: {len(innovations)} innowacji ({synthetic} syntetycznych, {corpus['source']})\n")
     print(f"{'konfiguracja':<20} {'hit@3':>7} {'MRR@5':>7}")
     summary = {}
     for c in configs:
@@ -292,9 +329,11 @@ def main() -> None:
         summary["gap_accuracy"] = round(acc, 3)
         print(f"\nTrafność wykrywania luk (rerank, próg {GAP_THRESHOLD}): {acc:.0%}")
     summary["queries"] = {"total": len(gold), "with_answer": n_pos, "gaps": len(gold) - n_pos}
-    summary["corpus"] = len(innovations)
-    write_json(OUT / "eval_results.json", {"summary": summary, "queries": per_query})
-    print("Szczegóły: out/eval_results.json")
+    summary["corpus"] = corpus
+    summary["date"], summary["commit"] = date.today().isoformat(), git_commit()
+    name = "eval_results_offline.json" if offline else "eval_results.json"
+    write_json(OUT / name, {"summary": summary, "queries": per_query})
+    print(f"Szczegóły: out/{name}")
 
 
 if __name__ == "__main__":
