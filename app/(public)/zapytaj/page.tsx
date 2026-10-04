@@ -85,7 +85,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
         expertId={chosenName ? askedExpert : undefined}
         expertName={expert}
         closed={thread.status === "zamkniete"}
-        initial={{ threadId: thread.threadId, messages: thread.messages }}
+        initial={{ threadId: thread.threadId, messages: thread.messages, waiting: thread.waiting }}
       />
 
       <PrivateLink code={thread.code} accessKey={key} kind={thread.kind} />
