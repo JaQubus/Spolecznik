@@ -10,7 +10,6 @@ import { areaHref, InnovationTiles } from "@/components/knowledge/tiles";
 import { VideoEmbed } from "@/components/knowledge/video-embed";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { flags } from "@/lib/flags";
 import { knowledge } from "@/lib/knowledge";
 import { formatBytes, isHugeFile, TYPE_LABELS } from "@/lib/knowledge/labels";
 import { similarInnovations } from "@/lib/knowledge/similar";
@@ -138,19 +137,14 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
         )}
       </section>
 
-      {(flags.middleman || flags.tester) && (
-        <section aria-labelledby="dzialaj" className="full-bleed space-y-4 bg-secondary py-10">
-          <h2 id="dzialaj" className="text-3xl font-bold">Chcesz to mieć u siebie?</h2>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            {flags.middleman && (
-              <Button asChild size="lg"><Link href={`/wdrozenie?innowacja=${i.slug}`}>Jak to wdrożyć u nas?</Link></Button>
-            )}
-            {flags.tester && (
-              <Button asChild size="lg" variant="outline"><Link href={`/przetestuj?innowacja=${i.slug}`}>Chcę przetestować</Link></Button>
-            )}
-          </div>
-        </section>
-      )}
+      <section aria-labelledby="dzialaj" className="full-bleed space-y-4 bg-secondary py-10">
+        <h2 id="dzialaj" className="text-3xl font-bold">Chcesz to mieć u siebie?</h2>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          {/* /wdrozenie i /przetestuj przyjmują slug albo id; innowacje bez sluga mają tylko id. */}
+          <Button asChild size="lg"><Link href={`/wdrozenie?innowacja=${i.slug ?? i.id}`}>Jak to wdrożyć u nas?</Link></Button>
+          <Button asChild size="lg" variant="outline"><Link href={`/przetestuj?innowacja=${i.slug ?? i.id}`}>Chcę przetestować</Link></Button>
+        </div>
+      </section>
 
       {similar.length > 0 && (
         <section aria-labelledby="podobne" className="space-y-6">

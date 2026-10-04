@@ -93,10 +93,22 @@ export async function innovationsMatching(
   return data as InnovationListItem[];
 }
 
+export type InnovationOption = { id: string; title: string; slug: string | null };
+
 /** Tytuły innowacji do list wyboru (Wdrożenie, Próba). */
-export async function innovationOptions(): Promise<{ id: string; title: string }[]> {
+export async function innovationOptions(): Promise<InnovationOption[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("innovations").select("id, title").order("title");
+  const { data, error } = await supabase.from("innovations").select("id, title, slug").order("title");
   if (error) throw error;
   return data ?? [];
+}
+
+/**
+ * ?innowacja= z karty innowacji: slug (czytelny adres) albo id. Zwraca id z listy wyboru,
+ * a dla nieznanej wartości pusty napis — formularz otwiera się wtedy bez wybranej innowacji.
+ */
+export function pickInnovation(param: string | string[] | undefined, options: InnovationOption[]): string {
+  const value = typeof param === "string" ? param.trim() : "";
+  if (!value) return "";
+  return options.find((o) => o.id === value || o.slug === value)?.id ?? "";
 }

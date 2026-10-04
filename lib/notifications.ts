@@ -1,10 +1,8 @@
 import "server-only";
-import type { Viewer } from "./auth";
-import { innovationHref } from "@/components/knowledge/tiles";
+import { viewerClient, type Viewer } from "./auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "./need-status";
 import { ADMIN_CHANNEL, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
 import { createAdminClient } from "./supabase/admin";
-import { createClient } from "./supabase/server";
 
 /** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin'). */
 export type NewNotification =
@@ -63,19 +61,25 @@ const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n - 1).trimEn
 function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "text" | "href"> {
   const p = r.payload;
   const needId = str(p.needId);
+  const ideaId = str(p.ideaId);
   const code = str(p.statusCode) ?? str(p.code) ?? (needId ? codes.get(needId) ?? null : null);
   const forAdmin = r.role === "admin";
+  // Karta w Panelu: zgłoszenie albo pomysł (rozmowy o pomysłach mają ideaId zamiast needId).
+  const panelCard = needId ? `/panel/zgloszenia/${needId}` : ideaId ? `/panel/pomysly/${ideaId}` : null;
   switch (r.kind) {
     case "nowa_potrzeba":
       return {
         text: `Nowe zgłoszenie${code ? ` ${code}` : ""}${str(p.summary) ? `: ${short(str(p.summary)!)}` : ""}${p.isGap ? " (brak gotowego rozwiązania)" : ""}`,
-        href: needId ? `/panel/zgloszenia/${needId}` : "/panel",
+        href: panelCard ?? "/panel",
       };
     case "nowy_pomysl":
-      return { text: `Nowy pomysł${code ? ` ${code}` : ""}${str(p.title) ? `: ${short(str(p.title)!)}` : ""}`, href: "/panel/pomysly" };
+      return { text: `Nowy pomysł${code ? ` ${code}` : ""}${str(p.title) ? `: ${short(str(p.title)!)}` : ""}`, href: panelCard ?? "/panel/pomysly" };
     case "nowa_wiadomosc":
       return forAdmin
-        ? { text: `Zgłaszający napisał w sprawie ${code ?? "zgłoszenia"}`, href: needId ? `/panel/zgloszenia/${needId}#rozmowa` : "/panel" }
+        ? {
+            text: `${ideaId ? "Autor pomysłu" : "Zgłaszający"} napisał w sprawie ${code ?? (ideaId ? "pomysłu" : "zgłoszenia")}`,
+            href: panelCard ? `${panelCard}#rozmowa` : "/panel",
+          }
         // Strona statusu, nie /zapytaj: rozmowa wymaga klucza z przeglądarki, z której wysłano zgłoszenie,
         // a status działa na każdym urządzeniu po samym kodzie i ma link do rozmowy.
         : { text: `Nowa odpowiedź w sprawie ${code ?? "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
@@ -106,7 +110,7 @@ export async function listNotifications(viewer: Viewer, seenAt: string | null, l
   if (!filter) return { items: [] as NotificationItem[], unread: 0 };
   // Konto Supabase czyta własną sesją, więc granicę pilnuje też RLS („własne powiadomienia”), a filtr wyżej jest
   // drugą warstwą. Konta testowe nie mają sesji (działają tylko lokalnie albo z TEST_LOGIN=1) — dla nich service role.
-  const supabase = viewer.via === "supabase" ? await createClient() : createAdminClient();
+  const supabase = await viewerClient(viewer);
 
   const unreadQuery = supabase.from("notifications").select("id", { count: "exact", head: true }).or(filter);
   const [list, count] = await Promise.all([

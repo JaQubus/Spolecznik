@@ -7,17 +7,33 @@ import { logChange } from "./panel/needs";
 import { createAdminClient } from "./supabase/admin";
 import { channelName, NEW_MESSAGE_EVENT, ROLE_LABELS, type AuthorRole, type ThreadMessage } from "./thread-types";
 
-/** Społecznik·Rozmowy: wątek przypięty do karty (README §6). Na razie karty potrzeb — autor wchodzi po kodzie SPL-…. */
+/**
+ * Społecznik·Rozmowy: wątek przypięty do karty (README §6). Karty potrzeb i pomysłów — autor wchodzi po kodzie SPL-…
+ * (kody są wspólne dla obu tabel, 0015_status_code_shared.sql), więc jeden kod otwiera dokładnie jedną rozmowę.
+ */
+
+export type ReportKind = "potrzeba" | "pomysl";
+
+/** Tabela, wpis w audit_log i klucz id w powiadomieniach — dla każdego rodzaju zgłoszenia. */
+const REPORTS = {
+  potrzeba: { table: "needs", entity: "need", payloadKey: "needId", label: "Zgłoszenie" },
+  pomysl: { table: "ideas", entity: "idea", payloadKey: "ideaId", label: "Pomysł" },
+} as const;
 
 export type NeedThread = {
-  needId: string;
+  kind: ReportKind;
+  /** id potrzeby albo pomysłu. */
+  id: string;
   code: string;
   status: NeedStatus;
   authorId: string | null;
   /** Skrót klucza do rozmowy (lib/need-access.ts). Nigdy nie wysyłamy go do przeglądarki. */
   accessHash: string | null;
   threadId: string | null;
-  /** Ekspert wątku: wybrany przez autora („Zapytaj eksperta”) albo przypisany w Panelu. */
+  /**
+   * Ekspert wątku: wybrany przez autora („Zapytaj eksperta”) albo przypisany w Panelu.
+   * Potrzeby trzymają przypisanego w needs.assigned_expert, pomysły — w threads.expert_id.
+   */
   expert: { id: string; name: string } | null;
   messages: ThreadMessage[];
 };
@@ -52,33 +68,47 @@ async function loadMessages(threadId: string): Promise<ThreadMessage[]> {
   }));
 }
 
-/** Wątek zgłoszenia po kodzie albo po id (Panel). Przed pokazaniem autorowi sprawdź klucz: canOpen(). */
-export async function needThread(by: { code: string } | { needId: string }): Promise<NeedThread | null> {
-  const supabase = createAdminClient();
-  const query = supabase.from("needs").select("id, status_code, status, author_id, access_hash, assigned_expert");
-  const { data: need, error } = await ("code" in by ? query.eq("status_code", by.code) : query.eq("id", by.needId)).maybeSingle();
-  if (error) throw error;
-  if (!need) return null;
+type ReportRow = { id: string; status_code: string; status: NeedStatus; author_id: string | null; access_hash: string | null; assigned_expert?: string | null };
 
-  const { data: thread, error: tError } = await supabase
+async function findReport(by: { code: string } | { kind: ReportKind; id: string }): Promise<{ kind: ReportKind; row: ReportRow } | null> {
+  const supabase = createAdminClient();
+  const kinds: ReportKind[] = "kind" in by ? [by.kind] : ["potrzeba", "pomysl"];
+  for (const kind of kinds) {
+    const columns = `id, status_code, status, author_id, access_hash${kind === "potrzeba" ? ", assigned_expert" : ""}`;
+    const query = supabase.from(REPORTS[kind].table).select(columns);
+    const { data, error } = await ("code" in by ? query.eq("status_code", by.code) : query.eq("id", by.id)).maybeSingle();
+    if (error) throw error;
+    if (data) return { kind, row: data as unknown as ReportRow };
+  }
+  return null;
+}
+
+/** Wątek zgłoszenia albo pomysłu po kodzie (autor) albo po id (Panel). Przed pokazaniem autorowi sprawdź klucz: canOpen(). */
+export async function needThread(by: { code: string } | { kind: ReportKind; id: string }): Promise<NeedThread | null> {
+  const found = await findReport(by);
+  if (!found) return null;
+  const { kind, row } = found;
+
+  const { data: thread, error } = await createAdminClient()
     .from("threads")
     .select("id, expert_id")
-    .eq("entity_kind", "potrzeba")
-    .eq("entity_id", need.id)
+    .eq("entity_kind", kind)
+    .eq("entity_id", row.id)
     .maybeSingle();
-  if (tError) throw tError;
+  if (error) throw error;
 
-  const expertId = (need.assigned_expert as string | null) ?? (thread?.expert_id as string | null) ?? null;
+  const expertId = row.assigned_expert ?? (thread?.expert_id as string | null) ?? null;
   const [name, messages] = await Promise.all([
     expertId ? expertName(expertId) : null,
     thread ? loadMessages(thread.id) : [],
   ]);
   return {
-    needId: need.id,
-    code: need.status_code,
-    status: need.status,
-    authorId: need.author_id,
-    accessHash: need.access_hash,
+    kind,
+    id: row.id,
+    code: row.status_code,
+    status: row.status,
+    authorId: row.author_id,
+    accessHash: row.access_hash,
     threadId: thread?.id ?? null,
     expert: expertId && name ? { id: expertId, name } : null,
     messages,
@@ -90,8 +120,8 @@ export async function canOpen(t: NeedThread): Promise<boolean> {
   return keyMatches(t.accessHash, await rememberedKey(t.code));
 }
 
-/** `kind`: potrzeba ma rozmowę i status, pomysł — sam status. */
-export type MyNeed = { kind: "potrzeba" | "pomysl"; code: string; status: NeedStatus; summary: string; createdAt: string };
+/** Zgłoszenie z listy „Twoje zgłoszenia na tym urządzeniu”. Potrzeba i pomysł mają rozmowę i status. */
+export type MyNeed = { kind: ReportKind; code: string; status: NeedStatus; summary: string; createdAt: string };
 
 /** „Twoje zgłoszenia na tym urządzeniu”: pary kod–klucz z ciasteczka, sprawdzone z bazą, najnowsze pierwsze. */
 export async function rememberedThreads(): Promise<MyNeed[]> {
@@ -123,8 +153,8 @@ export async function rememberedThreads(): Promise<MyNeed[]> {
   });
 }
 
-/** Co otwiera para kod–klucz (prywatny link, ciasteczko): potrzebę z rozmową albo pomysł. null, gdy klucz nie pasuje. */
-export async function reportForKey(code: string, key: string): Promise<MyNeed["kind"] | null> {
+/** Co otwiera para kod–klucz (prywatny link, ciasteczko): potrzebę albo pomysł. null, gdy klucz nie pasuje. */
+export async function reportForKey(code: string, key: string): Promise<ReportKind | null> {
   const supabase = createAdminClient();
   const [need, idea] = await Promise.all([
     supabase.from("needs").select("access_hash").eq("status_code", code).maybeSingle(),
@@ -137,11 +167,14 @@ export async function reportForKey(code: string, key: string): Promise<MyNeed["k
   return null;
 }
 
-/** Zakłada wątek przy pierwszej wiadomości. Ekspert wybrany przez autora zostaje zapamiętany w wątku. */
-async function ensureThread(t: NeedThread, expertId: string | null): Promise<string> {
+/**
+ * Zakłada wątek przy pierwszej wiadomości (albo przy przypisaniu eksperta do pomysłu).
+ * `expertId` zapisujemy, gdy wątek nie ma jeszcze eksperta; `replaceExpert` — przypisanie w Panelu, które go zmienia.
+ */
+export async function ensureThread(t: NeedThread, expertId: string | null, replaceExpert = false): Promise<string> {
   const supabase = createAdminClient();
   if (t.threadId) {
-    if (expertId && !t.expert) {
+    if (expertId && (replaceExpert || !t.expert)) {
       const { error } = await supabase.from("threads").update({ expert_id: expertId }).eq("id", t.threadId);
       if (error) throw error;
     }
@@ -150,7 +183,7 @@ async function ensureThread(t: NeedThread, expertId: string | null): Promise<str
   const { data, error } = await supabase
     .from("threads")
     .upsert(
-      { entity_kind: "potrzeba", entity_id: t.needId, title: `Zgłoszenie ${t.code}`, expert_id: expertId },
+      { entity_kind: t.kind, entity_id: t.id, title: `${REPORTS[t.kind].label} ${t.code}`, expert_id: expertId },
       { onConflict: "entity_kind,entity_id" },
     )
     .select("id")
@@ -171,6 +204,26 @@ async function nudge(threadId: string) {
   } finally {
     await supabase.removeChannel(channel);
   }
+}
+
+/** Zmiana statusu zgłoszenia albo pomysłu ze śladem w audit_log (oś czasu na /status/[kod]). Pomysły nie mają updated_at. */
+export async function setReportStatus(
+  t: Pick<NeedThread, "kind" | "id" | "status">,
+  to: NeedStatus,
+  actorId: string | null,
+  action: string,
+  diffExtra: Record<string, unknown> = {},
+) {
+  const { table, entity } = REPORTS[t.kind];
+  const patch = t.kind === "potrzeba" ? { status: to, updated_at: new Date().toISOString() } : { status: to };
+  const { error } = await createAdminClient().from(table).update(patch).eq("id", t.id);
+  if (error) throw error;
+  await logChange(actorId, action, entity, t.id, { from: t.status, to, ...diffExtra });
+}
+
+/** Payload powiadomień o rozmowie: id pod kluczem rodzaju (needId / ideaId), żeby dzwonek linkował do właściwej karty w Panelu. */
+export function threadPayload(t: Pick<NeedThread, "kind" | "id" | "code">, extra: Record<string, unknown> = {}) {
+  return { [REPORTS[t.kind].payloadKey]: t.id, code: t.code, ...extra };
 }
 
 /**
@@ -197,7 +250,7 @@ export async function postNeedMessage(
   if (uError) console.error("[rozmowy] updated_at:", uError);
 
   const fromAuthor = msg.role === "autor";
-  const payload = { needId: t.needId, code: t.code, threadId };
+  const payload = threadPayload(t, { threadId });
   const recipient = fromAuthor ? { role: "admin" as const } : t.authorId ? { user_id: t.authorId } : null;
   if (recipient) {
     await notify({ ...recipient, kind: "nowa_wiadomosc", payload }).catch((e) => console.error("[rozmowy] powiadomienie:", e));
@@ -205,11 +258,7 @@ export async function postNeedMessage(
   if (!fromAuthor) await emailAuthor("potrzeba", t.needId, "Masz nową odpowiedź w rozmowie");
 
   if (!fromAuthor && BEFORE_ANSWER.includes(t.status)) {
-    const { error: sError } = await supabase.from("needs").update({ status: "odpowiedz", updated_at: now }).eq("id", t.needId);
-    if (sError) throw sError;
-    await logChange(msg.actorId ?? null, "need.status", "need", t.needId, {
-      from: t.status,
-      to: "odpowiedz",
+    await setReportStatus(t, "odpowiedz", msg.actorId ?? null, `${REPORTS[t.kind].entity}.status`, {
       note: `Odpowiedź w rozmowie od: ${msg.name ?? ROLE_LABELS[msg.role]}`,
     });
   }
