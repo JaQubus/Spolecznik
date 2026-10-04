@@ -396,6 +396,15 @@ async function TerritoryCard({ layer, unit, indicator }: { layer: LayerKey; unit
         </div>
       )}
 
+      {layer === "gminy" && (
+        <p>
+          <Link href={`/biblioteka/gmina/${unit.id}`} className={cn(linkClass, "inline-flex items-center gap-1")}>
+            Raport gminy {unit.name}: obszary do uwagi i sprawdzone rozwiązania
+            <ChevronRightIcon aria-hidden className="size-5" />
+          </Link>
+        </p>
+      )}
+
       {powiat && (
         <p>
           <Link href={kondycjaHref("powiaty", indicator.key, powiat.id)} scroll={false} className={cn(linkClass, "inline-flex items-center gap-1")}>

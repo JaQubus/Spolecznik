@@ -1,0 +1,42 @@
+/* Raport gminy (#104) na wydruku: dwie strony A4. Uzupełnia wspólne zasady [data-print-root] z app/globals.css (#48):
+   tam sekcje nie dzielą się między strony, co przy raporcie zostawiało pół pustej kartki po każdym obszarze. */
+@media print {
+  @page { size: A4; margin: 12mm 14mm; }
+
+  .gmina-report { font-size: 9.5pt; line-height: 1.4; }
+  .gmina-report :is(p, li, dt, dd, th, td, span, strong, a) { font-size: inherit; line-height: inherit; }
+  .gmina-report h1 { font-size: 17pt; line-height: 1.2; }
+  .gmina-report h2 { font-size: 12.5pt; line-height: 1.25; }
+  .gmina-report h3 { font-size: 11pt; line-height: 1.25; }
+  .gmina-report h4 { font-size: 10pt; line-height: 1.25; }
+
+  /* Odstępy z ekranu (space-y-*, py-*) są na kartce za duże. */
+  .gmina-report :is(.space-y-14, .space-y-12, .space-y-8, .space-y-6, .space-y-5, .space-y-4, .space-y-3, .space-y-2) > :not(:last-child) {
+    margin-block-end: 0.3rem !important;
+  }
+  .gmina-report > :not(:last-child) { margin-block-end: 0.9rem !important; }
+  .gmina-report :is(li, dt, dd) { padding-block: 0.15rem !important; }
+  .gmina-report :is(th, td) { padding: 0.2rem 0.35rem !important; }
+
+  /* Sekcje mogą przejść na następną stronę; nie dzielimy tylko pojedynczej pozycji i wiersza tabeli. */
+  .gmina-report section { break-inside: auto !important; }
+  .gmina-report :is(li, tr) { break-inside: avoid; }
+  .gmina-report li:has(> section) { break-inside: auto !important; } /* cały obszar do uwagi to jeden li */
+
+  .gmina-report [data-area] { width: 1.5rem !important; height: 1.5rem !important; }
+  .gmina-report [data-area] svg { width: 1rem !important; height: 1rem !important; }
+
+  /* Profil w dwóch kolumnach, tabela na pełną szerokość bez minimalnej szerokości z ekranu. */
+  .gmina-report dl.grid { grid-template-columns: minmax(0, 1fr) auto; }
+  .gmina-report table { min-width: 0 !important; font-size: 8.5pt !important; line-height: 1.3; }
+  .gmina-report thead th:first-child { width: 42%; }
+
+  /* Innowacja w jednej linii: tytuł, a po nim typ i testy. */
+  .gmina-report .innovation-row > :is(.innovation-title, .innovation-meta) { display: inline; }
+  .gmina-report .innovation-row > .innovation-meta::before { content: " — "; }
+
+  /* Źródła i metoda: drobniej, bez odstępów między punktami. */
+  .gmina-report .report-method { font-size: 8.5pt; line-height: 1.3; }
+  .gmina-report .report-method :is(ul, li) { margin-block: 0 !important; padding-block: 0 !important; }
+  .gmina-report .report-method ul + ul { margin-top: 0.3rem !important; }
+}
