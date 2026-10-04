@@ -89,6 +89,8 @@ export type Partnership = {
   joined: string[];
   /** Zaproszenia bez odpowiedzi. Odmów nie liczymy osobno, żeby nie zdradzać, kto odmówił. */
   waiting: number;
+  /** Gminy, które dołączyły, bez zapraszającej. Zero przy `waiting` = 0: nikt nie przyjął zaproszenia. */
+  partners: number;
   createdAt: string;
 };
 
@@ -123,6 +125,7 @@ export async function needPartnerships(needId: string): Promise<Partnership[]> {
         myStatus: inThread.find((r) => r.need_id === needId)!.status,
         joined: [...new Set(inThread.filter((r) => r.status === "przyjete").map((r) => gminaLabel(needs.get(r.need_id!)?.gmina ?? null)))],
         waiting: inThread.filter((r) => r.status === "zaproszone").length,
+        partners: inThread.filter((r) => r.status === "przyjete" && r.need_id !== t.entity_id).length,
         createdAt: t.created_at,
       };
     })

@@ -115,6 +115,7 @@ export default async function Page(props: PageProps<"/partnerstwo">) {
                 <div className="min-w-0 flex-1 basis-64 space-y-1">
                   <p className="font-bold">{p.isInitiator ? "Twoje zaproszenie" : `Zaprasza: ${p.initiator}`}</p>
                   <p className="text-muted-foreground">W rozmowie: {list(p.joined)} i ROPS</p>
+                  <NoPartners code={code} partnership={p} />
                 </div>
                 <Button asChild variant="outline" size="sm">
                   <Link href={`/partnerstwo?potrzeba=${code}&watek=${p.threadId}`} aria-label={`Otwórz rozmowę: ${p.isInitiator ? "Twoje zaproszenie" : p.initiator}`}>
@@ -202,6 +203,7 @@ function ThreadView({
           {p.summary && <> Problem: {p.summary}</>}
         </p>
         <p><strong>W rozmowie:</strong> {list(p.joined)} oraz pracownik ROPS (prowadzi rozmowę).</p>
+        <NoPartners code={code} partnership={p} />
         {p.waiting > 0 && (
           <p className="text-muted-foreground">
             Na odpowiedź czeka jeszcze {p.waiting} {plural(p.waiting, "zaproszenie", "zaproszenia", "zaproszeń")}.
@@ -216,6 +218,18 @@ function ThreadView({
 
       <PartnershipConversation code={code} threadId={p.threadId} initial={messages} />
     </section>
+  );
+}
+
+/** Wszyscy zaproszeni odpowiedzieli i nikt nie dołączył: zamiast ślepej uliczki — ROPS pomoże znaleźć partnerów. */
+function NoPartners({ code, partnership: p }: { code: string; partnership: Partnership }) {
+  if (!p.isInitiator || p.waiting > 0 || p.partners > 0) return null;
+  return (
+    <p className="max-w-[68ch]">
+      Żadna z zaproszonych gmin nie dołączyła.{" "}
+      <Link href={`/zapytaj?kod=${code}`} className={linkClass}>Poproś ROPS o pomoc w znalezieniu partnerów</Link>
+      {" "}— napisz w rozmowie o zgłoszeniu.
+    </p>
   );
 }
 
