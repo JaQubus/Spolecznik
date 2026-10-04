@@ -10,6 +10,7 @@ const PAGES = [
   ["status — nieznany kod", "/status/XXXX-0000"],
   ["Jak to wdrożyć u nas?", "/wdrozenie"],
   ["Zapytaj eksperta", "/zapytaj"],
+  ["API dla integracji", "/api-docs"],
 ] as const;
 
 async function axe(page: Page) {
