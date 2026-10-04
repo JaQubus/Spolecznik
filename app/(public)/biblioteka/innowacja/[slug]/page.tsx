@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/knowledge/breadcrumbs";
 import { EasyText } from "@/components/knowledge/easy-text";
-import { GROUP_ICONS, TYPE_ICONS } from "@/components/knowledge/icons";
+import { GroupIcon, TYPE_ICONS } from "@/components/knowledge/icons";
 import { StorySteps } from "@/components/knowledge/story-steps";
 import { areaHref, InnovationTiles } from "@/components/knowledge/tiles";
 import { VideoEmbed } from "@/components/knowledge/video-embed";
@@ -48,10 +48,9 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
         <dl className="grid max-w-[48rem] gap-x-6 gap-y-3 text-lg sm:grid-cols-[auto_1fr]">
           <dt className="font-bold">Dla kogo</dt>
           <dd className="flex flex-wrap gap-x-4 gap-y-1">
-            {i.groups.map((g) => {
-              const Icon = GROUP_ICONS[g];
-              return <span key={g} className="inline-flex items-center gap-2"><Icon aria-hidden className="size-5" />{GROUP_LABELS[g].replace(/^Dla /, "")}</span>;
-            })}
+            {i.groups.map((g) => (
+              <span key={g} className="inline-flex items-center gap-2"><GroupIcon group={g} className="size-5" />{GROUP_LABELS[g].replace(/^Dla /, "")}</span>
+            ))}
           </dd>
           {i.innovationType && TypeIcon && (
             <>

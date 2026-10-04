@@ -19,20 +19,20 @@ export function StatusTimeline({ steps, className }: { steps: TimelineStep[]; cl
           {i < steps.length - 1 && (
             <span
               aria-hidden
-              className={cn("absolute top-[30px] bottom-0.5 left-[13px] w-0.5", s.state === "done" ? "bg-foreground" : "bg-border-strong")}
+              className={cn("absolute top-[30px] bottom-0.5 left-[13px] w-0.5", s.state === "done" ? "bg-primary" : "bg-border-strong")}
             />
           )}
           <span
             aria-hidden
             className={cn(
               "grid size-7 place-content-center rounded-full border-2",
-              s.state === "done" && "border-foreground bg-foreground text-background",
-              s.state === "current" && "border-foreground bg-background",
+              s.state === "done" && "border-primary bg-primary text-primary-foreground",
+              s.state === "current" && "border-info bg-info-soft",
               s.state === "todo" && "border-border-strong bg-background"
             )}
           >
             {s.state === "done" && <CheckIcon className="size-[18px]" strokeWidth={3} />}
-            {s.state === "current" && <span className="size-3 rounded-full bg-foreground" />}
+            {s.state === "current" && <span className="size-3 rounded-full bg-info" />}
           </span>
           <div>
             <p className={s.state === "todo" ? "text-muted-foreground" : "font-bold"}>
