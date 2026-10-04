@@ -423,6 +423,21 @@ sequenceDiagram
 
   Wyniki idą na slajd.
 
+**Wyniki Lighthouse** (produkcja, 4 października 2026, `pnpm lighthouse` i `pnpm lighthouse --desktop`, Lighthouse 13):
+
+| Strona | Dostępność | Dobre praktyki | SEO | Wydajność (telefon) | Wydajność (desktop) |
+|---|---|---|---|---|---|
+| `/` | 100 | 100 | 100 | 83 | 100 |
+| `/opisz` | 100 | 100 | 100 | 92 | 97 |
+| `/status/[kod]` | 100 | 100 | 100 | 88 | 100 |
+| `/zapytaj` | 100 | 100 | 100 | 88 | 100 |
+| `/pomysl` | 100 | 100 | 100 | 85 | 100 |
+| `/biblioteka` | 100 | 100 | 100 | 89 | 100 |
+
+Dostępność, dobre praktyki i SEO to 100 na każdej stronie, na telefonie i na desktopie. Wydajność na telefonie (symulacja wolnego telefonu) obniża JavaScript: na `/` LCP 3,2 s, blokowanie wątku 420 ms, ok. 91 KiB nieużywanego JS.
+
+axe (WCAG 2.1 A/AA) działa w Playwright na 12 ekranach publicznych, 5 ekranach Panelu i 2 stanach interaktywnych (`tests/e2e/screens-a11y.spec.ts`, `knowledge-a11y.spec.ts`). Przejście z czytnikiem ekranu jeszcze przed nami (#26).
+
 ---
 
 ## 10. Bezpieczeństwo i RODO

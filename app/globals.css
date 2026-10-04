@@ -218,6 +218,17 @@ html.a11y-contrast {
   [data-print-root] :is(h2, h3, dt) { break-after: avoid; }
 }
 
+/* Plakat pomysłu (components/pomysl/idea-poster.tsx) na wydruku: tekst jak w innych dokumentach (11pt), ale interlinia
+   zostaje ≥1.5 (WCAG 1.4.12) — długi plakat może zająć drugą stronę A4, sekcje nie dzielą się w pół (data-print-root).
+   Bez nazwanej @page — zmiana nazwy strony wymusza pustą stronę przed plakatem. */
+@media print {
+  .poster { font-size: 11pt; line-height: 1.5; }
+  .poster :is(p, li, span, figcaption, strong) { font-size: inherit; line-height: inherit; }
+  .poster h3 { font-size: 20pt; line-height: 1.15; }
+  .poster h3 + p { font-size: 12pt; }
+  .poster h4 { font-size: 13pt; line-height: 1.2; }
+}
+
 /* Pas na całą szerokość okna wewnątrz kontenera main, bez poziomego przewijania (cień nie zwiększa szerokości strony). */
 /* Tło do krawędzi ekranu tylko w poziomie. Bez clip-path, które ucinało rozwijane listy (podpowiedzi gmin) na dole pasa. */
 @utility full-bleed {

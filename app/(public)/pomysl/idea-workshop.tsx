@@ -14,6 +14,9 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Fiszka, IdeaResponse } from "@/lib/schemas";
 import { ApplicationDraft, type ActiveCall } from "./application-draft";
 import { AssistantChat } from "./assistant-chat";
+import { PosterSection, posterSource, type PosterState } from "./poster-section";
+
+const TITLE_MISSING = "Nazwij pomysł w kilku słowach, np. „Wspólne dojazdy seniorów do przychodni”.";
 
 export type CanvasField = { key: string; label: string; hint?: string };
 
@@ -39,6 +42,7 @@ export function IdeaWorkshop({
     etap: initial.etap ?? STAGES[0],
   });
   const [canvas, setCanvas] = useState<Record<string, string>>({});
+  const [poster, setPoster] = useState<PosterState | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -59,10 +63,14 @@ export function IdeaWorkshop({
   const set = (key: keyof Fiszka) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setFiszka((f) => ({ ...f, [key]: e.target.value }));
 
+  function missingTitle() {
+    setFieldError(TITLE_MISSING);
+    titleField.current?.focus();
+  }
+
   async function submit() {
     if (fiszka.krotki_opis.trim().length < 3) {
-      setFieldError("Nazwij pomysł w kilku słowach, np. „Wspólne dojazdy seniorów do przychodni”.");
-      titleField.current?.focus();
+      missingTitle();
       return;
     }
     setFieldError(null);
@@ -70,10 +78,12 @@ export function IdeaWorkshop({
     setBusy(true);
     try {
       const filled = Object.fromEntries(Object.entries(canvas).filter(([, v]) => v.trim()));
+      // Plakat tylko wtedy, gdy pokazuje obecną fiszkę — nieaktualny wprowadziłby ROPS w błąd.
+      const current = poster && poster.source === posterSource(fiszka, canvas) ? poster.poster : undefined;
       const res = await fetch("/api/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fiszka, canvas: filled, needCode }),
+        body: JSON.stringify({ fiszka, canvas: filled, needCode, poster: current }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Nie udało się zapisać pomysłu");
@@ -186,6 +196,15 @@ export function IdeaWorkshop({
           </div>
         </details>
       )}
+
+      <section aria-labelledby="plakat" className="space-y-4">
+        <h2 id="plakat" className="text-2xl font-bold">Plakat pomysłu</h2>
+        <p className="max-w-2xl">
+          Asystent narysuje z fiszki plakat: jak działa pomysł, co daje i czego potrzeba. Przyda się, gdy pokażesz pomysł
+          sąsiadom, gminie albo w naborze. Plakat nie jest obowiązkowy — jeśli go pokażesz, wyślemy go razem z pomysłem.
+        </p>
+        <PosterSection fiszka={fiszka} canvas={canvas} state={poster} onChange={setPoster} onMissingTitle={missingTitle} />
+      </section>
 
       <div className="space-y-3">
         <p aria-live="polite" className="text-muted-foreground">{busy ? "Zapisuję pomysł…" : ""}</p>

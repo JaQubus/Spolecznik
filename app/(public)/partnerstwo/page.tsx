@@ -91,6 +91,7 @@ export default async function Page(props: PageProps<"/partnerstwo">) {
                     name="answer"
                     value="tak"
                     variant={!canInvite && i === 0 ? "default" : "outline"}
+                    className="w-full sm:w-auto"
                     aria-label={`Dołącz do rozmowy: zaproszenie od ${p.initiator}`}
                   >
                     Dołącz do rozmowy

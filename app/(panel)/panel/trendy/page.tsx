@@ -9,7 +9,9 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { requireAdmin } from "@/lib/auth";
 import { formatDate } from "@/lib/pl";
 import { getGaps } from "@/lib/knowledge/gaps";
+import { getClusters } from "@/lib/knowledge/clusters";
 import { getTrends, parseBucket } from "@/lib/knowledge/trends";
+import { ClusterList } from "./clusters";
 import { GapMap } from "./gap-map";
 
 export const metadata: Metadata = { title: "Trendy potrzeb · Panel ROPS", robots: { index: false } };
@@ -22,7 +24,7 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
   const sp = await props.searchParams;
   const bucket = parseBucket(first(sp.okres));
   const gmina = /^\d{7}$/.test(first(sp.gmina)) ? first(sp.gmina) : null;
-  const [t, gaps] = await Promise.all([getTrends(bucket), getGaps()]);
+  const [t, gaps, clusters] = await Promise.all([getTrends(bucket), getGaps(), getClusters()]);
   const maxPowiat = Math.max(1, ...t.byPowiat.map((p) => p.needs));
 
   return (
@@ -31,7 +33,7 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
         <h1 className="text-3xl font-bold">Trendy potrzeb</h1>
         <p className="max-w-[44rem] text-lg">
           Co mieszkańcy, gminy i organizacje zgłaszają w „Opisz problem”: {t.total} zgłoszeń, pogrupowanych według obszarów Mapy Wyzwań.
-          Niżej mapa luk: gdzie zgłoszenia nie mają gotowego rozwiązania i w jakich obszarach otworzyć nabór.
+          Niżej mapa luk: gdzie zgłoszenia nie mają gotowego rozwiązania i w jakich obszarach otworzyć nabór, a także grupy podobnych zgłoszeń.
         </p>
         {t.synthetic && (
           <Alert title="Dane przykładowe">
@@ -67,6 +69,8 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
       </section>
 
       <GapMap gaps={gaps} selected={gmina} hrefFor={(teryt) => `/panel/trendy?okres=${bucket}&gmina=${teryt}#luki-gmina`} />
+
+      <ClusterList data={clusters} />
 
       <section aria-labelledby="powiaty" className="space-y-4">
         <h2 id="powiaty" className="text-2xl font-bold">Zgłoszenia według powiatu</h2>

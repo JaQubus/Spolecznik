@@ -1,4 +1,5 @@
 import { findGmina } from "@/lib/gminy";
+import { notify } from "@/lib/notifications";
 import { anonymize } from "@/lib/pii";
 import { rateLimit } from "@/lib/rate-limit";
 import { TestRequest } from "@/lib/schemas";
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
       .catch(() => null);
 
     const clean = (s?: string) => (s?.trim() ? anonymize(s.trim()).text : null);
-    const { error } = await createAdminClient().from("tests").insert({
+    const { data: saved, error } = await createAdminClient().from("tests").insert({
       innovation_id: t.innovationId,
       tester_id: tester,
       teryt: gmina.teryt,
@@ -35,11 +36,27 @@ export async function POST(request: Request) {
       suggestions: clean(t.suggestions),
       tester_org: t.testerOrg?.trim() || null,
       planned_for: t.plannedFor ?? null,
-    });
+      contact_email: t.contactEmail ?? null,
+    }).select("id, innovations(title)").single();
     if (error) {
       if (error.code === "23503") return Response.json({ error: "Nie znaleziono tego rozwiązania" }, { status: 404 });
       throw error;
     }
+
+    // Dzwonek admina (Panel → Testy). Błąd powiadomienia nie może zablokować potwierdzenia dla testera.
+    const innovation = saved.innovations as unknown as { title: string } | null;
+    await notify({
+      role: "admin",
+      kind: "nowy_test",
+      payload: {
+        testId: saved.id,
+        innovationId: t.innovationId,
+        title: innovation?.title ?? null,
+        gmina: gmina.nazwa,
+        status: t.status,
+        rating: t.status === "zakonczony" ? t.rating : null,
+      },
+    }).catch((e) => console.error("[tests] powiadomienie:", e));
     return Response.json({ ok: true, gmina: gmina.nazwa });
   } catch (e) {
     console.error("[tests]", e);
