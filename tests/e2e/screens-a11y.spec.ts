@@ -22,6 +22,7 @@ const PANEL = [
   ["Panel: zgłoszenia", "/panel"],
   ["Panel: pomysły", "/panel/pomysly"],
   ["Panel: nabory", "/panel/nabory"],
+  ["Panel: testy", "/panel/testy"],
   ["Panel: trendy i mapa luk", "/panel/trendy"],
   ["Panel: wiedza", "/panel/wiedza"],
 ] as const;

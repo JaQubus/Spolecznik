@@ -4,16 +4,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/knowledge/breadcrumbs";
 import { EasyText } from "@/components/knowledge/easy-text";
-import { GroupIcon, TYPE_ICONS } from "@/components/knowledge/icons";
+import { AreaBadge, GroupIcon, TYPE_ICONS } from "@/components/knowledge/icons";
 import { StorySteps } from "@/components/knowledge/story-steps";
 import { areaHref, InnovationTiles } from "@/components/knowledge/tiles";
 import { VideoEmbed } from "@/components/knowledge/video-embed";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { innovationPage, knowledge } from "@/lib/knowledge";
 import { formatBytes, isHugeFile, TYPE_LABELS } from "@/lib/knowledge/labels";
 import { similarInnovations } from "@/lib/knowledge/similar";
-import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
+import { GROUP_LABELS } from "@/lib/taxonomy";
 import { safeDecode } from "../../shared";
 
 export async function generateMetadata(props: PageProps<"/biblioteka/innowacja/[slug]">): Promise<Metadata> {
@@ -66,7 +65,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
               <dt className="font-bold">Obszary</dt>
               <dd>
                 <ul className="flex flex-wrap gap-2" aria-label="Obszary Mapy Wyzwań">
-                  {i.areas.map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
+                  {i.areas.map((a) => <li key={a}><AreaBadge area={a} /></li>)}
                 </ul>
               </dd>
             </>

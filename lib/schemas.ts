@@ -27,6 +27,9 @@ export const NEED_STATUSES = [
   "zgloszone", "w_analizie", "ekspert", "odpowiedz", "luka", "zamkniete",
 ] as const;
 
+/** Statusy testu (Próba). Tester zgłasza tylko „planowany” albo „zakonczony”, resztę ustawia ROPS w Panelu → Testy. */
+export const TEST_STATUSES = ["planowany", "potwierdzony", "w_trakcie", "zakonczony"] as const;
+
 export const NeedCard = z.object({
   summary: z.string(), // 1–2 zdania, bez danych osobowych
   areas: z.array(z.enum(MWS_AREAS)).min(1).max(3),
@@ -81,6 +84,16 @@ export const CardTags = z.object({
 });
 export type CardTags = z.infer<typeof CardTags>;
 
+// /panel/trendy: etykiety grup podobnych potrzeb, liczone wsadowo i trzymane w need_cluster_labels
+export const ClusterLabels = z.object({
+  clusters: z.array(z.object({
+    n: z.number().int(),           // numer grupy z <grupa n="…">
+    label: z.string().max(80),     // krótkie hasło, np. „Samotność seniorów na wsi”
+    description: z.string().max(300), // jedno zdanie
+  })),
+});
+export type ClusterLabels = z.infer<typeof ClusterLabels>;
+
 // /api/ask: Zapytaj Bibliotekę (RAG po doc_chunks)
 export const AskRequest = z.object({ question: z.string().min(3).max(1000) });
 export const AskAnswer = z.object({
@@ -88,6 +101,14 @@ export const AskAnswer = z.object({
   answer: z.string(),
   sources: z.array(z.number().int()).max(5), // numery fragmentów z <fragment n="…">
 });
+// Rozmowa: asystent jako pierwsza linia „Zapytaj ROPS” (lib/first-line.ts)
+export const FirstLineAnswer = z.object({
+  // odpowiedz: źródła zawierają odpowiedź · przekaz: nie zawierają albo pytanie o własną sprawę · bez_pytania: to nie pytanie
+  decision: z.enum(["odpowiedz", "przekaz", "bez_pytania"]),
+  answer: z.string().max(2000),
+  sources: z.array(z.number().int()).max(5), // numery źródeł z <zrodlo n="…">
+});
+
 export type AskResponse = {
   answered: boolean;
   answer: string;
@@ -112,6 +133,7 @@ export const IdeaRequest = z.object({
   fiszka: Fiszka,
   canvas: z.record(z.string(), z.string().max(3000)).default({}),
   needCode: z.string().regex(STATUS_CODE).optional(), // pomysł z luki: /pomysl?potrzeba=SPL-…
+  poster: z.lazy(() => IdeaPoster).optional(), // plakat z /api/poster, jeśli autor go wygenerował
 });
 /** accessKey: tajny klucz pomysłu — tylko dla autora (ciasteczko + prywatny link), jak w MatchResponse. */
 export type IdeaResponse = { ideaId: string; statusCode: string; accessKey: string };
@@ -122,9 +144,10 @@ export const TestRequest = z
     innovationId: z.uuid(),
     gmina: z.string().min(2).max(100),
     teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
-    status: z.enum(["planowany", "zakonczony"]),
+    status: z.enum(TEST_STATUSES).extract(["planowany", "zakonczony"]),
     testerOrg: z.string().max(200).optional(),
     plannedFor: z.iso.date().optional(),
+    contactEmail: z.email().max(254).optional(), // powiadomienia o statusie testu bez konta
     rating: z.number().int().min(1).max(5).optional(),
     feedback: z.string().max(2000).optional(), // co działa
     suggestions: z.string().max(2000).optional(), // co poprawić
@@ -137,6 +160,8 @@ export const ThreadPostRequest = z.object({
   body: z.string().trim().min(2, "Wpisz wiadomość").max(2000, "Wiadomość może mieć najwyżej 2000 znaków"),
   expertId: z.uuid().optional(), // „Zapytaj eksperta” z wyników dopasowania
 });
+
+export const ThreadNotHelpfulRequest = z.object({ code: z.string().trim().toUpperCase().regex(STATUS_CODE) });
 
 // /api/assistant: asystent Pracowni
 export const AssistantRequest = z.object({
@@ -178,6 +203,56 @@ export const ApplicationDraft = z.object({
   checklist: z.array(z.object({ criterion: z.string(), met: z.boolean(), note: z.string() })),
 });
 export type ApplicationDraft = z.infer<typeof ApplicationDraft>;
+
+// /api/poster: plakat pomysłu — wizualizacja z tekstu, bo Groq nie generuje obrazów.
+/** Zamknięta lista ikon kroków; components/pomysl/idea-poster.tsx zamienia nazwy na Heroicons. */
+export const POSTER_ICONS = [
+  "user", "user-group", "home", "map-pin", "phone", "chat-bubble-left-right", "calendar-days", "truck",
+  "heart", "academic-cap", "wrench-screwdriver", "light-bulb", "hand-raised", "building-office",
+  "computer-desktop", "shopping-bag", "book-open", "megaphone", "puzzle-piece", "clipboard-document-check",
+] as const;
+export const POSTER_NEEDS = ["ludzie", "miejsce", "sprzet", "pieniadze", "partnerzy", "inne"] as const;
+export const POSTER_SHAPES = ["prostokat", "pionowy", "plaski", "okragly"] as const;
+
+/** Tekst plakatu: za długi przycinamy na granicy słowa z „…”, zamiast odrzucać całą odpowiedź modelu. */
+const posterText = (max: number) =>
+  z.preprocess((v) => {
+    if (typeof v !== "string") return v;
+    const text = v.trim();
+    if (text.length <= max) return text;
+    const cut = text.slice(0, max - 1);
+    return `${cut.slice(0, cut.lastIndexOf(" ") > max / 2 ? cut.lastIndexOf(" ") : cut.length).replace(/[\s,;:–—-]+$/, "")}…`;
+  }, z.string().min(1).max(max));
+
+// Limity długości trzymają plakat krótkim: zwykle jedna strona A4; z każdym polem pełnym przy interlinii 1.5 (WCAG) może wejść na drugą.
+export const IdeaPoster = z.object({
+  headline: posterText(70),
+  oneLiner: posterText(160),
+  journey: z
+    .array(z.object({
+      who: posterText(40),
+      action: posterText(110),
+      // Nieznana nazwa ikony nie psuje plakatu — ikona jest tylko obok tekstu.
+      icon: z.enum(POSTER_ICONS).catch("light-bulb"),
+    }))
+    .min(3)
+    .max(4),
+  benefits: z.array(posterText(90)).min(1).max(3),
+  needs: z.array(z.object({ kind: z.enum(POSTER_NEEDS).catch("inne"), text: posterText(90) })).max(5),
+  object: z
+    .object({
+      name: posterText(50),
+      shape: z.enum(POSTER_SHAPES).catch("prostokat"),
+      description: posterText(160),
+      parts: z.array(z.object({ name: posterText(35), purpose: z.string().max(80).catch("") })).min(1).max(6),
+    })
+    .nullable(),
+});
+export type IdeaPoster = z.infer<typeof IdeaPoster>;
+export const PosterRequest = z.object({
+  fiszka: Fiszka,
+  canvas: z.record(z.string(), z.string().max(3000)).default({}),
+});
 
 // Odpowiedź /api/match — wspólny typ dla serwera i klienta.
 export type InnovationMatch = RerankItem & {

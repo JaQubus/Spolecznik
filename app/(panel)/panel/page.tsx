@@ -3,18 +3,23 @@ import Link from "next/link";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { requireAdmin, viewerClient } from "@/lib/auth";
+import { getClusters } from "@/lib/knowledge/clusters";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { NEED_COLUMNS, needTriage, type NeedRow, type Triage } from "@/lib/panel/needs";
 import { formatDate, plural } from "@/lib/pl";
 import { anonymize } from "@/lib/pii";
 import { AreaBadge } from "@/components/knowledge/icons";
+import type { ThreadWaiting } from "@/lib/thread-types";
+import { WaitingBadge, waitingOrEmpty } from "./waiting";
 
 export const metadata = { title: "Panel ROPS" };
 
 const PAGE_SIZE = 25;
 
-const FILTERS: { key: string; label: string; statuses: NeedStatus[] | null }[] = [
+const FILTERS: { key: string; label: string; statuses: NeedStatus[] | null; waiting?: true }[] = [
   { key: "nowe", label: "Do przejrzenia", statuses: ["zgloszone", "luka"] },
+  // Rozmowy, w których asystent przekazał pytanie albo jego odpowiedź nie pomogła (#20).
+  { key: "czeka", label: "Czekają na człowieka", statuses: null, waiting: true },
   { key: "luka", label: "Luki", statuses: ["luka"] },
   { key: "w_analizie", label: "W analizie", statuses: ["w_analizie"] },
   { key: "ekspert", label: "Przypisano eksperta", statuses: ["ekspert"] },
@@ -30,7 +35,10 @@ const chipLink =
 export default async function Page(props: PageProps<"/panel">) {
   const viewer = await requireAdmin();
   const params = await props.searchParams;
-  const filter = FILTERS.find((f) => f.key === params.status) ?? FILTERS[0];
+  // Grupa podobnych zgłoszeń z /panel/trendy: domyślnie wszystkie statusy, bo grupa obejmuje też zamknięte.
+  const groupKey = typeof params.grupa === "string" && /^[0-9a-f]{10}$/.test(params.grupa) ? params.grupa : null;
+  const group = groupKey ? (await getClusters()).clusters.find((c) => c.key === groupKey) ?? null : null;
+  const filter = FILTERS.find((f) => f.key === params.status) ?? (groupKey ? FILTERS.at(-1)! : FILTERS[0]);
   const page = Math.max(1, Number(params.strona) || 1);
 
   // Odczyt sesją użytkownika: RLS (is_admin) pilnuje dostępu drugi raz (konto testowe: service role, lib/auth.ts).
@@ -41,25 +49,38 @@ export default async function Page(props: PageProps<"/panel">) {
     .order("created_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (filter.statuses) query = query.in("status", filter.statuses);
+  if (groupKey) query = query.in("id", group?.ids ?? []);
+  if (filter.waiting) query = query.in("id", [...(await waitingOrEmpty("potrzeba")).keys()]);
   const { data, count, error } = await query;
   if (error) throw error;
 
   const needs = (data ?? []) as unknown as NeedRow[];
-  const triage = await needTriage(needs);
+  const [triage, waiting] = await Promise.all([needTriage(needs), waitingOrEmpty("potrzeba", needs.map((n) => n.id))]);
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const href = (p: number) => `/panel?status=${filter.key}${p > 1 ? `&strona=${p}` : ""}`;
+  const groupParam = groupKey ? `&grupa=${groupKey}` : "";
+  const href = (p: number) => `/panel?status=${filter.key}${groupParam}${p > 1 ? `&strona=${p}` : ""}`;
 
   return (
     <section className="space-y-6">
       <h1 className="text-3xl font-bold">Zgłoszenia</h1>
       {params.usunieto === "need" && <Alert tone="success" title="Usunięto zgłoszenie" />}
+      {groupKey && (
+        <p className="text-lg">
+          {group
+            ? <>Grupa podobnych zgłoszeń: <strong>{group.label ?? group.keywords.join(", ")}</strong>. </>
+            : "Tej grupy już nie ma: zgłoszenia zmieniły się od wejścia na Trendy. "}
+          <Link href={`/panel?status=${filter.key}`} className={linkClass}>Pokaż wszystkie zgłoszenia</Link>
+          {" · "}
+          <Link href="/panel/trendy#grupy" className={linkClass}>Wróć do grup</Link>
+        </p>
+      )}
 
       <nav aria-label="Filtruj zgłoszenia">
         <ul className="flex flex-wrap gap-2">
           {FILTERS.map((f) => (
             <li key={f.key}>
-              <Link href={`/panel?status=${f.key}`} aria-current={f.key === filter.key ? "page" : undefined} className={chipLink}>
+              <Link href={`/panel?status=${f.key}${groupParam}`} aria-current={f.key === filter.key ? "page" : undefined} className={chipLink}>
                 {f.label}
               </Link>
             </li>
@@ -76,7 +97,7 @@ export default async function Page(props: PageProps<"/panel">) {
         <p className="text-muted-foreground">Nie ma tu żadnych zgłoszeń.</p>
       ) : (
         <ol className="max-w-4xl border-t">
-          {needs.map((n) => <NeedItem key={n.id} need={n} triage={triage.get(n.id)} />)}
+          {needs.map((n) => <NeedItem key={n.id} need={n} triage={triage.get(n.id)} waiting={waiting.get(n.id) ?? null} />)}
         </ol>
       )}
 
@@ -91,7 +112,7 @@ export default async function Page(props: PageProps<"/panel">) {
 }
 
 /** Wiersz skrzynki (jak ResultList): bez ramek, linie między wierszami, analiza AI jako etykiety ze słowami. */
-function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
+function NeedItem({ need: n, triage, waiting }: { need: NeedRow; triage?: Triage; waiting: ThreadWaiting }) {
   const pii = !!n.raw_text && anonymize(n.raw_text).found;
   const dups = triage?.duplicates.length ?? 0;
   return (
@@ -107,6 +128,7 @@ function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
         {n.best_fit != null && ` · najlepsze dopasowanie ${n.best_fit} na 100`}
       </p>
       <ul className="flex flex-wrap gap-2" aria-label="Analiza zgłoszenia">
+        <WaitingBadge waiting={waiting} />
         {n.card.areas.slice(0, 3).map((a) => <li key={a}><AreaBadge area={a} /></li>)}
         {pii && <li><Badge variant="warning"><ShieldExclamationIcon aria-hidden className="size-4" /> Może zawierać dane osobowe</Badge></li>}
         {dups > 0 && <li><Badge variant="warning"><DocumentDuplicateIcon aria-hidden className="size-4" /> Możliwy duplikat ({dups})</Badge></li>}
@@ -115,3 +137,4 @@ function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
     </li>
   );
 }
+
