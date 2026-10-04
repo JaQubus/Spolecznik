@@ -24,5 +24,5 @@ export async function GET(request: Request, ctx: RouteContext<"/r/[kod]/[klucz]"
   }
   if (!kind) redirect("/zapytaj?link=nieaktualny");
   await rememberNeed(code, klucz);
-  redirect(`/zapytaj?potrzeba=${code}`);
+  redirect(`/zapytaj?kod=${code}`);
 }

@@ -22,7 +22,7 @@ export function MyNeeds({ mine, primary }: { mine: MyNeed[]; primary: "rozmowa" 
         <ul className="border-t">
           {mine.map((n) => {
             const what = n.kind === "pomysl" ? "pomysł" : "zgłoszenie";
-            const conversation = { href: `/zapytaj?potrzeba=${n.code}`, label: "Otwórz rozmowę" };
+            const conversation = { href: `/zapytaj?kod=${n.code}`, label: "Otwórz rozmowę" };
             const status = { href: `/status/${n.code}`, label: "Zobacz status" };
             const [main, other] = primary === "rozmowa" ? [conversation, status] : [status, conversation];
             return (

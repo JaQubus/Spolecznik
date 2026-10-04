@@ -16,7 +16,9 @@ const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:dec
 
 export default async function Page(props: PageProps<"/zapytaj">) {
   const params = await props.searchParams;
-  const raw = typeof params.potrzeba === "string" ? params.potrzeba.trim().toUpperCase() : "";
+  // ?kod= otwiera rozmowę o potrzebie albo pomyśle; ?potrzeba= zostaje dla starszych linków (np. z wyników dopasowania).
+  const asked = params.kod ?? params.potrzeba;
+  const raw = typeof asked === "string" ? asked.trim().toUpperCase() : "";
   const askedExpert = typeof params.ekspert === "string" && UUID.test(params.ekspert) ? params.ekspert : undefined;
   const badLink = params.link === "nieaktualny";
 
@@ -97,7 +99,7 @@ function MyConversations({ mine, askedCode, badLink }: { mine: MyNeed[]; askedCo
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Zapytaj eksperta</h1>
         <p className="text-lg">
-          Rozmowa z ekspertem i pracownikiem ROPS jest przypięta do Twojego zgłoszenia i widzisz ją tylko Ty.
+          Rozmowa z ekspertem i pracownikiem ROPS jest przypięta do Twojego zgłoszenia albo pomysłu i widzisz ją tylko Ty.
         </p>
       </div>
 
@@ -122,8 +124,12 @@ function MyConversations({ mine, askedCode, badLink }: { mine: MyNeed[]; askedCo
       <MyNeeds mine={mine} primary="rozmowa" />
 
       <p>
-        Nie masz jeszcze zgłoszenia? <Link href="/opisz" className={linkClass}>Opisz problem</Link> — rozmowa będzie
-        czekać tutaj.
+        Zgłoszenie albo pomysł wysłano z innego urządzenia? Otwórz prywatny link pokazany po wysłaniu — rozmowa
+        pojawi się tutaj.
+      </p>
+      <p>
+        Nie masz jeszcze zgłoszenia? <Link href="/opisz" className={linkClass}>Opisz problem</Link> albo{" "}
+        <Link href="/pomysl" className={linkClass}>zgłoś pomysł</Link> — rozmowa będzie czekać tutaj.
       </p>
     </section>
   );
