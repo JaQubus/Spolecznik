@@ -3,6 +3,7 @@
 import { HandThumbDownIcon, HandThumbUpIcon, UsersIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { EmailOptIn } from "@/components/rozmowa/email-opt-in";
 import { PrivateLink } from "@/components/rozmowa/private-link";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -129,6 +130,7 @@ function StatusCode({ code, accessKey }: { code: string; accessKey: string }) {
         </p>
       </div>
       <PrivateLink code={code} accessKey={accessKey} />
+      <EmailOptIn code={code} accessKey={accessKey} />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { emailAuthor } from "@/lib/author-contact";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { notify } from "@/lib/notifications";
@@ -48,6 +49,10 @@ async function setStatus(
       payload: { needId, status: patch.status },
     }).catch((e) => console.error("[panel] powiadomienie:", e));
   }
+  // Autor bez konta dowie się z e-maila, jeśli go podał (#65).
+  await emailAuthor("potrzeba", needId, from === patch.status
+    ? "ROPS dodał wiadomość do zgłoszenia"
+    : `Zgłoszenie ma nowy status: ${NEED_STATUS_LABELS[patch.status]}`);
 }
 
 async function loadNeed(needId: string) {
@@ -206,6 +211,7 @@ export async function assignIdeaExpert(_prev: ActionResult, formData: FormData):
       await notify({ user_id: thread.authorId, kind: "zmiana_statusu", payload: threadPayload(thread, { status: "ekspert" }) })
         .catch((e) => console.error("[panel] powiadomienie:", e));
     }
+    await emailAuthor("pomysl", ideaId, `Pomysł ma nowy status: ${NEED_STATUS_LABELS.ekspert}`);
   } catch (e) {
     console.error("[panel] ekspert pomysłu:", e);
     return SAVE_FAILED;
@@ -260,6 +266,7 @@ export async function updateIdeaStatus(_prev: ActionResult, formData: FormData):
     const { error: updateError } = await supabase.from("ideas").update({ status }).eq("id", ideaId);
     if (updateError) throw updateError;
     await logChange(user.id, "idea.status", "idea", ideaId, { from: before.status, to: status });
+    await emailAuthor("pomysl", ideaId, `Pomysł ma nowy status: ${NEED_STATUS_LABELS[status]}`);
   } catch (e) {
     console.error("[panel] status pomysłu:", e);
     return SAVE_FAILED;
@@ -334,10 +341,14 @@ export async function setCallActive(formData: FormData) {
       const lemmas = ((indexed?.lemmas as string | undefined) ?? call.title.toLowerCase()).split(/\s+/).filter(Boolean);
       const hits = (await keywordSearch("pomysl", lemmas, 30)).filter((h) => h.similarity >= 0.25);
       if (hits.length) {
-        const { data: ideas } = await supabase.from("ideas").select("author_id").in("id", hits.map((h) => h.ref_id)).not("author_id", "is", null);
-        const authors = [...new Set((ideas ?? []).map((i) => i.author_id as string))];
+        const { data: ideas } = await supabase.from("ideas").select("id, author_id, contact_email").in("id", hits.map((h) => h.ref_id));
+        const authors = [...new Set((ideas ?? []).map((i) => i.author_id as string | null).filter((a): a is string => !!a))];
         if (authors.length) {
           await notify(authors.map((user_id) => ({ user_id, kind: "nowy_nabor", payload: { callId: call.id, title: call.title } })));
+        }
+        // Autorzy bez konta, którzy zostawili e-mail.
+        for (const idea of (ideas ?? []).filter((i) => i.contact_email)) {
+          await emailAuthor("pomysl", idea.id as string, `Ruszył nabór „${call.title}”, możesz złożyć wniosek`);
         }
       }
     } catch (e) {

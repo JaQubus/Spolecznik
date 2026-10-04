@@ -1,4 +1,5 @@
 import "server-only";
+import { innovationHref } from "@/components/knowledge/tiles";
 import { viewerClient, type Viewer } from "./auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "./need-status";
 import { ADMIN_CHANNEL, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
@@ -89,6 +90,11 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
     }
     case "wiadomosc":
       return { text: `ROPS dodał wiadomość do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
+    case "nowa_innowacja":
+      return {
+        text: `W Bibliotece jest nowe rozwiązanie, które może pasować do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}${str(p.title) ? `: „${short(str(p.title)!)}”` : ""}`,
+        href: str(p.slug) ? innovationHref(str(p.slug)!) : "/biblioteka",
+      };
     case "nowy_nabor":
       return { text: `Ruszył nabór${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Możesz złożyć wniosek.`, href: "/wniosek" };
     default:

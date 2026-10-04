@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { EmailOptIn } from "@/components/rozmowa/email-opt-in";
 import { PrivateLink } from "@/components/rozmowa/private-link";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -104,6 +105,7 @@ export function IdeaWorkshop({
               </p>
             </div>
             <PrivateLink code={result.statusCode} accessKey={result.accessKey} kind="pomysl" />
+            <EmailOptIn code={result.statusCode} accessKey={result.accessKey} />
           </div>
           <p className="max-w-2xl">
             Pracownik ROPS przeczyta pomysł i odpisze w{" "}

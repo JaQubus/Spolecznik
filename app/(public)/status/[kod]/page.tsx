@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { EmailOptIn } from "@/components/rozmowa/email-opt-in";
 import { PrivateLink } from "@/components/rozmowa/private-link";
+import { maskedContactEmail } from "@/lib/author-contact";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -85,6 +87,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
   let steps: TimelineStep[] = [];
   // Klucz autora z tej przeglądarki: tylko wtedy pokazujemy prywatny link (sam kod da się zgadnąć).
   let key: string | null = null;
+  let contact: string | null = null;
   let unavailable = false;
   if (CODE.test(code)) {
     try {
@@ -93,6 +96,8 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         steps = await timeline(report);
         const remembered = await rememberedKey(code);
         key = keyMatches(report.accessHash, remembered) ? remembered : null;
+        // Adres do powiadomień tylko dla autora (z kluczem) — i zamaskowany.
+        if (key) contact = await maskedContactEmail(report.kind, code).catch(() => null);
       }
     } catch (e) {
       console.error("[status]", e);
@@ -180,6 +185,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
       )}
 
       {key && <PrivateLink code={code} accessKey={key} kind={report.kind} />}
+      {key && <EmailOptIn code={code} accessKey={key} current={contact} />}
     </section>
   );
 }

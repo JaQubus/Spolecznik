@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { NoDatabase } from "@/components/layout/no-database";
 import { MyNeeds } from "@/components/rozmowa/my-needs";
+import { EmailOptIn } from "@/components/rozmowa/email-opt-in";
 import { PrivateLink } from "@/components/rozmowa/private-link";
+import { maskedContactEmail } from "@/lib/author-contact";
 import { Alert } from "@/components/ui/alert";
 import { rememberedKey } from "@/lib/need-access";
 import { STATUS_CODE } from "@/lib/schemas";
@@ -27,6 +29,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
   let thread: NeedThread | null = null;
   let mine: MyNeed[] = [];
   let key: string | null = null;
+  let contact: string | null = null;
   let chosenName: string | null = null;
   try {
     if (STATUS_CODE.test(raw)) {
@@ -34,6 +37,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
       // Brak zgłoszenia i brak klucza wyglądają tak samo — po stronie nie da się sprawdzać, które kody istnieją.
       thread = found && (await canOpen(found)) ? found : null;
       key = thread ? await rememberedKey(thread.code) : null;
+      if (thread && key) contact = await maskedContactEmail("potrzeba", thread.code).catch(() => null);
       // Ekspert z wyników dopasowania — tylko podpowiedź, dopóki ROPS nie przypisze kogoś w Panelu.
       if (thread && !thread.expert && askedExpert) chosenName = await expertName(askedExpert);
     }
