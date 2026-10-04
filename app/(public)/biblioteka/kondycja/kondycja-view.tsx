@@ -68,9 +68,14 @@ function places(layer: LayerKey, key: string) {
 const placeText = ({ p, low, of }: Place) =>
   `${p}. miejsce na ${of}${p === 1 ? " (najwyższa wartość)" : low === 1 ? " (najniższa wartość)" : ""}`;
 
-/** Wartość z jednostką; przy skali rozbieżnej (np. przyrost naturalny) ze znakiem plus. */
+/**
+ * Wartość z jednostką; przy skali rozbieżnej (np. przyrost naturalny) ze znakiem plus.
+ * Liczba i skrót po niej („10 tys.”) zostają w jednym wierszu, gdy wąska kolumna tabeli zawija jednostkę.
+ */
 const show = (v: number | null | undefined, ind: MapIndicator) =>
-  v == null ? "brak danych" : `${ind.scale === "diverging" && v > 0 ? "+" : ""}${withUnit(v, ind)}`;
+  v == null
+    ? "brak danych"
+    : `${ind.scale === "diverging" && v > 0 ? "+" : ""}${withUnit(v, ind)}`.replace(/(\d) (?=\p{L}+\.)/gu, "$1 ");
 
 const CITY = / \(miasto na prawach powiatu\)$/;
 function subtitle(layer: LayerKey, u: MapUnit) {
@@ -282,20 +287,20 @@ export async function KondycjaView({ layer, requested, selectedId }: { layer: La
                   <caption className="sr-only">{indicator.label}: {list.title}</caption>
                   <thead>
                     <tr className="border-b-2 border-foreground align-bottom">
-                      <th scope="col" className="py-2 pr-4">Miejsce</th>
-                      <th scope="col" className="py-2 pr-4">{layer === "gminy" ? "Gmina" : "Powiat"}</th>
+                      <th scope="col" className="py-2 pr-3">Miejsce</th>
+                      <th scope="col" className="py-2 pr-3">{layer === "gminy" ? "Gmina" : "Powiat"}</th>
                       <th scope="col" className="py-2 text-right">Wartość</th>
                     </tr>
                   </thead>
                   <tbody>
                     {list.units.map((u) => (
                       <tr key={u.id} className={cn("border-b align-top", u.id === selected?.id && "bg-secondary")}>
-                        <td className="py-3 pr-4 font-bold tabular-nums">{rank.get(u.id)!.p}.</td>
-                        <th scope="row" className="py-3 pr-4 font-normal">
+                        <td className="py-3 pr-3 font-bold tabular-nums">{rank.get(u.id)!.p}.</td>
+                        <th scope="row" className="py-3 pr-3 font-normal">
                           <Link href={kondycjaHref(layer, indicator.key, u.id)} scroll={false} className={linkClass}>{u.name}</Link>
                           {layer === "gminy" && <span className="block text-muted-foreground">{subtitle(layer, u)}</span>}
                         </th>
-                        <td className="py-3 text-right font-bold whitespace-nowrap tabular-nums">{show(u.values[indicator.key], indicator)}</td>
+                        <td className="py-3 text-right font-bold tabular-nums">{show(u.values[indicator.key], indicator)}</td>
                       </tr>
                     ))}
                   </tbody>

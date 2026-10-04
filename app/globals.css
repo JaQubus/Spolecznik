@@ -146,6 +146,8 @@
     @apply bg-background text-foreground;
     font-size: 1.125rem;
     line-height: 1.75rem;
+    /* Długi link albo słowo (np. w wiadomości) nie może rozepchnąć strony na telefonie (SC 1.4.10). */
+    overflow-wrap: break-word;
   }
 }
 /* ── Dostępność (WCAG 2.1 AA) ─────────────────────────────── */
