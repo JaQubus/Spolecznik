@@ -18,7 +18,7 @@ export function rateLimit(request: Request, bucket: string, limit: number): Resp
   if (recent.length >= limit) {
     const retryAfter = Math.max(1, Math.ceil((WINDOW_MS - (now - recent[0])) / 1000));
     return Response.json(
-      { error: `Za dużo zapytań naraz. Spróbuj ponownie za ${retryAfter} s` },
+      { error: `Za dużo zapytań z tego urządzenia (limit odnowi się za ${retryAfter} s)` },
       { status: 429, headers: { "Retry-After": String(retryAfter) } },
     );
   }

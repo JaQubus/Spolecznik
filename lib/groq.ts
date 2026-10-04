@@ -22,12 +22,13 @@ export class GroqBusyError extends Error {
 }
 
 /**
- * Odpowiedź trasy API na błąd: limit Groq → 503 z komunikatem, co zrobić; inne błędy → 500 z `message`.
+ * Odpowiedź trasy API na błąd: limit Groq → 503; inne błędy → 500 z `message`.
+ * Komunikat bez „Spróbuj ponownie” — formularze same dopisują to zdanie, inaczej powtarzało się dwa razy.
  */
 export function aiErrorResponse(tag: string, e: unknown, message: string): Response {
   console.error(`[${tag}]`, e);
   if (e instanceof GroqBusyError) {
-    return Response.json({ error: "Za dużo zapytań do AI naraz. Spróbuj ponownie za minutę" }, { status: 503 });
+    return Response.json({ error: "Za dużo zapytań do AI naraz" }, { status: 503 });
   }
   return Response.json({ error: message }, { status: 500 });
 }

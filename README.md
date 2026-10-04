@@ -5,6 +5,36 @@ Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
 
 ---
 
+## Demo i makiety
+
+- **Demo:** <https://spolecznik.vercel.app> — działa w przeglądarce na telefonie i komputerze, bez instalacji. Wszystkie zgłoszenia, pomysły, eksperci i nabory to **dane syntetyczne**.
+- **Makiety UX/UI:** [docs/makiety.md](docs/makiety.md) — kluczowe ekrany 7 modułów w widoku telefonu (390 px) i komputera (1440 px), ułożone według pętli innowacji, z adnotacjami: moduł briefu (I–VII) i decyzje dostępności. Otwiera się bez logowania.
+
+**Od czego zacząć** (scenariusz z §13, ok. 5 minut):
+
+1. **Opisz problem** (moduł I). Na stronie głównej wpisz albo powiedz (przycisk „Opowiedz problem”), np. *„Seniorzy w przysiółkach są samotni, autobus jeździ dwa razy dziennie”*, i wybierz „Znajdź rozwiązania”. Jeśli Społecznik zada pytanie doprecyzowujące, odpowiedz albo je pomiń. Zapisz kod zgłoszenia `SPL-…`.
+2. **Wyniki → karta wdrożeniowa** (moduł VII). Przy wybranym rozwiązaniu: „Jak to wdrożyć u nas?”, wpisz gminę, „Przygotuj kartę wdrożeniową”.
+3. **Przetestuj** (moduł IV). Na karcie: „Chcę przetestować”; drugi wariant formularza to ocena po teście.
+4. **Luka → Pracownia** (moduły I i III). Opisz problem, którego Biblioteka nie rozwiązuje, np. *„Rolnicy po likwidacji gospodarstw popadają w depresję, nikt się tym nie zajmuje”*. Przy „Nie znaleźliśmy jeszcze gotowego rozwiązania” wybierz „Zgłoś pomysł”: fiszka jest częściowo wypełniona, a „Sprawdź, czy to coś nowego” uruchamia asystenta.
+5. **Wniosek** (moduł III). Gdy nabór jest otwarty, z pomysłu przejdziesz do szkicu wniosku i formularza na `/wniosek`.
+6. **Rozmowy i status** (moduł V). „Sprawdź status” i „Zapytaj eksperta” działają po kodzie zgłoszenia, bez konta.
+7. **Biblioteka i wiedza** (moduł II). Obszar „Seniorzy”, karta innowacji, „Kondycja Małopolski” (mapa gmin).
+8. **Panel ROPS** (moduł VI). Wejdź na [`/logowanie`](https://spolecznik.vercel.app/logowanie) — szczegóły niżej.
+
+**Dostęp do Panelu ROPS.** Panel wymaga konta z rolą administratora. Logowanie linkiem z e-maila wymaga dostępu do skrzynki, więc jury tak się nie zaloguje.
+
+> **TODO (zespół, przed zgłoszeniem):** wybrać jeden sposób i opisać go tutaj oraz w formularzu zgłoszenia:
+> - **Konto testowe jednym przyciskiem:** w Vercel ustawić `TEST_LOGIN=1` i własny `TEST_LOGIN_SECRET` (`lib/auth.ts`). Na `/logowanie` pojawią się przyciski „Wejdź jako administrator ROPS”, „Wejdź jako ekspert” i „Wejdź jako mieszkaniec”. To bezpieczne tylko dlatego, że w demo są wyłącznie dane syntetyczne; po hackathonie wyłączyć.
+> - **Konto demo z hasłem:** utworzyć użytkownika w Supabase Auth z rolą `admin` w tabeli `profiles` i podać e-mail i hasło w zgłoszeniu („Masz hasło? Zaloguj się hasłem”).
+>
+> Do tego czasu Panel można zobaczyć na [makietach](docs/makiety.md#7-panel-rops-modu%C5%82-vi).
+
+**Gdy AI nie odpowiada.** Dopasowanie, karta wdrożeniowa i asystent korzystają z modelu na Groq. Gdy kilka osób testuje naraz, darmowy limit (1–2 dopasowania na minutę, §14) może się wyczerpać. Strona pokaże wtedy „Za dużo zapytań do AI naraz” — wystarczy odczekać minutę. Biblioteka, status, Panel i formularze działają bez AI.
+
+Makiety odświeża `bun run makiety` (skrypt Playwright, `tests/makiety/`). Szczegóły są w [docs/makiety.md](docs/makiety.md#skąd-są-zrzuty).
+
+---
+
 ## TL;DR
 
 - **Nazwa:** **Społecznik**. Hasło: *Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.*

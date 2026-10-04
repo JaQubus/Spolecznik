@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "node --test --experimental-strip-types --no-warnings \"tests/unit/**/*.test.ts\"",
     "test:e2e": "playwright test",
+    "makiety": "playwright test -c playwright.makiety.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
