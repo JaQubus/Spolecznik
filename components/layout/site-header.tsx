@@ -79,7 +79,7 @@ export function SiteHeader() {
       >
         {/* Wiersz o stałej wysokości: otwarte menu pojawia się pod nim i niczego w nim nie przesuwa. */}
         <div className="flex min-h-20 items-center justify-between gap-4">
-          <Link href="/" className="rounded-lg text-xl font-bold tracking-tight sm:text-2xl">Społecznik</Link>
+          <Link href="/" className="inline-flex min-h-12 items-center rounded-lg text-xl font-bold tracking-tight sm:text-2xl">Społecznik</Link>
           <button
             ref={menuButton}
             type="button"

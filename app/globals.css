@@ -149,6 +149,10 @@
     /* Długi link albo słowo (np. w wiadomości) nie może rozepchnąć strony na telefonie (SC 1.4.10). */
     overflow-wrap: break-word;
   }
+  /* Kod do przepisania (SPL-TST3) nie łamie się na myślniku — jest krótki, mieści się przy 320 px. */
+  .font-mono {
+    white-space: nowrap;
+  }
 }
 /* ── Dostępność (WCAG 2.1 AA) ─────────────────────────────── */
 html.a11y-large { font-size: 125%; }

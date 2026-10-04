@@ -104,7 +104,7 @@ export default async function Page(props: PageProps<"/panel">) {
       {pages > 1 && (
         <nav aria-label="Strony" className="flex flex-wrap gap-6 text-lg">
           {page > 1 && <Link href={href(page - 1)} className={`font-bold ${linkClass}`}>Nowsze zgłoszenia</Link>}
-          {page < pages && <Link href={href(page + 1)} className={`font-bold ${linkClass}`}>Starsze zgłoszenia</Link>}
+          {page < pages && <Link href={href(page + 1)} className={`inline-flex min-h-12 items-center font-bold ${linkClass}`}>Starsze zgłoszenia</Link>}
         </nav>
       )}
     </section>

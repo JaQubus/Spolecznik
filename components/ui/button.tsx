@@ -4,7 +4,7 @@ import { cn } from "cn"
 import { Slot } from "radix-ui"
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-3 rounded-full text-lg font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground disabled:border-transparent aria-disabled:bg-muted aria-disabled:text-muted-foreground aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+  "inline-flex shrink-0 items-center justify-center gap-3 max-w-full rounded-full text-center text-lg font-bold transition-colors disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground disabled:border-transparent aria-disabled:bg-muted aria-disabled:text-muted-foreground aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
   {
     variants: {
       variant: {
@@ -20,10 +20,10 @@ const buttonVariants = cva(
         link: "text-foreground underline underline-offset-4 decoration-1 hover:decoration-2",
       },
       size: {
-        default: "h-14 px-6",
-        xs: "h-12 gap-2 px-4 text-base",
-        sm: "h-12 gap-2 px-4 text-base",
-        lg: "h-16 px-8 text-xl",
+        default: "min-h-14 px-6 py-2",
+        xs: "min-h-12 gap-2 px-4 py-2 text-base",
+        sm: "min-h-12 gap-2 px-4 py-2 text-base",
+        lg: "min-h-16 px-8 py-2 text-xl",
         icon: "size-12",
         "icon-xs": "size-12",
         "icon-sm": "size-12",

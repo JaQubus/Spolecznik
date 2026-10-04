@@ -15,15 +15,15 @@ export default function Home() {
         </div>
         <SearchBar gminy={GMINA_OPTIONS} />
       </section>
-      <ul className="mt-10 space-y-3">
+      <ul className="mt-10 space-y-1">
         <li>
-          <Link href="/biblioteka" className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+          <Link href="/biblioteka" className="inline-flex min-h-12 items-center font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
             Zobacz bibliotekę rozwiązań
           </Link>
         </li>
         <li>
           {/* Tester nie ma miejsca w menu (6 pozycji), a bez tego linku dało się do niego dojść tylko z wyników „Opisz problem”. */}
-          <Link href="/przetestuj" className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+          <Link href="/przetestuj" className="inline-flex min-h-12 items-center font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
             Przetestuj rozwiązanie u siebie i oceń je
           </Link>
         </li>

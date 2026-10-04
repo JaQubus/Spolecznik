@@ -229,7 +229,7 @@ export async function KondycjaView({ layer, requested, selectedId }: { layer: La
           </p>
           {indicator.area && (
             <p>
-              <Link href={`/biblioteka/obszar/${indicator.area.replace(/_/g, "-")}`} className={linkClass}>
+              <Link href={`/biblioteka/obszar/${indicator.area.replace(/_/g, "-")}`} className={`inline-flex min-h-12 items-center ${linkClass}`}>
                 Zobacz rozwiązania: {AREA_LABELS[indicator.area]}
               </Link>
             </p>
@@ -421,7 +421,7 @@ async function TerritoryCard({ layer, unit, indicator }: { layer: LayerKey; unit
             <p>W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.</p>
           )}
           <p>
-            <Link href={`/biblioteka/obszar/${area.replace(/_/g, "-")}`} className={linkClass}>
+            <Link href={`/biblioteka/obszar/${area.replace(/_/g, "-")}`} className={`inline-flex min-h-12 items-center ${linkClass}`}>
               Wszystkie rozwiązania: {AREA_LABELS[area].toLowerCase()}
             </Link>
           </p>

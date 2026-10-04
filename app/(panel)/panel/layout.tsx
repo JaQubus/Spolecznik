@@ -7,7 +7,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
   const user = await requireAdmin();
   return (
     <div className="space-y-8">
-      <div className="space-y-4 rounded-[16px] bg-secondary px-5 py-3">
+      <div className="space-y-3 rounded-[16px] bg-secondary px-4 py-3 md:px-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-base"><strong>Panel ROPS</strong> · zalogowano jako {user.label}</p>
           <form action={signOut}>
