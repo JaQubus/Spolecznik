@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/panel/pomysly", label: "Pomysły" },
   { href: "/panel/nabory", label: "Nabory" },
   { href: "/panel/testy", label: "Testy" },
+  { href: "/panel/wdrozenia", label: "Wdrożenia" },
   { href: "/panel/trendy", label: "Trendy" },
   { href: "/panel/wiedza", label: "Wiedza" },
 ] as const;

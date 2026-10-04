@@ -19,7 +19,7 @@ export function WaitingBadge({ waiting }: { waiting: ThreadWaiting }) {
   return (
     <li>
       {waiting === "pilne" ? (
-        <Badge><ExclamationTriangleIcon aria-hidden className="size-4" /> Pilne: odpowiedź AI nie pomogła</Badge>
+        <Badge variant="warning"><ExclamationTriangleIcon aria-hidden className="size-4" /> Pilne: odpowiedź AI nie pomogła</Badge>
       ) : (
         <Badge variant="outline"><ChatBubbleLeftEllipsisIcon aria-hidden className="size-4" /> Rozmowa czeka na człowieka</Badge>
       )}

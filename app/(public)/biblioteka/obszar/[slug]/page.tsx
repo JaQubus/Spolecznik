@@ -40,7 +40,7 @@ export default async function Page(props: PageProps<"/biblioteka/obszar/[slug]">
       <div className="space-y-6">
         <Breadcrumbs items={[{ href: "/biblioteka", label: "Biblioteka i wiedza" }, { label: area.name }]} />
         <h1 className="flex items-center gap-4 text-4xl font-bold">
-          <AreaIcon area={area.key} className="size-10 shrink-0" />
+          <AreaIcon area={area.key} className="size-16" iconClassName="size-9" />
           {area.name}
         </h1>
         <p className="max-w-2xl text-xl">{area.lead}</p>
@@ -59,7 +59,7 @@ export default async function Page(props: PageProps<"/biblioteka/obszar/[slug]">
         {area.challengesSource && (
           <p className="max-w-[44rem] text-base text-muted-foreground">
             Na podstawie:{" "}
-            <a href={area.challengesSource.url} className="font-bold text-foreground underline decoration-1 underline-offset-4 hover:decoration-2">
+            <a href={area.challengesSource.url} className="font-bold text-link underline decoration-1 underline-offset-4 hover:decoration-2">
               {area.challengesSource.title}
             </a>{" "}
             (ROPS w Krakowie). {area.challengesSource.note}

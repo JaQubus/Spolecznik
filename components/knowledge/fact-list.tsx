@@ -10,7 +10,7 @@ function SourceLine({ f }: { f: Fact }) {
   return (
     <p className="text-base text-muted-foreground">
       Źródło:{" "}
-      <a href={f.sourceUrl} className="font-bold text-foreground underline decoration-1 underline-offset-4 hover:decoration-2">
+      <a href={f.sourceUrl} className="font-bold text-link underline decoration-1 underline-offset-4 hover:decoration-2">
         {f.sourceTitle}
       </a>
       {details && `, ${details}`}.{f.dataYear && f.dataYear !== f.sourceYear && ` Dane z ${f.dataYear} roku.`}

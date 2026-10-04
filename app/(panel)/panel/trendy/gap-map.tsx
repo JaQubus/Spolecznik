@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cn } from "cn";
 import { ChoroplethMap, GMINA_SHAPES, MapLegend } from "@/components/maps/choropleth-map";
 import { FocusHeading } from "@/components/a11y/focus-heading";
-import { Badge } from "@/components/ui/badge";
+import { AreaBadge } from "@/components/knowledge/icons";
 import { GAP_LEGEND, gapClass, gapGminaLabel, type Gaps } from "@/lib/knowledge/gaps";
 import { formatDate, plural } from "@/lib/pl";
 import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
@@ -96,7 +96,7 @@ export function GapMap({ gaps, selected, hrefFor }: { gaps: Gaps; selected: stri
                           {n.bestFit != null && ` · najlepsze dopasowanie ${n.bestFit} na 100`}
                         </p>
                         <ul className="flex flex-wrap gap-2" aria-label="Obszary">
-                          {n.areas.map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
+                          {n.areas.map((a) => <li key={a}><AreaBadge area={a} /></li>)}
                         </ul>
                       </li>
                     ))}

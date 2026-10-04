@@ -71,3 +71,55 @@ describe("bez danych osobowych — tekst bez zmian", () => {
     ["godziny i daty", "spotkania 12.05 o 16:30", "spotkania 12.05 o 16:30"],
   ]);
 });
+
+describe("hasła i dane logowania", () => {
+  check([
+    ["hasło z dwukropkiem", "hasło: Kotek123!", "hasło: [SEKRET]"],
+    ["hasło to …", "moje hasło to Kotek123!, proszę o pomoc", "moje hasło to [SEKRET], proszę o pomoc"],
+    ["hasło do czegoś", "hasło do ePUAP: zima2024", "hasło do ePUAP: [SEKRET]"],
+    ["hasło w cudzysłowie po dwukropku", 'hasło: "ala ma kota"', "hasło: [SEKRET]"],
+    ["hasło bez dwukropka, z cyfrą", "haslo Kotek123", "haslo [SEKRET]"],
+    ["password po angielsku", "password is hunter2", "password is [SEKRET]"],
+    ["login i hasło", "login: jkowalski, hasło: Tajne1", "login: [SEKRET], hasło: [SEKRET]"],
+    ["PIN", "PIN 4821 do karty", "PIN [SEKRET] do karty"],
+    ["kod BLIK", "kod BLIK 123456", "kod BLIK [SEKRET]"],
+    ["kod SMS", "kod sms to 998877", "kod sms to [SEKRET]"],
+    ["CVV", "CVV: 123", "CVV: [SEKRET]"],
+    ["klucz w zapytaniu", "api_key=abc123def", "api_key=[SEKRET]"],
+    ["adres z loginem i hasłem", "postgres://admin:S3cret@db.example.com:5432/app", "postgres://[SEKRET]@db.example.com:5432/app"],
+  ]);
+});
+
+describe("klucze i tokeny", () => {
+  check([
+    ["OpenAI", "klucz sk-proj-abc123XYZdef456ghi789", "klucz [KLUCZ]"],
+    ["Groq", "GROQ_API_KEY gsk_abcdefghijklmnopqrstuvwxyz0123", "GROQ_API_KEY [KLUCZ]"],
+    ["GitHub", "ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789", "[KLUCZ]"],
+    ["AWS", "AKIAIOSFODNN7EXAMPLE", "[KLUCZ]"],
+    ["Google", "AIzaSyD-abcdefghijklmnopqrstuvwxyz12345", "[KLUCZ]"],
+    ["JWT", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U", "[KLUCZ]"],
+    ["Bearer", "Authorization: Bearer abc.def-ghi_123", "Authorization: Bearer [KLUCZ]"],
+    ["losowy ciąg po słowie kluczowym", "sekret: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", "sekret: [SEKRET]"],
+    ["losowy ciąg bez słowa kluczowego", "wklejam 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b", "wklejam [KLUCZ]"],
+    ["klucz prywatny PEM", "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg\n-----END PRIVATE KEY-----", "[KLUCZ]"],
+  ]);
+});
+
+describe("karty płatnicze", () => {
+  check([
+    ["ze spacjami", "karta 4111 1111 1111 1111", "karta [KARTA]"],
+    ["z kreskami", "4111-1111-1111-1111 ważna do 12/27", "[KARTA] ważna do 12/27"],
+    ["ciągiem", "nr karty 4111111111111111", "nr karty [KARTA]"],
+    ["Amex", "3782 822463 10005", "[KARTA]"],
+  ]);
+});
+
+describe("bez sekretów — tekst bez zmian", () => {
+  check([
+    ["klucz do sukcesu", "klucz do sukcesu to współpraca", "klucz do sukcesu to współpraca"],
+    ["link", "zobacz https://www.gov.pl/web/rodzina/program-wsparcia-seniorow-2024-edycja", "zobacz https://www.gov.pl/web/rodzina/program-wsparcia-seniorow-2024-edycja"],
+    ["slug", "program-wsparcia-seniorow-2024-edycja-druga", "program-wsparcia-seniorow-2024-edycja-druga"],
+    ["UUID", "id 3f2b8c1e-9a4d-4e6f-b7a2-1c5d8e9f0a3b", "id 3f2b8c1e-9a4d-4e6f-b7a2-1c5d8e9f0a3b"],
+    ["pinezki", "pinezki 5 sztuk", "pinezki 5 sztuk"],
+  ]);
+});

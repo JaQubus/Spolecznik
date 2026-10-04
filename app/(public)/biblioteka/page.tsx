@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { GROUP_ICONS } from "@/components/knowledge/icons";
+import { GroupIcon } from "@/components/knowledge/icons";
 import { searchKnowledge } from "@/lib/knowledge/search";
 import { GROUPS } from "@/lib/schemas";
 import { GROUP_LABELS } from "@/lib/taxonomy";
@@ -40,20 +40,17 @@ export default async function Page(props: PageProps<"/biblioteka">) {
         <div className="space-y-4">
           <h2 id="dla-kogo" className="text-2xl font-bold">Szukam rozwiązania dla…</h2>
           <ul aria-labelledby="dla-kogo" className="flex flex-wrap gap-3">
-            {GROUPS.map((g) => {
-              const Icon = GROUP_ICONS[g];
-              return (
-                <li key={g}>
-                  <Link
-                    href={`/biblioteka?tab=library&dla=${g}#dzialy`}
-                    className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-background px-4 text-lg hover:border-foreground hover:bg-secondary"
-                  >
-                    <Icon aria-hidden className="size-5 shrink-0" />
-                    {GROUP_LABELS[g].replace(/^Dla /, "")}
-                  </Link>
-                </li>
-              );
-            })}
+            {GROUPS.map((g) => (
+              <li key={g}>
+                <Link
+                  href={`/biblioteka?tab=library&dla=${g}#dzialy`}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-background px-4 text-lg hover:border-foreground hover:bg-secondary"
+                >
+                  <GroupIcon group={g} className="size-5 shrink-0" />
+                  {GROUP_LABELS[g].replace(/^Dla /, "")}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
       </section>
