@@ -10,7 +10,7 @@ const TONES = {
 
 /**
  * Komunikat na miękkim tle, bez ramki (docs/design-system/components/Alert.md).
- * InformationCircleIcon i sukces: role="status". Błąd po wysłaniu formularza: role="alert" i fokus (przekaż ref + tabIndex={-1}).
+ * Informacja, ostrzeżenie i sukces: role="status" (ostrzeżenie to sygnał dla zespołu, nie przerywa czytnika). Błąd po wysłaniu formularza: role="alert" i fokus (przekaż ref + tabIndex={-1}).
  */
 export function Alert({
   tone = "info",
