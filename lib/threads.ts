@@ -1,4 +1,5 @@
 import "server-only";
+import { emailAuthor } from "./author-contact";
 import { keyMatches, rememberedKey, rememberedNeeds } from "./need-access";
 import type { NeedStatus } from "./need-status";
 import { notify } from "./notifications";
@@ -201,6 +202,7 @@ export async function postNeedMessage(
   if (recipient) {
     await notify({ ...recipient, kind: "nowa_wiadomosc", payload }).catch((e) => console.error("[rozmowy] powiadomienie:", e));
   }
+  if (!fromAuthor) await emailAuthor("potrzeba", t.needId, "Masz nową odpowiedź w rozmowie");
 
   if (!fromAuthor && BEFORE_ANSWER.includes(t.status)) {
     const { error: sError } = await supabase.from("needs").update({ status: "odpowiedz", updated_at: now }).eq("id", t.needId);

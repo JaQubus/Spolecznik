@@ -7,6 +7,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import type { FormState } from "@/components/knowledge/admin-fields";
 import { getViewer } from "@/lib/auth";
+import { alertNeedsAboutInnovation } from "@/lib/innovation-alerts";
 import { knowledge } from "@/lib/knowledge";
 import { indexEntity, unindexEntity } from "@/lib/knowledge/indexing";
 import { StoreError, type Entity, type EntityKind } from "@/lib/knowledge/store";
@@ -56,7 +57,9 @@ async function audit(action: string, kind: EntityKind, id: string, actor: string
  * Wspólny przebieg zapisu: rola → walidacja → zapis → indeks w tle → przekierowanie z komunikatem.
  * Rolę sprawdzamy w każdej akcji — Server Action to publiczny POST, nie tylko przycisk w panelu.
  */
-async function persist<K extends EntityKind>(kind: K, entity: Entity[K], id: string, back: string): Promise<FormState> {
+async function persist<K extends EntityKind>(
+  kind: K, entity: Entity[K], id: string, back: string, afterSave?: () => Promise<void>,
+): Promise<FormState> {
   const viewer = await getViewer();
   if (viewer?.role !== "admin") return { ok: false, message: "Nie masz uprawnień do zapisu. Zaloguj się jako administrator.", errors: {} };
   const blocker = await knowledge.store.writeBlocker();
@@ -71,6 +74,7 @@ async function persist<K extends EntityKind>(kind: K, entity: Entity[K], id: str
     try {
       await indexEntity(kind, entity);
       await audit("zapis", kind, id, viewer.label);
+      await afterSave?.();
     } catch (e) {
       console.error("[panel/wiedza] indeksowanie po zapisie nieudane:", e);
     }
@@ -142,7 +146,10 @@ export async function saveInnovation(_: FormState, fd: FormData): Promise<FormSt
     dissemination: checked(fd, "dissemination"),
     published: checked(fd, "published"),
   };
-  return persist("innowacja", innovation, id, `/panel/wiedza/innowacja/${id}`);
+  // Pierwsza publikacja (nowa albo z „szkicu”) → autorzy otwartych potrzeb z tych obszarów dostają powiadomienie.
+  const firstPublish = innovation.published && !existing?.published;
+  return persist("innowacja", innovation, id, `/panel/wiedza/innowacja/${id}`,
+    firstPublish ? () => alertNeedsAboutInnovation(innovation) : undefined);
 }
 
 // ── Fakt ────────────────────────────────────────────────────
