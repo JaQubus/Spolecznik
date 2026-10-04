@@ -88,23 +88,51 @@ export async function canOpen(t: NeedThread): Promise<boolean> {
   return keyMatches(t.accessHash, await rememberedKey(t.code));
 }
 
-export type MyNeed = { code: string; status: NeedStatus; summary: string; createdAt: string };
+/** `kind`: potrzeba ma rozmowę i status, pomysł — sam status. */
+export type MyNeed = { kind: "potrzeba" | "pomysl"; code: string; status: NeedStatus; summary: string; createdAt: string };
 
 /** „Twoje zgłoszenia na tym urządzeniu”: pary kod–klucz z ciasteczka, sprawdzone z bazą, najnowsze pierwsze. */
 export async function rememberedThreads(): Promise<MyNeed[]> {
   const remembered = await rememberedNeeds();
   if (remembered.length === 0) return [];
-  const { data, error } = await createAdminClient()
-    .from("needs")
-    .select("status_code, status, card, created_at, access_hash")
-    .in("status_code", remembered.map((r) => r.code));
-  if (error) throw error;
-  const byCode = new Map((data ?? []).map((n) => [n.status_code as string, n]));
+  const codes = remembered.map((r) => r.code);
+  const supabase = createAdminClient();
+  const [needs, ideas] = await Promise.all([
+    supabase.from("needs").select("status_code, status, card, created_at, access_hash").in("status_code", codes),
+    supabase.from("ideas").select("status_code, status, fiszka, created_at, access_hash").in("status_code", codes),
+  ]);
+  if (needs.error) throw needs.error;
+  if (ideas.error) throw ideas.error;
+
+  const rows = [
+    ...(needs.data ?? []).map((n) => ({
+      hash: n.access_hash as string | null,
+      mine: { kind: "potrzeba", code: n.status_code, status: n.status, summary: (n.card as { summary?: string }).summary ?? "", createdAt: n.created_at } satisfies MyNeed,
+    })),
+    ...(ideas.data ?? []).map((i) => ({
+      hash: i.access_hash as string | null,
+      mine: { kind: "pomysl", code: i.status_code, status: i.status, summary: (i.fiszka as { krotki_opis?: string }).krotki_opis ?? "", createdAt: i.created_at } satisfies MyNeed,
+    })),
+  ];
+  // Kody są unikalne w obrębie tabeli; gdyby potrzeba i pomysł miały ten sam, rozstrzyga klucz.
   return remembered.flatMap(({ code, key }) => {
-    const n = byCode.get(code);
-    if (!n || !keyMatches(n.access_hash, key)) return [];
-    return [{ code, status: n.status, summary: (n.card as { summary?: string }).summary ?? "", createdAt: n.created_at }];
+    const row = rows.find((r) => r.mine.code === code && keyMatches(r.hash, key));
+    return row ? [row.mine] : [];
   });
+}
+
+/** Co otwiera para kod–klucz (prywatny link, ciasteczko): potrzebę z rozmową albo pomysł. null, gdy klucz nie pasuje. */
+export async function reportForKey(code: string, key: string): Promise<MyNeed["kind"] | null> {
+  const supabase = createAdminClient();
+  const [need, idea] = await Promise.all([
+    supabase.from("needs").select("access_hash").eq("status_code", code).maybeSingle(),
+    supabase.from("ideas").select("access_hash").eq("status_code", code).maybeSingle(),
+  ]);
+  if (need.error) throw need.error;
+  if (idea.error) throw idea.error;
+  if (keyMatches(need.data?.access_hash ?? null, key)) return "potrzeba";
+  if (keyMatches(idea.data?.access_hash ?? null, key)) return "pomysl";
+  return null;
 }
 
 /** Zakłada wątek przy pierwszej wiadomości. Ekspert wybrany przez autora zostaje zapamiętany w wątku. */

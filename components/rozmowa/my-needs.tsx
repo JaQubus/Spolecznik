@@ -9,6 +9,7 @@ const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:dec
 /**
  * „Twoje zgłoszenia na tym urządzeniu” (ciasteczko z lib/need-access.ts) — dla kogoś, kto zapomniał kodu.
  * `primary` to akcja strony, na której jest lista (przycisk); druga akcja to zwykły link.
+ * Pomysł nie ma rozmowy, więc ma tylko status.
  */
 export function MyNeeds({ mine, primary }: { mine: MyNeed[]; primary: "rozmowa" | "status" }) {
   return (
@@ -21,25 +22,30 @@ export function MyNeeds({ mine, primary }: { mine: MyNeed[]; primary: "rozmowa" 
       ) : (
         <ul className="border-t">
           {mine.map((n) => {
-            const conversation = { href: `/zapytaj?potrzeba=${n.code}`, label: "Otwórz rozmowę" };
+            const what = n.kind === "pomysl" ? "pomysł" : "zgłoszenie";
+            const conversation = n.kind === "potrzeba" ? { href: `/zapytaj?potrzeba=${n.code}`, label: "Otwórz rozmowę" } : null;
             const status = { href: `/status/${n.code}`, label: "Zobacz status" };
-            const [main, other] = primary === "rozmowa" ? [conversation, status] : [status, conversation];
+            const [main, other] = primary === "rozmowa" && conversation ? [conversation, status] : [status, conversation];
             return (
               <li key={n.code} className="flex flex-wrap items-center justify-between gap-3 border-b py-4">
                 <div className="min-w-0 flex-1 basis-64 space-y-1">
                   <p>
                     <span className="font-mono font-bold tracking-wider">{n.code}</span>
-                    <span className="text-muted-foreground"> · {formatDate(n.createdAt)} · {NEED_STATUS_LABELS[n.status]}</span>
+                    <span className="text-muted-foreground">
+                      {" "}· {n.kind === "pomysl" ? "Pomysł" : "Problem"} · {formatDate(n.createdAt)} · {NEED_STATUS_LABELS[n.status]}
+                    </span>
                   </p>
                   {n.summary && <p className="line-clamp-2">{n.summary}</p>}
-                  <p>
-                    <Link href={other.href} className={linkClass} aria-label={`${other.label}: zgłoszenie ${n.code}`}>
-                      {other.label}
-                    </Link>
-                  </p>
+                  {other && (
+                    <p>
+                      <Link href={other.href} className={linkClass} aria-label={`${other.label}: ${what} ${n.code}`}>
+                        {other.label}
+                      </Link>
+                    </p>
+                  )}
                 </div>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={main.href} aria-label={`${main.label}: zgłoszenie ${n.code}`}>{main.label}</Link>
+                  <Link href={main.href} aria-label={`${main.label}: ${what} ${n.code}`}>{main.label}</Link>
                 </Button>
               </li>
             );

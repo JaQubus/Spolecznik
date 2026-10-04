@@ -1,11 +1,12 @@
 import { reindexCard } from "@/lib/index-card";
+import { newAccessKey, rememberNeed } from "@/lib/need-access";
 import { rateLimit } from "@/lib/rate-limit";
 import { IdeaRequest, type IdeaResponse } from "@/lib/schemas";
 import { newStatusCode } from "@/lib/status-code";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-/** Zgłoszenie pomysłu z Pracowni: kod SPL-…, indeksacja (sprawdzanie nowości, dopasowania) i powiadomienie ROPS. */
+/** Zgłoszenie pomysłu z Pracowni: kod SPL-… z kluczem (lib/need-access.ts), indeksacja (sprawdzanie nowości, dopasowania) i powiadomienie ROPS. */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "ideas", 5);
   if (limited) return limited;
@@ -31,11 +32,20 @@ export async function POST(request: Request) {
     }
 
     // Ponowienie przy kolizji kodu, jak w lib/match.ts.
+    const access = newAccessKey();
     let idea: { id: string; status_code: string } | null = null;
     for (let attempt = 0; attempt < 3 && !idea; attempt++) {
       const { data, error } = await supabase
         .from("ideas")
-        .insert({ status_code: newStatusCode(), author_id: author, need_id: needId, fiszka, canvas, stage: fiszka.etap || null })
+        .insert({
+          status_code: newStatusCode(),
+          author_id: author,
+          need_id: needId,
+          fiszka,
+          canvas,
+          stage: fiszka.etap || null,
+          access_hash: access.hash,
+        })
         .select("id, status_code")
         .single();
       if (error && error.code !== "23505") throw error;
@@ -54,7 +64,9 @@ export async function POST(request: Request) {
     ]);
     for (const r of sideEffects) if (r.status === "rejected") console.error("[ideas] efekt uboczny:", r.reason);
 
-    return Response.json({ ideaId: idea.id, statusCode: idea.status_code } satisfies IdeaResponse);
+    // Ta przeglądarka zapamiętuje pomysł — /status pokaże go bez wpisywania kodu.
+    await rememberNeed(idea.status_code, access.key);
+    return Response.json({ ideaId: idea.id, statusCode: idea.status_code, accessKey: access.key } satisfies IdeaResponse);
   } catch (e) {
     console.error("[ideas]", e);
     return Response.json({ error: "Nie udało się zapisać pomysłu" }, { status: 500 });

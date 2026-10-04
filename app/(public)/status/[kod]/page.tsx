@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { PrivateLink } from "@/components/rozmowa/private-link";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusTimeline, type TimelineStep } from "@/components/ui/status-timeline";
+import { keyMatches, rememberedKey } from "@/lib/need-access";
 import { needTimeline, type NeedStatus } from "@/lib/need-status";
 import { needHistory, statusEvents } from "@/lib/panel/needs";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -21,6 +23,8 @@ type Report = {
   summary: string;
   areas: string[];
   gmina: string | null;
+  /** Tylko do sprawdzenia klucza z ciasteczka — nie trafia na stronę. */
+  accessHash: string | null;
 };
 
 /** Tylko pola bezpieczne do pokazania każdemu, kto zna kod — nigdy surowy tekst ani e-mail. */
@@ -28,7 +32,7 @@ async function findReport(code: string): Promise<Report | null> {
   const supabase = createAdminClient();
   const { data: need, error } = await supabase
     .from("needs")
-    .select("id, status, created_at, card, gminy(nazwa)")
+    .select("id, status, created_at, card, access_hash, gminy(nazwa)")
     .eq("status_code", code)
     .maybeSingle();
   if (error) throw error;
@@ -43,18 +47,28 @@ async function findReport(code: string): Promise<Report | null> {
       summary: card.summary ?? "",
       areas: card.areas ?? [],
       gmina: gmina?.nazwa ?? null,
+      accessHash: need.access_hash,
     };
   }
 
   const { data: idea, error: ideaError } = await supabase
     .from("ideas")
-    .select("id, status, created_at, fiszka")
+    .select("id, status, created_at, fiszka, access_hash")
     .eq("status_code", code)
     .maybeSingle();
   if (ideaError) throw ideaError;
   if (!idea) return null;
   const fiszka = idea.fiszka as { krotki_opis?: string };
-  return { kind: "pomysl", id: idea.id, status: idea.status, createdAt: idea.created_at, summary: fiszka.krotki_opis ?? "", areas: [], gmina: null };
+  return {
+    kind: "pomysl",
+    id: idea.id,
+    status: idea.status,
+    createdAt: idea.created_at,
+    summary: fiszka.krotki_opis ?? "",
+    areas: [],
+    gmina: null,
+    accessHash: idea.access_hash,
+  };
 }
 
 /** Oś czasu z historii zmian w Panelu: daty kroków i wiadomości ROPS dla zgłaszającego. */
@@ -69,11 +83,17 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
 
   let report: Report | null = null;
   let steps: TimelineStep[] = [];
+  // Klucz autora z tej przeglądarki: tylko wtedy pokazujemy prywatny link (sam kod da się zgadnąć).
+  let key: string | null = null;
   let unavailable = false;
   if (CODE.test(code)) {
     try {
       report = await findReport(code);
-      if (report) steps = await timeline(report);
+      if (report) {
+        steps = await timeline(report);
+        const remembered = await rememberedKey(code);
+        key = keyMatches(report.accessHash, remembered) ? remembered : null;
+      }
     } catch (e) {
       console.error("[status]", e);
       unavailable = true;
@@ -156,6 +176,8 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
           </Link>
         </Button>
       )}
+
+      {key && <PrivateLink code={code} accessKey={key} kind={report.kind} />}
     </section>
   );
 }

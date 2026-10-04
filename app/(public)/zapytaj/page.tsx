@@ -35,7 +35,8 @@ export default async function Page(props: PageProps<"/zapytaj">) {
       // Ekspert z wyników dopasowania — tylko podpowiedź, dopóki ROPS nie przypisze kogoś w Panelu.
       if (thread && !thread.expert && askedExpert) chosenName = await expertName(askedExpert);
     }
-    if (!thread) mine = await rememberedThreads();
+    // Pomysły nie mają rozmowy — ich listę pokazuje /status.
+    if (!thread) mine = (await rememberedThreads()).filter((n) => n.kind === "potrzeba");
   } catch (e) {
     console.error("[zapytaj]", e);
     return (
