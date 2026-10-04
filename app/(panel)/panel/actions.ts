@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { emailAuthor } from "@/lib/author-contact";
 import { requireAdmin } from "@/lib/auth";
+import { notifyExpert } from "@/lib/expert";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { notify } from "@/lib/notifications";
 import { logChange } from "@/lib/panel/needs";
@@ -132,6 +133,9 @@ export async function assignExpert(_prev: ActionResult, formData: FormData): Pro
       "need.assign_expert",
       { expertId, note: `Zajmie się tym: ${name}` },
     );
+    // Ekspert dostaje prośbę w dzwonku i otwiera zgłoszenie u siebie, w /ekspert (#63).
+    const assigned = await needThread({ kind: "potrzeba", id: needId });
+    if (assigned) await notifyExpert(expertId, assigned);
   } catch (e) {
     console.error("[panel] ekspert:", e);
     return SAVE_FAILED;
@@ -207,6 +211,7 @@ export async function assignIdeaExpert(_prev: ActionResult, formData: FormData):
     if (!name) return { ok: false, message: "Nie znaleziono tego eksperta. Odśwież stronę." };
     await ensureThread(thread, expertId, true);
     await setReportStatus(thread, "ekspert", user.id, "idea.assign_expert", { expertId, note: `Zajmie się tym: ${name}` });
+    await notifyExpert(expertId, thread);
     if (thread.authorId) {
       await notify({ user_id: thread.authorId, kind: "zmiana_statusu", payload: threadPayload(thread, { status: "ekspert" }) })
         .catch((e) => console.error("[panel] powiadomienie:", e));

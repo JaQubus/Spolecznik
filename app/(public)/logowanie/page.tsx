@@ -57,6 +57,13 @@ export default async function Page(props: PageProps<"/logowanie">) {
               </Link>
             </p>
           )}
+          {viewer.role === "ekspert" && (
+            <p>
+              <Link href="/ekspert" className="text-lg font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+                Przejdź do zgłoszeń, przy których ROPS prosi Cię o pomoc
+              </Link>
+            </p>
+          )}
           <form action={logout}>
             <Button type="submit" variant="outline"><ArrowRightStartOnRectangleIcon aria-hidden />Wyloguj się</Button>
           </form>
@@ -100,11 +107,17 @@ export default async function Page(props: PageProps<"/logowanie">) {
                 <Button type="submit" name="rola" value="admin" variant={supabaseEnabled ? "outline" : "default"}>
                   <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako administrator ROPS
                 </Button>
+                <Button type="submit" name="rola" value="ekspert" variant="outline">
+                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako ekspert
+                </Button>
                 <Button type="submit" name="rola" value="mieszkaniec" variant="outline">
                   <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako mieszkaniec
                 </Button>
               </form>
-              <FieldHint>Konto mieszkańca pozwala sprawdzić, że panel administratora jest dla niego niedostępny.</FieldHint>
+              <FieldHint>
+                Ekspert widzi tylko zgłoszenia, które ROPS do niego przypisał. Konto mieszkańca pozwala sprawdzić, że panel
+                administratora jest dla niego niedostępny.
+              </FieldHint>
             </section>
           )}
 
