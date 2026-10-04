@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { PrivateLink } from "@/components/rozmowa/private-link";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
@@ -88,16 +89,27 @@ export function IdeaWorkshop({
       <div className="space-y-12">
         <div className="space-y-4">
           <h2 ref={doneHeading} tabIndex={-1} className="text-2xl font-bold outline-none">Dziękujemy, pomysł jest zgłoszony</h2>
-          <div className="max-w-[44rem] space-y-1 rounded-[16px] bg-secondary px-5 py-4">
-            <p className="text-lg">
-              Twój kod zgłoszenia: <strong className="font-mono text-2xl tracking-wider whitespace-nowrap">{result.statusCode}</strong>
-            </p>
-            <p>
-              Zapisz go. Po tym kodzie sprawdzisz, co dzieje się z pomysłem — bez zakładania konta.{" "}
-              <Link href={`/status/${result.statusCode}`} className={linkClass}>Sprawdź status</Link>
-            </p>
+          <div className="max-w-[44rem] space-y-4 rounded-[16px] bg-secondary px-5 py-4">
+            <div className="space-y-1">
+              <p className="text-lg">
+                Twój kod zgłoszenia: <strong className="font-mono text-2xl tracking-wider whitespace-nowrap">{result.statusCode}</strong>
+              </p>
+              <p>
+                Zapisz go. Po tym kodzie sprawdzisz, co dzieje się z pomysłem — bez zakładania konta.{" "}
+                <Link href={`/status/${result.statusCode}`} className={linkClass}>Sprawdź status</Link>
+              </p>
+              <p>
+                Ta przeglądarka zapamięta pomysł, więc tutaj kod nie będzie potrzebny:{" "}
+                <Link href="/status" className={linkClass}>Twoje zgłoszenia na tym urządzeniu</Link>.
+              </p>
+            </div>
+            <PrivateLink code={result.statusCode} accessKey={result.accessKey} kind="pomysl" />
           </div>
-          <p className="max-w-2xl">Pracownik ROPS przeczyta pomysł i może zaprosić eksperta do rozmowy z Tobą.</p>
+          <p className="max-w-2xl">
+            Pracownik ROPS przeczyta pomysł i odpisze w{" "}
+            <Link href={`/zapytaj?kod=${result.statusCode}`} className={linkClass}>rozmowie o pomyśle</Link>. Może też
+            zaprosić do niej eksperta.
+          </p>
         </div>
         {calls.length > 0 && <ApplicationDraft ideaId={result.ideaId} calls={calls} />}
       </div>
@@ -176,10 +188,13 @@ export function IdeaWorkshop({
       <div className="space-y-3">
         <p aria-live="polite" className="text-muted-foreground">{busy ? "Zapisuję pomysł…" : ""}</p>
         <Button type="button" onClick={submit} disabled={busy} className="w-full sm:w-auto">Zgłoś pomysł</Button>
-        <p className="max-w-2xl">
-          Chcesz od razu przygotować wniosek o grant?{" "}
-          <Link href={applicationHref} className={linkClass}>Przejdź do formularza — wstępnie uzupełnimy go tym pomysłem</Link>.
-        </p>
+        {/* Bez otwartego naboru /wniosek mówi tylko „Nabór jest zamknięty”, a fiszka przepada po powrocie. */}
+        {calls.length > 0 && (
+          <p className="max-w-2xl">
+            Chcesz od razu przygotować wniosek o grant?{" "}
+            <Link href={applicationHref} className={linkClass}>Przejdź do formularza — wstępnie uzupełnimy go tym pomysłem</Link>.
+          </p>
+        )}
       </div>
     </div>
   );

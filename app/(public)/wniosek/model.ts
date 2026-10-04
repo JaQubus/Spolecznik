@@ -118,6 +118,16 @@ export function restore(
     return typeof b === typeof a ? b : a;
   };
   const app = merge(base, saved) as Application;
+  // Tablice scalamy element po elemencie: szkic sprzed dodania pola w partnerze albo w wierszu planu
+  // inaczej miałby undefined tam, gdzie walidacja woła .trim().
+  const src = saved as Record<string, unknown>;
+  const list = (v: unknown) => (Array.isArray(v) ? v : []);
+  app.partnerzy = list(src.partnerzy).slice(0, MAX_PARTNERS).map((p) => merge(emptyPartner(), p) as Partner);
+  while (app.partnerzy.length < 2) app.partnerzy.push(emptyPartner());
+  for (const key of ["przygotowanie", "faza1", "faza2"] as const) {
+    const rows = list(src[key]).map((r) => merge(emptyRow(), r) as PlanRow);
+    app[key] = rows.length ? rows : [emptyRow()];
+  }
   const current = declarationFingerprints(content);
   for (const set of ["A", "B"] as const) {
     if (app.oswiadczenia[set].length !== content.declarations[set].items.length || savedFingerprints?.[set] !== current[set]) {
@@ -194,6 +204,18 @@ export function formatPostalCode(raw: string): string {
 }
 const digits = (s: string) => s.replace(/\D/g, "");
 
+// Cyfra kontrolna NIP i REGON: suma ważona mod 11. Łapie literówki i zamienione cyfry, zanim
+// błąd wyjdzie dopiero na ocenie formalnej wniosku.
+const NIP_WEIGHTS = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+const REGON9_WEIGHTS = [8, 9, 2, 3, 4, 5, 6, 7];
+const REGON14_WEIGHTS = [2, 4, 8, 5, 0, 9, 7, 3, 6, 1, 2, 4, 8];
+/** REGON: reszta 10 oznacza cyfrę 0; NIP z resztą 10 nie istnieje (tenAsZero = false). */
+function checksumOk(d: string, weights: number[], tenAsZero = true): boolean {
+  const mod = weights.reduce((sum, w, i) => sum + w * Number(d[i]), 0) % 11;
+  if (mod === 10 && !tenAsZero) return false;
+  return (mod === 10 ? 0 : mod) === Number(d[weights.length]);
+}
+
 function required(e: Errors, app: Application, path: string, message: string) {
   if (!String(getAt(app, path) ?? "").trim()) e[path] = message;
 }
@@ -237,8 +259,11 @@ function checkEntity(e: Errors, app: Application, base: string) {
   const ent = getAt(app, base) as Entity;
   required(e, app, `${base}.nazwa`, "Wpisz nazwę organizacji.");
   if (ent.krs.trim() && digits(ent.krs).length !== 10) e[`${base}.krs`] = "Numer KRS ma 10 cyfr. Jeśli go nie masz, zostaw puste.";
-  if (![9, 14].includes(digits(ent.regon).length)) e[`${base}.regon`] = "Wpisz REGON: 9 albo 14 cyfr.";
-  if (digits(ent.nip).length !== 10) e[`${base}.nip`] = "Wpisz NIP: 10 cyfr.";
+  const regon = digits(ent.regon), nip = digits(ent.nip);
+  if (![9, 14].includes(regon.length)) e[`${base}.regon`] = "Wpisz REGON: 9 albo 14 cyfr.";
+  else if (!checksumOk(regon, regon.length === 9 ? REGON9_WEIGHTS : REGON14_WEIGHTS)) e[`${base}.regon`] = "Sprawdź REGON: w numerze jest literówka.";
+  if (nip.length !== 10) e[`${base}.nip`] = "Wpisz NIP: 10 cyfr.";
+  else if (!checksumOk(nip, NIP_WEIGHTS, false)) e[`${base}.nip`] = "Sprawdź NIP: w numerze jest literówka.";
   checkAddress(e, app, base);
   checkContact(e, app, `${base}.reprezentant`);
   if (!ent.kontaktTenSam) checkContact(e, app, `${base}.kontakt`);

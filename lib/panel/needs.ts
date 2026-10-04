@@ -53,9 +53,9 @@ export async function needTriage(needs: Pick<NeedRow, "id" | "card">[]): Promise
 
 export type Neighbour = { ref_id: string; title: string; body: string; teryt: string | null; similarity: number };
 
-/** Najbliższe karty danego rodzaju dla jednego zgłoszenia (szczegóły w Panelu). */
+/** Najbliższe karty danego rodzaju dla jednego zgłoszenia albo pomysłu (szczegóły w Panelu). */
 export async function needNeighbours(
-  need: Pick<NeedRow, "id" | "card">, kind: "potrzeba" | "ekspert", count = 5,
+  need: { id: string; card: Pick<NeedCard, "keywords"> }, kind: "potrzeba" | "ekspert", count = 5,
 ): Promise<Neighbour[]> {
   const hits = (await keywordSearch(kind, need.card.keywords ?? [], count + 1))
     .filter((h) => h.ref_id !== need.id)

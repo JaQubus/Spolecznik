@@ -18,8 +18,16 @@ const clip = (s: string | null | undefined, n: number) => (s && s.length > n ? `
 
 type Source = ZasobnikItem & { href: string };
 
-async function needContext(needId: string): Promise<{ summary: string; keywords: string[] }> {
-  const { data, error } = await createAdminClient().from("needs").select("card").eq("id", needId).maybeSingle();
+/** Kontekst dla asystenta: karta potrzeby (skrót i słowa kluczowe) albo fiszka pomysłu (krótki opis). */
+async function reportContext(t: NeedThread): Promise<{ summary: string; keywords: string[] }> {
+  const supabase = createAdminClient();
+  if (t.kind === "pomysl") {
+    const { data, error } = await supabase.from("ideas").select("fiszka").eq("id", t.id).maybeSingle();
+    if (error) throw error;
+    const fiszka = (data?.fiszka ?? {}) as { krotki_opis?: string };
+    return { summary: fiszka.krotki_opis ?? "", keywords: [] };
+  }
+  const { data, error } = await supabase.from("needs").select("card").eq("id", t.id).maybeSingle();
   if (error) throw error;
   const card = (data?.card ?? {}) as { summary?: string; keywords?: string[] };
   return { summary: card.summary ?? "", keywords: card.keywords ?? [] };
@@ -32,7 +40,7 @@ export async function firstLineBody(t: NeedThread, message: string): Promise<str
   // ale wcześniejsza odpowiedź merytoryczna nie liczy się jako przekazanie.
   const handoffOnce = () => (t.messages.some((m) => m.role === "ai" && m.body === NO_ANSWER) ? null : NO_ANSWER);
 
-  const need = await needContext(t.needId);
+  const need = await reportContext(t);
   const found = await relatedKnowledge(`${message} ${need.keywords.join(" ")}`);
   const sources: Source[] = [
     ...found.innovations.map((i) => ({

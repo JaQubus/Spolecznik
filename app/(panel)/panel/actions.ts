@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
@@ -10,7 +11,7 @@ import { anonymize } from "@/lib/pii";
 import { NEED_STATUSES } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { needThread, postNeedMessage } from "@/lib/threads";
+import { ensureThread, expertName, needThread, postNeedMessage, setReportStatus, threadPayload } from "@/lib/threads";
 
 export type ActionResult = { ok: boolean; message: string } | null;
 
@@ -135,24 +136,31 @@ export async function assignExpert(_prev: ActionResult, formData: FormData): Pro
 }
 
 const ReplyInput = z.object({
-  needId: z.uuid(),
+  kind: z.enum(["potrzeba", "pomysl"]),
+  id: z.uuid(),
   as: z.enum(["rops", "ekspert"]),
   body: z.string().trim().min(2).max(2000),
 });
 
 /**
- * Odpowiedź w rozmowie o zgłoszeniu. Eksperci są na razie tylko w indeksie (bez kont),
+ * Odpowiedź w rozmowie o zgłoszeniu albo pomyśle. Eksperci są na razie tylko w indeksie (bez kont),
  * więc w demo admin może napisać w imieniu eksperta wątku — podpis to jego nazwa.
  */
 export async function replyInThread(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const user = await requireAdmin();
-  const parsed = ReplyInput.safeParse({ needId: formData.get("needId"), as: formData.get("as"), body: formData.get("body") });
+  const parsed = ReplyInput.safeParse({
+    kind: formData.get("kind"),
+    id: formData.get("id"),
+    as: formData.get("as"),
+    body: formData.get("body"),
+  });
   if (!parsed.success) return { ok: false, message: "Wpisz wiadomość (od 2 do 2000 znaków)." };
-  const { needId, as, body } = parsed.data;
+  const { kind, id, as, body } = parsed.data;
 
   try {
-    const thread = await needThread({ needId });
+    const thread = await needThread({ kind, id });
     if (!thread) return NOT_FOUND;
+    if (thread.status === "zamkniete") return { ok: false, message: "To zgłoszenie jest zamknięte. Najpierw zmień status." };
     if (as === "ekspert" && !thread.expert) return { ok: false, message: "Ta rozmowa nie ma eksperta. Najpierw go przypisz." };
     await postNeedMessage(thread, {
       role: as,
@@ -166,7 +174,44 @@ export async function replyInThread(_prev: ActionResult, formData: FormData): Pr
     return { ok: false, message: "Nie udało się wysłać. Spróbuj ponownie." };
   }
   refresh();
-  return { ok: true, message: "Wysłano. Zgłaszający zobaczy wiadomość po wpisaniu kodu." };
+  return {
+    ok: true,
+    message: kind === "pomysl"
+      ? "Wysłano. Autor pomysłu zobaczy wiadomość w rozmowie."
+      : "Wysłano. Zgłaszający zobaczy wiadomość po wpisaniu kodu.",
+  };
+}
+
+const AssignIdeaInput = z.object({ ideaId: z.uuid(), expertId: z.uuid() });
+
+/**
+ * Ekspert pomysłu. Pomysły nie mają kolumny assigned_expert — ekspert jest zapisany w wątku (threads.expert_id),
+ * jak ten wybrany przez autora w „Zapytaj eksperta”. Status i oś czasu jak przy potrzebach.
+ */
+export async function assignIdeaExpert(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = AssignIdeaInput.safeParse({ ideaId: formData.get("ideaId"), expertId: formData.get("expertId") });
+  if (!parsed.success) return { ok: false, message: "Wybierz eksperta." };
+  const { ideaId, expertId } = parsed.data;
+
+  let name: string | null;
+  try {
+    const thread = await needThread({ kind: "pomysl", id: ideaId });
+    if (!thread) return { ok: false, message: "Nie znaleziono pomysłu. Odśwież stronę." };
+    name = await expertName(expertId);
+    if (!name) return { ok: false, message: "Nie znaleziono tego eksperta. Odśwież stronę." };
+    await ensureThread(thread, expertId, true);
+    await setReportStatus(thread, "ekspert", user.id, "idea.assign_expert", { expertId, note: `Zajmie się tym: ${name}` });
+    if (thread.authorId) {
+      await notify({ user_id: thread.authorId, kind: "zmiana_statusu", payload: threadPayload(thread, { status: "ekspert" }) })
+        .catch((e) => console.error("[panel] powiadomienie:", e));
+    }
+  } catch (e) {
+    console.error("[panel] ekspert pomysłu:", e);
+    return SAVE_FAILED;
+  }
+  refresh();
+  return { ok: true, message: `Przypisano eksperta: ${name}.` };
 }
 
 const NeedIdInput = z.object({ needId: z.uuid() });
@@ -221,6 +266,49 @@ export async function updateIdeaStatus(_prev: ActionResult, formData: FormData):
   }
   refresh();
   return { ok: true, message: `Zapisano status: ${NEED_STATUS_LABELS[status]}.` };
+}
+
+/**
+ * Co usuwamy i co z tym sprzątamy. `kind` to rodzaj w search_index i threads, `payloadKey` — id w powiadomieniach.
+ * Klucze obce (dopasowania, szkice wniosków, powiązanie pomysłu z potrzebą) obsługuje baza: 0014_delete_reports.sql.
+ */
+const DELETABLE = {
+  need: { table: "needs", kind: "potrzeba", payloadKey: "needId", list: "/panel" },
+  idea: { table: "ideas", kind: "pomysl", payloadKey: "ideaId", list: "/panel/pomysly" },
+  call: { table: "calls", kind: "nabor", payloadKey: "callId", list: "/panel/nabory" },
+} as const;
+
+const DeleteInput = z.object({ entity: z.enum(["need", "idea", "call"]), id: z.uuid() });
+
+/** Trwałe usunięcie zgłoszenia, pomysłu albo naboru razem z rozmową, wpisem w wyszukiwarce i powiadomieniami. */
+export async function deleteRecord(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  if (formData.get("confirm") !== "on") return { ok: false, message: "Zaznacz, że rozumiesz, że usunięcia nie można cofnąć." };
+  const parsed = DeleteInput.safeParse({ entity: formData.get("entity"), id: formData.get("id") });
+  if (!parsed.success) return { ok: false, message: "Nie wiadomo, co usunąć. Odśwież stronę." };
+  const { entity, id } = parsed.data;
+  const target = DELETABLE[entity];
+
+  const supabase = createAdminClient();
+  try {
+    const { data, error } = await supabase.from(target.table).delete().eq("id", id).select("id");
+    if (error) throw error;
+    if (!data?.length) return { ok: false, message: "Tego już nie ma. Odśwież stronę." };
+  } catch (e) {
+    console.error("[panel] usuwanie:", e);
+    return { ok: false, message: "Nie udało się usunąć. Spróbuj ponownie." };
+  }
+
+  // Rekord już zniknął: błąd sprzątania tylko logujemy, bo ponowna próba skończyłaby się na „Tego już nie ma”.
+  const followUp = await Promise.allSettled([
+    supabase.from("threads").delete().eq("entity_kind", target.kind).eq("entity_id", id).throwOnError(),
+    supabase.from("search_index").delete().eq("kind", target.kind).eq("ref_id", id).throwOnError(),
+    // Powiadomienia mają kopię opisu, więc znikają razem z rekordem.
+    supabase.from("notifications").delete().eq(`payload->>${target.payloadKey}`, id).throwOnError(),
+    logChange(user.id, `${entity}.delete`, entity, id, {}),
+  ]);
+  for (const r of followUp) if (r.status === "rejected") console.error(`[panel] sprzątanie po usunięciu ${entity} ${id}:`, r.reason);
+  redirect(`${target.list}?usunieto=${entity}`);
 }
 
 /**
