@@ -88,7 +88,7 @@ Measured pairs; each token's usage note lists the grounds it is safe on.
 
 ## Name and logo
 
-"hubmi.pl" is a placeholder. Set it as a wordmark in bold Atkinson Hyperlegible Next at `h2` size, with ".pl" in `ink-muted` regular; there is no symbol. Never use the Polish state emblem (godło) or the gov.pl logotype: this is not an official government service. Partner logos (ROPS Kraków, Województwo Małopolskie, EU funds) go in the footer from their owners' official files.
+The product is **Społecznik**. The mark is a white "S" drawn from two arcs whose dot ends read as two connected people (a need and a solution), on a `brand` green rounded square (`#1b7343`, white on it is 6.4:1). It always sits to the left of the wordmark "Społecznik" in bold Atkinson Hyperlegible Next and is decorative there (`aria-hidden`; the link text is the name). The mark keeps fixed colours in dark and high-contrast mode. Files: `public/logo/znak.svg` (mark), `logo-light.svg` / `logo-dark.svg` (mark + wordmark; convert the text to outlines before using them outside the app), `app/icon.svg` (favicon); component `components/layout/logo-mark.tsx`. Never use the Polish state emblem (godło) or the gov.pl logotype: this is not an official government service. Partner logos (ROPS Kraków, Województwo Małopolskie, EU funds) go in the footer from their owners' official files.
 
 ## Using it with Tailwind + shadcn/ui
 
