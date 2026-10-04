@@ -36,3 +36,20 @@ export function frameworkContext(slug: string | null | undefined, maxChars = 240
   const share = Math.floor(maxChars / Math.max(1, parts.length));
   return parts.map((p) => (p.length > share ? `${p.slice(0, share).trimEnd()}…` : p)).join("\n\n");
 }
+
+export type CallStatus = { name: string; inCurrentCall: boolean; open: boolean; closesAt: string };
+
+/**
+ * Czy dla tej innowacji można teraz złożyć wniosek: jest w aktualnym naborze i nabór trwa. Karta innowacji i plan
+ * nie mogą obiecywać „do 600 tys. zł”, gdy nabór jest zamknięty albo innowacja była w innym naborze.
+ */
+export function callStatus(slug: string | null | undefined, today: string): CallStatus | null {
+  const plan = frameworkPlan(slug);
+  if (!plan) return null;
+  const inCurrentCall = plan.call === UW_CONTENT.call.name && UW_CONTENT.innovations.some((i) => i.slug === slug);
+  const open = inCurrentCall && today >= UW_CONTENT.call.opensAt && today <= UW_CONTENT.call.closesAt;
+  return { name: plan.call, inCurrentCall, open, closesAt: UW_CONTENT.call.closesAt };
+}
+
+export const formatDay = (iso: string) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" });

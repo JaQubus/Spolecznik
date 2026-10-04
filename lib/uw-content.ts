@@ -15,6 +15,7 @@ export type SectionKey = (typeof SECTION_KEYS)[number];
 
 export const UwContent = z.object({
   call: z.object({
+    name: text, // „II” — ten sam znacznik co `call` w out/usluga_wrazliwa.json (Ramowe Plany)
     title: text,
     order: text, // numer zarządzenia, np. IS-430-6/26
     url: z.url(),
