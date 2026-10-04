@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 import { cn } from "cn";
 import { A11yToolbar } from "@/components/a11y/a11y-toolbar";
+import { LogoMark } from "./logo-mark";
 import { NotificationBell } from "./notification-bell";
 
 // Etykiety w UI to proste czasowniki — nazwy modułów (Społecznik·Dopasuj itd.) są tylko do pitchu.
@@ -79,7 +80,10 @@ export function SiteHeader() {
       >
         {/* Wiersz o stałej wysokości: otwarte menu pojawia się pod nim i niczego w nim nie przesuwa. */}
         <div className="flex min-h-20 items-center justify-between gap-4">
-          <Link href="/" className="rounded-lg text-xl font-bold tracking-tight sm:text-2xl">Społecznik</Link>
+          <Link href="/" className="inline-flex items-center gap-3 rounded-lg text-xl font-bold tracking-tight sm:text-2xl">
+            <LogoMark className="size-9 shrink-0 sm:size-10" />
+            Społecznik
+          </Link>
           <button
             ref={menuButton}
             type="button"
