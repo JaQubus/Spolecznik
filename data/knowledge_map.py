@@ -12,8 +12,8 @@ Dane:
 Opisy i kategorie wskaźników: map_indicators.py.
 
 Wynik: ../public/mapa/malopolska.json — ścieżki SVG gotowe do narysowania (viewBox w metrach
-przeskalowanych do 1000 px szerokości) i wartości wskaźników. Pobiera go przeglądarka, gdy mapa
-pojawia się na ekranie; tabela z tymi samymi danymi renderuje się na serwerze.
+przeskalowanych do 1000 px szerokości) i wartości wskaźników. Strona Kondycji Małopolski czyta go na serwerze
+(kondycja-view.tsx) i rysuje mapę jako SVG.
 
 Wymaga mapshapera: npx mapshaper (albo ścieżka w zmiennej MAPSHAPER).
     cd data && uv run knowledge_map.py"""
