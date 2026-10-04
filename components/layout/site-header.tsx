@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 import { cn } from "cn";
 import { A11yToolbar } from "@/components/a11y/a11y-toolbar";
+import { NotificationBell } from "./notification-bell";
 
 // Etykiety w UI to proste czasowniki — nazwy modułów (Społecznik·Dopasuj itd.) są tylko do pitchu.
 const NAV = [
@@ -50,22 +51,23 @@ export function SiteHeader() {
   return (
     <header className="border-b print:hidden">
       <div className="bg-secondary" onKeyDown={closeA11y}>
-        <div className="mx-auto max-w-6xl px-4 md:px-5">
-          <div className="flex justify-end py-2 md:hidden">
-            <button
-              ref={a11yButton}
-              type="button"
-              aria-expanded={a11yOpen}
-              aria-controls="ustawienia-dostepnosci"
-              onClick={() => setA11yOpen((o) => !o)}
-              className={disclosureButton}
-            >
-              <AdjustmentsHorizontalIcon aria-hidden className="size-5" />
-              Dostępność
-              <ChevronDownIcon aria-hidden className={cn("size-5 transition-transform", a11yOpen && "rotate-180")} />
-            </button>
-          </div>
-          <div id="ustawienia-dostepnosci" className={cn("pb-3 md:block md:py-1", a11yOpen ? "block" : "hidden")}>
+        {/* Dzwonek (tylko po zalogowaniu) po lewej, dostępność po prawej. Na wąskim ekranie zawijają się w dwa wiersze;
+            kolejność w kodzie = kolejność na ekranie, więc Tab idzie tak, jak widać. */}
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 md:px-5 md:py-1">
+          <NotificationBell buttonClassName={disclosureButton} />
+          <button
+            ref={a11yButton}
+            type="button"
+            aria-expanded={a11yOpen}
+            aria-controls="ustawienia-dostepnosci"
+            onClick={() => setA11yOpen((o) => !o)}
+            className={cn(disclosureButton, "ml-auto md:hidden")}
+          >
+            <AdjustmentsHorizontalIcon aria-hidden className="size-5" />
+            Dostępność
+            <ChevronDownIcon aria-hidden className={cn("size-5 transition-transform", a11yOpen && "rotate-180")} />
+          </button>
+          <div id="ustawienia-dostepnosci" className={cn("basis-full pb-1 md:ml-auto md:block md:basis-auto md:pb-0", a11yOpen ? "block" : "hidden")}>
             <A11yToolbar />
           </div>
         </div>
