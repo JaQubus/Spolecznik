@@ -98,7 +98,12 @@ function PlanTable({ caption, groups }: { caption: string; groups: { label?: str
 function Paragraphs({ text }: { text: string }) {
   const parts = text.trim().split(/\n\s*\n/);
   if (!text.trim()) return <p>—</p>;
-  return <>{parts.map((p, i) => <p key={i} className="doc-text">{p}</p>)}</>;
+  // Pojedyncze entery jako <br>: w podglądzie i druku robi to pre-line, ale Word ignoruje white-space.
+  return <>{parts.map((p, i) => (
+    <p key={i} className="doc-text">
+      {p.split("\n").flatMap((line, j) => (j ? [<br key={j} />, line] : [line]))}
+    </p>
+  ))}</>;
 }
 
 /** Kto podpisuje: osoba, reprezentant podmiotu albo każdy partner grupy. */
