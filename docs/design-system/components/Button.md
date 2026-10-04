@@ -10,4 +10,4 @@ Consumer provides: a verb label ("Wyślij zgłoszenie", "Znajdź rozwiązania"),
 - Prefer `aria-disabled="true"` to `disabled` so the button stays focusable and can explain itself; better, keep it enabled and show errors on submit.
 - Under `bp-sm` add `hm-btn--stack` for full width.
 - No icon-only buttons. Text on brand is `on-brand`, never literal white.
-- Links are `hm-link`: ink, bold, underlined. Never green.
+- Links are `hm-link`: `link` blue, bold, underlined. Never green.

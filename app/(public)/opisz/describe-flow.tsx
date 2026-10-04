@@ -16,6 +16,8 @@ import { VoiceInput } from "./voice-input";
 
 type Step =
   | { kind: "input" }
+  // Opis przyszedł z wyszukiwarki na stronie startowej: zamiast formularza od razu sam status.
+  | { kind: "reading" }
   | { kind: "followUp"; card: NeedCard }
   | { kind: "results"; card: NeedCard; result: MatchResponse };
 
@@ -36,14 +38,15 @@ export function DescribeFlow({
   initialGmina = EMPTY_GMINA,
   area,
 }: { gminy: GminaOption[]; initialText?: string; initialGmina?: GminaValue; area?: AreaKey }) {
-  const [step, setStep] = useState<Step>({ kind: "input" });
+  const fromSearch = initialText.trim().length >= 3;
+  const [step, setStep] = useState<Step>(fromSearch ? { kind: "reading" } : { kind: "input" });
   const [text, setText] = useState(initialText);
   const [gmina, setGmina] = useState(initialGmina);
   const [answer, setAnswer] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(fromSearch ? "Czytam opis…" : "");
   const [piiFound, setPiiFound] = useState(false);
   const errorBox = useRef<HTMLDivElement>(null);
   const textField = useRef<HTMLTextAreaElement>(null);
@@ -61,6 +64,8 @@ export function DescribeFlow({
     } catch (e) {
       setError(`${e instanceof Error ? e.message : "Coś poszło nie tak"}. Spróbuj ponownie za chwilę.`);
       setStatus("");
+      // Bez formularza nie dałoby się poprawić opisu i spróbować ponownie.
+      setStep((s) => (s.kind === "reading" ? { kind: "input" } : s));
     } finally {
       setBusy(false);
     }
@@ -132,7 +137,7 @@ export function DescribeFlow({
 
   return (
     <div className="space-y-6">
-      <p aria-live="polite" className={busy ? "text-lg font-bold" : "sr-only"}>{status}</p>
+      <p aria-live="polite" className={busy || step.kind === "reading" ? "text-lg font-bold" : "sr-only"}>{status}</p>
       {error && (
         <Alert ref={errorBox} tabIndex={-1} tone="error" title="Nie udało się">
           <p>{error}</p>
@@ -178,7 +183,8 @@ export function DescribeFlow({
 
       {step.kind === "followUp" && (
         <form className="max-w-2xl space-y-4" noValidate onSubmit={(e) => { e.preventDefault(); submitAnswer(step.card); }}>
-          <Label htmlFor="odp">{step.card.followUp}</Label>
+          {/* Zwykły <label> zamiast Label z radix: tamten blokuje zaznaczanie tekstu, a pytanie warto móc skopiować. */}
+          <label htmlFor="odp" className="block text-lg font-bold">{step.card.followUp}</label>
           <VoiceInput label="Odpowiedz głosem" onText={(chunk) => setAnswer((a) => appendText(a, chunk))} />
           <FieldError id="odp-blad">{fieldError}</FieldError>
           <Textarea

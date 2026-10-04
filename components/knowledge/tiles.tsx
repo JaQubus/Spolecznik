@@ -3,7 +3,7 @@ import { StoryTile, StoryTiles } from "@/components/ui/story-tile";
 import { TYPE_LABELS } from "@/lib/knowledge/labels";
 import type { Area, Innovation } from "@/lib/knowledge/types";
 import { GROUP_LABELS } from "@/lib/taxonomy";
-import { AreaIcon, GROUP_ICONS } from "./icons";
+import { AreaIcon, GroupIcon, groupArea } from "./icons";
 
 import { areaHref, innovationHref } from "@/lib/knowledge/hrefs";
 
@@ -14,14 +14,18 @@ export function InnovationTiles({ items, className, level }: { items: Innovation
   return (
     <StoryTiles className={className}>
       {items.map((i) => {
-        const Icon = GROUP_ICONS[i.groups[0]];
+        const group = i.groups[0];
         return (
           <StoryTile
             key={i.id}
             level={level}
             href={innovationHref(i.slug)}
             title={i.title}
-            placeholder={Icon && <Icon aria-hidden className="size-16" />}
+            placeholder={group && (
+              <div data-area={groupArea(group)}className="flex size-full items-center justify-center bg-area-soft">
+                <GroupIcon group={group} className="size-16" />
+              </div>
+            )}
             meta={i.groups.map((g) => GROUP_LABELS[g]).join(", ")}
             note={[i.innovationType && TYPE_LABELS[i.innovationType], i.dissemination && "Wybrana do upowszechniania"]
               .filter(Boolean).join(" · ")}
@@ -38,7 +42,6 @@ export function InnovationList({ items, level = 3 }: { items: Innovation[]; leve
   return (
     <ul className="max-w-[48rem] divide-y divide-border border-y border-border">
       {items.map((i) => {
-        const Icon = GROUP_ICONS[i.groups[0]];
         const meta = [
           i.groups.map((g) => GROUP_LABELS[g]).join(", "),
           i.innovationType && TYPE_LABELS[i.innovationType],
@@ -46,7 +49,7 @@ export function InnovationList({ items, level = 3 }: { items: Innovation[]; leve
         ].filter(Boolean).join(" · ");
         return (
           <li key={i.id} className="flex items-start gap-4 py-5">
-            {Icon && <Icon aria-hidden className="mt-1 size-8 shrink-0" />}
+            {i.groups[0] && <GroupIcon group={i.groups[0]} className="mt-1 size-8 shrink-0" />}
             <div className="space-y-1">
               <H className="text-xl font-bold">
                 <Link href={innovationHref(i.slug)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{i.title}</Link>
@@ -67,7 +70,7 @@ export function AreaList({ areas, level = 3 }: { areas: Area[]; level?: 3 | 4 })
     <ul className="max-w-[48rem] divide-y divide-border border-y border-border">
       {areas.map((a) => (
         <li key={a.key} className="flex items-start gap-4 py-5">
-          <AreaIcon area={a.key} className="mt-1 size-8 shrink-0" />
+          <AreaIcon area={a.key} className="size-12" iconClassName="size-7" />
           <div className="space-y-1">
             <H className="text-xl font-bold">
               <Link href={areaHref(a.slug)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{a.name}</Link>

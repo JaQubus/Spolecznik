@@ -8,7 +8,7 @@ import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { NEED_COLUMNS, needTriage, type NeedRow, type Triage } from "@/lib/panel/needs";
 import { formatDate, plural } from "@/lib/pl";
 import { anonymize } from "@/lib/pii";
-import { AREA_LABELS } from "@/lib/taxonomy";
+import { AreaBadge } from "@/components/knowledge/icons";
 import type { ThreadWaiting } from "@/lib/thread-types";
 import { WaitingBadge, waitingOrEmpty } from "./waiting";
 
@@ -129,9 +129,9 @@ function NeedItem({ need: n, triage, waiting }: { need: NeedRow; triage?: Triage
       </p>
       <ul className="flex flex-wrap gap-2" aria-label="Analiza zgłoszenia">
         <WaitingBadge waiting={waiting} />
-        {n.card.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
-        {pii && <li><Badge variant="outline"><ShieldExclamationIcon aria-hidden className="size-4" /> Może zawierać dane osobowe</Badge></li>}
-        {dups > 0 && <li><Badge variant="outline"><DocumentDuplicateIcon aria-hidden className="size-4" /> Możliwy duplikat ({dups})</Badge></li>}
+        {n.card.areas.slice(0, 3).map((a) => <li key={a}><AreaBadge area={a} /></li>)}
+        {pii && <li><Badge variant="warning"><ShieldExclamationIcon aria-hidden className="size-4" /> Może zawierać dane osobowe</Badge></li>}
+        {dups > 0 && <li><Badge variant="warning"><DocumentDuplicateIcon aria-hidden className="size-4" /> Możliwy duplikat ({dups})</Badge></li>}
       </ul>
       {triage?.expertName && <p className="text-base">Sugerowany ekspert: <strong>{triage.expertName}</strong></p>}
     </li>

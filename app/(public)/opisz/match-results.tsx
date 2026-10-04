@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatNumber, plural } from "@/lib/pl";
 import type { InnovationMatch, MatchResponse, NeedCard } from "@/lib/schemas";
-import { AREA_LABELS } from "@/lib/taxonomy";
+import { AreaBadge } from "@/components/knowledge/icons";
 
 function fitLabel(fit: number): string {
   if (fit >= 80) return "Bardzo dobrze pasuje";
@@ -37,7 +37,7 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
         </h2>
         <p className="max-w-[68ch] text-lg"><strong>Zrozumieliśmy tak:</strong> {card.summary}</p>
         <ul className="flex flex-wrap gap-2" aria-label="Obszary">
-          {card.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
+          {card.areas.slice(0, 3).map((a) => <li key={a}><AreaBadge area={a} /></li>)}
         </ul>
       </div>
 
