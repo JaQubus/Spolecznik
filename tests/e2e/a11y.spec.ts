@@ -10,6 +10,7 @@ const PAGES = [
   ["status — nieznany kod", "/status/XXXX-0000"],
   ["Jak to wdrożyć u nas?", "/wdrozenie"],
   ["Zapytaj eksperta", "/zapytaj"],
+  ["API dla integracji", "/api-docs"],
 ] as const;
 
 async function axe(page: Page) {
@@ -62,7 +63,7 @@ test("widoczny fokus na każdym elemencie osiągalnym klawiaturą", async ({ pag
         if (!el || el === document.body || el.tagName === "NEXTJS-PORTAL") return null;
         const s = getComputedStyle(el);
         const visible = (s.outlineStyle !== "none" && parseFloat(s.outlineWidth) > 0) || s.boxShadow !== "none";
-        return { visible, label: `${el.tagName.toLowerCase()} „${(el.innerText || el.getAttribute("aria-label") || "").trim().slice(0, 40)}”` };
+        return { visible, label: `${el.tagName.toLowerCase()} "${(el.innerText || el.getAttribute("aria-label") || "").trim().slice(0, 40)}"` };
       });
       if (!focused) break;
       expect(focused.visible, `${url}: ${focused.label}`).toBe(true);
@@ -70,7 +71,7 @@ test("widoczny fokus na każdym elemencie osiągalnym klawiaturą", async ({ pag
   }
 });
 
-test("„Czytaj na głos” czyta treść strony po polsku i zatrzymuje się po drugim kliknięciu", async ({ page }) => {
+test('Czytaj na głos czyta treść strony po polsku i zatrzymuje się po drugim kliknięciu', async ({ page }) => {
   // Atrapa syntezy mowy: w przeglądarce testowej nie ma głosów, a sprawdzamy tylko, co zostało wysłane do czytania.
   await page.addInitScript(() => {
     const spoken: { text: string; lang: string }[] = [];
@@ -96,4 +97,43 @@ test("„Czytaj na głos” czyta treść strony po polsku i zatrzymuje się po 
 
   await button.click();
   await expect(button).toHaveAttribute("aria-pressed", "false");
+});
+
+test('GminaField: anulacja wyboru odsunięciem kursora (WCAG 2.5.2)', async ({ page }) => {
+  // Test na /opisz, która renderuje GminaField bez Supabase.
+  await page.goto("/opisz");
+  const gminaInput = page.locator("input").filter({ has: page.locator('input[aria-controls*="gmina"]') }).first();
+  await gminaInput.click();
+  await gminaInput.type("Boch");
+
+  // Czekaj, aż lista się otworzy.
+  const optionList = page.locator("ul[role='listbox']");
+  await expect(optionList).toBeVisible({ timeout: 2000 });
+
+  // Weź pierwszą opcję (powinna być Bochnia lub podobna).
+  const firstOption = optionList.locator("li[role='option']").first();
+  const optionText = await firstOption.textContent();
+  expect(optionText).toContain("Boch");
+
+  // Bounding box dla drażenia myszy.
+  const box = await firstOption.boundingBox();
+  expect(box).not.toBeNull();
+  const cx = box!.x + box!.width / 2;
+  const cy = box!.y + box!.height / 2;
+
+  // Symuluj: mousedown na opcji, move poza nią, mouseup. Wybór powinien się NIE wykonać.
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx - 500, cy); // Przesuń daleko od opcji.
+  await page.mouse.up();
+
+  // Pole powinno wciąż zawierać "Boch", a nie pełną nazwę gminy.
+  const inputValue = await gminaInput.inputValue();
+  expect(inputValue).toBe("Boch");
+
+  // Zwykły click powinien wybrać opcję.
+  await firstOption.click();
+  const valueAfterClick = await gminaInput.inputValue();
+  expect(valueAfterClick).toContain("Boch");
+  expect(valueAfterClick.length).toBeGreaterThan("Boch".length); // Pełna nazwa.
 });

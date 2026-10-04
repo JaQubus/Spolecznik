@@ -114,8 +114,10 @@ export function UnitSearch({ id, label, units, describe, selected, onSelect, cla
             id={`${listId}-${u.id}`}
             role="option"
             aria-selected={i === activeIndex}
-            // mousedown zamiast click: pole nie traci fokusu, więc onBlur nie zamyka listy przed wyborem.
-            onMouseDown={(e) => { e.preventDefault(); choose(u); }}
+            // mousedown tylko zatrzymuje fokus w polu (inaczej onBlur zamknie listę przed kliknięciem); wybór dopiero na click,
+            // żeby dało się go anulować odsunięciem kursora przed puszczeniem przycisku (WCAG 2.5.2).
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => choose(u)}
             onMouseMove={() => setActive(i)}
             className="flex min-h-12 cursor-pointer flex-col justify-center px-4 py-2 aria-selected:bg-accent"
           >
