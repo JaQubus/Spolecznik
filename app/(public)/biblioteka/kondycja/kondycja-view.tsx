@@ -1,5 +1,6 @@
 import { CheckIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { innovationHref } from "@/lib/knowledge/hrefs";
 import { cn } from "cn";
 import { MAP_CATEGORIES } from "@/components/knowledge/map-categories";
 import { Alert } from "@/components/ui/alert";
@@ -406,7 +407,7 @@ async function TerritoryCard({ layer, unit, indicator }: { layer: LayerKey; unit
             <ul className="max-w-3xl space-y-2">
               {innovations.map((i) => (
                 <li key={i.id}>
-                  <Link href={`/biblioteka/${i.slug ?? i.id}`} className={linkClass}>{i.title}</Link>
+                  <Link href={innovationHref(i.slug ?? i.id)} className={linkClass}>{i.title}</Link>
                   {i.solution && <p className="line-clamp-2 text-base text-muted-foreground">{i.solution}</p>}
                 </li>
               ))}

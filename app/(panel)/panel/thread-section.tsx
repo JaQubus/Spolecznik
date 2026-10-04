@@ -37,6 +37,13 @@ export function ThreadSection({
     <section aria-labelledby="rozmowa" className="space-y-4">
       <h2 id="rozmowa" className="text-2xl font-bold">{WHO[kind].title}</h2>
       <ThreadLive threadId={thread?.threadId ?? null} />
+      {thread?.waiting && (
+        <p className="font-bold">
+          {thread.waiting === "pilne"
+            ? "Pilne: autor oznaczył odpowiedź asystenta jako niepomocną. Czeka na Twoją odpowiedź."
+            : "Asystent przekazał pytanie — rozmowa czeka na odpowiedź człowieka."}
+        </p>
+      )}
       <MessageList messages={thread?.messages ?? []} empty={WHO[kind].empty} />
       {closed ? (
         <p className="text-muted-foreground">Zgłoszenie jest zamknięte — w rozmowie nie można już pisać.</p>
@@ -58,7 +65,7 @@ export function ThreadSection({
           <div className="space-y-2">
             <Label htmlFor="reply">Odpowiedź</Label>
             <FieldHint id="reply-pomoc">
-              Pierwsza odpowiedź zmienia status na „{NEED_STATUS_LABELS.odpowiedz}”. Kontakt do instytucji możesz podać;
+              Pierwsza odpowiedź zmienia status na „{NEED_STATUS_LABELS.odpowiedz}”, a rozmowa przestaje czekać na człowieka. Kontakt do instytucji możesz podać;
               nie wpisuj danych osobowych {kind === "pomysl" ? "autora" : "zgłaszającego"} ani innych osób.
             </FieldHint>
             <Textarea id="reply" name="body" required minLength={2} maxLength={2000} aria-describedby="reply-pomoc" className="min-h-24" />

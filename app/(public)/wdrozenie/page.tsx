@@ -30,8 +30,9 @@ export default async function Page(props: PageProps<"/wdrozenie">) {
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Jak to wdrożyć u nas?</h1>
         <p className="max-w-2xl text-lg">
-          Wybierz rozwiązanie i swoją gminę. Przygotujemy kartę: kto skorzysta, jakie kroki, ile może kosztować
-          i kto może pomóc. Wszystko, czego nie wiemy na pewno, oznaczymy jako założenie.
+          Odpowiedz na kilka pytań o swoją instytucję i gminę. Przygotujemy szkic planu wdrożenia pod nabór
+          „Usługa Wrażliwa” Regionalnego Ośrodka Polityki Społecznej w Krakowie: kto skorzysta, jakie kroki, ile może
+          kosztować i co zostanie po grancie. Wszystko, czego nie wiemy na pewno, oznaczymy jako szacunek albo założenie.
         </p>
       </div>
       <ImplementationFlow

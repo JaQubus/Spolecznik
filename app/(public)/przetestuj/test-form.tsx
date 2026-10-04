@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { innovationHref } from "@/lib/knowledge/hrefs";
 import { useEffect, useRef, useState } from "react";
 import { EMPTY_GMINA, GminaField, type GminaValue } from "@/components/gmina-field";
 import { Alert } from "@/components/ui/alert";
@@ -26,7 +27,9 @@ const RATINGS = [
 const selectClass =
   "h-14 w-full rounded-lg border-2 border-input bg-background px-4 text-lg hover:border-foreground aria-invalid:border-[3px] aria-invalid:border-destructive";
 
-type Errors = Partial<Record<"innovation" | "gmina" | "rating", string>>;
+type Errors = Partial<Record<"innovation" | "gmina" | "rating" | "email", string>>;
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function TestForm({
   innovations,
@@ -42,6 +45,7 @@ export function TestForm({
   const [gmina, setGmina] = useState<GminaValue>(EMPTY_GMINA);
   const [testerOrg, setTesterOrg] = useState("");
   const [plannedFor, setPlannedFor] = useState("");
+  const [email, setEmail] = useState("");
   const [rating, setRating] = useState("");
   const [feedback, setFeedback] = useState("");
   const [suggestions, setSuggestions] = useState("");
@@ -51,6 +55,7 @@ export function TestForm({
   const [done, setDone] = useState<string | null>(null);
   const innovationField = useRef<HTMLSelectElement>(null);
   const gminaField = useRef<HTMLInputElement>(null);
+  const emailField = useRef<HTMLInputElement>(null);
   const ratingGroup = useRef<HTMLDivElement>(null);
   const errorBox = useRef<HTMLDivElement>(null);
   const doneBox = useRef<HTMLDivElement>(null);
@@ -64,10 +69,12 @@ export function TestForm({
     if (!innovationId) next.innovation = "Wybierz rozwiązanie z listy.";
     if (gmina.text.trim().length < 2) next.gmina = "Wpisz nazwę gminy, np. „Bobowa”.";
     if (status === "zakonczony" && !rating) next.rating = "Wybierz ocenę od 1 do 5.";
+    if (status === "planowany" && email.trim() && !EMAIL.test(email.trim())) next.email = "Wpisz adres e-mail, np. gops@bobowa.pl, albo zostaw pole puste.";
     setErrors(next);
     if (next.innovation) return innovationField.current?.focus();
     if (next.gmina) return gminaField.current?.focus();
     if (next.rating) return ratingGroup.current?.querySelector<HTMLButtonElement>("button")?.focus();
+    if (next.email) return emailField.current?.focus();
 
     setError(null);
     setBusy(true);
@@ -82,6 +89,7 @@ export function TestForm({
           status,
           testerOrg: testerOrg || undefined,
           plannedFor: plannedFor || undefined,
+          contactEmail: status === "planowany" && email.trim() ? email.trim() : undefined,
           rating: status === "zakonczony" ? Number(rating) : undefined,
           feedback: feedback || undefined,
           suggestions: suggestions || undefined,
@@ -110,7 +118,7 @@ export function TestForm({
           </p>
         </Alert>
         {innovation?.slug && (
-          <Button asChild variant="outline"><Link href={`/biblioteka/${innovation.slug}`}>Wróć do opisu rozwiązania</Link></Button>
+          <Button asChild variant="outline"><Link href={innovationHref(innovation.slug)}>Wróć do opisu rozwiązania</Link></Button>
         )}
       </div>
     );
@@ -171,6 +179,23 @@ export function TestForm({
           <div className="space-y-2">
             <Label htmlFor="kiedy">Kiedy chcesz zacząć</Label>
             <Input id="kiedy" type="date" value={plannedFor} onChange={(e) => setPlannedFor(e.target.value)} className="max-w-xs" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">E-mail do powiadomień (nieobowiązkowy)</Label>
+            <FieldHint id="email-pomoc">
+              Napiszemy, gdy ROPS potwierdzi pilotaż albo zmieni status testu. Bez konta — adres służy tylko do tego.
+            </FieldHint>
+            <FieldError id="email-blad">{errors.email}</FieldError>
+            <Input
+              ref={emailField}
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={!!errors.email}
+              aria-describedby={describe("email", true, errors.email)}
+            />
           </div>
         </>
       ) : (

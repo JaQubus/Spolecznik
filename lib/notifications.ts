@@ -2,13 +2,17 @@ import "server-only";
 import { innovationHref } from "@/components/knowledge/tiles";
 import { viewerClient, type Viewer } from "./auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "./need-status";
-import { ADMIN_CHANNEL, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
+import { ADMIN_CHANNEL, expertChannel, expertRole, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
 import { createAdminClient } from "./supabase/admin";
+import { testStatusLabel } from "./test-status";
 
 /** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin'). */
 export type NewNotification =
   | { user_id: string; role?: never; kind: string; payload: Record<string, unknown> }
-  | { role: "admin"; user_id?: never; kind: string; payload: Record<string, unknown> };
+  | { role: "admin" | ReturnType<typeof expertRole>; user_id?: never; kind: string; payload: Record<string, unknown> };
+
+const channelOf = (n: NewNotification) =>
+  n.role === "admin" ? ADMIN_CHANNEL : n.role ? expertChannel(n.role.slice("ekspert:".length)) : userChannel(n.user_id!);
 
 /** Dzwonek działa tylko z bazą: bez niej nie ma kont ani tabeli notifications. */
 export const notificationsEnabled = () =>
@@ -26,7 +30,7 @@ export async function notify(rows: NewNotification | NewNotification[]): Promise
   const { error } = await supabase.from("notifications").insert(list);
   if (error) throw error;
 
-  const channels = [...new Set(list.map((n) => (n.role === "admin" ? ADMIN_CHANNEL : userChannel(n.user_id!))))];
+  const channels = [...new Set(list.map(channelOf))];
   await Promise.all(
     channels.map(async (name) => {
       const channel = supabase.channel(name);
@@ -43,13 +47,23 @@ export async function notify(rows: NewNotification | NewNotification[]): Promise
 }
 
 /** Kanały, których słucha dzwonek tej osoby. */
-export function channelsFor(viewer: Viewer): string[] {
-  return [...(viewer.role === "admin" ? [ADMIN_CHANNEL] : []), ...(viewer.id ? [userChannel(viewer.id)] : [])];
+/** `expertId` — ekspert bez konta Supabase (konto testowe): jego powiadomienia idą po kluczu roli, nie po user_id. */
+export function channelsFor(viewer: Viewer, expertId?: string | null): string[] {
+  return [
+    ...(viewer.role === "admin" ? [ADMIN_CHANNEL] : []),
+    ...(viewer.id ? [userChannel(viewer.id)] : []),
+    ...(expertId ? [expertChannel(expertId)] : []),
+  ];
 }
 
 /** Filtr PostgREST: powiadomienia tej osoby i jej roli — to samo co polityka RLS „własne powiadomienia”. */
-function audienceFilter(viewer: Viewer): string | null {
-  const parts = [...(viewer.role === "admin" ? ["role.eq.admin"] : []), ...(viewer.id ? [`user_id.eq.${viewer.id}`] : [])];
+function audienceFilter(viewer: Viewer, expertId?: string | null): string | null {
+  const parts = [
+    ...(viewer.role === "admin" ? ["role.eq.admin"] : []),
+    ...(viewer.id ? [`user_id.eq.${viewer.id}`] : []),
+    // Dwukropek jest zarezerwowany w filtrze or() PostgREST — wartość w cudzysłowie.
+    ...(expertId ? [`role.eq."${expertRole(expertId)}"`] : []),
+  ];
   return parts.length ? parts.join(",") : null;
 }
 
@@ -57,6 +71,13 @@ type Row = { id: string; kind: string; payload: Record<string, unknown>; created
 
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
 const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
+
+/** Co zrobił asystent „Zapytaj ROPS” z wiadomością autora (payload.ai, lib/threads.ts). Brak — starsze powiadomienia. */
+const ASSISTANT_NOTE: Record<string, string> = {
+  odpowiedz: ". Asystent odpowiedział z Zasobnika",
+  przekazano: ". Asystent przekazał pytanie — czeka na człowieka",
+  bez_pytania: ". To nie pytanie, asystent nie odpowiadał",
+};
 
 /** Treść prostym językiem i link — dla każdego rodzaju zapisywanego w aplikacji. */
 function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "text" | "href"> {
@@ -78,22 +99,47 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
     case "nowa_wiadomosc":
       return forAdmin
         ? {
-            text: `${ideaId ? "Autor pomysłu" : "Zgłaszający"} napisał w sprawie ${code ?? (ideaId ? "pomysłu" : "zgłoszenia")}`,
+            text: `${ideaId ? "Autor pomysłu" : "Zgłaszający"} napisał w sprawie ${code ?? (ideaId ? "pomysłu" : "zgłoszenia")}${ASSISTANT_NOTE[str(p.ai) ?? ""] ?? ""}`,
             href: panelCard ? `${panelCard}#rozmowa` : "/panel",
           }
         // Strona statusu, nie /zapytaj: rozmowa wymaga klucza z przeglądarki, z której wysłano zgłoszenie,
         // a status działa na każdym urządzeniu po samym kodzie i ma link do rozmowy.
         : { text: `Nowa odpowiedź w sprawie ${code ?? "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
+    case "pilne_pytanie":
+      return {
+        text: `Pilne: odpowiedź asystenta nie pomogła w sprawie ${code ?? (ideaId ? "pomysłu" : "zgłoszenia")}. Czeka na człowieka`,
+        href: panelCard ? `${panelCard}#rozmowa` : "/panel",
+      };
     case "zmiana_statusu": {
       const label = NEED_STATUS_LABELS[p.status as NeedStatus];
       return { text: `${code ? `Zgłoszenie ${code}` : "Twoje zgłoszenie"} ma nowy status${label ? `: ${label}` : ""}`, href: code ? `/status/${code}` : null };
     }
+    case "nowy_test": {
+      const what = str(p.title) ? ` „${short(str(p.title)!)}”` : "";
+      const where = str(p.gmina) ? ` (${str(p.gmina)})` : "";
+      return {
+        text: p.status === "zakonczony"
+          ? `Nowa ocena testu${what}${where}${typeof p.rating === "number" ? `: ${p.rating} na 5` : ""}`
+          : `Nowe zgłoszenie testu${what}${where}`,
+        href: str(p.innovationId) ? `/panel/testy?innowacja=${str(p.innovationId)}` : "/panel/testy",
+      };
+    }
+    case "zmiana_statusu_testu":
+      return {
+        text: `Twój test${str(p.title) ? ` „${short(str(p.title)!)}”` : ""} ma nowy status: ${testStatusLabel(String(p.status))}`,
+        href: str(p.slug) ? innovationHref(str(p.slug)!) : null,
+      };
     case "wiadomosc":
       return { text: `ROPS dodał wiadomość do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
     case "nowa_innowacja":
       return {
         text: `W Bibliotece jest nowe rozwiązanie, które może pasować do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}${str(p.title) ? `: „${short(str(p.title)!)}”` : ""}`,
         href: str(p.slug) ? innovationHref(str(p.slug)!) : "/biblioteka",
+      };
+    case "prosba_eksperta":
+      return {
+        text: `ROPS prosi Cię o pomoc przy ${p.kind === "pomysl" ? "pomyśle" : "zgłoszeniu"}${code ? ` ${code}` : ""}`,
+        href: code ? `/ekspert/${code}` : "/ekspert",
       };
     case "nowy_nabor":
       return { text: `Ruszył nabór${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Możesz złożyć wniosek.`, href: "/wniosek" };
@@ -106,8 +152,8 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
  * Ostatnie powiadomienia tej osoby i liczba nowych. `seenAt` to czas najnowszego powiadomienia, które ta osoba
  * już widziała (zapisany przy otwarciu dzwonka) — czas z bazy, więc różnica zegarów serwerów nic nie gubi.
  */
-export async function listNotifications(viewer: Viewer, seenAt: string | null, limit = 20) {
-  const filter = audienceFilter(viewer);
+export async function listNotifications(viewer: Viewer, seenAt: string | null, limit = 20, expertId?: string | null) {
+  const filter = audienceFilter(viewer, expertId);
   if (!filter) return { items: [] as NotificationItem[], unread: 0 };
   // Konto Supabase czyta własną sesją, więc granicę pilnuje też RLS („własne powiadomienia”), a filtr wyżej jest
   // drugą warstwą. Konta testowe nie mają sesji (działają tylko lokalnie albo z TEST_LOGIN=1) — dla nich service role.

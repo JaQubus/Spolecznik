@@ -1,12 +1,18 @@
-import { describeGmina, findGmina } from "@/lib/gminy";
-import { implementationCard } from "@/lib/llm";
-import { MiddlemanRequest, RELATED_MIN_SIMILARITY } from "@/lib/schemas";
+import { getViewer } from "@/lib/auth";
+import { findGmina, gminaFacts, gminaLabel } from "@/lib/gminy";
+import { aiErrorResponse } from "@/lib/groq";
+import { checkPlan } from "@/lib/implementation-plan";
+import { implementationPlan } from "@/lib/llm";
+import { anonymize } from "@/lib/pii";
+import { rateLimit } from "@/lib/rate-limit";
+import { MiddlemanRequest, RELATED_MIN_SIMILARITY, type PlanDocument } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { rateLimit } from "@/lib/rate-limit";
-import { aiErrorResponse } from "@/lib/groq";
 
-/** Karta wdrożeniowa: innowacja z Biblioteki + profil gminy z BDL + partnerzy z indeksu ekspertów. */
+/**
+ * Szkic planu wdrożenia pod nabór „Usługa Wrażliwa”: innowacja z Biblioteki + fakty o gminie z BDL
+ * + dane wnioskodawcy z formularza + partnerzy z indeksu ekspertów. Plan zapisujemy do Panelu → Wdrożenia.
+ */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "middleman", 5);
   if (limited) return limited;
@@ -14,7 +20,9 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
   }
-  const { innovationId, gmina, teryt } = parsed.data;
+  const { innovationId, gmina, teryt, ...fields } = parsed.data;
+  // „Kadra” to wolny tekst: idzie do modelu i do bazy, więc bez danych osobowych (lib/pii.ts), jak w innych trasach.
+  const input = { ...fields, staff: fields.staff ? anonymize(fields.staff).text : undefined };
   const supabase = createAdminClient();
 
   try {
@@ -55,17 +63,37 @@ export async function POST(request: Request) {
     if (expertsError) throw expertsError;
     const partners = (experts ?? []).map((e) => ({ id: e.ref_id as string, name: e.title as string, description: e.body as string }));
 
-    const card = await implementationCard(innovationText, describeGmina(gminaRow), partners);
-    const partnerById = new Map(partners.map((p) => [p.id, p]));
-    return Response.json({
+    const label = gminaLabel(gminaRow);
+    const facts = gminaFacts(gminaRow);
+    const raw = await implementationPlan(innovationText, { label, facts }, input, partners);
+    const plan = checkPlan(raw, { facts, partners, budget: input.budget });
+
+    // Zapis nie blokuje wyniku: gdy się nie uda, użytkownik i tak dostaje plan (bez id).
+    const viewer = await getViewer();
+    const { data: saved, error: saveError } = await supabase
+      .from("implementation_plans")
+      .insert({
+        innovation_id: innovation.id,
+        teryt: gminaRow.teryt,
+        institution_type: input.institutionType,
+        input,
+        plan,
+        author_id: viewer?.via === "supabase" ? viewer.id : null,
+      })
+      .select("id, created_at")
+      .single();
+    if (saveError) console.error("[middleman] zapis planu", saveError);
+
+    const doc: PlanDocument = {
+      id: saved?.id ?? null,
+      createdAt: saved?.created_at ?? new Date().toISOString(),
       innovation: { id: innovation.id, title: innovation.title },
-      gmina: { teryt: gminaRow.teryt, nazwa: gminaRow.nazwa },
-      card: {
-        ...card,
-        partners: card.partners.map((p) => ({ ...p, name: partnerById.get(p.id)?.name ?? "" })),
-      },
-    });
+      gmina: { teryt: gminaRow.teryt, nazwa: gminaRow.nazwa, label },
+      input,
+      plan,
+    };
+    return Response.json(doc);
   } catch (e) {
-    return aiErrorResponse("middleman", e, "Nie udało się przygotować karty wdrożeniowej");
+    return aiErrorResponse("middleman", e, "Nie udało się przygotować planu wdrożenia");
   }
 }

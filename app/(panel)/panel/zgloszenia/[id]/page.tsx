@@ -110,7 +110,7 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
         {pii && (
           <div className="space-y-3">
             <Alert title="Może zawierać dane osobowe">
-              <p>W treści są numery, adresy e-mail albo adresy. Nie przekazuj jej dalej. Jeśli nie są potrzebne, usuń je.</p>
+              <p>W treści są numery, adresy e-mail, adresy, hasła, klucze albo numery kart.Nie przekazuj jej dalej. Jeśli nie są potrzebne, usuń je.</p>
               <p>Imion i nazwisk system nie rozpoznaje — sprawdź je ręcznie.</p>
             </Alert>
             <ActionForm action={removePersonalData} className="space-y-2">

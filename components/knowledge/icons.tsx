@@ -3,8 +3,11 @@ import {
   DocumentChartBarIcon, EyeIcon, FilmIcon, HandRaisedIcon, HeartIcon, HomeIcon, LanguageIcon, LifebuoyIcon,
   MapIcon, MapPinIcon, NewspaperIcon, PlusCircleIcon, Squares2X2Icon, UserGroupIcon, UsersIcon,
 } from "@heroicons/react/24/outline";
+import { cn } from "cn";
 import type { ComponentType, SVGProps } from "react";
+import { Badge } from "@/components/ui/badge";
 import type { AreaKey, GroupKey, InnovationType, MaterialKind } from "@/lib/knowledge/types";
+import { AREA_LABELS } from "@/lib/taxonomy";
 
 // Ikony Heroicons (outline, 24 px). Zawsze stoją obok tekstu, więc są dekoracyjne (aria-hidden).
 // Heroicons nie ma ikon wózka, ucha ani mózgu — wybieramy najbliższe znaczeniowo, tekst mówi resztę.
@@ -48,8 +51,51 @@ export const MATERIAL_ICONS: Record<MaterialKind, Icon> = {
   publikacja: NewspaperIcon,
 };
 
-/** Ikona obszaru po kluczu (areas.icon w bazie trzymał nazwę ikony Lucide — dziś decyduje klucz obszaru). */
-export function AreaIcon({ area, className }: { area: string; className?: string }) {
+/**
+ * Grupa odbiorców nosi kolor swojego obszaru, żeby ten sam temat miał ten sam kolor w całym serwisie.
+ * Grupa bez jasnego obszaru (rynek pracy to nie to samo co ubóstwo) zostaje neutralna: --ink na --surface-alt.
+ */
+export const GROUP_AREA: Partial<Record<GroupKey, AreaKey>> = {
+  seniorzy: "seniorzy",
+  dzieci_mlodziez_rodzina: "rodzina_piecza",
+  ograniczona_mobilnosc: "niepelnosprawnosc",
+  niepelnosprawnosc_sensoryczna: "niepelnosprawnosc",
+  zdrowie_medycyna: "zdrowie",
+  cudzoziemcy: "cudzoziemcy",
+  bezdomnosc: "bezdomnosc",
+  niepelnosprawnosc_intelektualna: "niepelnosprawnosc",
+};
+
+/** Wartość data-area dla grupy; pusty napis daje neutralne kolory z reguły [data-area] w globals.css. */
+export const groupArea = (group: GroupKey) => GROUP_AREA[group] ?? "";
+
+/**
+ * Ikona obszaru po kluczu (areas.icon w bazie trzymał nazwę ikony Lucide — dziś decyduje klucz obszaru),
+ * na kółku w kolorze obszaru. className ustala rozmiar kółka, iconClassName rozmiar ikony.
+ */
+export function AreaIcon({ area, className, iconClassName }: { area: string; className?: string; iconClassName?: string }) {
   const Icon = AREA_ICONS[area as AreaKey] ?? BookOpenIcon;
-  return <Icon aria-hidden className={className} />;
+  return (
+    <span aria-hidden data-area={area} className={cn("flex shrink-0 items-center justify-center rounded-full bg-area-soft text-area", className)}>
+      <Icon className={iconClassName} />
+    </span>
+  );
+}
+
+/** Ikona grupy odbiorców w kolorze jej obszaru (GROUP_AREA). */
+export function GroupIcon({ group, className }: { group: GroupKey; className?: string }) {
+  const Icon = GROUP_ICONS[group];
+  if (!Icon) return null;
+  return <Icon aria-hidden data-area={groupArea(group)} className={cn("text-area", className)} />;
+}
+
+/** Etykieta obszaru: miękkie tło i ikona w kolorze obszaru, tekst zawsze w kolorze tekstu. */
+export function AreaBadge({ area }: { area: string }) {
+  const Icon = AREA_ICONS[area as AreaKey];
+  return (
+    <Badge data-area={area} className="bg-area-soft">
+      {Icon && <Icon aria-hidden className="text-area" />}
+      {AREA_LABELS[area as AreaKey] ?? area}
+    </Badge>
+  );
 }

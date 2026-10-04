@@ -323,7 +323,7 @@ Punktacja: 10% za moduł obligatoryjny i +5% za każdy kolejny. Sześć dodatkow
 | **Wiedza** (Zasobnik) | **Biblioteka jako historie w 4 krokach:** Problem → Rozwiązanie → Skąd wiemy, że działa → Jak skorzystać (mapuje się 1:1 na sekcje stron ROPS). Filtry „dla kogo” z ikonami, wideo, jeśli jest. **Kondycja Małopolski:** mapa gmin z BDL z podpisami prostym językiem („co czwarta osoba ma 65+ lat”). **Zapytaj Bibliotekę:** Q&A po raportach z odnośnikami do stron PDF. Przy każdej innowacji gotowe streszczenie w tekście łatwym do czytania. | Ten sam korpus co Dopasuj | 3 h |
 | **Panel** (admin) | Skrzynka nowych zgłoszeń z triage AI: obszar, duplikaty (podobieństwo > 0,9), sugerowany ekspert, ostrzeżenie o danych osobowych. CRUD innowacji z automatycznym reindeksem. Włącznik naborów. **Trendy:** potrzeby wg obszaru × powiatu × czasu, klastry z etykietami LLM. **Mapa luk.** Eksport CSV, log zmian. | Widzi wszystkie karty | 3 h |
 | **Pracownia** (Kreator) | **Fiszka** (krótki opis, istota, dla kogo, etap) dostępna zawsze. **Canvas** INNO AGH jako formularz z JSON. **Asystent** (LLM): zadaje pytania, podsuwa nieoczywiste kierunki i **sprawdza nowość** tym samym silnikiem („Podobne już istnieje: X. Czym się różnisz?”). **Generator wniosków** widoczny tylko przy aktywnym naborze: szablon naboru (pola i kryteria w JSON) + fiszka + canvas → szkic wniosku z checklistą kryteriów; eksport przez druk do PDF. *Could:* szkic wizualny pomysłu. | Luka → fiszka wstępnie wypełniona; fiszka indeksowana, więc kolejne potrzeby trafiają też na pomysły w toku | 3,5 h |
-| **Wdrożenie** (Middleman) | JST wybiera innowację i swoją gminę → **karta wdrożeniowa**: cel, odbiorcy w tej gminie (liczby z BDL), forma usługi (np. w ramach Centrum Usług Społecznych), kroki, kadra i zasoby, widełki kosztów oznaczone jako szacunek, partnerzy z bazy, ryzyka, wskaźniki sukcesu. Wyłącznie na podstawie karty innowacji i profilu gminy; założenia są jawnie oznaczone. | Z wyniku Dopasuj; partnerzy z indeksu ekspertów | 2 h |
+| **Wdrożenie** (Middleman) | Instytucja (gmina, OPS, PCPR, CUS, NGO, PES) wybiera innowację, gminę, liczbę odbiorców, kadrę i budżet → **szkic planu wdrożenia pod nabór ROPS „Usługa Wrażliwa”** (grant do 600 tys. zł, do 18 mies.), w kolejności części III–VI wniosku o grant: cel, opis i forma usługi, odbiorcy w gminie (fakty z BDL ze źródłem — model wskazuje je po id, nie przepisuje liczb), liczba osób K/M, rekrutacja, harmonogram w miesiącach z kosztami i kalkulacją, kadra, widełki, partnerzy z bazy (albo typy partnerów), ryzyka, wskaźniki, zasady horyzontalne, trwałość, deinstytucjonalizacja. Liczby od modelu oznaczone „szacunek”, limity naboru sprawdza serwer, założenia jawne. Plany trafiają do Panelu → Wdrożenia. | Z karty innowacji i wyniku Dopasuj; partnerzy z indeksu ekspertów | 2 h |
 | **Próba** (Tester) | „Chcę przetestować” (kto, gdzie, kiedy) → po teście ocena 1–5 (przyciski radiowe, nie gwiazdki) + co działa i co poprawić. Na karcie innowacji widać np. „Przetestowano w 4 gminach, średnio 4,3”. | Feedback trafia do Biblioteki, rankingu i autora | 1,5 h |
 | **Rozmowy** (Komunikacja) | Wątki przypięte do kart (potrzeba, pomysł, innowacja) na Supabase Realtime. „Zapytaj eksperta” z podpowiedzią eksperta z indeksu. **Partnerstwa:** jednym kliknięciem wątek grupowy gmin z podobnym problemem (za zgodą). „Zapytaj ROPS”: AI odpowiada z Zasobnika jako pierwsza linia i przekazuje sprawę człowiekowi. | Każda karta ma swój wątek | 2,5 h |
 
@@ -423,6 +423,21 @@ sequenceDiagram
   - jedno przejście ścieżki głównej z czytnikiem ekranu (NVDA albo VoiceOver).
 
   Wyniki idą na slajd.
+
+**Wyniki Lighthouse** (produkcja, 4 października 2026, `pnpm lighthouse` i `pnpm lighthouse --desktop`, Lighthouse 13):
+
+| Strona | Dostępność | Dobre praktyki | SEO | Wydajność (telefon) | Wydajność (desktop) |
+|---|---|---|---|---|---|
+| `/` | 100 | 100 | 100 | 83 | 100 |
+| `/opisz` | 100 | 100 | 100 | 92 | 97 |
+| `/status/[kod]` | 100 | 100 | 100 | 88 | 100 |
+| `/zapytaj` | 100 | 100 | 100 | 88 | 100 |
+| `/pomysl` | 100 | 100 | 100 | 85 | 100 |
+| `/biblioteka` | 100 | 100 | 100 | 89 | 100 |
+
+Dostępność, dobre praktyki i SEO to 100 na każdej stronie, na telefonie i na desktopie. Wydajność na telefonie (symulacja wolnego telefonu) obniża JavaScript: na `/` LCP 3,2 s, blokowanie wątku 420 ms, ok. 91 KiB nieużywanego JS.
+
+axe (WCAG 2.1 A/AA) działa w Playwright na 12 ekranach publicznych, 5 ekranach Panelu i 2 stanach interaktywnych (`tests/e2e/screens-a11y.spec.ts`, `knowledge-a11y.spec.ts`). Przejście z czytnikiem ekranu jeszcze przed nami (#26).
 
 ---
 

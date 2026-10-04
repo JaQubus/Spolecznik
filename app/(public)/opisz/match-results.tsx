@@ -2,6 +2,7 @@
 
 import { HandThumbDownIcon, HandThumbUpIcon, UsersIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { innovationHref } from "@/lib/knowledge/hrefs";
 import { useEffect, useRef, useState } from "react";
 import { EmailOptIn } from "@/components/rozmowa/email-opt-in";
 import { PrivateLink } from "@/components/rozmowa/private-link";
@@ -10,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatNumber, plural } from "@/lib/pl";
 import type { InnovationMatch, MatchResponse, NeedCard } from "@/lib/schemas";
-import { AREA_LABELS } from "@/lib/taxonomy";
+import { AreaBadge } from "@/components/knowledge/icons";
 
 function fitLabel(fit: number): string {
   if (fit >= 80) return "Bardzo dobrze pasuje";
@@ -36,7 +37,7 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
         </h2>
         <p className="max-w-[68ch] text-lg"><strong>Zrozumieliśmy tak:</strong> {card.summary}</p>
         <ul className="flex flex-wrap gap-2" aria-label="Obszary">
-          {card.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
+          {card.areas.slice(0, 3).map((a) => <li key={a}><AreaBadge area={a} /></li>)}
         </ul>
       </div>
 
@@ -139,7 +140,10 @@ function StatusCode({ code, accessKey }: { code: string; accessKey: string }) {
 function ResultRow({ match: m, statusCode }: { match: InnovationMatch; statusCode: string }) {
   return (
     <li className="grid gap-3 border-b py-8 first:pt-0">
-      <h3 className="text-xl font-bold">{m.title}</h3>
+      {/* Tytuł prowadzi do pełnego opisu (problem, rozwiązanie, skąd wiemy, że działa); link, nie kolejny przycisk. */}
+      <h3 className="text-xl font-bold">
+        <Link href={innovationHref(m.slug ?? m.id)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{m.title}</Link>
+      </h3>
       <div className="flex flex-wrap items-center gap-3 text-base text-muted-foreground">
         {/* Pasek jest ozdobą; liczba jest zawsze napisana słowami. */}
         <span aria-hidden className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">

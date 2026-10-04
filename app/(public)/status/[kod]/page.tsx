@@ -10,7 +10,7 @@ import { keyMatches, rememberedKey } from "@/lib/need-access";
 import { needTimeline, type NeedStatus } from "@/lib/need-status";
 import { needHistory, statusEvents } from "@/lib/panel/needs";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { AREA_LABELS } from "@/lib/taxonomy";
+import { AreaBadge } from "@/components/knowledge/icons";
 
 export const metadata = { title: "Status zgłoszenia" };
 
@@ -145,7 +145,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
           <ul className="flex flex-wrap gap-2" aria-label="Gmina i obszary">
             {report.gmina && <li><Badge>Gmina {report.gmina}</Badge></li>}
             {report.areas.slice(0, 3).map((a) => (
-              <li key={a}><Badge>{AREA_LABELS[a as keyof typeof AREA_LABELS] ?? a}</Badge></li>
+              <li key={a}><AreaBadge area={a} /></li>
             ))}
           </ul>
         )}

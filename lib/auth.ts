@@ -18,7 +18,8 @@ export function safeNext(next: string | null | undefined, fallback = "/panel"): 
 // Wybór roli jednym przyciskiem na /logowanie. Ciasteczko jest podpisane (HMAC), a rolę i tak sprawdza
 // serwer przy każdym żądaniu. Lokalnie działa zawsze; na serwerze tylko z TEST_LOGIN=1 i własnym TEST_LOGIN_SECRET.
 export const TEST_COOKIE = "spolecznik-test";
-export const TEST_ROLES = { admin: "Administrator ROPS", mieszkaniec: "Mieszkaniec" } as const;
+// Ekspert testowy działa jako jeden z ekspertów w bazie (TEST_EXPERT_ID albo pierwszy alfabetycznie) — lib/expert.ts.
+export const TEST_ROLES = { admin: "Administrator ROPS", ekspert: "Ekspert", mieszkaniec: "Mieszkaniec" } as const;
 export type TestRole = keyof typeof TEST_ROLES;
 
 const testSecret = (): string | null =>

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { getViewer, type Viewer } from "@/lib/auth";
+import { currentExpert } from "@/lib/expert";
 import type { NotificationsResponse } from "@/lib/notification-types";
 import { channelsFor, listNotifications, notificationsEnabled } from "@/lib/notifications";
 import { rateLimit } from "@/lib/rate-limit";
@@ -31,9 +32,11 @@ export async function GET(request: Request) {
   const viewer = await getViewer();
   if (!viewer || !notificationsEnabled()) return off();
   try {
-    const { items, unread } = await listNotifications(viewer, await readSeen(viewer));
+    // Ekspert z konta testowego nie ma user_id — jego powiadomienia idą po kluczu roli „ekspert:<id>”.
+    const expertId = viewer.via === "test" ? (await currentExpert(viewer))?.id ?? null : null;
+    const { items, unread } = await listNotifications(viewer, await readSeen(viewer), 20, expertId);
     return Response.json(
-      { enabled: true, items, unread, channels: channelsFor(viewer) } satisfies NotificationsResponse,
+      { enabled: true, items, unread, channels: channelsFor(viewer, expertId) } satisfies NotificationsResponse,
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e) {

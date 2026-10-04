@@ -2,6 +2,7 @@
 
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { innovationHref } from "@/lib/knowledge/hrefs";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldHint } from "@/components/ui/field";
@@ -75,7 +76,7 @@ export function AssistantChat({ fiszka }: { fiszka: () => Fiszka | undefined }) 
               {similar.map((s) => (
                 <li key={`${s.kind}:${s.id}`}>
                   {s.kind === "innowacja" && s.slug ? (
-                    <Link href={`/biblioteka/${s.slug}`} className={linkClass}>{s.title}</Link>
+                    <Link href={innovationHref(s.slug)} className={linkClass}>{s.title}</Link>
                   ) : s.kind === "innowacja" ? (
                     <span>{s.title}</span>
                   ) : (

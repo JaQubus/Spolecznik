@@ -93,11 +93,11 @@ Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(-
 
 | File | Change |
 |---|---|
-| `button.tsx` | base `rounded-md text-sm font-medium` → `rounded-full text-lg font-bold`; remove `focus-visible:ring-[3px] focus-visible:ring-ring/50` (the global outline handles focus); sizes: `default` `h-14 px-6`, `sm` `h-12 px-4 text-base`, `lg` `h-16 px-8 text-xl`, `icon*` `size-12`; `outline` → `border border-[var(--ink)] bg-background hover:bg-secondary`, no `shadow-xs`; `link` → `text-foreground font-bold underline underline-offset-4`; `disabled:opacity-50` → `disabled:bg-muted disabled:text-muted-foreground` (50% opacity drops text below 4.5:1). |
+| `button.tsx` | base `rounded-md text-sm font-medium` → `rounded-full text-lg font-bold`; remove `focus-visible:ring-[3px] focus-visible:ring-ring/50` (the global outline handles focus); sizes: `default` `h-14 px-6`, `sm` `h-12 px-4 text-base`, `lg` `h-16 px-8 text-xl`, `icon*` `size-12`; `outline` → `border border-[var(--ink)] bg-background hover:bg-secondary`, no `shadow-xs`; `link` → `text-link font-bold underline underline-offset-4` (blue `--link`; every other underlined `a`/`button` gets the same colour from a base rule in `globals.css`); `disabled:opacity-50` → `disabled:bg-muted disabled:text-muted-foreground` (50% opacity drops text below 4.5:1). |
 | `input.tsx`, `textarea.tsx` | `h-14 rounded-lg border-2 border-input bg-background px-4 text-lg` (white box + 2px edge: what reads as a field); drop focus ring classes; `aria-invalid:border-[3px] aria-invalid:border-destructive`. |
 | `select.tsx` | trigger `h-14 rounded-lg text-lg`; content `shadow-[var(--shadow-overlay)]`. |
 | `radio-group.tsx` | item `size-[26px] border-[var(--border-strong)]`, checked `border-[8px] border-foreground`; wrap each item and its `Label` in a 48px-tall row. |
-| `badge.tsx` | `default` variant → `bg-secondary text-foreground` (chips are not green); text `text-base`, `px-3 py-0.5`. |
+| `badge.tsx` | `default` variant → `bg-secondary text-foreground` (chips are not green); text `text-base`, `px-3 py-0.5`; `warning` variant → `bg-warning-soft`, icon `text-warning` (panel risk signals only). Area labels use `AreaBadge` (`components/knowledge/icons.tsx`). |
 | `label.tsx` | `text-lg font-bold`. |
 | `card.tsx` | keep for dialogs and panels only; don't use it for lists (see below). |
 | `sonner.tsx` | toasts on `--popover`, `shadow-[var(--shadow-overlay)]`, `role="status"`. |
@@ -105,7 +105,7 @@ Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(-
 ## 4. App code
 
 - Done: `app/(public)/opisz/match-results.tsx` no longer uses `Card`; it is the **ResultList** pattern: an `<ol>` with rows split by `border-b border-border py-8`, no Card. Per row the three actions from README §5.1: "Jak to wdrożyć u nas?" is `variant="outline"`, "Chcę przetestować" and "Zapytaj eksperta" (with `innowacja` + `potrzeba`, so the expert knows which solution) are `variant="link"`, so ten results don’t produce ten green buttons.
-- The amber notice (`bg-amber-50 border-amber-500 text-amber-950`) and `border-dashed` boxes in `match-results.tsx` / `describe-flow.tsx` → **Alert** (info: `bg-secondary rounded-[16px] p-5`, an icon, no border). There's no yellow in the system.
+- The amber notice (`bg-amber-50 border-amber-500 text-amber-950`) and `border-dashed` boxes in `match-results.tsx` / `describe-flow.tsx` → **Alert** (info: `bg-info-soft rounded-[16px] p-5`, an `info` icon, no border). Amber is only the `warning` tone, reserved for risk signals the system detects for the team (see `components/Alert.md`); a public notice like this one is info.
 - `components/a11y/a11y-toolbar.tsx`: buttons → `rounded-full min-h-12 px-3 text-base border-0 hover:bg-muted aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:font-bold`, plus a Heroicons icon each (`MagnifyingGlassPlusIcon`, `EyeIcon`). Each toggles a class on `<html>`: Większy tekst → `a11y-large`, Wysoki kontrast → `a11y-contrast` (see `components/Header.md`); put the group in a `bg-secondary` strip above the header row. "Czytaj na głos" (`SpeakerWaveIcon`) is `components/a11y/read-aloud.tsx`, rendered last in the group with the same class.
 - `components/layout/site-header.tsx`: links → `rounded-full px-4 min-h-12 inline-flex items-center hover:bg-secondary no-underline`, current page `aria-current="page"` + `font-bold underline underline-offset-8`; wordmark `hubmi<span className="font-normal text-muted-foreground">.pl</span>`. Six nav items don't fit under 1024px: fold them behind a "Menu" button there. Under 768px the toolbar folds behind a "Dostępność" button and must open below the header row (render it after the row, or `flex-col` + `order-2` / `md:order-none`), so the pressed button doesn't jump.
 - The home search: two normal shadcn `Input`s (label above, hint below the label, no placeholder) and one `Button` in a `flex flex-col md:flex-row md:items-end gap-4` form, sitting on a `bg-secondary` hero band so the white inputs stand out. No pill-shaped or fill-only fields.
@@ -119,7 +119,7 @@ Also in the layout: give the skip link `rounded-full bg-[var(--ink)] text-[var(-
 | Header | `components/layout/site-header.tsx` (client: `usePathname` for `aria-current`, the two disclosure buttons), toggles in `components/a11y/a11y-toolbar.tsx` |
 | SearchBar | `app/(public)/search-bar.tsx`; GETs `/opisz?opis=…&gmina=…`, which starts the search at once and clears the URL |
 | TextField | `Label` + `FieldHint` + `FieldError` (`components/ui/field.tsx`) + `Input` / `Textarea`; react-hook-form's `FormMessage` renders `FieldError` |
-| Alert | `components/ui/alert.tsx` (`tone`: info, success, error) |
+| Alert | `components/ui/alert.tsx` (`tone`: info, warning, success, error) |
 | ResultList | `ResultRow` in `app/(public)/opisz/match-results.tsx` |
 | VoiceInput | `app/(public)/opisz/voice-input.tsx` |
 | Chip | static: `Badge`; filter: `FilterChip` (`components/ui/chip.tsx`) |
