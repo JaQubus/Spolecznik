@@ -14,6 +14,9 @@ import { Conversation } from "./conversation";
 export const metadata = { title: "Zapytaj eksperta" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// Autor ma wiedzieć przed pierwszą wiadomością, że najpierw odpisze AI, nie człowiek (#20).
+const AI_FIRST_LINE =
+  "Na każdą wiadomość najpierw odpowiada asystent AI — tylko na podstawie Zasobnika i ze źródłami. Gdy nie zna pewnej odpowiedzi albo pytasz o swoją sprawę, przekazuje pytanie pracownikowi ROPS. Człowiek widzi całą rozmowę.";
 const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
 export default async function Page(props: PageProps<"/zapytaj">) {
@@ -75,6 +78,7 @@ export default async function Page(props: PageProps<"/zapytaj">) {
                 ? <>Tu odpisze Ci ROPS w sprawie pomysłu. Możesz też zapytać, np. o wsparcie mentora albo nabór.</>
                 : <>Napisz, o co chcesz zapytać. Pracownik ROPS odpowie albo zaprosi do rozmowy eksperta.</>}
         </p>
+        <p className="max-w-[68ch]">{AI_FIRST_LINE}</p>
         <p>
           <Link href={`/status/${thread.code}`} className={linkClass}>Zobacz status {idea ? "pomysłu" : "zgłoszenia"}</Link>
         </p>
@@ -105,6 +109,7 @@ function MyConversations({ mine, askedCode, badLink }: { mine: MyNeed[]; askedCo
         <p className="text-lg">
           Rozmowa z ekspertem i pracownikiem ROPS jest przypięta do Twojego zgłoszenia albo pomysłu i widzisz ją tylko Ty.
         </p>
+        <p>{AI_FIRST_LINE}</p>
       </div>
 
       {badLink && (
