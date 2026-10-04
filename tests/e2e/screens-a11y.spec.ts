@@ -16,6 +16,7 @@ const PUBLIC = [
   ["Kondycja Małopolski", "/biblioteka/kondycja"],
   ["Ucz się", "/biblioteka/ucz-sie"],
   ["logowanie", "/logowanie"],
+  ["API dla integracji", "/api-docs"],
 ] as const;
 
 const PANEL = [
