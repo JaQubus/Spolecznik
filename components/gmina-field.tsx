@@ -137,8 +137,10 @@ export function GminaField({ id, options, value, onValueChange, className, "aria
               id={optionId(i)}
               role="option"
               aria-selected={i === active}
-              // mousedown zamiast click: pole nie traci fokusu, więc lista nie znika przed wyborem.
-              onMouseDown={(e) => { e.preventDefault(); choose(o); }}
+              // mousedown tylko zatrzymuje fokus w polu (inaczej onBlur zamknie listę przed kliknięciem); wybór dopiero na click,
+              // żeby dało się go anulować odsunięciem kursora przed puszczeniem przycisku (WCAG 2.5.2).
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => choose(o)}
               onMouseMove={() => setActive(i)}
               className={cn(
                 "flex min-h-12 cursor-pointer flex-col justify-center rounded-sm px-3 py-2",

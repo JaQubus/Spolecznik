@@ -71,12 +71,12 @@ test("widoczny fokus na każdym elemencie osiągalnym klawiaturą", async ({ pag
   }
 });
 
-test("„Czytaj na głos” czyta treść strony po polsku i zatrzymuje się po drugim kliknięciu", async ({ page }) => {
+test(“„Czytaj na głos” czyta treść strony po polsku i zatrzymuje się po drugim kliknięciu”, async ({ page }) => {
   // Atrapa syntezy mowy: w przeglądarce testowej nie ma głosów, a sprawdzamy tylko, co zostało wysłane do czytania.
   await page.addInitScript(() => {
     const spoken: { text: string; lang: string }[] = [];
     Object.assign(window, { __spoken: spoken });
-    Object.defineProperty(window, "speechSynthesis", {
+    Object.defineProperty(window, “speechSynthesis”, {
       configurable: true,
       value: {
         speak: (u: SpeechSynthesisUtterance) => spoken.push({ text: u.text, lang: u.lang }),
@@ -85,16 +85,55 @@ test("„Czytaj na głos” czyta treść strony po polsku i zatrzymuje się po 
       },
     });
   });
-  await page.goto("/opisz");
-  const button = page.getByRole("button", { name: "Czytaj na głos" });
+  await page.goto(“/opisz”);
+  const button = page.getByRole(“button”, { name: “Czytaj na głos” });
   await button.click();
-  await expect(button).toHaveAttribute("aria-pressed", "true");
+  await expect(button).toHaveAttribute(“aria-pressed”, “true”);
 
   const spoken = await page.evaluate(() => (window as unknown as { __spoken: { text: string; lang: string }[] }).__spoken);
   expect(spoken.length).toBeGreaterThan(0);
-  expect(spoken.every((u) => u.lang === "pl-PL" && u.text.length <= 200)).toBe(true);
-  expect(spoken.map((u) => u.text).join(" ")).toContain("Opisz problem");
+  expect(spoken.every((u) => u.lang === “pl-PL” && u.text.length <= 200)).toBe(true);
+  expect(spoken.map((u) => u.text).join(“ “)).toContain(“Opisz problem”);
 
   await button.click();
-  await expect(button).toHaveAttribute("aria-pressed", "false");
+  await expect(button).toHaveAttribute(“aria-pressed”, “false”);
+});
+
+test('GminaField: anulacja wyboru odsunięciem kursora (WCAG 2.5.2)', async ({ page }) => {
+  // Test na /opisz, która renderuje GminaField bez Supabase.
+  await page.goto(“/opisz”);
+  const gminaInput = page.locator(“input”).filter({ has: page.locator('input[aria-controls*=”gmina”]') }).first();
+  await gminaInput.click();
+  await gminaInput.type(“Boch”);
+
+  // Czekaj, aż lista się otworzy.
+  const optionList = page.locator(“ul[role='listbox']”);
+  await expect(optionList).toBeVisible({ timeout: 2000 });
+
+  // Weź pierwszą opcję (powinna być Bochnia lub podobna).
+  const firstOption = optionList.locator(“li[role='option']”).first();
+  const optionText = await firstOption.textContent();
+  expect(optionText).toContain(“Boch”);
+
+  // Bounding box dla drażenia myszy.
+  const box = await firstOption.boundingBox();
+  expect(box).not.toBeNull();
+  const cx = box!.x + box!.width / 2;
+  const cy = box!.y + box!.height / 2;
+
+  // Symuluj: mousedown na opcji, move poza nią, mouseup. Wybór powinien się NIE wykonać.
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx - 500, cy); // Przesuń daleko od opcji.
+  await page.mouse.up();
+
+  // Pole powinno wciąż zawierać “Boch”, a nie pełną nazwę gminy.
+  const inputValue = await gminaInput.inputValue();
+  expect(inputValue).toBe(“Boch”);
+
+  // Zwykły click powinien wybrać opcję.
+  await firstOption.click();
+  const valueAfterClick = await gminaInput.inputValue();
+  expect(valueAfterClick).toContain(“Boch”);
+  expect(valueAfterClick.length).toBeGreaterThan(“Boch”.length); // Pełna nazwa.
 });
