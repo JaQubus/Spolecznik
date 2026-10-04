@@ -49,7 +49,10 @@ export async function POST(request: Request) {
     const thread = await authorized(code);
     if (!thread) return Response.json({ error: `${NOT_FOUND}. ${PRIVATE}` }, { status: 404 });
     if (thread.status === "zamkniete") {
-      return Response.json({ error: "To zgłoszenie jest zamknięte. Jeśli problem wrócił, opisz go jeszcze raz" }, { status: 409 });
+      const error = thread.kind === "pomysl"
+        ? "Ten pomysł jest zamknięty. Jeśli chcesz wrócić do tematu, zgłoś go jeszcze raz"
+        : "To zgłoszenie jest zamknięte. Jeśli problem wrócił, opisz go jeszcze raz";
+      return Response.json({ error }, { status: 409 });
     }
     // Ekspert z linku musi istnieć w indeksie; przypisanego w Panelu autor nie zmienia.
     const chosen = expertId && !thread.expert && (await expertName(expertId)) ? expertId : null;

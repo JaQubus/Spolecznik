@@ -9,7 +9,6 @@ const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:dec
 /**
  * „Twoje zgłoszenia na tym urządzeniu” (ciasteczko z lib/need-access.ts) — dla kogoś, kto zapomniał kodu.
  * `primary` to akcja strony, na której jest lista (przycisk); druga akcja to zwykły link.
- * Pomysł nie ma rozmowy, więc ma tylko status.
  */
 export function MyNeeds({ mine, primary }: { mine: MyNeed[]; primary: "rozmowa" | "status" }) {
   return (
@@ -23,9 +22,9 @@ export function MyNeeds({ mine, primary }: { mine: MyNeed[]; primary: "rozmowa" 
         <ul className="border-t">
           {mine.map((n) => {
             const what = n.kind === "pomysl" ? "pomysł" : "zgłoszenie";
-            const conversation = n.kind === "potrzeba" ? { href: `/zapytaj?potrzeba=${n.code}`, label: "Otwórz rozmowę" } : null;
+            const conversation = { href: `/zapytaj?kod=${n.code}`, label: "Otwórz rozmowę" };
             const status = { href: `/status/${n.code}`, label: "Zobacz status" };
-            const [main, other] = primary === "rozmowa" && conversation ? [conversation, status] : [status, conversation];
+            const [main, other] = primary === "rozmowa" ? [conversation, status] : [status, conversation];
             return (
               <li key={n.code} className="flex flex-wrap items-center justify-between gap-3 border-b py-4">
                 <div className="min-w-0 flex-1 basis-64 space-y-1">

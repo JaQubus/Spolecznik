@@ -7,7 +7,7 @@ import { STATUS_CODE } from "./schemas";
  * Dostęp do rozmowy o zgłoszeniu bez konta (README §6, „kod jak numer przesyłki”).
  * Krótki kod da się zgadnąć, więc do wątku potrzebny jest jeszcze tajny klucz (32 bajty).
  * Przeglądarka autora trzyma pary kod–klucz w ciasteczku httpOnly; na inne urządzenie przenosi je prywatny link.
- * Pomysły z Pracowni mają ten sam klucz (ideas.access_hash): nie mają rozmowy, ale trafiają na listę „moich zgłoszeń”.
+ * Pomysły z Pracowni mają ten sam klucz (ideas.access_hash): otwiera rozmowę o pomyśle i listę „moich zgłoszeń”.
  */
 
 const COOKIE = "spl_zgloszenia";
