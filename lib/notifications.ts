@@ -1,9 +1,8 @@
 import "server-only";
-import type { Viewer } from "./auth";
+import { viewerClient, type Viewer } from "./auth";
 import { NEED_STATUS_LABELS, type NeedStatus } from "./need-status";
 import { ADMIN_CHANNEL, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
 import { createAdminClient } from "./supabase/admin";
-import { createClient } from "./supabase/server";
 
 /** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin'). */
 export type NewNotification =
@@ -106,7 +105,7 @@ export async function listNotifications(viewer: Viewer, seenAt: string | null, l
   if (!filter) return { items: [] as NotificationItem[], unread: 0 };
   // Konto Supabase czyta własną sesją, więc granicę pilnuje też RLS („własne powiadomienia”), a filtr wyżej jest
   // drugą warstwą. Konta testowe nie mają sesji (działają tylko lokalnie albo z TEST_LOGIN=1) — dla nich service role.
-  const supabase = viewer.via === "supabase" ? await createClient() : createAdminClient();
+  const supabase = await viewerClient(viewer);
 
   const unreadQuery = supabase.from("notifications").select("id", { count: "exact", head: true }).or(filter);
   const [list, count] = await Promise.all([
