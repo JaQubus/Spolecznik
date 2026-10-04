@@ -3,7 +3,7 @@ import { cn } from "cn";
 import { Alert } from "@/components/ui/alert";
 import { listPowiatyIndicators, listPowiatyValues } from "@/lib/powiaty";
 import { LINK as linkClass } from "../shared";
-import { FocusHeading } from "./focus-heading";
+import { FocusHeading } from "@/components/a11y/focus-heading";
 
 const chipClass =
   "inline-flex min-h-11 max-w-full items-center rounded-full border border-border-strong bg-background px-4 py-2 text-base [overflow-wrap:anywhere] hover:border-foreground aria-[current=true]:border-foreground aria-[current=true]:bg-foreground aria-[current=true]:font-bold aria-[current=true]:text-background";
