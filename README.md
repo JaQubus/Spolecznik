@@ -15,7 +15,74 @@ Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
   2. dopasowanie z kontekstem terytorialnym gminy,
   3. matching w obie strony (potrzeba ↔ innowacja ↔ pomysł ↔ ekspert ↔ nabór),
   4. dostępność jako rdzeń: głos, tekst łatwy do czytania, status zgłoszenia jak śledzenie paczki.
+- **Pitch:** czym się chwalimy, czego jeszcze nie mówić i co domknąć przed zgłoszeniem: sekcja 0.
 - **Kluczowe godziny:** zgłoszenie robocze ok. 19:30 (jeśli wymagane), feature freeze 9:30, zgłoszenie końcowe 10:30.
+
+---
+
+## 0. Pitch: czym się chwalimy
+
+> Stan na niedzielę 4.10.2026 rano: `main` (81bf850), otwarte PR-y i issue, porównane z briefem ROPS. Materiał do decku (#28), wideo i opisu zgłoszenia. Wpisujemy tylko to, co da się pokazać w repo albo w demo. „W toku” oznacza otwarty PR.
+
+### Pięć zdań do zapamiętania
+
+1. **Wszystkie 7 modułów z briefu działa i tworzy jeden proces, a nie siedem zakładek.** Potrzeba → dopasowanie → wdrożenie → test → Biblioteka. Gdy rozwiązania nie ma: luka → pomysł → ekspert → nabór.
+2. **Dopasowanie nie zmyśla.** AI wybiera wyłącznie spośród innowacji z bazy i przy każdej pisze „dlaczego pasuje” oraz „co dostosować u Ciebie” na podstawie liczb gminy z GUS. „Nie znalazłem” to poprawny wynik: luka, która trafia na mapę luk ROPS.
+3. **Prawdziwe dane ROPS i GUS, nie atrapa.** 115 innowacji z Biblioteki (z filmami), 8 obszarów Mapy Wyzwań, mapa 183 gmin (BDL GUS) i 22 powiatów (112 wskaźników IOSS), karty faktów z cytatami sprawdzonymi na stronach raportów. Zgłoszenia, osoby i nabory są syntetyczne i oznaczone, zgodnie z §9 briefu.
+4. **Senior nie musi zakładać konta.** Mówi do mikrofonu, dostaje kod zgłoszenia jak numer paczki i śledzi status. Odpowiedź przychodzi e-mailem.
+5. **Gotowe do wdrożenia.** Otwarty stack (Postgres/Supabase, Next.js), RLS na każdej tabeli, anonimizacja przed AI, limity zapytań, ok. 300 USD/mies. (§14), publiczne API z OpenAPI i webhookami (w toku, PR #86).
+
+### Pokrycie briefu (kryterium „Stopień spełnienia”, 40%: 10% + 6 × 5%)
+
+| Moduł briefu | Stan | Czym się chwalimy | Gdzie |
+|---|---|---|---|
+| I. Matchmaking (obligatoryjny) | ✅ | Opis pisany albo mówiony (pl-PL) → karta potrzeby z AI. Przy niejasnym opisie jedno pytanie doprecyzowujące. Kandydaci po samym problemie (rzadkie słowa ważone IDF, odporne na polskie końcówki) + rerank AI: 3–5 rozwiązań z oceną, „dlaczego pasuje” i „co dostosować u Ciebie” z profilu gminy. Pod wynikami: ile innych gmin zgłosiło podobny problem. Brak dopasowania → luka i fiszka pomysłu wypełniona z opisu. | `/opisz` |
+| II. Zasobnik wiedzy | ✅ | 115 innowacji Biblioteki jako historie w 4 krokach (problem → rozwiązanie → skąd wiemy, że działa → jak skorzystać), z filmami i filtrami „dla kogo”. 8 obszarów Mapy Wyzwań z 9 personami. Kondycja Małopolski: mapa gmin i powiatów z opisami prostym językiem. Karty faktów: 23 cytaty, każdy sprawdzony na wskazanej stronie PDF. Materiały „Ucz się”. Admin poprawia wiedzę w Panelu, a wyszukiwarka widzi zmianę po kilku sekundach, bez wdrożenia. Trendy potrzeb widzi tylko admin. | `/biblioteka`, `/biblioteka/kondycja` |
+| III. Kreator pomysłów | ✅ bez wizualizacji | Fiszka (istota, dla kogo, etap) dostępna zawsze. Canvas INNO AGH. Asystent AI sprawdza nowość tym samym silnikiem co dopasowanie („Podobne rzeczy, które już są”). Szkic wniosku z checklistą kryteriów, tylko przy aktywnym naborze. Formularz IWS 2.0, którego szkic zostaje w przeglądarce. | `/pomysl`, `/wniosek` |
+| IV. Tester innowacji | ✅ | „Chcę przetestować” (kto, gdzie, kiedy) i ocena 1–5 jako opisane przyciski radiowe, z uwagami i propozycjami usprawnień. Karta innowacji pokazuje „przetestowano w N gminach, średnio X” (trigger w bazie). | `/przetestuj` |
+| V. Komunikacja | ✅ | Rozmowy na żywo (Supabase Realtime) przy zgłoszeniu i pomyśle, dzwonek powiadomień, e-mail do autora bez konta. Ekspert wchodzi przez link z kodem i odpowiada bez pośrednictwa ROPS (#63). **W toku:** AI odpowiada z Zasobnika jako pierwsza linia i oddaje sprawę człowiekowi (PR #71). | `/zapytaj`, `/ekspert` |
+| VI. Panel administratora | ✅ | Skrzynka zgłoszeń z triage AI (obszar, duplikaty przy ≥ 90% zgodności, sugerowany ekspert). Zmiana statusu z osią czasu, powiadomieniem autora i śladem w `audit_log`. Edycja wiedzy z automatycznym reindeksem. Włącznik naborów. Trendy (obszar × powiat × tydzień/miesiąc), mapa luk z kierunkami naborów, eksport CSV. | `/panel` |
+| VII. Middleman Innowacji | ✅ | Karta wdrożeniowa dla wybranej gminy: cel, odbiorcy w liczbach z BDL, forma usługi (np. w Centrum Usług Społecznych), kroki, kadra, widełki kosztów w PLN oznaczone jako szacunek, partnerzy, ryzyka, wskaźniki sukcesu i jawne założenia. Drukuje się sama karta. | `/wdrozenie` |
+
+**7 z 7 modułów**, więc na slajdzie mówimy o pełnym pokryciu briefu, a nie o „MVP jednego modułu”.
+
+### Mocne strony według kryteriów oceny (§6 i §8 briefu)
+
+- **Trafność dopasowania.** Halucynacje odcięte konstrukcyjnie: serwer odrzuca każde ID spoza listy kandydatów. Zbiór testowy ma 33 opisy pisane potocznie, w tym 4 przypadki luki. Liczby hit@3 i MRR@5 wpisujemy dopiero po przebiegu `eval.py` (PR #80).
+- **Szybkość komunikacji.** Brief pyta wprost: „jak system powiadamia administratora o nowym pomyśle i jak wygląda ścieżka odpowiedzi do autora?”. U nas: zgłoszenie → dzwonek admina na żywo → przypisanie eksperta jednym kliknięciem → status u autora (dzwonek albo e-mail) → odpowiedź w wątku. Do tego nowa innowacja w Bibliotece powiadamia autorów otwartych potrzeb z tego samego obszaru.
+- **Dostępność i intuicyjność (20%).** Wejście głosowe z transkrypcją do poprawienia, czytanie na głos, większy tekst i wysoki kontrast w nagłówku, streszczenia tekstem łatwym do czytania, `aria-live` dla wyników AI, kod statusu bez konta. Automatyczne testy axe (WCAG 2.1 AA) na ok. 20 ekranach, także w Panelu. W interfejsie proste czasowniki („Opisz problem”, „Zgłoś pomysł”), a nazwy modułów tylko w pitchu.
+- **Pomysłowość (nowa jakość, a nie kopia portali).** Mapa luk zamienia zgłoszenia, na które nie ma rozwiązań, w kierunki naborów dla ROPS. Kontekst terytorialny gminy z GUS jest w każdym dopasowaniu i każdej karcie wdrożeniowej. Jeden silnik obsługuje dopasowanie, sprawdzanie nowości pomysłu, duplikaty w Panelu i sugerowanie eksperta. Pętla zwrotna: oceny z testów wracają na kartę innowacji.
+- **Potencjał wdrożeniowy (20%).** Open source, możliwy self-host na infrastrukturze Urzędu Marszałkowskiego. Warstwa LLM za jednym interfejsem (`lib/llm.ts`). TERYT jako wspólny klucz z innymi systemami. Wiedza i formularze naborów edytowalne bez programisty (JSON w bazie). Bibliotekę i dane BDL odświeżają skrypty z `data/`, każdy uruchamiany jednym poleceniem.
+
+### Uczciwie: czego jeszcze nie mówić
+
+| Temat | Stan | Co zrobić przed slajdem |
+|---|---|---|
+| Liczby trafności | Brak, eval nieuruchomiony (#61, PR #80 draft) | Uruchomić `eval.py`, wpisać tabelę do §5.5. Bez tego slajd 4 pokazuje tylko sposób działania. |
+| Wynik Lighthouse | Skrypt jest (#26, gałąź `feat/26-lighthouse`), wyniku brak | Zmierzyć ścieżkę główną. Do tego czasu mówimy o testach axe. |
+| Makiety i demo dla jury | PR #87: 54 zrzuty 27 ekranów. Produkcja niezasilona seedem, żaden nabór nie jest otwarty, jury nie ma dostępu do Panelu | Wymóg formalny (§4 briefu): seed, otwarcie naboru demo, konto albo logowanie testowe dla jury (#84). |
+| Koszt utrzymania | Szkic w §14 liczy produkcję na Claude w UE, a kod używa tylko Groq (USA) | Ujednolicić (#85). Na pitchu: „demo na Groq z danymi syntetycznymi, produkcja na LLM w UE — zmiana jednego modułu”. |
+| Partnerstwa gmin | Link „Połącz się z tymi gminami” prowadzi do zwykłej rozmowy (#60) | Wariant A z #60 (15 min) albo nie klikać w demo. |
+| Testy w Panelu | ROPS nie widzi zgłoszeń testów (#59) | Nie pokazywać jako gotowe. |
+| Wizualizacja pomysłu | Brak (#66), a brief prosi o nią wprost | Jeśli nie zdążymy, nie wspominać. |
+| Q&A po raportach | Endpoint jest, ale `doc_chunks` pusty (#6) | Nie obiecywać „Zapytaj Bibliotekę”. Pokazywać karty faktów. |
+| Klastry potrzeb | Brak (#81) | Pokazywać Trendy i mapę luk. |
+
+### Wymagania formalne (§4 briefu)
+
+- [x] Nazwa i opis rozwiązania: **Społecznik** (TL;DR).
+- [ ] Prezentacja PDF (≤ 10 slajdów) albo wideo (≤ 3 min): #28, układ slajdów w §13.
+- [ ] Link do demo i makiet UX/UI: #84, PR #87.
+- [ ] Koszt utrzymania i zasoby: szkic w §14, do domknięcia w #85.
+
+### Co da najwięcej punktów do 10:30
+
+1. **Liczby trafności** (PR #80). Jedyna rzecz, która zamienia „trafność” z obietnicy w dowód. Kryterium jest wymienione w briefie dwa razy.
+2. **Demo przechodzi bez nas** (PR #87 + seed + nabór + dostęp do Panelu). Bez tego nie spełniamy wymogu formalnego.
+3. **Merge PR #71** (AI pierwszą linią w Rozmowach). Mocny argument na „szybkość komunikacji” i „eliminowanie biurokracji”.
+4. **Wynik Lighthouse** (#26). Liczba na slajd 7.
+5. **#60 wariant A.** 15 minut, a usuwa wpadkę na scenie.
+6. **Koszt w PLN** (#85). Slajd 9 i 20% za potencjał wdrożeniowy.
 
 ---
 
