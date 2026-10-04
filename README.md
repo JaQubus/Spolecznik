@@ -21,13 +21,7 @@ Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
 7. **Biblioteka i wiedza** (moduł II). Obszar „Seniorzy”, karta innowacji, „Kondycja Małopolski” (mapa gmin).
 8. **Panel ROPS** (moduł VI). Wejdź na [`/logowanie`](https://spolecznik.vercel.app/logowanie) — szczegóły niżej.
 
-**Dostęp do Panelu ROPS.** Panel wymaga konta z rolą administratora. Logowanie linkiem z e-maila wymaga dostępu do skrzynki, więc jury tak się nie zaloguje.
-
-> **TODO (zespół, przed zgłoszeniem):** wybrać jeden sposób i opisać go tutaj oraz w formularzu zgłoszenia:
-> - **Konto testowe jednym przyciskiem:** w Vercel ustawić `TEST_LOGIN=1` i własny `TEST_LOGIN_SECRET` (`lib/auth.ts`). Na `/logowanie` pojawią się przyciski „Wejdź jako administrator ROPS”, „Wejdź jako ekspert” i „Wejdź jako mieszkaniec”. To bezpieczne tylko dlatego, że w demo są wyłącznie dane syntetyczne; po hackathonie wyłączyć.
-> - **Konto demo z hasłem:** utworzyć użytkownika w Supabase Auth z rolą `admin` w tabeli `profiles` i podać e-mail i hasło w zgłoszeniu („Masz hasło? Zaloguj się hasłem”).
->
-> Do tego czasu Panel można zobaczyć na [makietach](docs/makiety.md#7-panel-rops-modu%C5%82-vi).
+**Dostęp do Panelu ROPS.** Panel wymaga konta z rolą administratora. Dla jury jest konto demo administratora: na [`/logowanie`](https://spolecznik.vercel.app/logowanie) rozwiń „Masz hasło? Zaloguj się hasłem” i wpisz e-mail i hasło podane w formularzu zgłoszenia. Danych logowania nie publikujemy w repozytorium. Panel bez logowania można obejrzeć na [makietach](docs/makiety.md#7-panel-rops-modu%C5%82-vi).
 
 **Gdy AI nie odpowiada.** Dopasowanie, karta wdrożeniowa i asystent korzystają z modelu na Groq. Gdy kilka osób testuje naraz, darmowy limit (1–2 dopasowania na minutę, §14) może się wyczerpać. Strona pokaże wtedy „Za dużo zapytań do AI naraz” — wystarczy odczekać minutę. Biblioteka, status, Panel i formularze działają bez AI.
 
