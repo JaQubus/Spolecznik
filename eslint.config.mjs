@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Pipeline danych w Pythonie (venv zawiera pliki JS z pakietów)
     "data/**",
+    // Worktree agentów (pełne kopie repo z własnym .next) i raporty z `pnpm lighthouse`.
+    ".claude/**",
+    "lighthouse-report/**",
   ]),
 ]);
 
