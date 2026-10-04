@@ -62,7 +62,13 @@ export default async function Page(props: PageProps<"/panel/pomysly">) {
                 entity="idea"
                 id={i.id}
                 label={`pomysł ${i.status_code}`}
-                consequence={`Pomysł zniknie z Panelu i wyszukiwarki razem ze szkicami wniosków. Kod ${i.status_code} przestanie działać.`}
+                consequence={
+                  <>
+                    Znikną też szkice wniosków, a kod <span className="font-mono tracking-wider">{i.status_code}</span>{" "}
+                    przestanie działać. Używaj do pomysłów testowych i spamu — prawdziwy pomysł lepiej zamknąć.
+                  </>
+                }
+                collapsed
               />
             </li>
           ))}

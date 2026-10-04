@@ -239,6 +239,7 @@ const DeleteInput = z.object({ entity: z.enum(["need", "idea", "call"]), id: z.u
 /** Trwałe usunięcie zgłoszenia, pomysłu albo naboru razem z rozmową, wpisem w wyszukiwarce i powiadomieniami. */
 export async function deleteRecord(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const user = await requireAdmin();
+  if (formData.get("confirm") !== "on") return { ok: false, message: "Zaznacz, że rozumiesz, że usunięcia nie można cofnąć." };
   const parsed = DeleteInput.safeParse({ entity: formData.get("entity"), id: formData.get("id") });
   if (!parsed.success) return { ok: false, message: "Nie wiadomo, co usunąć. Odśwież stronę." };
   const { entity, id } = parsed.data;

@@ -4,6 +4,7 @@ import { CheckCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { CheckboxField } from "@/components/ui/checkbox-field";
 import { FieldError } from "@/components/ui/field";
 import { deleteRecord, type ActionResult } from "./actions";
 
@@ -34,8 +35,15 @@ export function ActionForm({
   );
 }
 
+const DELETED = {
+  need: { noun: "zgłoszenie", done: "usunięte" },
+  idea: { noun: "pomysł", done: "usunięty" },
+  call: { noun: "nabór", done: "usunięty" },
+} as const;
+
 /**
- * Trwałe usunięcie w dwóch krokach: „Usuń…” rozwija wyjaśnienie, dopiero drugi przycisk usuwa.
+ * Trwałe usunięcie: skutki, pole „Rozumiem…” (sprawdzane też w akcji) i przycisk.
+ * Na liście (`collapsed`) schowane pod „Usuń”, żeby nie powtarzać formularza w każdym wierszu.
  * Bez czerwieni — `danger` jest tylko dla błędów (docs/design-system/README.md).
  */
 export function DeleteForm({
@@ -43,26 +51,34 @@ export function DeleteForm({
   id,
   label,
   consequence,
+  collapsed = false,
 }: {
-  entity: "need" | "idea" | "call";
+  entity: keyof typeof DELETED;
   id: string;
   /** Co usuwamy, np. „zgłoszenie SPL-4K7Q” — do etykiet przycisków. */
   label: string;
-  consequence: string;
+  consequence: React.ReactNode;
+  collapsed?: boolean;
 }) {
+  const { noun, done } = DELETED[entity];
+  const form = (
+    <ActionForm action={deleteRecord} className="max-w-2xl space-y-4">
+      <input type="hidden" name="entity" value={entity} />
+      <input type="hidden" name="id" value={id} />
+      <p>Usunięcia nie można cofnąć. {consequence}</p>
+      <CheckboxField name="confirm" required label={`Rozumiem, że ${noun} zostanie ${done} na zawsze`} />
+      <SubmitButton variant="outline" pendingText="Usuwanie…" aria-label={`Usuń ${label}`}>
+        <TrashIcon aria-hidden className="size-5" /> Usuń {noun}
+      </SubmitButton>
+    </ActionForm>
+  );
+  if (!collapsed) return form;
   return (
-    <details>
+    <details className="space-y-3">
       <summary className="inline-flex min-h-12 cursor-pointer items-center gap-2 text-base underline decoration-1 underline-offset-4 hover:decoration-2">
         <TrashIcon aria-hidden className="size-5" /> Usuń <span className="sr-only">{label}</span>
       </summary>
-      <ActionForm action={deleteRecord} className="mt-2 max-w-[44rem] space-y-3 rounded-[16px] bg-secondary px-5 py-4">
-        <input type="hidden" name="entity" value={entity} />
-        <input type="hidden" name="id" value={id} />
-        <p>{consequence} Tego nie da się cofnąć.</p>
-        <SubmitButton variant="outline" size="sm" pendingText="Usuwanie…" aria-label={`Usuń na stałe: ${label}`}>
-          <TrashIcon aria-hidden className="size-5" /> Usuń na stałe
-        </SubmitButton>
-      </ActionForm>
+      {form}
     </details>
   );
 }

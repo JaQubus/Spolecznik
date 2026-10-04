@@ -45,7 +45,8 @@ export default async function Page(props: PageProps<"/panel/nabory">) {
                 entity="call"
                 id={c.id}
                 label={`nabór: ${c.title}`}
-                consequence="Nabór zniknie z Panelu i wyszukiwarki razem ze wszystkimi szkicami wniosków do niego. Jeśli chcesz tylko wstrzymać wnioski, zamknij nabór."
+                consequence="Znikną też wszystkie szkice wniosków do tego naboru. Jeśli chcesz tylko wstrzymać wnioski, zamknij nabór."
+                collapsed
               />
             </li>
           ))}

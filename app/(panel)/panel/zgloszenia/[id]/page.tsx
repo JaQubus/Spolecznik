@@ -259,13 +259,19 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
         )}
       </section>
 
-      <section aria-labelledby="usun" className="space-y-3 border-t pt-8">
+      <section aria-labelledby="usun" className="max-w-2xl space-y-3 border-t pt-8">
         <h2 id="usun" className="text-2xl font-bold">Usuń zgłoszenie</h2>
         <DeleteForm
           entity="need"
           id={need.id}
           label={`zgłoszenie ${need.status_code}`}
-          consequence={`Zgłoszenie zniknie z Panelu, mapy potrzeb i wyszukiwarki razem z rozmową i dopasowaniami. Kod ${need.status_code} przestanie działać. Pomysły zgłoszone do tej potrzeby zostaną.`}
+          consequence={
+            <>
+              Znikną też rozmowa, dopasowania i powiadomienia, a kod{" "}
+              <span className="font-mono tracking-wider">{need.status_code}</span> przestanie działać. Pomysły zgłoszone
+              do tej potrzeby zostaną. Używaj do zgłoszeń testowych i spamu — prawdziwe zgłoszenie lepiej zamknąć.
+            </>
+          }
         />
       </section>
     </article>
