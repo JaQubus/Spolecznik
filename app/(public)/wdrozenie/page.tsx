@@ -3,6 +3,8 @@ import { GMINA_OPTIONS } from "@/lib/gminy";
 import { innovationOptions, pickInnovation } from "@/lib/innovations";
 import { STATUS_CODE } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { todayInPoland } from "@/lib/pl";
+import { UW_CONTENT, formatDay } from "@/lib/usluga-wrazliwa";
 import { ImplementationFlow } from "./implementation-flow";
 
 export const metadata = { title: "Jak to wdrożyć u nas?" };
@@ -36,6 +38,7 @@ export default async function Page(props: PageProps<"/wdrozenie">) {
         </p>
       </div>
       <ImplementationFlow
+        grantCall={{ closesAt: formatDay(UW_CONTENT.call.closesAt), open: todayInPoland() <= UW_CONTENT.call.closesAt }}
         innovations={innovations}
         gminy={GMINA_OPTIONS}
         initialInnovation={innovation}

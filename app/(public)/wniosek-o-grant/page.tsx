@@ -7,12 +7,12 @@ import { todayInPoland } from "@/lib/pl";
 import type { PlanDocument } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
-import { UW_CONTENT } from "@/lib/usluga-wrazliwa";
+import { UW_CONTENT, formatDay } from "@/lib/usluga-wrazliwa";
 import { GrantForm } from "./grant-form";
 
 export const metadata = { title: "Wniosek o grant „Usługa Wrażliwa”" };
 
-const link = "underline decoration-1 underline-offset-4 hover:decoration-2";
+const link = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
 /**
  * Plan wdrożenia z /wdrozenie po id z linku „Przejdź do wniosku o grant”. Id (uuid) działa jak klucz: plan nie zawiera
@@ -62,6 +62,14 @@ export default async function Page(props: PageProps<"/wniosek-o-grant">) {
             Masz już plan wdrożenia? <Link href="/wdrozenie" className={link}>Zacznij od „Jak to wdrożyć u nas?”</Link>, a wniosek
             wypełni się sam. Zajmie to około 10 minut zamiast godziny.
           </p>
+        )}
+        {today > content.call.closesAt && (
+          <Alert title={`Nabór zakończył się ${formatDay(content.call.closesAt)}`}>
+            <p>
+              Teraz nie da się złożyć tego wniosku. Szkic możesz przygotować na kolejny nabór „Usługi Wrażliwej”: sprawdź na{" "}
+              <a href={content.call.url} className={link}>stronie ROPS</a>, czy został ogłoszony, i porównaj listę innowacji.
+            </p>
+          </Alert>
         )}
         {!inCall && loaded && (
           <Alert title="Tej innowacji nie ma w obecnym naborze">

@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ArrowDownTrayIcon, ArrowTopRightOnSquareIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, ClipboardDocumentIcon,
+  ArrowDownTrayIcon, ArrowTopRightOnSquareIcon, ArrowUpTrayIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, ClipboardDocumentIcon,
   ExclamationTriangleIcon, PlusIcon, PrinterIcon, SparklesIcon, TrashIcon, XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -29,6 +29,7 @@ import {
 // Szkic żyje tylko w localStorage tej przeglądarki: dane wnioskodawcy nie trafiają na serwer. Klucz per plan,
 // żeby szkic z jednego planu nie nadpisał drugiego. Do oceny merytorycznej idzie tylko część opisowa.
 const storageKey = (planId: string | null) => `wniosek-uw-${planId ?? "bez-planu"}`;
+const DRAFT_FORMAT = "spolecznik-wniosek-uw-1";
 
 type Ctx = { app: GrantApplication; errors: Errors; content: UwContent; update: (path: string, value: unknown) => void };
 const FormCtx = createContext<Ctx | null>(null);
@@ -557,6 +558,7 @@ function Form(props: Props) {
   const summary = useRef<HTMLDivElement>(null);
   const resetButton = useRef<HTMLButtonElement>(null);
   const keepButton = useRef<HTMLButtonElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const moved = useRef(false);
   const dirty = useRef(initial.fromSaved);
   const focusSummary = useRef(false);
@@ -608,6 +610,33 @@ function Form(props: Props) {
       return setErrors(e);
     }
     goTo(step + 1);
+  }
+
+  // Szkic do pliku: na wspólnym komputerze urzędu przeglądarkę czyści się często, a szkic nie ma danych osobowych,
+  // więc plik można bezpiecznie przenieść na inny komputer albo przesłać koledze.
+  function saveToFile() {
+    const blob = new Blob([JSON.stringify({ format: DRAFT_FORMAT, planId: plan?.id ?? null, app, step, reached }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement("a"), { href: url, download: `szkic-wniosku-uw-${today}.json` });
+    a.click();
+    URL.revokeObjectURL(url);
+    setStatus("Zapisano szkic do pliku. Wczytasz go przyciskiem „Wczytaj szkic z pliku”.");
+  }
+
+  async function loadFromFile(file: File | undefined) {
+    if (!file) return;
+    try {
+      const saved = JSON.parse(await file.text());
+      if (saved?.format !== DRAFT_FORMAT) throw new Error("format");
+      dirty.current = true;
+      setApp(restore(saved.app, content, defaultStart(today)));
+      setReached(Math.min(Math.max(Number(saved.reached) || 0, 0), STEPS.length - 1));
+      goTo(Math.min(Math.max(Number(saved.step) || 0, 0), STEPS.length - 1));
+      setStatus(`Wczytano szkic z pliku „${file.name}”.`);
+    } catch {
+      setStatus("To nie jest plik szkicu wniosku ze Społecznika. Wybierz plik zapisany przyciskiem „Zapisz szkic do pliku”.");
+    }
+    setTimeout(() => heading.current?.focus(), 0);
   }
 
   function reset() {
@@ -746,7 +775,22 @@ function Form(props: Props) {
         </div>
 
         <div className="grid gap-2 text-base text-muted-foreground print:hidden">
-          <p>Wpisy zapisują się tylko w tej przeglądarce, na tym urządzeniu. Możesz przerwać i wrócić później.</p>
+          <p>
+            Wpisy zapisują się tylko w tej przeglądarce, na tym urządzeniu. Możesz przerwać i wrócić później. Na wspólnym
+            komputerze zapisz szkic do pliku: nie ma w nim danych osobowych.
+          </p>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <Button type="button" variant="link" size="sm" className="px-0" onClick={saveToFile}>
+              <ArrowDownTrayIcon aria-hidden /> Zapisz szkic do pliku
+            </Button>
+            <Button type="button" variant="link" size="sm" className="px-0" onClick={() => fileInput.current?.click()}>
+              <ArrowUpTrayIcon aria-hidden /> Wczytaj szkic z pliku
+            </Button>
+            <input ref={fileInput} type="file" accept="application/json,.json" className="sr-only" tabIndex={-1} aria-hidden
+              onChange={(e) => { void loadFromFile(e.target.files?.[0]); e.target.value = ""; }} />
+          </div>
+          {/* Widoczna kopia komunikatu; czytnik ekranu dostaje go z role="status" na górze formularza. */}
+          {status && <p aria-hidden className="text-foreground">{status}</p>}
           {confirmReset ? (
             <div role="group" aria-label="Potwierdź wyczyszczenie" className="flex flex-wrap items-center gap-3">
               <span>{plan ? "Usunąć zmiany i wrócić do wniosku wypełnionego z planu?" : "Usunąć wszystko, co wpisano?"}</span>

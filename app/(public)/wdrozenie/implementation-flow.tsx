@@ -28,7 +28,10 @@ export function ImplementationFlow({
   gminy,
   initialInnovation,
   initialGmina,
+  grantCall,
 }: {
+  /** Stan naboru „Usługa Wrażliwa”: przy przycisku do wniosku, żeby nikt nie wypełniał 8 kroków w ciemno. */
+  grantCall: { closesAt: string; open: boolean };
   innovations: { id: string; title: string }[];
   gminy: GminaOption[];
   initialInnovation: string;
@@ -136,6 +139,13 @@ export function ImplementationFlow({
               <Button asChild variant="link"><Link href={`/przetestuj?innowacja=${result.innovation.id}`}>Chcę przetestować</Link></Button>
               <Button type="button" variant="link" onClick={() => setResult(null)}>Zmień dane w formularzu</Button>
             </div>
+            {result.id && (
+              <p className="max-w-[68ch] text-base">
+                {grantCall.open
+                  ? `Wniosek o grant do naboru „Usługa Wrażliwa” wypełni się z tego planu. Wnioski do ${grantCall.closesAt}.`
+                  : `Nabór „Usługa Wrażliwa” zakończył się ${grantCall.closesAt}. Wniosek z tego planu możesz przygotować na kolejny nabór.`}
+              </p>
+            )}
             <p aria-live="polite" className="text-base">{copied}</p>
           </div>
         </div>
