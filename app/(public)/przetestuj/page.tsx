@@ -1,10 +1,9 @@
 import { GMINA_OPTIONS } from "@/lib/gminy";
+import { pickInnovation } from "@/lib/innovations";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TestForm } from "./test-form";
 
 export const metadata = { title: "Przetestuj rozwiązanie" };
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function options(): Promise<{ id: string; title: string; slug: string | null }[]> {
   const { data, error } = await createAdminClient().from("innovations").select("id, title, slug").order("title");
@@ -14,8 +13,8 @@ async function options(): Promise<{ id: string; title: string; slug: string | nu
 
 export default async function Page(props: PageProps<"/przetestuj">) {
   const params = await props.searchParams;
-  const innovation = typeof params.innowacja === "string" && UUID.test(params.innowacja) ? params.innowacja : "";
   const innovations = await options().catch(() => []);
+  const innovation = pickInnovation(params.innowacja, innovations);
 
   return (
     <section className="space-y-8">

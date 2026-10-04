@@ -1,13 +1,11 @@
 import { EMPTY_GMINA, type GminaValue } from "@/components/gmina-field";
 import { GMINA_OPTIONS } from "@/lib/gminy";
-import { innovationOptions } from "@/lib/innovations";
+import { innovationOptions, pickInnovation } from "@/lib/innovations";
 import { STATUS_CODE } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ImplementationFlow } from "./implementation-flow";
 
 export const metadata = { title: "Jak to wdrożyć u nas?" };
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Gmina z wcześniejszego zgłoszenia (?potrzeba=SPL-…), żeby nie wpisywać jej drugi raz. */
 async function gminaFromNeed(code: string): Promise<GminaValue> {
@@ -18,13 +16,14 @@ async function gminaFromNeed(code: string): Promise<GminaValue> {
 
 export default async function Page(props: PageProps<"/wdrozenie">) {
   const params = await props.searchParams;
-  const innovation = typeof params.innowacja === "string" && UUID.test(params.innowacja) ? params.innowacja : "";
   const code = typeof params.potrzeba === "string" ? params.potrzeba.toUpperCase() : "";
 
   const [innovations, gmina] = await Promise.all([
     innovationOptions().catch(() => []),
     STATUS_CODE.test(code) ? gminaFromNeed(code).catch(() => EMPTY_GMINA) : Promise.resolve(EMPTY_GMINA),
   ]);
+
+  const innovation = pickInnovation(params.innowacja, innovations);
 
   return (
     <section className="space-y-8">
