@@ -9,13 +9,17 @@ import { NEED_COLUMNS, needTriage, type NeedRow, type Triage } from "@/lib/panel
 import { formatDate, plural } from "@/lib/pl";
 import { anonymize } from "@/lib/pii";
 import { AREA_LABELS } from "@/lib/taxonomy";
+import type { ThreadWaiting } from "@/lib/thread-types";
+import { WaitingBadge, waitingOrEmpty } from "./waiting";
 
 export const metadata = { title: "Panel ROPS" };
 
 const PAGE_SIZE = 25;
 
-const FILTERS: { key: string; label: string; statuses: NeedStatus[] | null }[] = [
+const FILTERS: { key: string; label: string; statuses: NeedStatus[] | null; waiting?: true }[] = [
   { key: "nowe", label: "Do przejrzenia", statuses: ["zgloszone", "luka"] },
+  // Rozmowy, w których asystent przekazał pytanie albo jego odpowiedź nie pomogła (#20).
+  { key: "czeka", label: "Czekają na człowieka", statuses: null, waiting: true },
   { key: "luka", label: "Luki", statuses: ["luka"] },
   { key: "w_analizie", label: "W analizie", statuses: ["w_analizie"] },
   { key: "ekspert", label: "Przypisano eksperta", statuses: ["ekspert"] },
@@ -46,11 +50,12 @@ export default async function Page(props: PageProps<"/panel">) {
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (filter.statuses) query = query.in("status", filter.statuses);
   if (groupKey) query = query.in("id", group?.ids ?? []);
+  if (filter.waiting) query = query.in("id", [...(await waitingOrEmpty("potrzeba")).keys()]);
   const { data, count, error } = await query;
   if (error) throw error;
 
   const needs = (data ?? []) as unknown as NeedRow[];
-  const triage = await needTriage(needs);
+  const [triage, waiting] = await Promise.all([needTriage(needs), waitingOrEmpty("potrzeba", needs.map((n) => n.id))]);
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const groupParam = groupKey ? `&grupa=${groupKey}` : "";
@@ -92,7 +97,7 @@ export default async function Page(props: PageProps<"/panel">) {
         <p className="text-muted-foreground">Nie ma tu żadnych zgłoszeń.</p>
       ) : (
         <ol className="max-w-4xl border-t">
-          {needs.map((n) => <NeedItem key={n.id} need={n} triage={triage.get(n.id)} />)}
+          {needs.map((n) => <NeedItem key={n.id} need={n} triage={triage.get(n.id)} waiting={waiting.get(n.id) ?? null} />)}
         </ol>
       )}
 
@@ -107,7 +112,7 @@ export default async function Page(props: PageProps<"/panel">) {
 }
 
 /** Wiersz skrzynki (jak ResultList): bez ramek, linie między wierszami, analiza AI jako etykiety ze słowami. */
-function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
+function NeedItem({ need: n, triage, waiting }: { need: NeedRow; triage?: Triage; waiting: ThreadWaiting }) {
   const pii = !!n.raw_text && anonymize(n.raw_text).found;
   const dups = triage?.duplicates.length ?? 0;
   return (
@@ -123,6 +128,7 @@ function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
         {n.best_fit != null && ` · najlepsze dopasowanie ${n.best_fit} na 100`}
       </p>
       <ul className="flex flex-wrap gap-2" aria-label="Analiza zgłoszenia">
+        <WaitingBadge waiting={waiting} />
         {n.card.areas.slice(0, 3).map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
         {pii && <li><Badge variant="outline"><ShieldExclamationIcon aria-hidden className="size-4" /> Może zawierać dane osobowe</Badge></li>}
         {dups > 0 && <li><Badge variant="outline"><DocumentDuplicateIcon aria-hidden className="size-4" /> Możliwy duplikat ({dups})</Badge></li>}
@@ -131,3 +137,4 @@ function NeedItem({ need: n, triage }: { need: NeedRow; triage?: Triage }) {
     </li>
   );
 }
+

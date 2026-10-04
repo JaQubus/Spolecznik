@@ -7,6 +7,7 @@ import { NEED_STATUSES } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ActionForm, DeleteForm, SubmitButton } from "../action-form";
 import { updateIdeaStatus } from "../actions";
+import { WaitingBadge, waitingOrEmpty } from "../waiting";
 
 export const metadata = { title: "Pomysły · Panel ROPS" };
 
@@ -26,6 +27,7 @@ export default async function Page(props: PageProps<"/panel/pomysly">) {
     .limit(50);
   if (error) throw error;
   const ideas = (data ?? []) as IdeaRow[];
+  const waiting = await waitingOrEmpty("pomysl", ideas.map((i) => i.id));
 
   return (
     <section className="space-y-6">
@@ -47,6 +49,11 @@ export default async function Page(props: PageProps<"/panel/pomysly">) {
                   {i.fiszka.krotki_opis || `Pomysł ${i.status_code} (brak opisu)`}
                 </Link>
               </p>
+              {waiting.has(i.id) && (
+                <ul className="flex flex-wrap gap-2" aria-label="Rozmowa">
+                  <WaitingBadge waiting={waiting.get(i.id)!} />
+                </ul>
+              )}
               <ActionForm action={updateIdeaStatus} className="space-y-2">
                 <input type="hidden" name="ideaId" value={i.id} />
                 <div className="flex flex-wrap items-end gap-3">

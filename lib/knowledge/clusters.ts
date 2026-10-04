@@ -77,7 +77,7 @@ async function loadLabels(): Promise<StoredLabel[]> {
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const { data, error } = await createAdminClient().from("need_cluster_labels").select("signature, keywords, label, description, needs");
   if (error) {
-    console.error("[trendy] etykiety grup (migracja 0019?):", error); // bez tabeli grupy działają, tylko bez nazw
+    console.error("[trendy] etykiety grup (migracja 0020?):", error); // bez tabeli grupy działają, tylko bez nazw
     return [];
   }
   return (data ?? []) as StoredLabel[];
