@@ -166,6 +166,7 @@ export const TOKENS_CSS = `
   --font-mono: var(--font-atkinson-mono), "Atkinson Hyperlegible Mono", monospace;
   background: transparent; display: flex; flex-direction: column; gap: var(--space-6); }
 .hm p { margin: 0; }
+.hm p > .hm-ico { display: inline-block; vertical-align: -6px; } /* preflight Tailwinda robi z svg blok */
 .mk-h1 { margin: 0; font-size: 2rem; line-height: 2.5rem; font-weight: 700; }
 .mk-h2 { margin: 0; font-size: 1.5rem; line-height: 2rem; font-weight: 700; }
 .mk-h3 { margin: 0; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; display: flex; gap: var(--space-2); align-items: center; }
