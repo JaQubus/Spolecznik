@@ -124,13 +124,16 @@ export const IdeaRequest = z.object({
 /** accessKey: tajny klucz pomysłu — tylko dla autora (ciasteczko + prywatny link), jak w MatchResponse. */
 export type IdeaResponse = { ideaId: string; statusCode: string; accessKey: string };
 
+/** Status testu (tests.status). „potwierdzony” nadaje tylko admin w Panelu → Testy (#59). */
+export const TEST_STATUSES = ["planowany", "potwierdzony", "zakonczony"] as const;
+
 // /api/tests: Próba — zgłoszenie testu albo ocena po teście (#19)
 export const TestRequest = z
   .object({
     innovationId: z.uuid(),
     gmina: z.string().min(2).max(100),
     teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
-    status: z.enum(["planowany", "zakonczony"]),
+    status: z.enum(TEST_STATUSES).exclude(["potwierdzony"]),
     testerOrg: z.string().max(200).optional(),
     plannedFor: z.iso.date().optional(),
     rating: z.number().int().min(1).max(5).optional(),

@@ -10,9 +10,10 @@ import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { notify } from "@/lib/notifications";
 import { logChange } from "@/lib/panel/needs";
 import { anonymize } from "@/lib/pii";
-import { NEED_STATUSES } from "@/lib/schemas";
+import { NEED_STATUSES, TEST_STATUSES } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { TEST_STATUS_LABELS, type TestStatus } from "@/lib/test-status";
 import { ensureThread, expertName, needThread, postNeedMessage, setReportStatus, threadPayload } from "@/lib/threads";
 
 export type ActionResult = { ok: boolean; message: string } | null;
@@ -278,6 +279,44 @@ export async function updateIdeaStatus(_prev: ActionResult, formData: FormData):
   }
   refresh();
   return { ok: true, message: `Zapisano status: ${NEED_STATUS_LABELS[status]}.` };
+}
+
+const TestStatusInput = z.object({ testId: z.uuid(), status: z.enum(TEST_STATUSES) });
+
+/** Status testu z Próby, np. „Pilotaż potwierdzony” (#59). Tester z kontem dostaje powiadomienie o potwierdzeniu. */
+export async function updateTestStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin("/panel/testy");
+  const parsed = TestStatusInput.safeParse({ testId: formData.get("testId"), status: formData.get("status") });
+  if (!parsed.success) return { ok: false, message: "Wybierz nowy status." };
+  const { testId, status } = parsed.data;
+
+  try {
+    const supabase = createAdminClient();
+    const { data: before, error } = await supabase
+      .from("tests")
+      .select("status, tester_id, innovation_id, innovations(title, slug)")
+      .eq("id", testId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!before) return { ok: false, message: "Nie znaleziono testu. Odśwież stronę." };
+    if (before.status === status) return { ok: false, message: "Wybierz inny status." };
+    const { error: updateError } = await supabase.from("tests").update({ status }).eq("id", testId);
+    if (updateError) throw updateError;
+    await logChange(user.id, "test.status", "test", testId, { from: before.status as TestStatus, to: status });
+    if (status === "potwierdzony" && before.tester_id) {
+      const innovation = before.innovations as unknown as { title: string; slug: string | null } | null;
+      await notify({
+        user_id: before.tester_id as string,
+        kind: "test_potwierdzony",
+        payload: { testId, innovationId: before.innovation_id, title: innovation?.title ?? null, slug: innovation?.slug ?? null },
+      }).catch((e) => console.error("[panel] powiadomienie testera:", e));
+    }
+  } catch (e) {
+    console.error("[panel] status testu:", e);
+    return SAVE_FAILED;
+  }
+  refresh();
+  return { ok: true, message: `Zapisano status: ${TEST_STATUS_LABELS[status]}.` };
 }
 
 /**

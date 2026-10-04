@@ -125,6 +125,19 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
         text: `ROPS prosi Cię o pomoc przy ${p.kind === "pomysl" ? "pomyśle" : "zgłoszeniu"}${code ? ` ${code}` : ""}`,
         href: code ? `/ekspert/${code}` : "/ekspert",
       };
+    case "nowy_test": {
+      const innovationId = str(p.innovationId);
+      const what = p.status === "zakonczony" ? "Nowa ocena po teście" : "Nowe zgłoszenie testu";
+      return {
+        text: `${what}${str(p.title) ? `: „${short(str(p.title)!)}”` : ""}${str(p.gmina) ? ` (gmina ${str(p.gmina)})` : ""}`,
+        href: innovationId ? `/panel/testy?innowacja=${innovationId}` : "/panel/testy",
+      };
+    }
+    case "test_potwierdzony":
+      return {
+        text: `ROPS potwierdził Twój pilotaż${str(p.title) ? `: „${short(str(p.title)!)}”` : ""}`,
+        href: str(p.slug) ? innovationHref(str(p.slug)!) : null,
+      };
     case "nowy_nabor":
       return { text: `Ruszył nabór${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Możesz złożyć wniosek.`, href: "/wniosek" };
     default:

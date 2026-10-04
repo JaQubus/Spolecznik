@@ -21,6 +21,7 @@ const PUBLIC = [
 const PANEL = [
   ["Panel: zgłoszenia", "/panel"],
   ["Panel: pomysły", "/panel/pomysly"],
+  ["Panel: testy", "/panel/testy"],
   ["Panel: nabory", "/panel/nabory"],
   ["Panel: trendy i mapa luk", "/panel/trendy"],
   ["Panel: wiedza", "/panel/wiedza"],

@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
 import { knowledge } from "@/lib/knowledge";
 import { canUseHybridSearch } from "@/lib/knowledge/indexing";
+import { testSummary, type TestSummary } from "@/lib/panel/tests";
+import { formatDate, formatNumber, plural } from "@/lib/pl";
+import { TEST_STATUSES } from "@/lib/schemas";
+import { TEST_STATUS_LABELS } from "@/lib/test-status";
 import { removeEntity } from "../../actions";
 import { AreaForm, FactForm, InnovationForm, MaterialForm } from "../../forms";
 
@@ -36,6 +40,9 @@ export default async function Page(props: PageProps<"/panel/wiedza/[rodzaj]/[id]
     kind === "obszar" ? knowledge.area(id, all) : null,
   ]);
   const record = innovation ?? fact ?? material ?? area;
+  const tests = innovation
+    ? await testSummary(innovation.id).catch((e) => (console.error("[wiedza] testy:", e), null))
+    : null;
   if ((!isNew && !record) || (isNew && kind === "obszar")) notFound();
 
   const name = innovation?.title ?? fact?.displayValue ?? material?.title ?? area?.name;
@@ -56,6 +63,7 @@ export default async function Page(props: PageProps<"/panel/wiedza/[rodzaj]/[id]
       )}
 
       {kind === "innowacja" && <InnovationForm innovation={innovation} />}
+      {innovation && tests && <TestsSummary innovationId={innovation.id} summary={tests} />}
       {kind === "fakt" && <FactForm fact={fact} />}
       {kind === "material" && <MaterialForm material={material} />}
       {kind === "obszar" && area && <AreaForm area={area} />}
@@ -71,6 +79,48 @@ export default async function Page(props: PageProps<"/panel/wiedza/[rodzaj]/[id]
           </form>
         </section>
       )}
+    </section>
+  );
+}
+
+/** Co mówią testerzy (Próba, #59): liczby według statusu, średnia ocena i ostatnie propozycje usprawnień. */
+function TestsSummary({ innovationId, summary }: { innovationId: string; summary: TestSummary }) {
+  const total = TEST_STATUSES.reduce((sum, s) => sum + summary.counts[s], 0);
+  const link = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
+  return (
+    <section aria-labelledby="testy" className="max-w-[44rem] space-y-4 border-t border-border pt-8">
+      <h2 id="testy" className="text-xl font-bold">Testy w gminach</h2>
+      {total === 0 ? (
+        <p>Nikt jeszcze nie zgłosił testu tego rozwiązania.</p>
+      ) : (
+        <>
+          <ul className="space-y-1">
+            {TEST_STATUSES.map((s) => (
+              <li key={s}>{TEST_STATUS_LABELS[s]}: <strong>{summary.counts[s]}</strong></li>
+            ))}
+            <li>
+              Średnia ocena:{" "}
+              {summary.avgRating == null
+                ? "brak ocen"
+                : <><strong>{formatNumber(summary.avgRating)}</strong> / 5 ({summary.ratings} {plural(summary.ratings, "ocena", "oceny", "ocen")})</>}
+            </li>
+          </ul>
+          {summary.suggestions.length > 0 && (
+            <>
+              <h3 className="text-lg font-bold">Ostatnie propozycje usprawnień</h3>
+              <ul className="space-y-3 border-l-4 border-border pl-4">
+                {summary.suggestions.map((t) => (
+                  <li key={t.id}>
+                    <p>{t.suggestions}</p>
+                    <p className="text-base text-muted-foreground">{t.gminy?.nazwa ?? "Nieznana gmina"} · {formatDate(t.created_at)}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </>
+      )}
+      <p><Link href={`/panel/testy?innowacja=${innovationId}`} className={link}>Wszystkie zgłoszenia testów tego rozwiązania</Link></p>
     </section>
   );
 }
