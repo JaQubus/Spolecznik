@@ -11,6 +11,8 @@ const badgeVariants = cva(
         default: "bg-secondary text-foreground [a&]:hover:bg-muted",
         secondary:
           "bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+        // Ostrzeżenie dla zespołu (np. dane osobowe, duplikat): miękkie tło, ikona w kolorze ostrzeżenia, tekst w kolorze tekstu.
+        warning: "bg-warning-soft text-foreground [&>svg]:text-warning",
         destructive:
           "bg-destructive text-background [a&]:hover:bg-destructive/90",
         outline:

@@ -4,16 +4,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/knowledge/breadcrumbs";
 import { EasyText } from "@/components/knowledge/easy-text";
-import { GROUP_ICONS, TYPE_ICONS } from "@/components/knowledge/icons";
+import { AreaBadge, GroupIcon, TYPE_ICONS } from "@/components/knowledge/icons";
 import { StorySteps } from "@/components/knowledge/story-steps";
 import { areaHref, InnovationTiles } from "@/components/knowledge/tiles";
 import { VideoEmbed } from "@/components/knowledge/video-embed";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { innovationPage, knowledge } from "@/lib/knowledge";
 import { formatBytes, isHugeFile, TYPE_LABELS } from "@/lib/knowledge/labels";
 import { similarInnovations } from "@/lib/knowledge/similar";
-import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
+import { GROUP_LABELS } from "@/lib/taxonomy";
 import { safeDecode } from "../../shared";
 
 export async function generateMetadata(props: PageProps<"/biblioteka/innowacja/[slug]">): Promise<Metadata> {
@@ -48,10 +47,9 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
         <dl className="grid max-w-[48rem] gap-x-6 gap-y-3 text-lg sm:grid-cols-[auto_1fr]">
           <dt className="font-bold">Dla kogo</dt>
           <dd className="flex flex-wrap gap-x-4 gap-y-1">
-            {i.groups.map((g) => {
-              const Icon = GROUP_ICONS[g];
-              return <span key={g} className="inline-flex items-center gap-2"><Icon aria-hidden className="size-5" />{GROUP_LABELS[g].replace(/^Dla /, "")}</span>;
-            })}
+            {i.groups.map((g) => (
+              <span key={g} className="inline-flex items-center gap-2"><GroupIcon group={g} className="size-5" />{GROUP_LABELS[g].replace(/^Dla /, "")}</span>
+            ))}
           </dd>
           {i.innovationType && TypeIcon && (
             <>
@@ -67,7 +65,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
               <dt className="font-bold">Obszary</dt>
               <dd>
                 <ul className="flex flex-wrap gap-2" aria-label="Obszary Mapy Wyzwań">
-                  {i.areas.map((a) => <li key={a}><Badge>{AREA_LABELS[a]}</Badge></li>)}
+                  {i.areas.map((a) => <li key={a}><AreaBadge area={a} /></li>)}
                 </ul>
               </dd>
             </>

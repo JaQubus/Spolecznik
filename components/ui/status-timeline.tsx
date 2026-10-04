@@ -26,13 +26,14 @@ export function StatusTimeline({ steps, className }: { steps: TimelineStep[]; cl
             aria-hidden
             className={cn(
               "grid size-7 place-content-center rounded-full border-2",
+              // Zakończone w kolorze tekstu, nie zielone: zieleń zostaje dla następnego kroku (np. „Zgłoś pomysł” przy luce).
               s.state === "done" && "border-foreground bg-foreground text-background",
-              s.state === "current" && "border-foreground bg-background",
+              s.state === "current" && "border-info bg-info-soft",
               s.state === "todo" && "border-border-strong bg-background"
             )}
           >
             {s.state === "done" && <CheckIcon className="size-[18px]" strokeWidth={3} />}
-            {s.state === "current" && <span className="size-3 rounded-full bg-foreground" />}
+            {s.state === "current" && <span className="size-3 rounded-full bg-info" />}
           </span>
           <div>
             <p className={s.state === "todo" ? "text-muted-foreground" : "font-bold"}>

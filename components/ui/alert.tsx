@@ -1,15 +1,16 @@
-import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import { cn } from "cn";
 
 const TONES = {
-  info: { ground: "bg-secondary", icon: InformationCircleIcon, iconClass: "", titleClass: "" },
+  info: { ground: "bg-info-soft", icon: InformationCircleIcon, iconClass: "text-info", titleClass: "" },
+  warning: { ground: "bg-warning-soft", icon: ExclamationTriangleIcon, iconClass: "text-warning", titleClass: "" },
   success: { ground: "bg-brand-soft", icon: CheckCircleIcon, iconClass: "text-primary", titleClass: "" },
   error: { ground: "bg-danger-soft", icon: ExclamationCircleIcon, iconClass: "text-destructive", titleClass: "text-destructive" },
 } as const;
 
 /**
  * Komunikat na miękkim tle, bez ramki (docs/design-system/components/Alert.md).
- * InformationCircleIcon i sukces: role="status". Błąd po wysłaniu formularza: role="alert" i fokus (przekaż ref + tabIndex={-1}).
+ * Informacja, ostrzeżenie i sukces: role="status" (ostrzeżenie to sygnał dla zespołu, nie przerywa czytnika). Błąd po wysłaniu formularza: role="alert" i fokus (przekaż ref + tabIndex={-1}).
  */
 export function Alert({
   tone = "info",
