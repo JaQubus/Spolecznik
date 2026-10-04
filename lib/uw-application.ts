@@ -1,4 +1,4 @@
-import { EMAIL, NIP_WEIGHTS, checksumOk, digits, getAt, parseAmount } from "./form-fields.ts";
+import { EMAIL, NIP_WEIGHTS, checksumOk, digits, getAt, parseAmount, setAt } from "./form-fields.ts";
 import { formatFact } from "./implementation-plan.ts";
 import { GRANT, type InstitutionType, type PlanDocument } from "./schemas.ts";
 import type { UwContent } from "./uw-content.ts";
@@ -9,11 +9,14 @@ import type { UwContent } from "./uw-content.ts";
 
 /** Miesiąc jako „RRRR-MM” (wartość <input type="month">). */
 export type Month = string;
-export type Contact = { funkcja: string; imieNazwisko: string; telefon: string; email: string };
 export type Row = { dzialanie: string; termin: string; koszt: string; uzasadnienie: string };
 export type YearValue = { rok: string; k: string; m: string };
 export type DeMinimis = "" | "nie_dotyczy" | "a" | "b";
 
+/**
+ * Bez danych osobowych (zasada projektu): wniosek zbiera tylko dane instytucji. Osobę upoważnioną i osobę do kontaktu
+ * wnioskodawca wpisuje dopiero w formularzu elektronicznym ROPS. Stary szkic z tymi polami traci je przy wczytaniu (restore).
+ */
 export type GrantApplication = {
   innowacja: string; // tytuł z listy naboru
   status: string; // jeden z content.statuses
@@ -21,7 +24,6 @@ export type GrantApplication = {
     nazwa: string; adresSiedziby: string; adresFilii: string;
     korespondencjaTaSama: boolean; adresKorespondencji: string;
     telefon: string; email: string; nip: string; krs: string; www: string; social: string;
-    reprezentant: Contact; kontaktTenSam: boolean; kontakt: Contact;
   };
   maRealizatora: boolean;
   realizator: { nazwa: string; adres: string; adresKorespondencji: string; telefon: string; email: string; nip: string; krs: string };
@@ -50,7 +52,6 @@ export type GrantApplication = {
   deMinimis: DeMinimis;
 };
 
-const emptyContact = (): Contact => ({ funkcja: "", imieNazwisko: "", telefon: "", email: "" });
 export const emptyRow = (): Row => ({ dzialanie: "", termin: "", koszt: "", uzasadnienie: "" });
 
 const DEFAULT_MEASUREMENT =
@@ -64,7 +65,6 @@ export function emptyApplication(content: UwContent, start: Month): GrantApplica
     wnioskodawca: {
       nazwa: "", adresSiedziby: "", adresFilii: "", korespondencjaTaSama: true, adresKorespondencji: "",
       telefon: "", email: "", nip: "", krs: "", www: "", social: "",
-      reprezentant: emptyContact(), kontaktTenSam: true, kontakt: emptyContact(),
     },
     maRealizatora: false,
     realizator: { nazwa: "", adres: "", adresKorespondencji: "", telefon: "", email: "", nip: "", krs: "" },
@@ -254,6 +254,68 @@ export function indicatorTotals(app: GrantApplication) {
   return { k, m, total: k + m };
 }
 
+// ---- Dane wrażliwe w opisach
+
+/**
+ * Wniosek opisuje usługę i grupę odbiorców, nigdy konkretne osoby. PESEL, dowód czy numer konta podopiecznego
+ * w opisie to wyciek danych osobowych do dokumentu, który czyta komisja, więc blokujemy przejście dalej.
+ * Telefon i e-mail w opisie bywają służbowe (np. zapisy w GOPS), więc tylko prosimy o sprawdzenie.
+ * Wzorce jak w lib/pii.ts (anonimizacja przed LLM): lepiej zgłosić za dużo niż przepuścić PESEL.
+ */
+const SENSITIVE: { kind: string; re: RegExp; block: boolean }[] = [
+  { kind: "numer konta bankowego", re: /(?<!\d)(?:PL\s?)?\d{2}(?:[\s-]?\d{4}){6}(?!\d)/g, block: true },
+  { kind: "numer karty płatniczej", re: /(?<!\d)\d{4}(?:[\s-]?\d{4}){3}(?!\d)/g, block: true },
+  { kind: "numer PESEL", re: /(?<!\d)\d{11}(?!\d)/g, block: true },
+  { kind: "numer dowodu osobistego", re: /\b[A-Z]{3}\s?\d{6}(?!\d)/g, block: true },
+  { kind: "numer paszportu", re: /\b[A-Z]{2}\s?\d{7}(?!\d)/g, block: true },
+  { kind: "adres e-mail", re: /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, block: false },
+  { kind: "numer telefonu", re: /(?<![\d+])(?:\+?48[\s-]?)?(?:\d{3}[\s-]?\d{3}[\s-]?\d{3}|\(?\d{2}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2})(?!\d)/g, block: false },
+];
+
+/** Pola opisowe, które trafiają do wniosku. Dane kontaktowe podmiotu (krok 2) są wymagane przez wzór, więc ich nie skanujemy. */
+export function descriptivePaths(app: GrantApplication): string[] {
+  const rows = (key: "przygotowanie" | "wdrazanie") =>
+    app[key].flatMap((_, i) => [`${key}.${i}.dzialanie`, `${key}.${i}.termin`, `${key}.${i}.uzasadnienie`]);
+  return [
+    "doswiadczenie.opis", "tytul", "opis", "diagnoza", "rekrutacja", "liczba", "obszar", "efekty",
+    ...rows("przygotowanie"), ...rows("wdrazanie"), "wskaznik.pomiar", "crossLista", "trwaloscCross",
+    "horyzontalne", "utrzymanie", "deinstytucjonalizacja",
+  ];
+}
+
+export type Finding = { path: string; kind: string; block: boolean };
+
+export function sensitiveFindings(app: GrantApplication, paths = descriptivePaths(app)): Finding[] {
+  const out: Finding[] = [];
+  for (const path of paths) {
+    let text = String(getAt(app, path) ?? "");
+    for (const { kind, re, block } of SENSITIVE) {
+      if (!new RegExp(re.source, re.flags).test(text)) continue;
+      out.push({ path, kind, block });
+      text = text.replace(re, " "); // dłuższy numer (konto) nie liczy się drugi raz jako PESEL albo telefon
+    }
+  }
+  return out;
+}
+
+/** Usuwa z opisów to, co blokuje wniosek (PESEL, dowód, konto, karta); telefony i e-maile zostają do decyzji. */
+export function maskSensitive(app: GrantApplication): GrantApplication {
+  let next = app;
+  for (const path of descriptivePaths(app)) {
+    const before = String(getAt(next, path) ?? "");
+    let after = before;
+    for (const { kind, re, block } of SENSITIVE) if (block) after = after.replace(re, `[usunięto: ${kind}]`);
+    if (after !== before) next = setAt(next, path, after);
+  }
+  return next;
+}
+
+function blockSensitive(e: Errors, app: GrantApplication, paths: string[]) {
+  for (const f of sensitiveFindings(app, paths)) {
+    if (f.block && !e[f.path]) e[f.path] = `Usuń ${f.kind}: wniosek opisuje usługę, nie konkretne osoby.`;
+  }
+}
+
 // ---- Kroki i walidacja
 
 export const STEPS = [
@@ -283,13 +345,6 @@ function checkPhone(e: Errors, app: GrantApplication, path: string) {
   const v = String(getAt(app, path) ?? "");
   if (!v.trim()) e[path] = "Wpisz numer telefonu.";
   else if (digits(v).length < 9) e[path] = "Wpisz numer telefonu, np. 12 422 06 36.";
-}
-
-function checkContact(e: Errors, app: GrantApplication, base: string) {
-  required(e, app, `${base}.imieNazwisko`, "Wpisz imię i nazwisko.");
-  required(e, app, `${base}.funkcja`, "Wpisz funkcję, np. „kierownik ośrodka”.");
-  checkPhone(e, app, `${base}.telefon`);
-  checkEmail(e, app, `${base}.email`);
 }
 
 function checkNip(e: Errors, app: GrantApplication, path: string) {
@@ -330,8 +385,6 @@ export function validateStep(step: number, app: GrantApplication, content: UwCon
       checkPhone(e, app, `${w}.telefon`);
       checkEmail(e, app, `${w}.email`);
       checkNip(e, app, `${w}.nip`);
-      checkContact(e, app, `${w}.reprezentant`);
-      if (!app.wnioskodawca.kontaktTenSam) checkContact(e, app, `${w}.kontakt`);
       if (app.maRealizatora) {
         required(e, app, "realizator.nazwa", "Wpisz nazwę realizatora.");
         required(e, app, "realizator.adres", "Wpisz adres realizatora.");
@@ -344,6 +397,7 @@ export function validateStep(step: number, app: GrantApplication, content: UwCon
     case "doswiadczenie":
       if (!app.doswiadczenie.obszary.some(Boolean)) e["doswiadczenie.obszary"] = "Zaznacz co najmniej jeden obszar, w którym masz 3 lata doświadczenia.";
       required(e, app, "doswiadczenie.opis", "Opisz swoje doświadczenie.");
+      blockSensitive(e, app, ["doswiadczenie.opis"]);
       break;
     case "usluga":
       required(e, app, "tytul", "Wpisz tytuł usługi.");
@@ -361,6 +415,7 @@ export function validateStep(step: number, app: GrantApplication, content: UwCon
       required(e, app, "liczba", "Podaj liczbę osób objętych wsparciem.");
       required(e, app, "obszar", "Podaj obszar wdrażania.");
       required(e, app, "efekty", "Opisz oczekiwane efekty.");
+      blockSensitive(e, app, ["tytul", "opis", "diagnoza", "rekrutacja", "liczba", "obszar", "efekty"]);
       break;
     case "plan": {
       checkRows(e, app, "przygotowanie", "Dodaj co najmniej jedno działanie przygotowawcze.");
@@ -376,12 +431,14 @@ export function validateStep(step: number, app: GrantApplication, content: UwCon
         required(e, app, "crossLista", "Wypisz wydatki w ramach cross-financingu.");
         required(e, app, "trwaloscCross", "Opisz, jak utrzymasz trwałość tych wydatków.");
       }
+      blockSensitive(e, app, descriptivePaths(app).filter((p) => /^(przygotowanie|wdrazanie|wskaznik|crossLista|trwaloscCross)/.test(p)));
       break;
     }
     case "zasady":
       required(e, app, "horyzontalne", "Opisz, jak przestrzegasz zasad horyzontalnych.");
       required(e, app, "utrzymanie", "Opisz, jak utrzymasz efekty po grancie.");
       required(e, app, "deinstytucjonalizacja", "Uzasadnij zgodność z zasadą deinstytucjonalizacji.");
+      blockSensitive(e, app, ["horyzontalne", "utrzymanie", "deinstytucjonalizacja"]);
       break;
     case "oswiadczenia":
       if (app.oswiadczenia.some((v) => !v)) e.oswiadczenia = "Zaznacz wszystkie oświadczenia. Bez nich wniosek nie zostanie przyjęty.";
@@ -412,7 +469,18 @@ export function formalChecks(app: GrantApplication, content: UwContent, today: s
   const pln = (n: number) => `${n.toLocaleString("pl-PL", { maximumFractionDigits: 2 })} zł`;
   const check = (label: string, ok: boolean, good: string, bad: string): Check =>
     ({ label, status: ok ? "ok" : "blad", detail: ok ? good : bad });
+  const findings = sensitiveFindings(app);
+  const blocking = findings.filter((f) => f.block);
+  const contacts = [...new Set(findings.filter((f) => !f.block).map((f) => f.kind))];
+  const sensitive: Check = blocking.length
+    ? { label: "Brak danych osobowych w opisach (PESEL, dowód, numer konta)", status: "blad",
+        detail: `Znaleziono: ${[...new Set(blocking.map((f) => f.kind))].join(", ")}. Usuń je przed złożeniem.` }
+    : contacts.length
+      ? { label: "Brak danych osobowych w opisach (PESEL, dowód, numer konta)", status: "sprawdz",
+          detail: `W opisach jest ${contacts.join(" i ")}. Zostaw tylko służbowe dane instytucji, nie prywatne dane osób.` }
+      : { label: "Brak danych osobowych w opisach (PESEL, dowód, numer konta)", status: "ok", detail: "Nie znaleziono." };
   return [
+    sensitive,
     check("Wszystkie wymagane pola są wypełnione", invalid === null, "Tak.",
       invalid === null ? "" : `Brakuje danych w kroku „${STEPS[invalid].title}”.`),
     check("Innowacja jest na liście naboru", content.innovations.some((i) => i.title === app.innowacja),

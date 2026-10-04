@@ -6,6 +6,8 @@ import { filledRows, indicatorTotals, monthLabel, planTotal, type GrantApplicati
 // do druku/PDF i do pliku Word (WORD_CSS z /wniosek), dlatego tylko proste klasy .doc z globals.css.
 
 const or = (s: string) => s.trim() || "—";
+/** Danych osób nie zbieramy (zasada projektu): wnioskodawca wpisuje je dopiero w formularzu elektronicznym ROPS. */
+const PERSON_LATER = "uzupełnij w formularzu elektronicznym ROPS";
 
 function Checks({ items, checked }: { items: string[]; checked: (i: number) => boolean }) {
   return (
@@ -58,7 +60,6 @@ const Text = ({ children }: { children: string }) => <p className="doc-text">{or
 export function GrantDocument({ app, content }: { app: GrantApplication; content: UwContent }) {
   const s = content.sections;
   const w = app.wnioskodawca;
-  const contact = w.kontaktTenSam ? w.reprezentant : w.kontakt;
   const totals = indicatorTotals(app);
   const total = planTotal(app);
   const amount = parseAmount(app.kwota);
@@ -90,14 +91,8 @@ export function GrantDocument({ app, content }: { app: GrantApplication; content
             ["E-mail", w.email],
             ["NIP (jeśli dotyczy)", w.nip],
             ["KRS/CEIDG (jeśli dotyczy)", w.krs],
-            ["Imię i nazwisko osoby upoważnionej do reprezentowania podmiotu", w.reprezentant.imieNazwisko],
-            ["Funkcja", w.reprezentant.funkcja],
-            ["Telefon", w.reprezentant.telefon],
-            ["E-mail", w.reprezentant.email],
-            ["Imię i nazwisko osoby do kontaktów roboczych", contact.imieNazwisko],
-            ["Funkcja", contact.funkcja],
-            ["Telefon", contact.telefon],
-            ["E-mail", contact.email],
+            ["Osoba upoważniona do reprezentowania podmiotu (imię i nazwisko, funkcja, telefon, e-mail)", PERSON_LATER],
+            ["Osoba do kontaktów roboczych (imię i nazwisko, funkcja, telefon, e-mail)", PERSON_LATER],
             ["Strona internetowa podmiotu (jeśli posiada)", w.www],
             ["Media społecznościowe podmiotu (jeśli posiada)", w.social],
           ]} />
@@ -225,7 +220,6 @@ export function GrantDocument({ app, content }: { app: GrantApplication; content
 export function applicationToText(app: GrantApplication, content: UwContent): string {
   const s = content.sections;
   const w = app.wnioskodawca;
-  const contact = w.kontaktTenSam ? w.reprezentant : w.kontakt;
   const rows = (rs: Row[]) => filledRows(rs).map((r, i) => `Działanie ${i + 1}: ${r.dzialanie}\n  Termin: ${r.termin}\n  Koszt: ${r.koszt} zł\n  Uzasadnienie: ${r.uzasadnienie}`);
   const totals = indicatorTotals(app);
   const lines: (string | false)[] = [
@@ -237,8 +231,7 @@ export function applicationToText(app: GrantApplication, content: UwContent): st
     `Nazwa: ${or(w.nazwa)}`, `Adres siedziby: ${or(w.adresSiedziby)}`, !!w.adresFilii.trim() && `Adres filii: ${w.adresFilii}`,
     `Adres do korespondencji: ${or(w.korespondencjaTaSama ? w.adresSiedziby : w.adresKorespondencji)}`,
     `Telefon: ${or(w.telefon)}`, `E-mail: ${or(w.email)}`, `NIP: ${or(w.nip)}`, `KRS/CEIDG: ${or(w.krs)}`,
-    `Osoba upoważniona: ${or(w.reprezentant.imieNazwisko)}, ${or(w.reprezentant.funkcja)}, ${or(w.reprezentant.telefon)}, ${or(w.reprezentant.email)}`,
-    `Osoba do kontaktów roboczych: ${or(contact.imieNazwisko)}, ${or(contact.funkcja)}, ${or(contact.telefon)}, ${or(contact.email)}`,
+    `Osoba upoważniona i osoba do kontaktów roboczych: ${PERSON_LATER}`,
     !!w.www.trim() && `Strona internetowa: ${w.www}`, !!w.social.trim() && `Media społecznościowe: ${w.social}`,
     app.maRealizatora && `Realizator: ${app.realizator.nazwa}, ${app.realizator.adres}, ${app.realizator.telefon}, ${app.realizator.email}`,
     "",
