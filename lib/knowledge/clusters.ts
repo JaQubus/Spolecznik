@@ -23,6 +23,9 @@ export type Clusters = {
   /** W trybie plików zgłoszenia nie mają id, więc grupa nie linkuje do skrzynki. */
   source: "baza" | "pliki";
   synthetic: boolean;
+  /** Ile zgłoszeń przeszukano; `capped` — doszliśmy do NEEDS_LIMIT i starsze zgłoszenia pominięto. */
+  needs: number;
+  capped: boolean;
 };
 
 type StoredLabel = { signature: string; keywords: string[]; label: string; description: string; needs: number };
@@ -33,6 +36,8 @@ const LABEL_REUSE_OVERLAP = 0.6;
 /** Grup w jednym wywołaniu Groq: ok. 4 tys. tokenów, poniżej limitu 8 tys. na minutę. */
 const LABEL_BATCH = 15;
 const SUMMARIES_PER_CLUSTER = 4;
+/** Najnowsze zgłoszenia brane do grup — ten sam limit co w lukach (gaps.ts). */
+export const NEEDS_LIMIT = 2000;
 
 const hasDb = () => !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 const LABELS_FILE = path.join(process.cwd(), "data", "out", "cluster_labels.json");
@@ -62,7 +67,7 @@ async function loadNeeds(): Promise<Row[]> {
     .from("needs")
     .select("id, teryt, card, synthetic")
     .order("created_at", { ascending: false })
-    .limit(2000);
+    .limit(NEEDS_LIMIT);
   if (error) throw error;
   return ((data ?? []) as { id: string; teryt: string | null; card: Card; synthetic: boolean }[]).map((n) => toRow(n.id, n));
 }
@@ -140,6 +145,8 @@ async function compute(): Promise<{ result: Clusters; rows: Map<string, Row> }> 
       unlabeled: clusters.filter((c) => !c.label).length,
       source: hasDb() ? "baza" : "pliki",
       synthetic: needs.some((n) => n.synthetic),
+      needs: needs.length,
+      capped: needs.length >= NEEDS_LIMIT,
     },
   };
 }

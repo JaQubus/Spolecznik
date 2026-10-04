@@ -1,7 +1,7 @@
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { CLUSTER_MIN_SIZE } from "@/lib/knowledge/cluster-needs";
-import type { Clusters } from "@/lib/knowledge/clusters";
+import { NEEDS_LIMIT, type Clusters } from "@/lib/knowledge/clusters";
 import { plural } from "@/lib/pl";
 import { AREA_LABELS } from "@/lib/taxonomy";
 import { ActionForm, SubmitButton } from "../action-form";
@@ -11,7 +11,7 @@ const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2"
 
 /** Grupy podobnych zgłoszeń: po wspólnych słowach kluczowych, z nazwą z LLM liczoną wsadowo. */
 export function ClusterList({ data }: { data: Clusters }) {
-  const { clusters, unlabeled, source } = data;
+  const { clusters, unlabeled, source, needs, capped } = data;
   return (
     <section aria-labelledby="grupy" className="space-y-6">
       <h2 id="grupy" className="text-2xl font-bold">Grupy podobnych zgłoszeń</h2>
@@ -19,6 +19,11 @@ export function ClusterList({ data }: { data: Clusters }) {
         Zgłoszenia, które mają co najmniej dwa wspólne słowa kluczowe, przy czym rzadkie słowa ważą więcej niż częste.
         Pokazujemy grupy od {CLUSTER_MIN_SIZE} zgłoszeń. Nazwy grup tworzy AI na podstawie słów i kilku streszczeń. Zanim zaczniesz
         działać, sprawdź zgłoszenia w grupie.
+      </p>
+      <p className="max-w-[44rem] text-base text-muted-foreground">
+        {capped
+          ? `Grupy liczymy z ${NEEDS_LIMIT} najnowszych zgłoszeń — starsze nie są tu brane pod uwagę.`
+          : `Grupy liczymy ze wszystkich zgłoszeń (${needs}).`}
       </p>
 
       {unlabeled > 0 && (
