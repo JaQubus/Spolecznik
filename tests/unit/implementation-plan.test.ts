@@ -82,6 +82,12 @@ describe("checkPlan", () => {
     assert.match(plan.warnings[1], /przekracza maksymalny grant/);
   });
 
+  test("usługa krótsza niż 12 miesięcy daje uwagę", () => {
+    const short = { ...raw, steps: [step("przygotowanie", 1, 6, 10_000), step("wdrozenie", 7, 12, 10_000), step("wdrozenie", 13, 14, 0)] };
+    const plan = checkPlan(short, { facts, partners: [], budget: "nie_wiem" });
+    assert.deepEqual(plan.warnings, ["Usługa trwa 8 mies., a nabór wymaga co najmniej 12. Wydłuż etap wdrażania."]);
+  });
+
   test("suma powyżej wybranego budżetu daje uwagę", () => {
     const plan = checkPlan(raw, { facts, partners: [], budget: "do_100" });
     assert.match(plan.warnings[0], /przekracza wybrany budżet \(do 100 tys\. zł\)/);

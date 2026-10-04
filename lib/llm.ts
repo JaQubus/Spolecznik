@@ -221,6 +221,7 @@ Zasady:
 - peopleSupported: ile osób obejmie usługa (kobiety i mężczyźni). To szacunek: w basis napisz, z czego wynika
   (jeśli <wnioskodawca> podaje liczbę odbiorców, oprzyj się na niej).
 - steps: 4–8 działań. stage „przygotowanie” mieści się w miesiącach 1–${GRANT.maxPreparationMonths}, „wdrozenie” po nim, wszystko w 1–${GRANT.maxMonths}.
+  Etap „wdrozenie” (świadczenie usługi) trwa co najmniej ${GRANT.minServiceMonths} miesięcy.
   Przy każdym koszt w złotych i sposób kalkulacji w costBasis (np. „12 h × 100 zł”). Suma kosztów nie przekracza budżetu z <wnioskodawca>.
 - costEstimate: widełki na cały grant, obejmujące sumę kosztów z steps; w basis napisz, z czego wynikają.
 - partners: wybierasz WYŁĄCZNIE spośród <partnerzy>, używając ich id. Gdy <partnerzy> to „brak”, partners jest pusta,

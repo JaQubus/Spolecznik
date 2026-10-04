@@ -51,6 +51,15 @@ export function checkPlan(
       `Przygotowanie trwa ${preparationEnd} mies., a nabór dopuszcza najwyżej ${GRANT.maxPreparationMonths}. Skróć ten etap.`,
     );
   }
+  const service = steps.filter((s) => s.stage === "wdrozenie");
+  const serviceMonths = service.length
+    ? Math.max(...service.map((s) => s.monthTo)) - Math.min(...service.map((s) => s.monthFrom)) + 1
+    : 0;
+  if (serviceMonths < GRANT.minServiceMonths) {
+    warnings.push(
+      `Usługa trwa ${serviceMonths} mies., a nabór wymaga co najmniej ${GRANT.minServiceMonths}. Wydłuż etap wdrażania.`,
+    );
+  }
   if (totalPln > GRANT.maxPln) {
     warnings.push(`Suma kosztów działań (${zl(totalPln)}) przekracza maksymalny grant (${zl(GRANT.maxPln)}).`);
   } else if (totalPln > BUDGET_MAX_PLN[budget]) {

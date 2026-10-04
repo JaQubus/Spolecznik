@@ -179,8 +179,11 @@ export type AssistantResponse = {
 // /api/middleman: szkic planu wdrożenia pod nabór ROPS „Usługa Wrażliwa” (FEM 2021–2027, Działanie 6.23).
 // Sekcje odpowiadają częściom III–VI „Wniosku o grant” (zał. 2 do ogłoszenia naboru IS-430-3/25).
 
-/** Limity z ogłoszenia naboru: grant do 600 tys. zł, wdrożenie do 18 miesięcy, w tym przygotowanie do 6. */
-export const GRANT = { maxPln: 600_000, maxMonths: 18, maxPreparationMonths: 6 } as const;
+/**
+ * Limity z ogłoszenia naboru i karty oceny formalnej: grant do 600 tys. zł, wdrożenie do 18 miesięcy,
+ * w tym przygotowanie do 6, a samą usługę świadczy się co najmniej 12 miesięcy.
+ */
+export const GRANT = { maxPln: 600_000, maxMonths: 18, maxPreparationMonths: 6, minServiceMonths: 12 } as const;
 
 export const INSTITUTION_TYPES = ["jst", "ops", "pcpr", "cus", "ngo", "pes"] as const;
 export type InstitutionType = (typeof INSTITUTION_TYPES)[number];
