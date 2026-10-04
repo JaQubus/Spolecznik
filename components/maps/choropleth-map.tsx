@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { cn } from "cn";
 import type { MapData } from "@/lib/knowledge/map";
 import mapJson from "@/public/mapa/malopolska.json";
 import { MapHover, type HoverDetail } from "./map-hover";
@@ -85,11 +84,15 @@ export function ChoroplethMap({
               stroke={isSelected ? "var(--ink)" : "var(--surface)"}
               strokeWidth={isSelected ? 4 : strokeWidth}
               strokeLinejoin="round"
-              className={cn(
-                "transition-[stroke] group-hover:stroke-[var(--ink)] group-hover:[stroke-width:3]",
-                "group-focus-visible:stroke-[var(--focus)] group-focus-visible:[stroke-width:5]",
-              )}
+              className="transition-[stroke] group-hover:stroke-[var(--ink)] group-hover:[stroke-width:3]"
+              vectorEffect="non-scaling-stroke"
             />
+            {/* Obrys fokusu dwukolorowy: jasne halo + ciemna linia. Na każdym wypełnieniu mapy (od jasnego do granatowego)
+                przynajmniej jeden z kolorów ma ≥3:1 (WCAG 1.4.11), a oba widać tylko przy fokusie z klawiatury. */}
+            <path d={s.d} fillRule="evenodd" fill="none" aria-hidden pointerEvents="none" vectorEffect="non-scaling-stroke" strokeLinejoin="round"
+              className="hidden stroke-[var(--surface)] [stroke-width:8px] group-focus-visible:block" />
+            <path d={s.d} fillRule="evenodd" fill="none" aria-hidden pointerEvents="none" vectorEffect="non-scaling-stroke" strokeLinejoin="round"
+              className="hidden stroke-[var(--focus)] [stroke-width:4px] group-focus-visible:block" />
           </Link>
         );
       })}
