@@ -59,6 +59,8 @@ export async function innovationPage(slugOrId: string): Promise<Innovation | nul
     .select("*")
     .eq(UUID.test(slugOrId) ? "id" : "slug", slugOrId)
     .eq("corpus", "pipeline")
+    // Klient service_role omija RLS, więc warunek publikacji musi być tu jawnie — jak `visible()` w Zasobniku.
+    .eq("published", true)
     .maybeSingle();
   if (error) throw error;
   return data ? innovationFromRow(data) : null;
