@@ -4,6 +4,7 @@ import { PrinterIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { GminaField, type GminaValue } from "@/components/gmina-field";
+import { PrintNote } from "@/components/layout/print-note";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
@@ -79,8 +80,9 @@ export function ImplementationFlow({
   if (result) {
     const c = result.card;
     return (
-      <article className="space-y-10">
+      <article data-print-root className="space-y-10">
         <div className="space-y-2">
+          <PrintNote dated>Karta wdrożeniowa · Społecznik</PrintNote>
           <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold outline-none">
             {result.innovation.title} w gminie {result.gmina.nazwa}
           </h2>
@@ -132,6 +134,11 @@ export function ImplementationFlow({
             <ul className="list-disc space-y-1 pl-6">{c.assumptions.map((a) => <li key={a}>{a}</li>)}</ul>
           </Alert>
         )}
+
+        <PrintNote>
+          Wygenerowano w Społeczniku z opisu rozwiązania i danych o gminie. Koszty to szacunek, a założenia trzeba sprawdzić
+          przed wdrożeniem.
+        </PrintNote>
 
         <div className="flex flex-wrap items-center gap-3 print:hidden">
           <Button asChild variant="outline"><Link href={`/przetestuj?innowacja=${result.innovation.id}`}>Chcę przetestować</Link></Button>

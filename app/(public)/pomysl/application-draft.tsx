@@ -3,6 +3,7 @@
 import { CheckCircleIcon, ExclamationCircleIcon, PrinterIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/ui/alert";
+import { PrintNote } from "@/components/layout/print-note";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { formatDate } from "@/lib/pl";
@@ -44,8 +45,9 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
   if (draft) {
     const missing = draft.checklist.filter((c) => !c.met).length;
     return (
-      <div className="space-y-8">
+      <div data-print-root className="space-y-8">
         <div className="space-y-2">
+          <PrintNote dated>Szkic wniosku · Społecznik</PrintNote>
           <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold outline-none">Szkic wniosku{call ? `: ${call.title}` : ""}</h2>
           <p className="text-muted-foreground">To szkic do poprawienia. Miejsca oznaczone „DO UZUPEŁNIENIA” wymagają Twoich danych.</p>
         </div>
@@ -77,6 +79,9 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
             </ul>
           </section>
         )}
+        <PrintNote>
+          Szkic przygotowany w Społeczniku z fiszki pomysłu. Miejsca oznaczone „DO UZUPEŁNIENIA” wymagają Twoich danych.
+        </PrintNote>
         <Button type="button" variant="outline" onClick={() => window.print()} className="print:hidden">
           <PrinterIcon aria-hidden className="size-4" /> Wydrukuj albo zapisz jako PDF
         </Button>

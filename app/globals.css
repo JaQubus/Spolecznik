@@ -204,6 +204,20 @@ html.a11y-contrast {
   }
 }
 
+/* Wydruk jednego dokumentu (#48): gdy w <main> jest [data-print-root] (karta wdrożeniowa, szkic wniosku),
+   „Wydrukuj” daje tylko ten dokument — bez wstępu strony, formularza i przycisków. Nagłówek, pasek flagi
+   i stopka serwisu mają print:hidden w layoucie. Na ekranie nic się nie zmienia. */
+@media print {
+  main:has([data-print-root]) *:not([data-print-root], [data-print-root] *, :has([data-print-root])) {
+    display: none !important;
+  }
+  [data-print-root] { color: #000; font-size: 11pt; }
+  /* Bez kolorowych teł (np. kremowe „Założenia”): drukarki je pomijają albo marnują toner. */
+  [data-print-root] * { background: transparent !important; box-shadow: none !important; }
+  [data-print-root] :is(section, li, dd) { break-inside: avoid; }
+  [data-print-root] :is(h2, h3, dt) { break-after: avoid; }
+}
+
 /* Pas na całą szerokość okna wewnątrz kontenera main, bez poziomego przewijania (cień nie zwiększa szerokości strony). */
 /* Tło do krawędzi ekranu tylko w poziomie. Bez clip-path, które ucinało rozwijane listy (podpowiedzi gmin) na dole pasa. */
 @utility full-bleed {
