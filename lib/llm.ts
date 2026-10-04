@@ -1,7 +1,7 @@
 import "server-only";
 import { groqChat, groqObject, type ChatMessage } from "./groq";
 import {
-  ApplicationDraft, AskAnswer, CardTags, ClusterLabels, FirstLineAnswer, IdeaPoster, ImplementationPlan, NeedCard, RerankResult,
+  ApplicationDraft, AskAnswer, CardTags, ClusterLabels, FirstLineAnswer, GminaSummary, IdeaPoster, ImplementationPlan, NeedCard, RerankResult,
   BUDGET_LABELS, GRANT, INSTITUTION_LABELS, type Fiszka, type GminaFact, type MiddlemanRequest, type RerankItem,
 } from "./schemas";
 import { AREA_LABELS, CROSS_LABELS, GROUP_LABELS } from "./taxonomy";
@@ -337,4 +337,22 @@ ${c.summaries.map((s) => `<zgloszenie>${clip(s, 220)}</zgloszenie>`).join("\n")}
     .join("\n");
   const output = await groqObject(ClusterLabels, { model: models.fast, system: CLUSTER_SYSTEM, prompt: list, temperature: 0.3 });
   return output.clusters.filter((c) => c.n >= 0 && c.n < clusters.length);
+}
+
+const GMINA_SUMMARY_SYSTEM = `Piszesz krótkie podsumowanie raportu o gminie w Małopolsce dla wójta, burmistrza i pracowników OPS.
+Zasady:
+- Dane są w <gmina>. Liczby policzył program; Ty ich nie liczysz i nie zmieniasz.
+- 2–3 zdania prostym językiem, łącznie do 70 słów. Bez nagłówków, list i emoji.
+- Możesz przytoczyć tylko liczby, które są w <gmina>, dokładnie w tym zapisie (np. „22,5%”). Nie zaokrąglaj, nie sumuj,
+  nie podawaj liczb, których tam nie ma. Liczby słownie też są zabronione („co piąta osoba”).
+- Mów o potrzebach mieszkańców, nie oceniaj gminy. Pisz „obszar do uwagi”, nigdy „gmina problemowa”, „gorsza”, „słaba”.
+- Dane powiatu (atrybut poziom="powiat") opisuj jako dane powiatu, nie gminy.
+- Porównania przepisuj tak, jak są w danych („wyższa niż w 75% gmin podobnych”, „typowo 15,4%”). Nie pisz „średnia” ani
+  „przeciętna” — w danych są mediany i odsetki gmin, nie średnie.
+- Nie proponujesz rozwiązań — innowacje są w dalszej części raportu.`;
+
+/** Podsumowanie raportu gminy (#104). Wynik trzeba sprawdzić (checkSummary) — przy błędzie raport bierze szablon. */
+export async function gminaSummary(facts: string): Promise<string> {
+  const output = await groqObject(GminaSummary, { model: models.fast, system: GMINA_SUMMARY_SYSTEM, prompt: facts, temperature: 0.2 });
+  return output.summary.trim();
 }
