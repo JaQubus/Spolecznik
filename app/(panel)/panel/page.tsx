@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { requireAdmin, viewerClient } from "@/lib/auth";
+import { getClusters } from "@/lib/knowledge/clusters";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { NEED_COLUMNS, needTriage, type NeedRow, type Triage } from "@/lib/panel/needs";
 import { formatDate, plural } from "@/lib/pl";
@@ -30,7 +31,10 @@ const chipLink =
 export default async function Page(props: PageProps<"/panel">) {
   const viewer = await requireAdmin();
   const params = await props.searchParams;
-  const filter = FILTERS.find((f) => f.key === params.status) ?? FILTERS[0];
+  // Grupa podobnych zgłoszeń z /panel/trendy: domyślnie wszystkie statusy, bo grupa obejmuje też zamknięte.
+  const groupKey = typeof params.grupa === "string" && /^[0-9a-f]{10}$/.test(params.grupa) ? params.grupa : null;
+  const group = groupKey ? (await getClusters()).clusters.find((c) => c.key === groupKey) ?? null : null;
+  const filter = FILTERS.find((f) => f.key === params.status) ?? (groupKey ? FILTERS.at(-1)! : FILTERS[0]);
   const page = Math.max(1, Number(params.strona) || 1);
 
   // Odczyt sesją użytkownika: RLS (is_admin) pilnuje dostępu drugi raz (konto testowe: service role, lib/auth.ts).
@@ -41,6 +45,7 @@ export default async function Page(props: PageProps<"/panel">) {
     .order("created_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (filter.statuses) query = query.in("status", filter.statuses);
+  if (groupKey) query = query.in("id", group?.ids ?? []);
   const { data, count, error } = await query;
   if (error) throw error;
 
@@ -48,18 +53,29 @@ export default async function Page(props: PageProps<"/panel">) {
   const triage = await needTriage(needs);
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const href = (p: number) => `/panel?status=${filter.key}${p > 1 ? `&strona=${p}` : ""}`;
+  const groupParam = groupKey ? `&grupa=${groupKey}` : "";
+  const href = (p: number) => `/panel?status=${filter.key}${groupParam}${p > 1 ? `&strona=${p}` : ""}`;
 
   return (
     <section className="space-y-6">
       <h1 className="text-3xl font-bold">Zgłoszenia</h1>
       {params.usunieto === "need" && <Alert tone="success" title="Usunięto zgłoszenie" />}
+      {groupKey && (
+        <p className="text-lg">
+          {group
+            ? <>Grupa podobnych zgłoszeń: <strong>{group.label ?? group.keywords.join(", ")}</strong>. </>
+            : "Tej grupy już nie ma: zgłoszenia zmieniły się od wejścia na Trendy. "}
+          <Link href={`/panel?status=${filter.key}`} className={linkClass}>Pokaż wszystkie zgłoszenia</Link>
+          {" · "}
+          <Link href="/panel/trendy#grupy" className={linkClass}>Wróć do grup</Link>
+        </p>
+      )}
 
       <nav aria-label="Filtruj zgłoszenia">
         <ul className="flex flex-wrap gap-2">
           {FILTERS.map((f) => (
             <li key={f.key}>
-              <Link href={`/panel?status=${f.key}`} aria-current={f.key === filter.key ? "page" : undefined} className={chipLink}>
+              <Link href={`/panel?status=${f.key}${groupParam}`} aria-current={f.key === filter.key ? "page" : undefined} className={chipLink}>
                 {f.label}
               </Link>
             </li>
