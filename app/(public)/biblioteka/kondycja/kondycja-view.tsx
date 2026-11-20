@@ -18,7 +18,7 @@ import { UnitPicker } from "./unit-picker";
 
 /**
  * Granice i wskaźniki obu poziomów (data/knowledge_map.py): gminy z BDL GUS (bdl.py + bdl_wskazniki.py),
- * powiaty z IOSS ROPS. Kategorie i opisy wskaźników: data/map_indicators.py.
+ * powiaty z tych samych zmiennych BDL (bdl_wskazniki.py --level powiat). Kategorie i opisy wskaźników: data/map_indicators.py.
  */
 const DATA = mapJson as unknown as MapData;
 const LAYERS: LayerKey[] = ["gminy", "powiaty"];

@@ -25,16 +25,33 @@
   "webhookHeaderPrefix": "X-Spolecznik",
   "emailFrom": "Społecznik <onboarding@resend.dev>",
   "region": {
-    "name": "Małopolska",
-    "genitive": "Małopolski",
-    "locative": "w Małopolsce",
-    "terytPrefix": "12",
-    "bdlUnitId": "011200000000",
-    "expectedMunicipalities": 183,
-    "expectedCounties": 22,
-    "countyExample": { "teryt": "1201", "name": "bocheński" },
-    "cityCountyExample": { "teryt": "1261", "name": "Kraków" },
-    "mapLabels": { "1261011": "Kraków", "1263011": "Tarnów", "1262011": "Nowy Sącz", "1217011": "Zakopane" },
-    "municipalitySplits": { "1207132": "1207052" }
+    "name": "Podkarpacie",
+    "genitive": "Podkarpacia",
+    "locative": "na Podkarpaciu",
+    "terytPrefix": "18",
+    "bdlUnitId": "061800000000",
+    "expectedMunicipalities": 160,
+    "expectedCounties": 25,
+    "countyExample": {
+      "teryt": "1801",
+      "name": "bieszczadzki"
+    },
+    "cityCountyExample": {
+      "teryt": "1863",
+      "name": "Rzeszów"
+    },
+    "municipalityExample": {
+      "teryt": "1801083",
+      "name": "Ustrzyki Dolne",
+      "search": "ustrz",
+      "county": "bieszczadzki"
+    },
+    "mapLabels": {
+      "1863011": "Rzeszów",
+      "1862011": "Przemyśl",
+      "1861011": "Krosno",
+      "1864011": "Tarnobrzeg"
+    },
+    "municipalitySplits": {}
   }
 }

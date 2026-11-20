@@ -6,6 +6,7 @@ import { cn } from "cn";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { MapUnit } from "@/lib/knowledge/map";
+import { region } from "@/lib/brand";
 import { plural } from "@/lib/pl";
 
 const MAX_RESULTS = 8;
@@ -80,7 +81,7 @@ export function UnitSearch({ id, label, units, describe, selected, onSelect, cla
   return (
     <div className={cn("relative grid w-full max-w-xl gap-2", className)}>
       <Label htmlFor={id}>{label}</Label>
-      <p id={hintId} className="text-base text-muted-foreground">Wpisz kilka liter nazwy, np. Wieliczka.</p>
+      <p id={hintId} className="text-base text-muted-foreground">Wpisz kilka liter nazwy, np. {region.municipalityExample.name}.</p>
       <div className="relative">
         <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground" />
         <Input
