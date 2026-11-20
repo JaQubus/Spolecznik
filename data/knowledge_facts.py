@@ -1,180 +1,109 @@
-"""Karty faktów „Małopolska w liczbach” do Zasobnika wiedzy — ręcznie wybrane, automatycznie sprawdzone.
+"""Karty faktów „{region} w liczbach” do Zasobnika wiedzy — liczone wprost z danych GUS (BDL), bez LLM.
 
 Zasady (brief modułu II):
-- Żadnych liczb z LLM. Każdy fakt z raportu ma dosłowny cytat (`quote`) i numer strony; skrypt sprawdza,
-  że cytat naprawdę jest na tej stronie PDF-a. Jeśli nie ma — przerywa z błędem.
-- Fakty z Obserwatora (IOSS) bierzemy wprost z tabeli dane/powiaty (rok 2024): podajemy najniższą i najwyższą
-  wartość wśród powiatów, bez liczenia średnich dla województwa, których nikt nie opublikował.
-- Zdania piszemy prostym językiem, ręcznie albo szablonem. Liczby w zdaniu = liczby w źródle.
-- Dane z Mapy Wyzwań są ogólnopolskie, więc NIE trafiają do faktów o Małopolsce.
+- Żadnych liczb z LLM. Każdy fakt pochodzi z out/gminy.json (bdl.py) albo out/powiaty_wskazniki.json
+  (bdl_wskazniki.py --level powiat), a `quote` mówi, z której zmiennej BDL, ilu jednostek i z którego roku.
+- Dla wskaźników względnych podajemy najniższą i najwyższą wartość wśród powiatów — bez liczenia średnich
+  dla województwa, których GUS w tej postaci nie publikuje. Sumujemy tylko liczby osób (ludność gmin).
+- Zdania piszemy szablonem prostym językiem. Liczby w zdaniu = liczby w danych.
 
     cd data && uv run knowledge_facts.py   →  out/knowledge/facts.json"""
-import csv
-import re
-import subprocess
+import json
 import sys
 
-from common import OUT, ROOT, write_json
-from region import MIN_POWIATY
-from scrape_knowledge import _cache_path, fetch
+from common import OUT, write_json
+from region import EXPECTED_POWIATY, MIN_POWIATY, REGION
 
-DIAG_2025 = {
-    "source_title": "Usługi społeczne w Małopolsce – deficyty, potrzeby, potencjał rozwojowy. Zaktualizowane wnioski z diagnozy",
-    "source_publisher": "Regionalny Ośrodek Polityki Społecznej w Krakowie",
-    "source_url": "https://rops.krakow.pl/pliki-do-pobrania/wpis,2025-uslugi-spoleczne-w-malopolsce-deficyty-potrzeby-potencjal-rozwojowy-zaktualizowane-wnioski-z-diagnozy,1348",
-    "source_year": 2025,
+BDL = {
+    "source_title": "Bank Danych Lokalnych",
+    "source_publisher": "Główny Urząd Statystyczny",
+    "source_url": "https://bdl.stat.gov.pl/",
 }
 
-RODZINNA_2023 = {
-    "source_title": "Diagnoza potrzeb, zasobów i potencjału rozwojowego (załącznik do Programu Wsparcia Rodziny „Rodzinna Małopolska 2030”)",
-    "source_publisher": "Regionalny Ośrodek Polityki Społecznej w Krakowie",
-    "source_url": "https://rops.krakow.pl/pliki-do-pobrania/wpis,2023-diagnoza-potrzeb-zasobow-i-potencjalu-rozwojowego-zalacznik-do-programu-wsparcia-rodziny-rodzinna-malopolska-2030,856",
-    "source_year": 2023,
-}
-
-# area: klucz z MWS_AREAS. src: raport (domyślnie DIAG_2025). display_value: jak liczbę czyta człowiek. data_year: rok, którego dotyczą dane.
-REPORT_FACTS = [
-    # ── Seniorzy ──
-    dict(area="seniorzy", value=841.5, unit="tys. osób", display_value="841,5 tys.", data_year=2024, page=25,
-         sentence="Tylu mieszkańców Małopolski ma ponad 60 lat. To prawie co czwarta osoba w regionie.",
-         quote="Zamieszkiwało 841,5 tys. osób powyżej 60 roku życia (24,5% populacji regionu)"),
-    dict(area="seniorzy", value=147, unit="tys. osób", display_value="147 tys.", data_year=2024, page=25,
-         sentence="Tyle osób w Małopolsce ma 80 lat lub więcej. Ta grupa szybko rośnie.",
-         quote="w tym 147 tysięcy osiemdziesięciolatków i starszych osób"),
-    dict(area="seniorzy", value=93, unit="gmin", display_value="93 gminy", data_year=2024, page=28,
-         sentence="W ponad połowie gmin nie ma publicznego dziennego domu pomocy ani klubu dla seniorów.",
-         quote="a na terenie 93 gmin czyli w ponad połowie, nie funkcjonował ani dzienny dom pomocy, ani klub samopomocy"),
-    dict(area="seniorzy", value=15, unit="gmin", display_value="15 gmin", data_year=2024, page=26,
-         sentence="Tyle gmin nie organizowało własnych usług opiekuńczych, czyli pomocy w domu.",
-         quote="Łącznie 15 małopolskich gmin – 8,2%"),
-    # ── Niepełnosprawność ──
-    dict(area="niepelnosprawnosc", value=473.1, unit="tys. osób", display_value="473,1 tys.", data_year=2021, page=35,
-         sentence="Tyle osób w Małopolsce żyje z niepełnosprawnością. To prawie 14 na 100 mieszkańców.",
-         quote="Mieszkało ok. 473,1 tys. osób niepełnosprawnych ogółem"),
-    dict(area="niepelnosprawnosc", value=4.9, unit="tys. osób", display_value="prawie 4,9 tys.", data_year=2024, page=37,
-         sentence="Tyle osób z niepełnosprawnością dostało pomoc asystenta osobistego.",
-         quote="Usługami asystenta wsparto niemal 4,9 tys. osób z niepełnosprawnościami."),
-    dict(area="niepelnosprawnosc", value=68, unit="warsztatów", display_value="68", data_year=2024, page=36,
-         sentence="Tyle warsztatów terapii zajęciowej działa w regionie. Uczy się w nich 2908 osób.",
-         quote="Funkcjonowało 68 warsztatów terapii zajęciowej"),
-    # ── Bezdomność ──
-    dict(area="bezdomnosc", value=2093, unit="osób", display_value="co najmniej 2093", data_year=2024, page=37,
-         sentence="Tyle osób w kryzysie bezdomności policzono w Małopolsce. Naprawdę może ich być więcej.",
-         quote="2 093 osoby w kryzysie bezdomności zidentyfikowano"),
-    dict(area="bezdomnosc", value=2436, unit="rodzin", display_value="2436", data_year=2024, page=37,
-         sentence="Tyle rodzin i osób samotnych dostało pomoc społeczną z powodu bezdomności.",
-         quote="2 436 rodzin/ gospodarstw, głównie jednoosobowych, skorzystało z pomocy społecznej z powodu bezdomności"),
-    dict(area="bezdomnosc", value=2, unit="schroniska", display_value="tylko 2", data_year=2024, page=38,
-         sentence="Tylko tyle schronisk dla osób bezdomnych ma usługi opiekuńcze, na przykład dla starszych i chorych.",
-         quote="tylko dwa schroniska dla osób bezdomnych w Małopolsce dysponowały usługami opiekuńczymi"),
-    # ── Rodzina i piecza zastępcza ──
-    dict(area="rodzina_piecza", value=3179, unit="dzieci", display_value="3179", data_year=2024, page=15,
-         sentence="Tyle dzieci i nastolatków wychowuje się w rodzinach zastępczych i rodzinnych domach dziecka.",
-         quote="a wychowywało się w nich 3 179 dzieci i młodzieży"),
-    dict(area="rodzina_piecza", value=13, unit="powiatów", display_value="13 z 22", data_year=2024, page=15,
-         sentence="W tylu powiatach brakuje rodzin zastępczych, które zajmą się dzieckiem z niepełnosprawnością.",
-         quote="W ponad połowie małopolskich powiatów (13 na 22) nie funkcjonują zawodowe specjalistyczne rodziny zastępcze"),
-    dict(area="rodzina_piecza", value=13, unit="gmin", display_value="13 gmin", data_year=2024, page=10,
-         sentence="W tylu gminach rodzina w trudnej sytuacji nie mogła dostać pomocy asystenta rodziny.",
-         quote="W 13 małopolskich gminach (7,1% wszystkich gmin) rodziny nie miały możliwości skorzystania ze wsparcia asystenta rodziny"),
-    # ── Zdrowie psychiczne ──
-    dict(area="zdrowie_psychiczne", value=1206, unit="prób", display_value="1206", data_year=2024, page=12,
-         sentence="Tyle prób samobójczych odnotowano w Małopolsce. W 2015 roku było ich 898.",
-         quote="W 2024 r. odnotowano 1 206 zamachów samobójczych w porównaniu do 898"),
-    dict(area="zdrowie_psychiczne", value=12.1, unit="lekarzy na 100 tys.", display_value="12,1", data_year=2023, page=13,
-         sentence="Tylu psychiatrów przypada na 100 tysięcy mieszkańców. Powinno być 20.",
-         quote="z psychiatrii przypadająca na 100 tys. ludności wynosiła 12,1"),
-    dict(area="zdrowie_psychiczne", value=10061, unit="osób", display_value="10 061", data_year=2024, page=11,
-         sentence="Tyle osób szukało pomocy w ośrodkach interwencji kryzysowej.",
-         quote="Z oferty OIK skorzystało w ciągu roku 10 061 osób"),
-    # ── Zdrowie ──
-    dict(area="zdrowie", value=592, unit="dni", display_value="592 dni", data_year=2019, page=34,
-         sentence="Tyle średnio czekała osoba w stabilnym stanie na miejsce w zakładzie opiekuńczo-leczniczym. To najdłużej w Polsce.",
-         quote="przeciętny czas oczekiwania na przyjęcie do ZOL dla przypadków stabilnych był najwyższy i wynosił 592 dni"),
-    dict(area="zdrowie", value=55, unit="zakładów", display_value="55", data_year=2025, page=33,
-         sentence="Tyle zakładów opiekuńczo-leczniczych i pielęgnacyjnych działa w regionie. Mają razem 3568 łóżek.",
-         quote="działało 55 zakładów opiekuńczo-leczniczych i zakładów pielęgnacyjno-opiekuńczych z 3 568 łóżkami"),
-    # ── Integracja cudzoziemców ──
-    dict(area="cudzoziemcy", value=107.0, unit="tys. osób", display_value="107 tys.", data_year=2022, page=33, src=RODZINNA_2023,
-         sentence="Tyle osób z Ukrainy dostało w Małopolsce pomoc społeczną w pierwszych 9 miesiącach 2022 roku.",
-         quote="ze świadczeń pomocy społecznej skorzystało 107,0 tys. osób i 58,9 tys. rodzin"),
-    dict(area="cudzoziemcy", value=2201, unit="dzieci", display_value="2201", data_year=2023, page=84, src=RODZINNA_2023,
-         sentence="Tyle dzieci z Ukrainy było pod opieką opiekuna tymczasowego na początku 2023 roku.",
-         quote="pod opieką opiekuna tymczasowego znajdowało się 2 201 dzieci i młodzieży z Ukrainy"),
-]
-
-IOSS = {
-    "source_title": "Internetowy Obserwator Statystyk Społecznych",
-    "source_publisher": "Regionalny Ośrodek Polityki Społecznej w Krakowie",
-    "source_url": "https://obserwator.rops.krakow.pl/",
-}
-
-# Wskaźnik z dane/powiaty → fakt „od … do …”. Zdanie: szablon z {min} {min_where} {max} {max_where}.
-IOSS_FACTS = [
-    dict(area="ubostwo", indicator="Beneficjenci pomocy społecznej", unit="%",
-         sentence="Tylu mieszkańców korzysta z pomocy społecznej — zależnie od powiatu. Najmniej: {min_where} ({min}%). Najwięcej: {max_where} ({max}%)."),
-    dict(area="ubostwo", indicator="Ubóstwo", unit="%",
-         sentence="Tyle osób korzystających z pomocy społecznej dostaje ją z powodu ubóstwa. Najmniej: {min_where} ({min}%). Najwięcej: {max_where} ({max}%)."),
-    dict(area="zdrowie", indicator="Długotrwała lub ciężka choroba", unit="%",
-         sentence="Tyle osób korzystających z pomocy społecznej dostaje ją z powodu długiej lub ciężkiej choroby. Najmniej: {min_where} ({min}%). Najwięcej: {max_where} ({max}%)."),
+# Wskaźnik powiatów (klucz z out/powiaty_wskazniki.json) → fakt „od … do …”. area: klucz z MWS_AREAS.
+RANGE_FACTS = [
+    dict(area="seniorzy", key="udzial_65plus",
+         sentence="Tyle mieszkańców ma 65 lat lub więcej — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
+    dict(area="ubostwo", key="beneficjenci",
+         sentence="Tyle osób na 10 tysięcy mieszkańców korzysta z pomocy społecznej — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
+    dict(area="rodzina_piecza", key="zlobki",
+         sentence="Tyle dzieci do lat 3 na 1000 chodzi do żłobka albo klubu dziecięcego — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
+    dict(area="rodzina_piecza", key="przedszkola",
+         sentence="Taka część dzieci w wieku 3–5 lat chodzi do przedszkola — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
+    dict(area="zdrowie", key="przychodnie",
+         sentence="Tyle przychodni przypada na 10 tysięcy mieszkańców — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
 ]
 
 
-def norm(s: str) -> str:
-    """Do porównań: jedna spacja, bez łamań linii, bez spacji tysięcy przed cytatem („2 093” = „2 093”)."""
-    return re.sub(r"\s+", " ", s.replace(" ", " ")).strip()
+def pl_number(x: float, decimals: int = 1) -> str:
+    s = f"{x:,.{decimals}f}".replace(",", " ").replace(".", ",")
+    return s.rstrip("0").rstrip(",") if "," in s else s
 
 
-def page_text(url: str, page: int) -> str:
-    fetch(url, ".pdf")
-    path = _cache_path(url, ".pdf")
-    out = subprocess.run(["pdftotext", "-f", str(page), "-l", str(page), "-layout", str(path), "-"],
-                         check=True, capture_output=True, text=True).stdout
-    return norm(out)
+def with_unit(x: float, ind: dict) -> str:
+    v = pl_number(x, ind["decimals"])
+    return f"{v}%" if ind["unit"] == "%" else f"{v} {ind['unit']}"
 
 
-def pl_number(x: float) -> str:
-    return f"{x:.2f}".rstrip("0").rstrip(".").replace(".", ",")
+def powiat_label(teryt4: str, gminy: list[dict]) -> str:
+    name = next(g["powiat"] for g in gminy if g["teryt"].startswith(teryt4))
+    return f"{name.removeprefix('m. ')} (miasto)" if name.startswith("m. ") else f"powiat {name}"
 
 
-def report_facts() -> list[dict]:
-    out, errors = [], []
-    for f in REPORT_FACTS:
-        src = f.get("src", DIAG_2025)
-        text = page_text(src["source_url"], f["page"])
-        if norm(f["quote"]) not in text:
-            errors.append(f"[{f['area']}] s. {f['page']}: nie znaleziono cytatu „{f['quote']}”")
-            continue
-        out.append({**{k: v for k, v in f.items() if k not in ("page", "src")}, **src,
-                    "source_page": f["page"], "is_example": False, "verified": "cytat sprawdzony w PDF"})
-    if errors:
-        sys.exit("\n".join(errors))
-    return out
-
-
-def ioss_facts() -> list[dict]:
-    rows = list(csv.DictReader(open(ROOT.parent / "dane/powiaty/wszystkie_powiaty.csv", encoding="utf-8-sig")))
-    out = []
-    for f in IOSS_FACTS:
-        values = [(r["powiat"], float(r["wartosc"]), r["rok"]) for r in rows if r["wskaznik"] == f["indicator"]]
-        if len(values) < MIN_POWIATY:
-            sys.exit(f"Za mało powiatów dla wskaźnika {f['indicator']}: {len(values)}")
-        lo, hi = min(values, key=lambda v: v[1]), max(values, key=lambda v: v[1])
-        year = int(lo[2])
-        out.append({
-            "area": f["area"], "value": None, "unit": f["unit"],
-            "display_value": f"od {pl_number(lo[1])} do {pl_number(hi[1])}%",
+def region_facts(gminy: list[dict]) -> list[dict]:
+    """Fakty o całym regionie z profili gmin: liczby osób, które da się zsumować."""
+    year = max(g["wskazniki"].get("rok", 0) for g in gminy)
+    total = sum(g["ludnosc"] for g in gminy if g["ludnosc"])
+    seniors = sum(g["ludnosc"] * g["udzial_65plus"] / 100 for g in gminy if g["ludnosc"] and g["udzial_65plus"])
+    shrinking = [g for g in gminy if (g["zmiana_ludnosci_10l"] or 0) < 0]
+    loc = REGION["locative"]
+    return [
+        {
+            "area": "seniorzy", "value": round(seniors / 1000, 1), "unit": "tys. osób",
+            "display_value": f"{pl_number(seniors / 1000)} tys.", "data_year": year,
+            "sentence": f"Tyle osób {loc} ma 65 lat lub więcej. To {pl_number(100 * seniors / total)} na 100 mieszkańców.",
+            "quote": f"Suma po {len(gminy)} gminach: ludność ogółem (zmienna 72305) i w wieku 65+ (72239, 72240), {year} r.",
+        },
+        {
+            "area": "seniorzy", "value": len(shrinking), "unit": "gmin", "display_value": f"{len(shrinking)} z {len(gminy)}",
             "data_year": year,
-            "sentence": f["sentence"].format(min=pl_number(lo[1]), max=pl_number(hi[1]), min_where=lo[0], max_where=hi[0]),
-            "quote": f"Wskaźnik „{f['indicator']}”, {len(values)} powiatów i miast na prawach powiatu, {year} r.",
-            **IOSS, "source_year": year, "source_page": None,
-            "is_example": False, "verified": "wartości wprost z tabeli dane/powiaty/wszystkie_powiaty.csv",
+            "sentence": f"W tylu gminach {loc} ubyło mieszkańców w ciągu 10 lat.",
+            "quote": f"Zmiana ludności ogółem (zmienna 72305) {year - 10}–{year}, {len(gminy)} gmin.",
+        },
+    ]
+
+
+def range_facts(gminy: list[dict]) -> list[dict]:
+    data = json.loads((OUT / "powiaty_wskazniki.json").read_text(encoding="utf-8"))
+    by_key = {i["key"]: i for i in data["indicators"]}
+    out = []
+    for f in RANGE_FACTS:
+        ind = by_key.get(f["key"])
+        if not ind:
+            print(f"! pomijam fakt {f['key']}: brak wskaźnika w out/powiaty_wskazniki.json", file=sys.stderr)
+            continue
+        values = [(code, v[f["key"]]) for code, v in data["values"].items() if v.get(f["key"]) is not None]
+        if len(values) < MIN_POWIATY:
+            sys.exit(f"Za mało powiatów dla wskaźnika {f['key']}: {len(values)} z {EXPECTED_POWIATY}")
+        lo, hi = min(values, key=lambda v: v[1]), max(values, key=lambda v: v[1])
+        out.append({
+            "area": f["area"], "value": None, "unit": ind["unit"],
+            "display_value": f"od {with_unit(lo[1], ind)} do {with_unit(hi[1], ind)}",
+            "data_year": ind["year"],
+            "sentence": f["sentence"].format(min=with_unit(lo[1], ind), max=with_unit(hi[1], ind),
+                                             min_where=powiat_label(lo[0], gminy), max_where=powiat_label(hi[0], gminy)),
+            "quote": f"{ind['label']} (zmienna BDL {ind.get('bdl', '—')}), {len(values)} powiatów i miast na prawach powiatu, {ind['year']} r.",
         })
     return out
 
 
 def main() -> None:
-    facts = report_facts() + ioss_facts()
+    gminy = json.loads((OUT / "gminy.json").read_text(encoding="utf-8"))
+    facts = [
+        {**f, **BDL, "source_year": f["data_year"], "source_page": None, "is_example": False,
+         "verified": "policzone skryptem z danych BDL"}
+        for f in region_facts(gminy) + range_facts(gminy)
+    ]
     write_json(OUT / "knowledge" / "facts.json", facts)
     by_area: dict[str, int] = {}
     for f in facts:

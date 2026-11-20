@@ -8,8 +8,7 @@ import { createAdminClient } from "./supabase/admin";
 export type GminaOption = { teryt: string; nazwa: string; opis: string };
 
 /**
- * Wszystkie gminy Małopolski (BDL, data/bdl.py), alfabetycznie. Zgodne z listą
- * malopolska.uw.gov.pl/dane_teleadresowe/adresyGmin plus miasta na prawach powiatu.
+ * Wszystkie gminy regionu z config/brand.json (BDL, data/bdl.py), alfabetycznie, razem z miastami na prawach powiatu.
  * Strony przekazują ją do pola jako props, żeby do przeglądarki nie trafił cały gminy.json.
  */
 export const GMINA_OPTIONS: GminaOption[] = gminyJson

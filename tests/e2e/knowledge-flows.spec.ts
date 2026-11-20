@@ -115,14 +115,11 @@ test(`Kondycja ${region.genitive}: gminy i powiaty, kategorie, top 5, karta po k
   const map = page.getByRole("group", { name: /^Mapa gmin:/ });
   await expect(map.locator("a[data-id]")).toHaveCount(region.expectedMunicipalities);
 
-  // Kategoria bez danych dla gmin prowadzi na powiaty.
-  await page.getByRole("link", { name: /^Placówki i kadra \(tylko powiaty\)$/ }).click();
+  // Przełącznik poziomów: powiaty i z powrotem gminy.
+  await page.getByRole("link", { name: new RegExp(`^Powiaty \\(${region.expectedCounties}\\)`) }).click();
   await expect(page.getByRole("group", { name: /^Mapa powiatów:/ }).getByRole("link")).toHaveCount(region.expectedCounties);
-  await expect(page.getByRole("link", { name: /^Placówki i kadra \(\d+\)$/ })).toHaveAttribute("aria-current", "true");
-
-  // Powrót na gminy z tym samym wskaźnikiem: komunikat, że jest tylko dla powiatów.
   await page.getByRole("link", { name: new RegExp(`^Gminy \\(${region.expectedMunicipalities}\\)`) }).click();
-  await expect(page.getByText("Tego wskaźnika nie ma dla gmin")).toBeVisible();
+  await expect(map.locator("a[data-id]")).toHaveCount(region.expectedMunicipalities);
 
   // Kategoria + „Co pokazać”; pod mapą piątka z najwyższą i z najniższą wartością.
   await page.getByRole("link", { name: /^Ludność \(\d+\)$/ }).click();
@@ -134,14 +131,15 @@ test(`Kondycja ${region.genitive}: gminy i powiaty, kategorie, top 5, karta po k
 
   // Klawiatura: wyszukiwarka bez polskich znaków → karta gminy z fokusem na nagłówku.
   const search = page.getByRole("combobox", { name: "Znajdź gminę" });
-  await search.fill("zakop");
-  await page.getByRole("option", { name: /Zakopane/ }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "Zakopane" })).toBeFocused();
-  await expect(page).toHaveURL(/id=1217011/);
+  const example = region.municipalityExample;
+  await search.fill(example.search);
+  await page.getByRole("option", { name: new RegExp(example.name) }).click();
+  await expect(page.getByRole("heading", { level: 2, name: example.name })).toBeFocused();
+  await expect(page).toHaveURL(new RegExp(`id=${example.teryt}`));
 
   // Z karty gminy do jej powiatu.
-  await page.getByRole("link", { name: /^Więcej danych: powiat tatrzański/ }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "powiat tatrzański" })).toBeFocused();
+  await page.getByRole("link", { name: new RegExp(`^Więcej danych: powiat ${example.county}`) }).click();
+  await expect(page.getByRole("heading", { level: 2, name: `powiat ${example.county}` })).toBeFocused();
 
   const { violations } = await new AxeBuilder({ page }).include("main")
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
