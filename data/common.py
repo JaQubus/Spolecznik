@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 truststore.inject_into_ssl()
 
 ROOT = Path(__file__).parent
-RAW = ROOT / "raw"    # surowy HTML/PDF — pobieramy raz, nie odpytujemy ROPS ponownie
+RAW = ROOT / "raw"    # surowy HTML/PDF — pobieramy raz, nie odpytujemy źródeł ponownie
 OUT = ROOT / "out"    # przetworzone JSON-y gotowe do załadowania
 load_dotenv(ROOT.parent / ".env.local")
 
@@ -22,89 +22,75 @@ GROQ_FAST = "openai/gpt-oss-120b"     # jak models.fast w lib/llm.ts (20b psuł 
 GROQ_QUALITY = "openai/gpt-oss-120b"  # jak models.quality w lib/llm.ts
 
 
-# Taksonomia dwuosiowa — kopia lib/taxonomy.ts (klucze muszą się zgadzać z lib/schemas.ts).
-AREAS = {
-    "rodzina_piecza": "Rodzina i piecza zastępcza",
-    "bezdomnosc": "Bezdomność",
-    "niepelnosprawnosc": "Niepełnosprawność",
-    "ubostwo": "Ubóstwo",
-    "cudzoziemcy": "Integracja cudzoziemców",
-    "zdrowie": "Zdrowie",
-    "zdrowie_psychiczne": "Zdrowie psychiczne",
-    "seniorzy": "Seniorzy",
-}
-GROUPS = {
-    "seniorzy": "Dla seniorów",
-    "dzieci_mlodziez_rodzina": "Dla dzieci, młodzieży i rodziny",
-    "ograniczona_mobilnosc": "Dla osób o ograniczonej mobilności",
-    "niepelnosprawnosc_sensoryczna": "Dla osób z niepełnosprawnością sensoryczną",
-    "zdrowie_medycyna": "Dla zdrowia i medycyny",
-    "rynek_pracy": "Dla rynku pracy",
-    "cudzoziemcy": "Dla cudzoziemców",
-    "bezdomnosc": "Dla osób w kryzysie bezdomności",
-    "niepelnosprawnosc_intelektualna": "Dla osób z niepełnosprawnością intelektualną",
-}
-CROSS = {
-    "samotnosc": "Samotność",
-    "wykluczenie_cyfrowe": "Wykluczenie cyfrowe",
-    "dostep_do_uslug": "Dostęp do usług społecznych",
-    "depopulacja_suburbanizacja": "Depopulacja i suburbanizacja",
-    "wspolpraca_miedzysektorowa": "Koordynacja międzysektorowa",
-}
+# Słowniki z ../config/taxonomy.json — ten sam plik czyta aplikacja (lib/taxonomy.ts).
+TAXONOMY = json.loads((ROOT.parent / "config" / "taxonomy.json").read_text(encoding="utf-8"))
+DOMAINS: dict[str, dict] = TAXONOMY["domains"]
+INSTITUTION_TYPES: dict[str, dict] = TAXONOMY["institutionTypes"]
+STAGES: dict[str, dict] = TAXONOMY["stages"]
+CROSS: dict[str, dict] = TAXONOMY["cross"]
+RADAR: dict = TAXONOMY["radar"]
 
 
 def taxonomy_prompt() -> str:
-    fmt = lambda d: "; ".join(f"{k} = {v}" for k, v in d.items())  # noqa: E731
-    return f"Obszary (areas): {fmt(AREAS)}\nGrupy (groups): {fmt(GROUPS)}\nTematy przekrojowe (cross): {fmt(CROSS)}"
+    """Słowniki do promptu: klucz = etykieta (opis) — jak TAXONOMY w lib/llm.ts."""
+    fmt = lambda d: "; ".join(f"{k} = {v['label']} ({v['description']})" for k, v in d.items())  # noqa: E731
+    return "\n".join([
+        f"Dziedziny (domains): {fmt(DOMAINS)}",
+        f"Typy instytucji (institutionType): {fmt(INSTITUTION_TYPES)}",
+        f"Etapy (stage): {fmt(STAGES)}",
+        f"Tematy przekrojowe (cross): {fmt(CROSS)}",
+    ])
 
 
-def innovation_text(i: dict) -> str:
-    """Tekst innowacji do embeddingu i reranku — ten sam w embed.py i eval.py."""
-    parts = [
-        i["title"],
-        i.get("solution"),
-        f"Problem: {i['problem']}" if i.get("problem") else None,
-        f"Dla kogo: {i['target_group']}" if i.get("target_group") else None,
-        f"Kto może wdrożyć: {i['who_can_implement']}" if i.get("who_can_implement") else None,
-    ]
-    return "\n".join(p for p in parts if p)
+def check_keys(kind: str, keys, allowed: dict) -> None:
+    """Seed z kluczem spoza słownika = błąd od razu, a nie pusta etykieta w aplikacji."""
+    bad = [k for k in ([keys] if isinstance(keys, str) else keys) if k not in allowed]
+    if bad:
+        raise ValueError(f"Nieznane klucze {kind}: {bad}")
 
 
-def innovation_row(i: dict, enriched: dict, pdf: dict) -> dict:
-    """Wiersz tabeli innovations z out/innovations.json + wzbogacenia (enrich.py) + karty PDF (parse_pdfs.py)."""
-    return {
-        "slug": i["slug"], "title": i["title"],
-        "category": (i.get("categories") or [None])[0],
-        "areas": enriched.get("areas", []),
-        "target_groups": enriched.get("groups") or i.get("groups", []),
-        "cross_topics": enriched.get("cross", []),
-        "solution": i.get("solution"), "problem": i.get("problem"),
-        "beneficiaries": i.get("target_group"), "who_can_use": i.get("who_can_implement"),
-        # Karta PDF jest pełniejsza niż sekcja „Czy to działa?” ze strony.
-        "evidence": pdf.get("evidence") or i.get("evidence"),
-        "how_to_use": pdf.get("how_to_use"), "components": pdf.get("components"),
-        "source_url": i.get("url"), "pdf_url": i.get("pdf_url"), "video_url": i.get("video_url"),
-        "etr_summary": enriched.get("etr_summary"),
-        "synthetic": bool(i.get("synthetic")),
-        "lemmas": enriched.get("lemmas") or i["title"].lower().split(),
-    }
+# ── SQL dla plików seed (supabase/seed/*.sql) ──
+
+class Jsonb:
+    """Wartość do kolumny jsonb (lista napisów domyślnie idzie jako text[])."""
+    def __init__(self, value):
+        self.value = value
 
 
-# Upsert po slugu — wspólny dla embed.py i seed_innovations.py.
-INNOVATION_UPSERT = """insert into innovations (slug, title, category, areas, target_groups, cross_topics, solution, problem,
-     beneficiaries, who_can_use, evidence, how_to_use, components, source_url, pdf_url, video_url,
-     etr_summary, synthetic, updated_at)
-   values (%(slug)s, %(title)s, %(category)s, %(areas)s, %(target_groups)s, %(cross_topics)s, %(solution)s,
-     %(problem)s, %(beneficiaries)s, %(who_can_use)s, %(evidence)s, %(how_to_use)s, %(components)s,
-     %(source_url)s, %(pdf_url)s, %(video_url)s, %(etr_summary)s, %(synthetic)s, now())
-   on conflict (slug) do update set title = excluded.title, category = excluded.category,
-     areas = excluded.areas, target_groups = excluded.target_groups, cross_topics = excluded.cross_topics,
-     solution = excluded.solution, problem = excluded.problem, beneficiaries = excluded.beneficiaries,
-     who_can_use = excluded.who_can_use, evidence = excluded.evidence, how_to_use = excluded.how_to_use,
-     components = excluded.components, source_url = excluded.source_url, pdf_url = excluded.pdf_url,
-     video_url = excluded.video_url, etr_summary = excluded.etr_summary, synthetic = excluded.synthetic,
-     updated_at = now()
-   returning id"""
+def lit(v) -> str:
+    if isinstance(v, Jsonb):
+        return "'" + json.dumps(v.value, ensure_ascii=False).replace("'", "''") + "'::jsonb"
+    if v is None:
+        return "null"
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if isinstance(v, (int, float)):
+        return repr(v)
+    if isinstance(v, (dict, list)) and not (isinstance(v, list) and all(isinstance(x, str) for x in v)):
+        return "'" + json.dumps(v, ensure_ascii=False).replace("'", "''") + "'::jsonb"
+    if isinstance(v, list):
+        return "array[" + ",".join(lit(x) for x in v) + "]::text[]" if v else "'{}'::text[]"
+    return "'" + str(v).replace("'", "''") + "'"
+
+
+def upsert(table: str, key: str, row: dict) -> str:
+    cols = list(row)
+    sets = ", ".join(f"{c} = excluded.{c}" for c in cols if c != key)
+    return f"insert into {table} ({', '.join(cols)}) values ({', '.join(lit(row[c]) for c in cols)}) on conflict ({key}) do update set {sets};"
+
+
+def index_row(kind: str, ref_id: str, title: str, body: str, lemmas, *, domains=(), tags=(), institution_type=None,
+              teryt=None, active=True) -> str:
+    """Wiersz search_index — te same kolumny co lib/search.ts upsertIndex."""
+    words = " ".join(dict.fromkeys(w.strip().lower() for w in lemmas if w and w.strip()))
+    return (f"insert into search_index (kind, ref_id, title, body, lemmas, domains, tags, institution_type, teryt, active) values "
+            f"({lit(kind)}, {lit(ref_id)}, {lit(title)}, {lit(body)}, {lit(words)}, {lit(list(domains))}, {lit(list(tags))}, "
+            f"{lit(institution_type)}, {lit(teryt)}, {lit(active)}) on conflict (kind, ref_id) do update set title = excluded.title, "
+            f"body = excluded.body, lemmas = excluded.lemmas, domains = excluded.domains, tags = excluded.tags, "
+            f"institution_type = excluded.institution_type, teryt = excluded.teryt, active = excluded.active;")
+
+
+SEED = ROOT.parent / "supabase" / "seed"   # supabase db reset ładuje seed/*.sql alfabetycznie; load.py robi to samo zdalnie
 
 
 def db_url() -> str:
