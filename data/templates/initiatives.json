@@ -1,5 +1,11 @@
 {
   "_opis": "Archetypy syntetycznych inicjatyw (data/seed_initiatives.py). Bez nazw prawdziwych instytucji: tylko typ instytucji i gmina. place: any | rural | town | city | university | border. radar: ocena bazowa 0–5 z uzasadnieniem; generator dodaje szum ±1 i ogranicza dojrzałość etapem.",
+  "places": {
+    "_opis": "Gdzie losujemy gminy dla reguł place (nazwy gmin i powiatów z out/gminy.json). rural = gminy wiejskie, town = miejsko-wiejskie i miejskie poza listą city, any = wszystkie; wagi to liczba losów.",
+    "city": {"Rzeszów": 4, "Przemyśl": 1, "Krosno": 1, "Tarnobrzeg": 1, "Mielec": 1, "Stalowa Wola": 1},
+    "university": {"Rzeszów": 6, "Przemyśl": 1, "Krosno": 1, "Jarosław": 1, "Sanok": 1, "Tarnobrzeg": 1, "Stalowa Wola": 1},
+    "borderCounties": ["bieszczadzki", "leski", "sanocki", "krośnieński", "jasielski", "lubaczowski", "jarosławski", "przemyski"]
+  },
   "archetypes": [
     {
       "key": "robotyka-wiejska",
