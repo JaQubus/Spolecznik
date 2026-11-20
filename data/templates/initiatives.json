@@ -1,0 +1,723 @@
+{
+  "_opis": "Archetypy syntetycznych inicjatyw (data/seed_initiatives.py). Bez nazw prawdziwych instytucji: tylko typ instytucji i gmina. place: any | rural | town | city | university | border. radar: ocena bazowa 0–5 z uzasadnieniem; generator dodaje szum ±1 i ogranicza dojrzałość etapem.",
+  "archetypes": [
+    {
+      "key": "robotyka-wiejska",
+      "title": "Pracownia robotyki dla szkół z małych wsi",
+      "institution_type": "szkola_podstawowa", "domains": ["edukacja", "cyfryzacja"], "cross": ["obszary_wiejskie", "mlodzi"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "rural",
+      "problem": "Uczniowie z małych szkół nie mają dostępu do zajęć z robotyki i programowania, a dojazd do miasta na kółka trwa godzinę.",
+      "solution": "Jedna szkoła kupiła zestawy robotów i co tydzień wozi je do trzech sąsiednich szkół. Zajęcia prowadzi nauczyciel informatyki z uczniami starszych klas jako asystentami.",
+      "effects": "W zajęciach bierze udział 60 uczniów z czterech szkół. Dwie drużyny startowały w wojewódzkim konkursie robotyki.",
+      "beneficiaries": "uczniowie klas 4–8 z małych szkół wiejskich",
+      "keywords": ["robotyka", "programowanie", "szkoła wiejska", "uczeń", "zajęcia pozalekcyjne", "kompetencje cyfrowe"],
+      "radar": {
+        "przenaszalnosc": [5, "Wystarczy zestaw robotów i nauczyciel, który dojeżdża do sąsiednich szkół."],
+        "wplyw": [3, "Daje dzieciom ze wsi zajęcia, które w mieście są oczywiste."],
+        "dojrzalosc": [3, "Działa od roku, są wyniki konkursowe."],
+        "nowosc": [2, "Mobilne pracownie znane są w Polsce, nowy jest model wspólny dla kilku szkół."],
+        "latwosc": [4, "Koszt zestawów i paliwa, bez nowych etatów."]
+      }
+    },
+    {
+      "key": "mlodziezowa-rada-budzet",
+      "title": "Młodzieżowy budżet obywatelski w szkole średniej",
+      "institution_type": "szkola_ponadpodstawowa", "domains": ["partycypacja", "edukacja"], "cross": ["mlodzi"],
+      "stages": ["pilotaz", "dziala"], "place": "town",
+      "problem": "Młodzi nie wierzą, że mają wpływ na swoje miasto, i rzadko biorą udział w konsultacjach.",
+      "solution": "Uczniowie sami piszą projekty za 20 tys. zł z budżetu powiatu, zbierają podpisy i głosują w szkole. Zwycięski projekt realizują razem z urzędem.",
+      "effects": "Złożono 14 projektów, głosowało 70% uczniów. Powstała strefa nauki i odpoczynku przy szkole.",
+      "beneficiaries": "uczniowie liceów i techników",
+      "keywords": ["budżet obywatelski", "młodzież", "partycypacja", "głosowanie", "samorząd uczniowski"],
+      "radar": {
+        "przenaszalnosc": [5, "Regulamin i kalendarz da się skopiować do każdej szkoły."],
+        "wplyw": [3, "Uczy młodych działania w samorządzie."],
+        "dojrzalosc": [3, "Dwie edycje z frekwencją i zrealizowanym projektem."],
+        "nowosc": [2, "Budżety młodzieżowe działają w kilku miastach w Polsce."],
+        "latwosc": [4, "Potrzebna jest pula pieniędzy i opiekun w szkole."]
+      }
+    },
+    {
+      "key": "technikum-firmy-staze",
+      "title": "Klasa patronacka technikum z lokalnymi firmami lotniczymi",
+      "institution_type": "szkola_ponadpodstawowa", "domains": ["edukacja", "gospodarka"], "cross": ["mlodzi", "wspolpraca"],
+      "stages": ["dziala", "przeniesiona"], "place": "town",
+      "problem": "Absolwenci technikum wyjeżdżają, a firmy z regionu nie mogą znaleźć mechaników i operatorów maszyn.",
+      "solution": "Firmy współtworzą program nauczania, prowadzą zajęcia w swoich halach i dają płatne staże już od drugiej klasy. Najlepsi dostają propozycję pracy przed maturą.",
+      "effects": "Trzy roczniki, 80% absolwentów pracuje w regionie. Do programu dołączyły kolejne dwie firmy.",
+      "beneficiaries": "uczniowie technikum i pracodawcy z regionu",
+      "keywords": ["technikum", "staż", "pracodawca", "kształcenie zawodowe", "lotnictwo", "praca"],
+      "radar": {
+        "przenaszalnosc": [4, "Model działa wszędzie tam, gdzie są firmy gotowe do współpracy."],
+        "wplyw": [4, "Zatrzymuje młodych w regionie i daje firmom kadrę."],
+        "dojrzalosc": [5, "Trzy roczniki z danymi o zatrudnieniu."],
+        "nowosc": [2, "Klasy patronackie są znane, mocna jest skala współpracy."],
+        "latwosc": [3, "Wymaga zaangażowania firm i zmiany planu zajęć."]
+      }
+    },
+    {
+      "key": "uczelnia-living-lab",
+      "title": "Studenci rozwiązują problemy gmin w ramach zajęć",
+      "institution_type": "uczelnia", "domains": ["nauka", "administracja"], "cross": ["wspolpraca", "mlodzi"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "university",
+      "problem": "Małe gminy nie mają pieniędzy na analizy i projekty, a studenci uczą się na wymyślonych przykładach.",
+      "solution": "Gminy zgłaszają do uczelni konkretne problemy (np. parkowanie przy szkole, oświetlenie). Zespoły studentów przez semestr przygotowują analizę i propozycję rozwiązania, które oceniają urzędnicy.",
+      "effects": "18 projektów dla 9 gmin w dwa lata. Pięć rozwiązań gminy wdrożyły, m.in. nowy plan dowozu uczniów.",
+      "beneficiaries": "gminy bez własnych analityków, studenci",
+      "keywords": ["uczelnia", "student", "projekt", "gmina", "analiza", "współpraca nauki z samorządem"],
+      "radar": {
+        "przenaszalnosc": [5, "Każda uczelnia i gmina mogą przyjąć ten sam kalendarz semestru."],
+        "wplyw": [4, "Gminy dostają gotowe analizy, studenci prawdziwe zadania."],
+        "dojrzalosc": [4, "Dwa lata, pięć wdrożonych rozwiązań."],
+        "nowosc": [3, "Podobne programy działają za granicą, w regionie to nowość."],
+        "latwosc": [5, "Nie wymaga pieniędzy, tylko porozumienia i opiekuna zajęć."]
+      }
+    },
+    {
+      "key": "uczelnia-senior-cyfrowy",
+      "title": "Studenci uczą seniorów obsługi e-usług",
+      "institution_type": "uczelnia", "domains": ["cyfryzacja", "uslugi_spoleczne"], "cross": ["seniorzy", "wykluczenie_cyfrowe", "mlodzi"],
+      "stages": ["pilotaz", "dziala"], "place": "university",
+      "problem": "Seniorzy nie umieją założyć profilu zaufanego ani zamówić recepty online, a w urzędzie nie ma czasu, żeby im to pokazać.",
+      "solution": "Studenci w ramach wolontariatu i praktyk prowadzą cotygodniowe dyżury w bibliotekach i klubach seniora. Pomagają na telefonie seniora, krok po kroku.",
+      "effects": "Ponad 400 porad w roku. 9 na 10 seniorów załatwiło sprawę samodzielnie przy kolejnej wizycie.",
+      "beneficiaries": "seniorzy, osoby wykluczone cyfrowo",
+      "keywords": ["senior", "e-usługa", "profil zaufany", "wolontariat", "student", "wykluczenie cyfrowe", "smartfon"],
+      "radar": {
+        "przenaszalnosc": [4, "Wystarczą wolontariusze i sala w bibliotece."],
+        "wplyw": [3, "Seniorzy zyskują samodzielność w sprawach urzędowych."],
+        "dojrzalosc": [3, "Rok działania i proste pomiary."],
+        "nowosc": [2, "Lekcje cyfrowe dla seniorów są znane, nowy jest dyżur na telefonie seniora."],
+        "latwosc": [5, "Prawie bez kosztów."]
+      }
+    },
+    {
+      "key": "gmina-energia-wspolnota",
+      "title": "Gminna spółdzielnia energetyczna na dachach szkół",
+      "institution_type": "gmina", "domains": ["srodowisko", "gospodarka"], "cross": ["obszary_wiejskie", "wspolpraca"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "rural",
+      "problem": "Rachunki za prąd w szkołach i świetlicach rosną, a gmina nie ma pieniędzy na duże inwestycje.",
+      "solution": "Gmina z rolnikami i przedsiębiorcami założyła spółdzielnię energetyczną. Panele na dachach szkół i remizy zasilają budynki gminy, a nadwyżka trafia do członków.",
+      "effects": "Rachunki szkół spadły o 40%. Do spółdzielni dołączyło 35 gospodarstw.",
+      "beneficiaries": "szkoły, świetlice, mieszkańcy gminy",
+      "keywords": ["energia", "fotowoltaika", "spółdzielnia energetyczna", "oszczędność", "szkoła", "odnawialne źródła"],
+      "radar": {
+        "przenaszalnosc": [4, "Prawo pozwala na spółdzielnie w każdej gminie wiejskiej."],
+        "wplyw": [4, "Duże oszczędności i większa niezależność energetyczna."],
+        "dojrzalosc": [3, "Pierwszy pełny rok z danymi o rachunkach."],
+        "nowosc": [3, "Spółdzielni energetycznych w Polsce jest niewiele."],
+        "latwosc": [2, "Wymaga inwestycji i formalności."]
+      }
+    },
+    {
+      "key": "gmina-dowoz-na-zadanie",
+      "title": "Bus na telefon dla mieszkańców przysiółków",
+      "institution_type": "gmina", "domains": ["mobilnosc", "uslugi_spoleczne"], "cross": ["obszary_wiejskie", "seniorzy", "depopulacja"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "rural",
+      "problem": "Autobus jeździ dwa razy dziennie, a seniorzy z przysiółków nie mogą dojechać do lekarza ani na pocztę.",
+      "solution": "Gmina używa busa do dowozu uczniów w godzinach, gdy stoi. Mieszkaniec dzwoni dzień wcześniej, a dyspozytor układa trasę. Przejazd kosztuje 2 zł.",
+      "effects": "Około 300 przejazdów miesięcznie, głównie do przychodni i urzędu.",
+      "beneficiaries": "seniorzy i osoby bez samochodu z małych miejscowości",
+      "keywords": ["transport", "bus", "dowóz", "senior", "przysiółek", "wykluczenie komunikacyjne", "lekarz"],
+      "radar": {
+        "przenaszalnosc": [5, "Każda gmina z busem szkolnym może to powtórzyć."],
+        "wplyw": [4, "Daje dostęp do usług osobom odciętym od transportu."],
+        "dojrzalosc": [3, "Działa od roku, liczby przejazdów są zbierane."],
+        "nowosc": [3, "Transport na żądanie jest nowością w małych gminach."],
+        "latwosc": [4, "Koszt kierowcy i paliwa, bus już jest."]
+      }
+    },
+    {
+      "key": "gmina-aplikacja-zgloszen",
+      "title": "Zgłoszenia awarii przez SMS dla mieszkańców bez internetu",
+      "institution_type": "gmina", "domains": ["administracja", "cyfryzacja"], "cross": ["wykluczenie_cyfrowe", "seniorzy"],
+      "stages": ["pomysl", "pilotaz", "dziala"], "place": "any",
+      "problem": "Mieszkańcy nie zgłaszają dziur w drodze i zepsutych lamp, bo aplikacja jest tylko na smartfony, a do urzędu trzeba jechać.",
+      "solution": "Gmina uruchomiła numer, na który można wysłać zwykłego SMS-a ze zdjęciem albo opisem. Urzędnik odpisuje, kiedy usterka zostanie naprawiona.",
+      "effects": "Liczba zgłoszeń wzrosła trzykrotnie, połowa przychodzi od osób po 60. roku życia.",
+      "beneficiaries": "mieszkańcy, zwłaszcza starsi",
+      "keywords": ["zgłoszenie", "awaria", "SMS", "urząd", "obsługa mieszkańców", "droga", "oświetlenie"],
+      "radar": {
+        "przenaszalnosc": [5, "Bramka SMS działa w każdej gminie."],
+        "wplyw": [3, "Szybsze naprawy i mieszkańcy, którzy czują się wysłuchani."],
+        "dojrzalosc": [2, "Krótki pilotaż."],
+        "nowosc": [2, "Systemy zgłoszeń są znane, nowy jest kanał SMS."],
+        "latwosc": [5, "Niski koszt bramki SMS."]
+      }
+    },
+    {
+      "key": "gmina-retencja-szkoly",
+      "title": "Ogrody deszczowe przy szkołach budowane z uczniami",
+      "institution_type": "gmina", "domains": ["srodowisko", "edukacja"], "cross": ["mlodzi", "wspolpraca"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "town",
+      "problem": "Po ulewach woda zalewa boiska i piwnice szkół, a dzieci nie wiedzą, jak działa obieg wody.",
+      "solution": "Gmina z nauczycielami biologii buduje przy szkołach ogrody deszczowe i beczki na deszczówkę. Uczniowie sadzą rośliny i mierzą, ile wody zatrzymują.",
+      "effects": "Sześć ogrodów, brak zalań boisk od dwóch sezonów. Pomiary uczniów trafiają na stronę gminy.",
+      "beneficiaries": "uczniowie, szkoły, sąsiedzi szkół",
+      "keywords": ["retencja", "deszczówka", "ogród deszczowy", "klimat", "szkoła", "edukacja ekologiczna"],
+      "radar": {
+        "przenaszalnosc": [5, "Proste i tanie, instrukcje są gotowe."],
+        "wplyw": [3, "Mniej zalań i lekcje przyrody w praktyce."],
+        "dojrzalosc": [4, "Sześć ogrodów i pomiary z dwóch lat."],
+        "nowosc": [2, "Ogrody deszczowe są znane, nowy jest udział uczniów w pomiarach."],
+        "latwosc": [5, "Kilka tysięcy złotych na szkołę."]
+      }
+    },
+    {
+      "key": "biblioteka-strefa-mlodziezy",
+      "title": "Biblioteka otwarta wieczorami jako klub dla nastolatków",
+      "institution_type": "kultura", "domains": ["kultura", "edukacja"], "cross": ["mlodzi", "obszary_wiejskie"],
+      "stages": ["pilotaz", "dziala"], "place": "rural",
+      "problem": "Po lekcjach młodzież nie ma gdzie się spotkać, poza przystankiem i sklepem.",
+      "solution": "Gminna biblioteka dwa razy w tygodniu jest otwarta do 21. Jest konsola, gry planszowe, kącik do nauki i wolontariusze, którzy pomagają w lekcjach.",
+      "effects": "Stała grupa 25 nastolatków. Wypożyczenia książek w tej grupie wzrosły dwukrotnie.",
+      "beneficiaries": "młodzież z wiejskich miejscowości",
+      "keywords": ["biblioteka", "młodzież", "klub", "czas wolny", "gry planszowe", "nauka"],
+      "radar": {
+        "przenaszalnosc": [5, "Każda biblioteka może wydłużyć godziny i zaprosić młodych."],
+        "wplyw": [3, "Bezpieczne miejsce i wsparcie w nauce."],
+        "dojrzalosc": [3, "Rok działania."],
+        "nowosc": [2, "Biblioteki jako trzecie miejsce to znany kierunek."],
+        "latwosc": [4, "Koszt dodatkowych godzin pracy."]
+      }
+    },
+    {
+      "key": "dom-kultury-zamiana-uslug",
+      "title": "Bank czasu w domu kultury",
+      "institution_type": "kultura", "domains": ["uslugi_spoleczne", "partycypacja"], "cross": ["seniorzy", "wspolpraca"],
+      "stages": ["pomysl", "pilotaz", "dziala"], "place": "town",
+      "problem": "Sąsiedzi się nie znają, a wiele osób potrzebuje drobnej pomocy, np. przy zakupach albo korepetycjach.",
+      "solution": "Dom kultury prowadzi bank czasu: godzina pomocy jednej osobie daje godzinę, którą można wymienić na pomoc kogoś innego. Ogłoszenia są na tablicy i w grupie telefonicznej.",
+      "effects": "80 członków, ponad 600 godzin wymiany w roku. Najczęściej: korepetycje, zakupy, drobne naprawy.",
+      "beneficiaries": "mieszkańcy, seniorzy, rodziny",
+      "keywords": ["bank czasu", "sąsiedzka pomoc", "wolontariat", "samotność", "dom kultury"],
+      "radar": {
+        "przenaszalnosc": [4, "Zasady są proste, potrzebny jest koordynator."],
+        "wplyw": [3, "Buduje więzi i daje pomoc bez pieniędzy."],
+        "dojrzalosc": [3, "Rok działania i zapis godzin."],
+        "nowosc": [2, "Banki czasu działają w kilku miastach."],
+        "latwosc": [4, "Koszt pracy koordynatora."]
+      }
+    },
+    {
+      "key": "muzeum-cyfrowe-dziedzictwo",
+      "title": "Uczniowie skanują pamiątki mieszkańców do cyfrowego archiwum",
+      "institution_type": "kultura", "domains": ["kultura", "cyfryzacja"], "cross": ["mlodzi", "seniorzy", "pogranicze"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "border",
+      "problem": "Zdjęcia i dokumenty o historii pogranicza giną w szufladach, a młodzi nie znają historii swojej miejscowości.",
+      "solution": "Regionalne muzeum szkoli uczniów ze skanowania i opisywania zdjęć. Uczniowie odwiedzają seniorów, nagrywają ich wspomnienia i publikują je w otwartym archiwum.",
+      "effects": "Ponad 3 tys. zeskanowanych zdjęć i 40 nagranych rozmów. Wystawa objazdowa w pięciu gminach.",
+      "beneficiaries": "uczniowie, seniorzy, społeczność lokalna",
+      "keywords": ["dziedzictwo", "archiwum", "digitalizacja", "historia lokalna", "senior", "uczeń", "pogranicze"],
+      "radar": {
+        "przenaszalnosc": [4, "Muzeum lub biblioteka z jednym skanerem może to powtórzyć."],
+        "wplyw": [3, "Ratuje pamięć miejsca i łączy pokolenia."],
+        "dojrzalosc": [4, "Duże zbiory i wystawa."],
+        "nowosc": [3, "Archiwa społeczne istnieją, rzadko z udziałem szkół."],
+        "latwosc": [4, "Skaner, dyktafon i opiekun projektu."]
+      }
+    },
+    {
+      "key": "ops-teleopieka-sasiedzka",
+      "title": "Sąsiedzi-opiekunowie z przyciskiem alarmowym dla seniorów",
+      "institution_type": "pomoc_zdrowie", "domains": ["uslugi_spoleczne", "zdrowie"], "cross": ["seniorzy", "obszary_wiejskie", "depopulacja"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "rural",
+      "problem": "Samotni seniorzy na wsi czekają na pomoc godzinami, gdy upadną w domu, bo pogotowie i rodzina są daleko.",
+      "solution": "Ośrodek pomocy społecznej dał seniorom opaski z przyciskiem. Alarm trafia najpierw do przeszkolonego sąsiada, który jest na miejscu w kilka minut, a potem do dyspozytora.",
+      "effects": "70 seniorów z opaskami, średni czas dotarcia sąsiada 8 minut. Trzy interwencje zakończyły się szybkim wezwaniem karetki.",
+      "beneficiaries": "samotni seniorzy w małych miejscowościach",
+      "keywords": ["teleopieka", "senior", "opaska", "sąsiad", "bezpieczeństwo", "samotność", "upadek"],
+      "radar": {
+        "przenaszalnosc": [4, "Opaski są dostępne, trzeba zorganizować sąsiadów."],
+        "wplyw": [5, "Może ratować życie samotnych seniorów."],
+        "dojrzalosc": [3, "Pilotaż z danymi o interwencjach."],
+        "nowosc": [3, "Teleopieka jest znana, nowy jest pierwszy krok przez sąsiada."],
+        "latwosc": [3, "Koszt opasek i szkoleń."]
+      }
+    },
+    {
+      "key": "cus-asystent-rodziny-online",
+      "title": "Wideokonsultacje psychologa dla rodzin w małych gminach",
+      "institution_type": "pomoc_zdrowie", "domains": ["zdrowie", "uslugi_spoleczne"], "cross": ["obszary_wiejskie", "mlodzi"],
+      "stages": ["pilotaz", "dziala"], "place": "rural",
+      "problem": "Na wizytę u psychologa dziecięcego czeka się miesiącami, a najbliższa poradnia jest w mieście powiatowym.",
+      "solution": "Centrum usług społecznych zatrudnia psychologa, który przyjmuje przez wideo w szkołach i świetlicach. Pedagog szkolny pomaga rodzinie umówić się i jest na miejscu.",
+      "effects": "150 konsultacji w roku, czas oczekiwania spadł z 4 miesięcy do 2 tygodni.",
+      "beneficiaries": "dzieci, młodzież i rodzice z małych gmin",
+      "keywords": ["psycholog", "zdrowie psychiczne", "wideokonsultacja", "dziecko", "rodzina", "szkoła"],
+      "radar": {
+        "przenaszalnosc": [4, "Potrzebny jest psycholog i sala ze sprzętem w szkole."],
+        "wplyw": [5, "Szybka pomoc dzieciom w kryzysie."],
+        "dojrzalosc": [3, "Rok działania i czasy oczekiwania."],
+        "nowosc": [3, "Teleporady są znane, model w szkole jest nowy w regionie."],
+        "latwosc": [3, "Koszt etatu psychologa."]
+      }
+    },
+    {
+      "key": "szpital-wypis-koordynator",
+      "title": "Koordynator wypisu ze szpitala dla starszych pacjentów",
+      "institution_type": "pomoc_zdrowie", "domains": ["zdrowie", "uslugi_spoleczne"], "cross": ["seniorzy", "wspolpraca"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "town",
+      "problem": "Starsi pacjenci wracają do szpitala kilka dni po wypisie, bo w domu nikt nie zorganizował opieki ani leków.",
+      "solution": "Pielęgniarka koordynator już w szpitalu umawia ośrodek pomocy społecznej, sprzęt i wizytę lekarza rodzinnego. Dzień po wypisie dzwoni do pacjenta.",
+      "effects": "Liczba powrotów do szpitala w ciągu 30 dni spadła o jedną trzecią.",
+      "beneficiaries": "seniorzy wypisywani ze szpitala i ich rodziny",
+      "keywords": ["szpital", "wypis", "opieka", "senior", "koordynator", "pielęgniarka", "opieka domowa"],
+      "radar": {
+        "przenaszalnosc": [4, "Każdy szpital powiatowy może wyznaczyć koordynatora."],
+        "wplyw": [4, "Mniej powrotów do szpitala i bezpieczniejszy powrót do domu."],
+        "dojrzalosc": [4, "Zmierzony spadek powrotów."],
+        "nowosc": [3, "Koordynacja opieki jest rzadka w szpitalach powiatowych."],
+        "latwosc": [3, "Etat koordynatora i współpraca z OPS."]
+      }
+    },
+    {
+      "key": "powiat-urzad-pracy-mentorzy",
+      "title": "Emerytowani fachowcy jako mentorzy młodych bezrobotnych",
+      "institution_type": "inna", "domains": ["gospodarka", "edukacja"], "cross": ["mlodzi", "seniorzy", "wspolpraca"],
+      "stages": ["pilotaz", "dziala"], "place": "town",
+      "problem": "Młodzi bez doświadczenia nie znajdują pracy, a w powiecie brakuje fachowców w zawodach technicznych.",
+      "solution": "Urząd pracy łączy młodych bezrobotnych z emerytowanymi fachowcami, którzy przez trzy miesiące uczą ich zawodu w warsztacie i pomagają szukać pracy.",
+      "effects": "45 par mentor–uczeń, dwie trzecie młodych znalazło pracę w ciągu pół roku.",
+      "beneficiaries": "młodzi bezrobotni, emeryci",
+      "keywords": ["bezrobocie", "mentor", "emeryt", "zawód", "praca", "urząd pracy", "młodzież"],
+      "radar": {
+        "przenaszalnosc": [4, "Każdy urząd pracy może zbudować bazę mentorów."],
+        "wplyw": [4, "Praca dla młodych i przekazanie wiedzy fachowców."],
+        "dojrzalosc": [3, "Wyniki z jednego roku."],
+        "nowosc": [3, "Mentoring międzypokoleniowy jest rzadki w urzędach pracy."],
+        "latwosc": [4, "Niewielkie stypendia dla mentorów."]
+      }
+    },
+    {
+      "key": "starostwo-dane-otwarte",
+      "title": "Otwarte dane o drogach i transporcie powiatu",
+      "institution_type": "powiat", "domains": ["cyfryzacja", "administracja", "mobilnosc"], "cross": ["wspolpraca"],
+      "stages": ["pomysl", "pilotaz", "dziala"], "place": "town",
+      "problem": "Rozkłady busów prywatnych przewoźników i plany remontów dróg są rozproszone, więc mieszkańcy i aplikacje nawigacyjne ich nie widzą.",
+      "solution": "Starostwo zbiera rozkłady i plany remontów w jednym formacie i publikuje je jako otwarte dane. Lokalne firmy i uczniowie technikum budują na nich aplikacje.",
+      "effects": "Rozkłady 12 przewoźników w jednym miejscu, dwie aplikacje uczniowskie z rozkładami.",
+      "beneficiaries": "mieszkańcy, przewoźnicy, twórcy aplikacji",
+      "keywords": ["otwarte dane", "rozkład jazdy", "transport", "droga", "aplikacja", "przewoźnik"],
+      "radar": {
+        "przenaszalnosc": [4, "Format danych jest standardowy."],
+        "wplyw": [3, "Łatwiej zaplanować podróż bez samochodu."],
+        "dojrzalosc": [2, "Pierwsze zbiory danych."],
+        "nowosc": [3, "Otwarte rozkłady w powiatach to rzadkość."],
+        "latwosc": [4, "Głównie praca urzędników."]
+      }
+    },
+    {
+      "key": "marszalek-szkolenia-rolnicy-cyfrowo",
+      "title": "Sprzedaż prosto od rolnika przez wspólny sklep internetowy gmin",
+      "institution_type": "gmina", "domains": ["gospodarka", "cyfryzacja"], "cross": ["obszary_wiejskie", "wspolpraca"],
+      "stages": ["pomysl", "pilotaz", "dziala"], "place": "rural",
+      "problem": "Małe gospodarstwa nie mają gdzie sprzedawać produktów, a pośrednicy płacą bardzo mało.",
+      "solution": "Kilka gmin założyło wspólny sklep internetowy z lokalną żywnością. Odbiór raz w tygodniu w remizach i szkołach, gminy szkolą rolników z robienia zdjęć i opisów.",
+      "effects": "40 gospodarstw w sklepie, 300 zamówień miesięcznie.",
+      "beneficiaries": "rolnicy, koła gospodyń, mieszkańcy miast",
+      "keywords": ["rolnik", "sklep internetowy", "żywność lokalna", "sprzedaż bezpośrednia", "koło gospodyń"],
+      "radar": {
+        "przenaszalnosc": [4, "Gotowa platforma i model odbioru."],
+        "wplyw": [4, "Wyższe dochody gospodarstw."],
+        "dojrzalosc": [2, "Krótki pilotaż."],
+        "nowosc": [3, "Wspólny sklep kilku gmin to nowość."],
+        "latwosc": [3, "Wymaga koordynatora i logistyki."]
+      }
+    },
+    {
+      "key": "szkola-mediacje-rowiesnicze",
+      "title": "Uczniowie-mediatorzy rozwiązują konflikty w szkole",
+      "institution_type": "szkola_podstawowa", "domains": ["edukacja", "zdrowie"], "cross": ["mlodzi"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "any",
+      "problem": "Konflikty i przemoc słowna wśród uczniów rosną, a pedagog jest w szkole dwa dni w tygodniu.",
+      "solution": "Wybrani uczniowie przechodzą szkolenie z mediacji i na przerwach pomagają kolegom dogadać się. Trudne sprawy przekazują pedagogowi.",
+      "effects": "Mniej interwencji dyrekcji o połowę. Program przejęły dwie sąsiednie szkoły.",
+      "beneficiaries": "uczniowie, nauczyciele",
+      "keywords": ["mediacja", "konflikt", "przemoc", "uczeń", "szkoła", "rówieśnik"],
+      "radar": {
+        "przenaszalnosc": [5, "Szkolenie i scenariusze są gotowe."],
+        "wplyw": [3, "Lepsza atmosfera i mniej przemocy."],
+        "dojrzalosc": [4, "Dane z kilku lat i przeniesienie."],
+        "nowosc": [2, "Mediacje rówieśnicze są znane."],
+        "latwosc": [5, "Koszt jednego szkolenia."]
+      }
+    },
+    {
+      "key": "szkola-zdrowe-sniadania",
+      "title": "Uczniowie gotują zdrowe śniadania z lokalnych produktów",
+      "institution_type": "szkola_podstawowa", "domains": ["zdrowie", "edukacja"], "cross": ["mlodzi", "obszary_wiejskie"],
+      "stages": ["pilotaz", "dziala"], "place": "rural",
+      "problem": "Część dzieci przychodzi do szkoły bez śniadania, a w sklepiku są tylko słodycze.",
+      "solution": "Uczniowie z nauczycielem przygotowują raz w tygodniu wspólne śniadanie z warzyw i nabiału od rolników z gminy. Przy okazji uczą się o zdrowym jedzeniu i liczeniu kosztów.",
+      "effects": "Sklepik sprzedaje o połowę mniej słodyczy. Rodzice dołączyli jako wolontariusze.",
+      "beneficiaries": "uczniowie, rolnicy z gminy",
+      "keywords": ["śniadanie", "zdrowe odżywianie", "uczeń", "rolnik", "żywność lokalna"],
+      "radar": {
+        "przenaszalnosc": [5, "Proste do powtórzenia w każdej szkole z kuchnią."],
+        "wplyw": [3, "Lepsze nawyki żywieniowe dzieci."],
+        "dojrzalosc": [3, "Rok działania."],
+        "nowosc": [1, "Podobne programy są powszechne."],
+        "latwosc": [5, "Niewielki koszt produktów."]
+      }
+    },
+    {
+      "key": "gmina-konsultacje-wideo-wies",
+      "title": "Zebrania wiejskie z transmisją i głosowaniem przez telefon",
+      "institution_type": "gmina", "domains": ["partycypacja", "cyfryzacja"], "cross": ["obszary_wiejskie", "mlodzi", "depopulacja"],
+      "stages": ["pomysl", "pilotaz"], "place": "rural",
+      "problem": "Na zebrania wiejskie przychodzi kilka starszych osób, a młodzi pracujący poza wsią nie mają wpływu na wydatki funduszu sołeckiego.",
+      "solution": "Sołectwa transmitują zebrania, a mieszkańcy, którzy nie mogą przyjść, głosują nad funduszem sołeckim przez SMS-y z kodem z ulotki.",
+      "effects": "W pilotażu frekwencja wzrosła z 15 do 90 osób.",
+      "beneficiaries": "mieszkańcy sołectw",
+      "keywords": ["zebranie wiejskie", "fundusz sołecki", "głosowanie", "transmisja", "partycypacja", "sołectwo"],
+      "radar": {
+        "przenaszalnosc": [4, "Prawo pozwala, wystarczy uchwała i bramka SMS."],
+        "wplyw": [3, "Więcej mieszkańców decyduje o funduszu."],
+        "dojrzalosc": [1, "Jeden pilotaż."],
+        "nowosc": [4, "Nie znamy podobnego rozwiązania dla funduszu sołeckiego."],
+        "latwosc": [4, "Tanie narzędzia."]
+      }
+    },
+    {
+      "key": "gmina-tablica-ukraina",
+      "title": "Wspólne zajęcia dla dzieci z Polski i Ukrainy w świetlicach",
+      "institution_type": "gmina", "domains": ["uslugi_spoleczne", "edukacja"], "cross": ["mlodzi", "pogranicze"],
+      "stages": ["pilotaz", "dziala"], "place": "border",
+      "problem": "Dzieci z Ukrainy w szkołach trzymają się osobno i słabo mówią po polsku po lekcjach.",
+      "solution": "Świetlice gminne prowadzą popołudniowe zajęcia sportowe i plastyczne dla dzieci z obu krajów, z animatorem mówiącym w obu językach.",
+      "effects": "Grupy po 20 dzieci w trzech świetlicach. Nauczyciele widzą lepszą integrację w klasach.",
+      "beneficiaries": "dzieci z Polski i Ukrainy",
+      "keywords": ["integracja", "Ukraina", "dziecko", "świetlica", "język polski", "pogranicze"],
+      "radar": {
+        "przenaszalnosc": [4, "Każda świetlica z animatorem może to robić."],
+        "wplyw": [3, "Lepsza integracja i nauka języka."],
+        "dojrzalosc": [3, "Rok działania."],
+        "nowosc": [2, "Zajęcia integracyjne są dość powszechne."],
+        "latwosc": [4, "Koszt animatora."]
+      }
+    },
+    {
+      "key": "uczelnia-dron-rolnictwo",
+      "title": "Uczelnia bada pola rolników dronami za darmo",
+      "institution_type": "uczelnia", "domains": ["nauka", "gospodarka", "srodowisko"], "cross": ["obszary_wiejskie", "wspolpraca"],
+      "stages": ["pilotaz", "dziala"], "place": "university",
+      "problem": "Małe gospodarstwa nie stać na analizy gleby i upraw, więc nawożą na oko.",
+      "solution": "Studenci i naukowcy wydziału robią przeloty dronami z kamerami nad polami chętnych rolników i przygotowują mapy nawożenia. Rolnicy dają dane do badań.",
+      "effects": "30 gospodarstw, średnio 15% mniej nawozów przy tych samych plonach.",
+      "beneficiaries": "małe gospodarstwa rolne, naukowcy",
+      "keywords": ["dron", "rolnictwo precyzyjne", "nawóz", "uczelnia", "gleba", "rolnik", "badania"],
+      "radar": {
+        "przenaszalnosc": [3, "Wymaga uczelni z dronami i specjalistami."],
+        "wplyw": [4, "Oszczędności i mniej nawozów w środowisku."],
+        "dojrzalosc": [3, "Dwa sezony pomiarów."],
+        "nowosc": [4, "Darmowe usługi uczelni dla małych gospodarstw są rzadkie."],
+        "latwosc": [2, "Drogi sprzęt i ludzie."]
+      }
+    },
+    {
+      "key": "uczelnia-lotnictwo-dzieci",
+      "title": "Akademia małego inżyniera lotnictwa na uczelni",
+      "institution_type": "uczelnia", "domains": ["nauka", "edukacja"], "cross": ["mlodzi", "wspolpraca"],
+      "stages": ["dziala", "przeniesiona"], "place": "university",
+      "problem": "Dzieci z mniejszych miejscowości rzadko wybierają studia techniczne, bo nie mają kontaktu z inżynierami.",
+      "solution": "Uczelnia raz w miesiącu zaprasza uczniów szkół podstawowych na zajęcia w laboratoriach: budowa modeli samolotów, tunel aerodynamiczny, symulator lotu. Dojazd opłaca gmina.",
+      "effects": "Ponad 1000 uczniów w dwóch latach. Rosnąca liczba kandydatów na kierunki techniczne z powiatów regionu.",
+      "beneficiaries": "uczniowie szkół podstawowych z regionu",
+      "keywords": ["lotnictwo", "inżynier", "uczelnia", "laboratorium", "uczeń", "nauki ścisłe"],
+      "radar": {
+        "przenaszalnosc": [3, "Wymaga uczelni z laboratoriami."],
+        "wplyw": [3, "Rozbudza zainteresowanie techniką."],
+        "dojrzalosc": [4, "Dwa lata i duża liczba uczestników."],
+        "nowosc": [2, "Uniwersytety dziecięce są znane."],
+        "latwosc": [3, "Koszt dojazdów i pracy naukowców."]
+      }
+    },
+    {
+      "key": "gmina-wspolna-ksiegowosc",
+      "title": "Wspólne centrum usług wspólnych dla szkół trzech gmin",
+      "institution_type": "gmina", "domains": ["administracja", "edukacja"], "cross": ["wspolpraca", "obszary_wiejskie"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "rural",
+      "problem": "Każda mała gmina zatrudnia osobno księgowych i specjalistów od zamówień dla szkół, a i tak brakuje ludzi.",
+      "solution": "Trzy gminy założyły wspólne centrum usług dla szkół: księgowość, kadry, zamówienia i obsługa informatyczna w jednym miejscu.",
+      "effects": "Koszty obsługi szkół spadły o 18%, szkoły mają dyżur informatyka.",
+      "beneficiaries": "szkoły i urzędy małych gmin",
+      "keywords": ["centrum usług wspólnych", "księgowość", "szkoła", "gmina", "oszczędność", "współpraca gmin"],
+      "radar": {
+        "przenaszalnosc": [4, "Prawo pozwala, potrzebne porozumienie gmin."],
+        "wplyw": [3, "Oszczędności i lepsza obsługa szkół."],
+        "dojrzalosc": [4, "Dane o kosztach z dwóch lat."],
+        "nowosc": [2, "Centra usług wspólnych istnieją, rzadko międzygminne."],
+        "latwosc": [3, "Wymaga zmian organizacyjnych."]
+      }
+    },
+    {
+      "key": "gmina-mapa-barier",
+      "title": "Mapa barier architektonicznych tworzona przez uczniów i seniorów",
+      "institution_type": "gmina", "domains": ["mobilnosc", "partycypacja"], "cross": ["seniorzy", "mlodzi", "wspolpraca"],
+      "stages": ["pomysl", "pilotaz", "dziala"], "place": "town",
+      "problem": "Wysokie krawężniki i schody bez podjazdów utrudniają życie seniorom i rodzicom z wózkami, a urząd nie wie, gdzie są.",
+      "solution": "Uczniowie z seniorami spacerują po mieście z telefonem i zaznaczają bariery na mapie. Urząd co roku usuwa te z największą liczbą zgłoszeń.",
+      "effects": "Zaznaczono 260 barier, usunięto 40 w pierwszym roku.",
+      "beneficiaries": "seniorzy, osoby z niepełnosprawnością, rodzice z wózkami",
+      "keywords": ["bariera architektoniczna", "dostępność", "mapa", "senior", "niepełnosprawność", "spacer"],
+      "radar": {
+        "przenaszalnosc": [5, "Darmowa mapa i chętni mieszkańcy."],
+        "wplyw": [3, "Bardziej dostępne miasto."],
+        "dojrzalosc": [3, "Rok działania i usunięte bariery."],
+        "nowosc": [2, "Mapy dostępności są znane."],
+        "latwosc": [4, "Tanie mapowanie, koszt napraw rozłożony w czasie."]
+      }
+    },
+    {
+      "key": "szkola-zawodowa-naprawy",
+      "title": "Kawiarenka napraw prowadzona przez uczniów szkoły branżowej",
+      "institution_type": "szkola_ponadpodstawowa", "domains": ["srodowisko", "edukacja", "gospodarka"], "cross": ["mlodzi", "seniorzy"],
+      "stages": ["pilotaz", "dziala"], "place": "town",
+      "problem": "Sprawne sprzęty lądują na śmietniku, a uczniowie szkoły branżowej ćwiczą na makietach.",
+      "solution": "Raz w miesiącu uczniowie z nauczycielem naprawiają za darmo sprzęty mieszkańców: rowery, czajniki, ubrania. Mieszkańcy płacą tylko za części.",
+      "effects": "Ponad 500 naprawionych rzeczy w roku. Uczniowie dostają zaliczenie praktyk.",
+      "beneficiaries": "mieszkańcy, uczniowie szkoły branżowej",
+      "keywords": ["naprawa", "repair cafe", "odpady", "szkoła branżowa", "uczeń", "recykling"],
+      "radar": {
+        "przenaszalnosc": [5, "Każda szkoła zawodowa ma warsztaty i nauczycieli."],
+        "wplyw": [3, "Mniej odpadów, praktyka dla uczniów."],
+        "dojrzalosc": [3, "Rok działania."],
+        "nowosc": [2, "Kawiarenki napraw są znane, w szkołach rzadziej."],
+        "latwosc": [5, "Prawie bez kosztów."]
+      }
+    },
+    {
+      "key": "gmina-edukacja-finansowa-seniorzy",
+      "title": "Dzielnicowy i bankowiec ostrzegają seniorów przed oszustami",
+      "institution_type": "inna", "domains": ["uslugi_spoleczne", "cyfryzacja"], "cross": ["seniorzy", "wykluczenie_cyfrowe", "wspolpraca"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "any",
+      "problem": "Seniorzy tracą oszczędności przez oszustów „na wnuczka” i fałszywe SMS-y z banku.",
+      "solution": "Policja z lokalnym bankiem i klubami seniora prowadzi krótkie spotkania z przykładami prawdziwych oszustw. Seniorzy dostają kartkę z numerami do sprawdzenia.",
+      "effects": "Spotkania w 20 klubach seniora. W gminie spadła liczba zgłoszonych oszustw na seniorach.",
+      "beneficiaries": "seniorzy",
+      "keywords": ["oszustwo", "senior", "bezpieczeństwo", "policja", "bank", "metoda na wnuczka"],
+      "radar": {
+        "przenaszalnosc": [5, "Scenariusz spotkania jest gotowy."],
+        "wplyw": [3, "Chroni oszczędności seniorów."],
+        "dojrzalosc": [3, "Dane z jednej gminy."],
+        "nowosc": [1, "Takie spotkania są powszechne."],
+        "latwosc": [5, "Bez kosztów."]
+      }
+    },
+    {
+      "key": "przedszkole-jezyki-gry",
+      "title": "Nauka angielskiego w przedszkolu przez gry z seniorami-wolontariuszami",
+      "institution_type": "szkola_podstawowa", "domains": ["edukacja", "uslugi_spoleczne"], "cross": ["seniorzy", "mlodzi"],
+      "stages": ["pomysl", "pilotaz"], "place": "town",
+      "problem": "Przedszkola w małych miastach nie mają pieniędzy na lektora, a seniorzy znający języki nudzą się w domu.",
+      "solution": "Seniorzy, którzy znają angielski, dwa razy w tygodniu bawią się z dziećmi w gry i piosenki po angielsku. Nauczyciel przedszkola prowadzi zajęcia razem z nimi.",
+      "effects": "W pilotażu 3 seniorów i 40 dzieci, seniorzy chcą kontynuować.",
+      "beneficiaries": "przedszkolaki, seniorzy",
+      "keywords": ["przedszkole", "język angielski", "senior", "wolontariat", "międzypokoleniowy", "gry"],
+      "radar": {
+        "przenaszalnosc": [4, "Potrzebni są chętni seniorzy."],
+        "wplyw": [3, "Nauka języka i aktywność seniorów."],
+        "dojrzalosc": [1, "Krótki pilotaż."],
+        "nowosc": [3, "Połączenie dwóch grup jest rzadkie."],
+        "latwosc": [5, "Bez kosztów."]
+      }
+    },
+    {
+      "key": "gmina-chlodzenie-miasta",
+      "title": "Miejskie oazy chłodu w upalne dni",
+      "institution_type": "gmina", "domains": ["srodowisko", "zdrowie"], "cross": ["seniorzy"],
+      "stages": ["pilotaz", "dziala"], "place": "city",
+      "problem": "W upały seniorzy i małe dzieci źle znoszą nagrzane mieszkania w blokach.",
+      "solution": "Miasto otwiera klimatyzowane sale w bibliotekach i domach kultury jako oazy chłodu, ustawia kurtyny wodne i rozsyła SMS-owe ostrzeżenia przed upałem.",
+      "effects": "Pięć oaz, kilkaset osób dziennie w czasie fal upałów.",
+      "beneficiaries": "seniorzy, rodziny z małymi dziećmi",
+      "keywords": ["upał", "klimat", "senior", "oaza chłodu", "zdrowie", "adaptacja do zmian klimatu"],
+      "radar": {
+        "przenaszalnosc": [5, "Każde miasto ma takie budynki."],
+        "wplyw": [4, "Chroni zdrowie najbardziej narażonych."],
+        "dojrzalosc": [3, "Jeden sezon z liczbą odwiedzin."],
+        "nowosc": [3, "Oazy chłodu są nowością w polskich miastach."],
+        "latwosc": [4, "Niewielkie koszty."]
+      }
+    },
+    {
+      "key": "miasto-asystent-urzad",
+      "title": "Asystent mieszkańca w urzędzie dla osób z niepełnosprawnością",
+      "institution_type": "gmina", "domains": ["administracja", "uslugi_spoleczne"], "cross": ["seniorzy"],
+      "stages": ["dziala", "przeniesiona"], "place": "city",
+      "problem": "Osoby z niepełnosprawnością i seniorzy gubią się w urzędzie i rezygnują z załatwienia sprawy.",
+      "solution": "Przy wejściu do urzędu dyżuruje asystent, który prowadzi mieszkańca od okienka do okienka, czyta dokumenty na głos i umawia tłumacza języka migowego.",
+      "effects": "Kilkanaście osób dziennie korzysta z asystenta. Rozwiązanie przejęły dwa inne urzędy.",
+      "beneficiaries": "osoby z niepełnosprawnością, seniorzy",
+      "keywords": ["urząd", "asystent", "niepełnosprawność", "dostępność", "obsługa mieszkańców", "język migowy"],
+      "radar": {
+        "przenaszalnosc": [5, "Każdy urząd może wyznaczyć asystenta."],
+        "wplyw": [3, "Równy dostęp do spraw urzędowych."],
+        "dojrzalosc": [4, "Działa od lat, przeniesione do innych urzędów."],
+        "nowosc": [2, "Asystenci w urzędach pojawiają się w Polsce."],
+        "latwosc": [4, "Etat lub przesunięcie pracownika."]
+      }
+    },
+    {
+      "key": "szkola-podcast-gmina",
+      "title": "Szkolne radio internetowe o sprawach gminy",
+      "institution_type": "szkola_ponadpodstawowa", "domains": ["partycypacja", "kultura", "edukacja"], "cross": ["mlodzi"],
+      "stages": ["pomysl", "pilotaz", "dziala"], "place": "town",
+      "problem": "Mieszkańcy nie wiedzą, co dzieje się w gminie, a lokalna gazeta przestała wychodzić.",
+      "solution": "Uczniowie nagrywają cotygodniowy podcast: rozmowy z wójtem, sołtysami i przedsiębiorcami. Nagrania są w internecie i w radiowęźle.",
+      "effects": "40 odcinków, kilkaset odsłuchań każdego. Dwóch uczniów dostało staż w regionalnym radiu.",
+      "beneficiaries": "mieszkańcy, uczniowie",
+      "keywords": ["podcast", "media lokalne", "młodzież", "informacja", "gmina", "dziennikarstwo"],
+      "radar": {
+        "przenaszalnosc": [5, "Mikrofon i opiekun wystarczą."],
+        "wplyw": [2, "Lepsza informacja lokalna."],
+        "dojrzalosc": [3, "Dużo odcinków."],
+        "nowosc": [2, "Szkolne media są znane."],
+        "latwosc": [5, "Niski koszt sprzętu."]
+      }
+    },
+    {
+      "key": "powiat-szkola-specjalna-praca",
+      "title": "Trening pracy dla absolwentów szkoły specjalnej w lokalnych firmach",
+      "institution_type": "powiat", "domains": ["uslugi_spoleczne", "gospodarka", "edukacja"], "cross": ["mlodzi", "wspolpraca"],
+      "stages": ["pilotaz", "dziala", "przeniesiona"], "place": "town",
+      "problem": "Absolwenci szkół specjalnych po ukończeniu nauki zostają w domu, bo nikt nie pomaga im wejść na rynek pracy.",
+      "solution": "Powiat z firmami organizuje trening pracy: trener towarzyszy absolwentowi w pracy przez pierwsze tygodnie i stopniowo się wycofuje.",
+      "effects": "12 osób z pracą na stałe w dwa lata. Firmy zgłaszają kolejne miejsca.",
+      "beneficiaries": "młodzi z niepełnosprawnością intelektualną",
+      "keywords": ["niepełnosprawność", "zatrudnienie wspomagane", "trener pracy", "absolwent", "firma", "praca"],
+      "radar": {
+        "przenaszalnosc": [4, "Model trenera pracy jest opisany."],
+        "wplyw": [5, "Samodzielność i praca dla osób wykluczonych."],
+        "dojrzalosc": [4, "Dwa lata i trwałe zatrudnienie."],
+        "nowosc": [2, "Zatrudnienie wspomagane jest znane w Polsce."],
+        "latwosc": [3, "Etat trenera."]
+      }
+    },
+    {
+      "key": "gmina-ladowanie-rowery",
+      "title": "Rowery elektryczne do dojazdu do pracy w gminie podmiejskiej",
+      "institution_type": "gmina", "domains": ["mobilnosc", "srodowisko"], "cross": ["mlodzi"],
+      "stages": ["pomysl", "pilotaz"], "place": "town",
+      "problem": "Mieszkańcy dojeżdżają do pracy samochodami, bo autobus do miasta jeździ rzadko, a odległość jest za duża na zwykły rower.",
+      "solution": "Gmina wypożycza mieszkańcom rowery elektryczne na miesiąc za symboliczną opłatą, żeby sprawdzili dojazd do pracy. Przy przystankach stawia zadaszone stojaki.",
+      "effects": "W pilotażu 50 osób, co trzecia kupiła potem własny rower elektryczny.",
+      "beneficiaries": "osoby dojeżdżające do pracy",
+      "keywords": ["rower elektryczny", "dojazd do pracy", "transport", "klimat", "wypożyczalnia"],
+      "radar": {
+        "przenaszalnosc": [4, "Model wypożyczeń jest prosty."],
+        "wplyw": [2, "Zmiana nawyków części mieszkańców."],
+        "dojrzalosc": [1, "Jeden sezon pilotażu."],
+        "nowosc": [3, "Długie wypożyczenia testowe to nowość w regionie."],
+        "latwosc": [3, "Koszt zakupu rowerów."]
+      }
+    },
+    {
+      "key": "uczelnia-startupy-szkoly",
+      "title": "Inkubator pomysłów uczniowskich przy uczelni",
+      "institution_type": "uczelnia", "domains": ["nauka", "gospodarka", "edukacja"], "cross": ["mlodzi", "wspolpraca"],
+      "stages": ["pilotaz", "dziala"], "place": "university",
+      "problem": "Uczniowie mają ciekawe pomysły na produkty i usługi, ale nie wiedzą, jak je sprawdzić i z kim rozmawiać.",
+      "solution": "Uczelnia prowadzi dla uczniów szkół średnich półroczny inkubator: warsztaty, mentorzy z firm i dostęp do pracowni prototypów. Na koniec zespoły prezentują pomysły przed inwestorami.",
+      "effects": "25 zespołów, trzy założyły firmy po maturze.",
+      "beneficiaries": "uczniowie szkół średnich",
+      "keywords": ["inkubator", "przedsiębiorczość", "uczeń", "uczelnia", "prototyp", "startup", "mentor"],
+      "radar": {
+        "przenaszalnosc": [3, "Wymaga uczelni i sieci mentorów."],
+        "wplyw": [3, "Rozwija przedsiębiorczość młodych."],
+        "dojrzalosc": [3, "Dwie edycje."],
+        "nowosc": [3, "Inkubatory dla uczniów są rzadkie."],
+        "latwosc": [3, "Koszt pracowni i koordynatora."]
+      }
+    },
+    {
+      "key": "ops-mieszkanie-treningowe",
+      "title": "Mieszkanie treningowe dla wychowanków pieczy zastępczej",
+      "institution_type": "pomoc_zdrowie", "domains": ["uslugi_spoleczne"], "cross": ["mlodzi"],
+      "stages": ["dziala", "przeniesiona"], "place": "town",
+      "problem": "Pełnoletni wychowankowie domów dziecka nie mają gdzie mieszkać i nie umieją prowadzić domu.",
+      "solution": "Powiatowe centrum pomocy rodzinie prowadzi mieszkanie, w którym młodzi przez rok uczą się płacić rachunki, gotować i szukać pracy, z opiekunem, który odwiedza ich co tydzień.",
+      "effects": "Ośmiu z dziesięciu mieszkańców usamodzielniło się i wynajęło własne mieszkanie.",
+      "beneficiaries": "młodzi opuszczający pieczę zastępczą",
+      "keywords": ["mieszkanie treningowe", "usamodzielnienie", "piecza zastępcza", "młodzież", "dom dziecka"],
+      "radar": {
+        "przenaszalnosc": [4, "Każdy powiat ma takich wychowanków."],
+        "wplyw": [5, "Chroni młodych przed bezdomnością."],
+        "dojrzalosc": [4, "Kilka lat działania."],
+        "nowosc": [2, "Mieszkania treningowe są znane."],
+        "latwosc": [2, "Wymaga mieszkania i opiekuna."]
+      }
+    },
+    {
+      "key": "biblioteka-kodowanie-seniorzy",
+      "title": "Kluby majsterkowania z drukarką 3D w bibliotekach wiejskich",
+      "institution_type": "kultura", "domains": ["cyfryzacja", "kultura", "edukacja"], "cross": ["obszary_wiejskie", "mlodzi", "seniorzy"],
+      "stages": ["pomysl", "pilotaz", "dziala"], "place": "rural",
+      "problem": "Na wsi nie ma miejsc, gdzie można spróbować nowych technologii, np. druku 3D czy prostej elektroniki.",
+      "solution": "Biblioteka kupiła drukarkę 3D i zestawy elektroniczne. Raz w tygodniu dzieci, dorośli i seniorzy razem projektują i drukują drobne części, np. do zepsutych sprzętów.",
+      "effects": "Stała grupa 30 osób w trzech pokoleniach.",
+      "beneficiaries": "mieszkańcy wsi w każdym wieku",
+      "keywords": ["druk 3D", "biblioteka", "majsterkowanie", "technologia", "makerspace", "elektronika"],
+      "radar": {
+        "przenaszalnosc": [5, "Sprzęt jest tani, scenariusze dostępne."],
+        "wplyw": [2, "Kontakt z technologią dla mieszkańców wsi."],
+        "dojrzalosc": [2, "Krótko działa."],
+        "nowosc": [2, "Pracownie w bibliotekach są znane."],
+        "latwosc": [4, "Koszt drukarki i materiałów."]
+      }
+    },
+    {
+      "key": "gmina-woda-czujniki",
+      "title": "Czujniki wycieków w gminnej sieci wodociągowej",
+      "institution_type": "gmina", "domains": ["srodowisko", "cyfryzacja", "administracja"], "cross": ["obszary_wiejskie"],
+      "stages": ["pomysl", "pilotaz"], "place": "rural",
+      "problem": "Gmina traci prawie jedną trzecią wody przez wycieki w starych rurach i dowiaduje się o nich za późno.",
+      "solution": "Na sieci zamontowano tanie czujniki ciśnienia i przepływu, które wysyłają dane do urzędu. Algorytm pokazuje, w którym odcinku jest wyciek.",
+      "effects": "W pilotażu wykryto 6 wycieków w pierwszym miesiącu.",
+      "beneficiaries": "gmina, mieszkańcy płacący za wodę",
+      "keywords": ["wodociąg", "wyciek", "czujnik", "woda", "oszczędność", "monitoring"],
+      "radar": {
+        "przenaszalnosc": [4, "Sieci w gminach są podobne."],
+        "wplyw": [3, "Mniej strat wody i niższe koszty."],
+        "dojrzalosc": [1, "Pierwszy miesiąc pilotażu."],
+        "nowosc": [4, "Rzadkie w małych gminach."],
+        "latwosc": [3, "Koszt czujników i analityki."]
+      }
+    },
+    {
+      "key": "szkola-wolontariat-hospicjum",
+      "title": "Szkolny wolontariat w domu pomocy społecznej",
+      "institution_type": "szkola_ponadpodstawowa", "domains": ["uslugi_spoleczne", "edukacja"], "cross": ["mlodzi", "seniorzy"],
+      "stages": ["dziala", "przeniesiona"], "place": "any",
+      "problem": "Mieszkańcy domu pomocy społecznej rzadko mają gości, a młodzi nie mają kontaktu z osobami starszymi i chorymi.",
+      "solution": "Uczniowie co tydzień odwiedzają dom pomocy: czytają, grają w szachy, nagrywają wspomnienia. Szkoła wpisuje wolontariat na świadectwo.",
+      "effects": "50 uczniów w roku, program przejęły trzy kolejne szkoły w powiecie.",
+      "beneficiaries": "mieszkańcy DPS, uczniowie",
+      "keywords": ["wolontariat", "dom pomocy społecznej", "senior", "uczeń", "samotność", "międzypokoleniowy"],
+      "radar": {
+        "przenaszalnosc": [5, "Łatwe do powtórzenia."],
+        "wplyw": [3, "Mniej samotności i nauka empatii."],
+        "dojrzalosc": [4, "Kilka lat i przeniesienie."],
+        "nowosc": [1, "Wolontariat szkolny jest powszechny."],
+        "latwosc": [5, "Bez kosztów."]
+      }
+    }
+  ],
+  "mentors": [
+    {"name": "Mentorka edukacji cyfrowej (przykład)", "bio": "Nauczycielka informatyki, od lat prowadzi projekty z robotyki i programowania w szkołach wiejskich.", "domains": ["edukacja", "cyfryzacja"], "institution_types": ["szkola_podstawowa", "szkola_ponadpodstawowa"], "expertise": ["robotyka", "programowanie", "szkoła", "kompetencje cyfrowe"]},
+    {"name": "Mentor współpracy nauki z samorządem (przykład)", "bio": "Pracownik uczelni, łączy zespoły studentów z gminami i firmami.", "domains": ["nauka", "administracja", "gospodarka"], "institution_types": ["uczelnia", "gmina"], "expertise": ["uczelnia", "transfer wiedzy", "projekt", "współpraca"]},
+    {"name": "Mentorka usług społecznych (przykład)", "bio": "Była kierowniczka ośrodka pomocy społecznej, zna usługi dla seniorów i rodzin.", "domains": ["uslugi_spoleczne", "zdrowie"], "institution_types": ["pomoc_zdrowie", "gmina"], "expertise": ["senior", "opieka", "rodzina", "pomoc społeczna"]},
+    {"name": "Mentor energii i klimatu (przykład)", "bio": "Inżynier, doradza gminom przy spółdzielniach energetycznych i retencji.", "domains": ["srodowisko"], "institution_types": ["gmina", "powiat"], "expertise": ["energia", "fotowoltaika", "retencja", "klimat"]},
+    {"name": "Mentorka partycypacji (przykład)", "bio": "Moderatorka konsultacji społecznych i budżetów obywatelskich.", "domains": ["partycypacja", "administracja"], "institution_types": ["gmina", "szkola_ponadpodstawowa"], "expertise": ["konsultacje", "budżet obywatelski", "partycypacja", "młodzież"]},
+    {"name": "Mentor transportu (przykład)", "bio": "Planista transportu, pracował nad transportem na żądanie w gminach wiejskich.", "domains": ["mobilnosc"], "institution_types": ["gmina", "powiat"], "expertise": ["transport", "dowóz", "rozkład jazdy", "bus"]},
+    {"name": "Mentorka kultury (przykład)", "bio": "Animatorka kultury, wspiera biblioteki i domy kultury w nowych formach działania.", "domains": ["kultura", "edukacja"], "institution_types": ["kultura"], "expertise": ["biblioteka", "dom kultury", "dziedzictwo", "młodzież"]},
+    {"name": "Mentor przedsiębiorczości (przykład)", "bio": "Przedsiębiorca i doradca, pomaga przekuć pomysł w usługę z budżetem.", "domains": ["gospodarka"], "institution_types": ["uczelnia", "szkola_ponadpodstawowa", "inna"], "expertise": ["przedsiębiorczość", "biznesplan", "startup", "rynek pracy"]},
+    {"name": "Mentorka zdrowia psychicznego (przykład)", "bio": "Psycholożka dziecięca, wdrażała konsultacje online w szkołach.", "domains": ["zdrowie", "edukacja"], "institution_types": ["pomoc_zdrowie", "szkola_podstawowa"], "expertise": ["psycholog", "zdrowie psychiczne", "dziecko", "szkoła"]}
+  ],
+  "programs": [
+    {"title": "Skaluj lokalnie — granty na przeniesienie inicjatywy (przykład)", "active": true, "domains": [], "description": "Do 40 tys. zł dla gminy, szkoły albo instytucji, która chce przenieść sprawdzoną inicjatywę z innego miejsca w regionie. Wymagany partner: autor inicjatywy.", "criteria": ["Inicjatywa działa już w innym miejscu", "Jest partner, który ją prowadzi", "Plan na 12 miesięcy i sposób sprawdzenia efektów", "Udział mieszkańców w przygotowaniu"]},
+    {"title": "Pilotaż w instytucji publicznej (przykład)", "active": false, "domains": ["cyfryzacja", "administracja"], "description": "Wsparcie mentora i do 20 tys. zł na pierwszy pilotaż pomysłu w szkole, urzędzie albo instytucji kultury.", "criteria": ["Pomysł odpowiada na problem instytucji", "Plan pilotażu do 6 miesięcy", "Zespół z instytucji"]},
+    {"title": "Uczelnia dla gminy (przykład)", "active": false, "domains": ["nauka"], "description": "Dofinansowanie wspólnych projektów uczelni i gmin, w których studenci rozwiązują problem samorządu.", "criteria": ["Porozumienie uczelni i gminy", "Konkretny problem gminy", "Udział studentów"]}
+  ]
+}

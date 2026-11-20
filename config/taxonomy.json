@@ -1,0 +1,80 @@
+{
+  "domains": {
+    "edukacja": { "label": "Edukacja", "slug": "edukacja", "description": "szkoły i przedszkola, nauczanie, rozwój uczniów, kompetencje przyszłości" },
+    "nauka": { "label": "Nauka i transfer wiedzy", "slug": "nauka", "description": "uczelnie, badania, współpraca nauki z samorządem, biznesem i szkołami" },
+    "cyfryzacja": { "label": "Cyfryzacja", "slug": "cyfryzacja", "description": "e-usługi, dane, narzędzia cyfrowe, kompetencje cyfrowe mieszkańców" },
+    "administracja": { "label": "Sprawna administracja", "slug": "administracja", "description": "obsługa mieszkańców, procedury, zarządzanie w urzędzie i instytucji" },
+    "srodowisko": { "label": "Środowisko i energia", "slug": "srodowisko", "description": "klimat, energia, odpady, woda, zieleń, adaptacja do zmian klimatu" },
+    "zdrowie": { "label": "Zdrowie", "slug": "zdrowie", "description": "profilaktyka, opieka, zdrowie psychiczne, sport i ruch" },
+    "uslugi_spoleczne": { "label": "Usługi społeczne", "slug": "uslugi-spoleczne", "description": "pomoc społeczna, seniorzy, osoby z niepełnosprawnością, włączenie społeczne" },
+    "mobilnosc": { "label": "Mobilność i transport", "slug": "mobilnosc", "description": "dojazdy, transport publiczny, bezpieczeństwo na drogach, dostępność przestrzeni" },
+    "kultura": { "label": "Kultura i dziedzictwo", "slug": "kultura", "description": "domy kultury, biblioteki, muzea, tradycja, turystyka" },
+    "gospodarka": { "label": "Gospodarka i praca", "slug": "gospodarka", "description": "przedsiębiorczość, rynek pracy, rolnictwo, lokalna gospodarka" },
+    "partycypacja": { "label": "Partycypacja", "slug": "partycypacja", "description": "udział mieszkańców w decyzjach, wolontariat, współpraca z organizacjami" }
+  },
+  "institutionTypes": {
+    "szkola_podstawowa": { "label": "Szkoła podstawowa lub przedszkole", "slug": "szkola-podstawowa", "description": "przedszkola i szkoły podstawowe" },
+    "szkola_ponadpodstawowa": { "label": "Szkoła ponadpodstawowa", "slug": "szkola-ponadpodstawowa", "description": "licea, technika, szkoły branżowe, centra kształcenia zawodowego" },
+    "uczelnia": { "label": "Uczelnia", "slug": "uczelnia", "description": "uczelnie publiczne, ich wydziały, koła naukowe i centra transferu technologii" },
+    "gmina": { "label": "Gmina", "slug": "gmina", "description": "urząd gminy lub miasta i jego jednostki" },
+    "powiat": { "label": "Powiat lub województwo", "slug": "powiat", "description": "starostwo, urząd marszałkowski i ich jednostki" },
+    "kultura": { "label": "Instytucja kultury", "slug": "instytucja-kultury", "description": "dom kultury, biblioteka, muzeum" },
+    "pomoc_zdrowie": { "label": "Pomoc społeczna lub ochrona zdrowia", "slug": "pomoc-zdrowie", "description": "ośrodek pomocy społecznej, centrum usług społecznych, szpital, przychodnia" },
+    "inna": { "label": "Inna instytucja publiczna", "slug": "inna", "description": "np. urząd pracy, straż, park narodowy, agencja" }
+  },
+  "stages": {
+    "pomysl": { "label": "Pomysł", "slug": "pomysl", "description": "opisany, jeszcze nie sprawdzony w praktyce" },
+    "pilotaz": { "label": "Pilotaż", "slug": "pilotaz", "description": "pierwsza próba na małą skalę" },
+    "dziala": { "label": "Działa", "slug": "dziala", "description": "działa regularnie w miejscu powstania" },
+    "przeniesiona": { "label": "Przeniesiona", "slug": "przeniesiona", "description": "działa też w innej gminie lub instytucji" }
+  },
+  "cross": {
+    "obszary_wiejskie": { "label": "Obszary wiejskie", "slug": "obszary-wiejskie", "description": "mniejsze miejscowości i wsie" },
+    "depopulacja": { "label": "Wyludnianie", "slug": "wyludnianie", "description": "spadek liczby mieszkańców, wyjazdy młodych" },
+    "mlodzi": { "label": "Młodzi", "slug": "mlodzi", "description": "dzieci, młodzież, studenci" },
+    "seniorzy": { "label": "Seniorzy", "slug": "seniorzy", "description": "osoby starsze" },
+    "wykluczenie_cyfrowe": { "label": "Wykluczenie cyfrowe", "slug": "wykluczenie-cyfrowe", "description": "brak dostępu lub umiejętności cyfrowych" },
+    "wspolpraca": { "label": "Współpraca międzysektorowa", "slug": "wspolpraca", "description": "samorząd, szkoła, uczelnia, biznes i organizacje razem" },
+    "pogranicze": { "label": "Pogranicze", "slug": "pogranicze", "description": "współpraca przygraniczna i sąsiedzi zza granicy" }
+  },
+  "radar": {
+    "dimensions": {
+      "przenaszalnosc": {
+        "label": "Przenaszalność",
+        "short": "Przenoszenie",
+        "question": "Czy da się to powtórzyć w innej gminie albo instytucji?",
+        "anchors": { "0": "działa tylko dzięki wyjątkowym warunkom tego miejsca", "3": "da się powtórzyć po dostosowaniu", "5": "gotowy przepis, już powtórzony gdzie indziej" }
+      },
+      "wplyw": {
+        "label": "Wpływ",
+        "short": "Wpływ",
+        "question": "Jak dużą i ważną zmianę daje odbiorcom?",
+        "anchors": { "0": "zmiana kosmetyczna", "3": "wyraźna zmiana dla jednej grupy", "5": "duża zmiana dla wielu osób albo ważnego problemu regionu" }
+      },
+      "dojrzalosc": {
+        "label": "Dojrzałość",
+        "short": "Dojrzałość",
+        "question": "Czy jest sprawdzone w praktyce i są na to dowody?",
+        "anchors": { "0": "sam pomysł", "3": "pilotaż z pierwszymi wynikami", "5": "działa od dawna, wyniki zmierzone" }
+      },
+      "nowosc": {
+        "label": "Nowość",
+        "short": "Nowość",
+        "question": "Czy to coś nowego w regionie i w Polsce?",
+        "anchors": { "0": "powszechnie znane i stosowane", "3": "znane w Polsce, nowe w regionie", "5": "nie znamy podobnego rozwiązania" }
+      },
+      "latwosc": {
+        "label": "Łatwość wdrożenia",
+        "short": "Łatwość",
+        "question": "Ile kosztuje i jak trudno to uruchomić?",
+        "anchors": { "0": "wymaga dużych pieniędzy, ludzi i zmian prawa", "3": "wymaga budżetu i osoby do koordynacji", "5": "tanie, wystarczą obecne zasoby" }
+      }
+    },
+    "weights": { "przenaszalnosc": 0.3, "wplyw": 0.25, "dojrzalosc": 0.2, "nowosc": 0.15, "latwosc": 0.1 },
+    "levels": [
+      { "min": 70, "key": "silny", "label": "silny sygnał" },
+      { "min": 45, "key": "obiecujacy", "label": "obiecujący" },
+      { "min": 0, "key": "do_rozwiniecia", "label": "do rozwinięcia" }
+    ]
+  }
+}
