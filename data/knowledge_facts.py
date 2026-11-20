@@ -11,7 +11,7 @@ Zasady (brief modułu II):
 import json
 import sys
 
-from common import OUT, write_json
+from common import DOMAINS, OUT, check_keys, write_json
 from region import EXPECTED_POWIATY, MIN_POWIATY, REGION
 
 BDL = {
@@ -20,17 +20,17 @@ BDL = {
     "source_url": "https://bdl.stat.gov.pl/",
 }
 
-# Wskaźnik powiatów (klucz z out/powiaty_wskazniki.json) → fakt „od … do …”. area: klucz z MWS_AREAS.
+# Wskaźnik powiatów (klucz z out/powiaty_wskazniki.json) → fakt „od … do …”. domain: klucz z config/taxonomy.json.
 RANGE_FACTS = [
-    dict(area="seniorzy", key="udzial_65plus",
+    dict(domain="uslugi_spoleczne", key="udzial_65plus",
          sentence="Tyle mieszkańców ma 65 lat lub więcej — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
-    dict(area="ubostwo", key="beneficjenci",
+    dict(domain="uslugi_spoleczne", key="beneficjenci",
          sentence="Tyle osób na 10 tysięcy mieszkańców korzysta z pomocy społecznej — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
-    dict(area="rodzina_piecza", key="zlobki",
+    dict(domain="edukacja", key="zlobki",
          sentence="Tyle dzieci do lat 3 na 1000 chodzi do żłobka albo klubu dziecięcego — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
-    dict(area="rodzina_piecza", key="przedszkola",
+    dict(domain="edukacja", key="przedszkola",
          sentence="Taka część dzieci w wieku 3–5 lat chodzi do przedszkola — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
-    dict(area="zdrowie", key="przychodnie",
+    dict(domain="zdrowie", key="przychodnie",
          sentence="Tyle przychodni przypada na 10 tysięcy mieszkańców — zależnie od powiatu. Najmniej: {min_where} ({min}). Najwięcej: {max_where} ({max})."),
 ]
 
@@ -59,13 +59,13 @@ def region_facts(gminy: list[dict]) -> list[dict]:
     loc = REGION["locative"]
     return [
         {
-            "area": "seniorzy", "value": round(seniors / 1000, 1), "unit": "tys. osób",
+            "domain": "uslugi_spoleczne", "value": round(seniors / 1000, 1), "unit": "tys. osób",
             "display_value": f"{pl_number(seniors / 1000)} tys.", "data_year": year,
             "sentence": f"Tyle osób {loc} ma 65 lat lub więcej. To {pl_number(100 * seniors / total)} na 100 mieszkańców.",
             "quote": f"Suma po {len(gminy)} gminach: ludność ogółem (zmienna 72305) i w wieku 65+ (72239, 72240), {year} r.",
         },
         {
-            "area": "seniorzy", "value": len(shrinking), "unit": "gmin", "display_value": f"{len(shrinking)} z {len(gminy)}",
+            "domain": "administracja", "value": len(shrinking), "unit": "gmin", "display_value": f"{len(shrinking)} z {len(gminy)}",
             "data_year": year,
             "sentence": f"W tylu gminach {loc} ubyło mieszkańców w ciągu 10 lat.",
             "quote": f"Zmiana ludności ogółem (zmienna 72305) {year - 10}–{year}, {len(gminy)} gmin.",
@@ -87,7 +87,7 @@ def range_facts(gminy: list[dict]) -> list[dict]:
             sys.exit(f"Za mało powiatów dla wskaźnika {f['key']}: {len(values)} z {EXPECTED_POWIATY}")
         lo, hi = min(values, key=lambda v: v[1]), max(values, key=lambda v: v[1])
         out.append({
-            "area": f["area"], "value": None, "unit": ind["unit"],
+            "domain": f["domain"], "value": None, "unit": ind["unit"],
             "display_value": f"od {with_unit(lo[1], ind)} do {with_unit(hi[1], ind)}",
             "data_year": ind["year"],
             "sentence": f["sentence"].format(min=with_unit(lo[1], ind), max=with_unit(hi[1], ind),
@@ -104,11 +104,12 @@ def main() -> None:
          "verified": "policzone skryptem z danych BDL"}
         for f in region_facts(gminy) + range_facts(gminy)
     ]
+    check_keys("domains", [f["domain"] for f in facts], DOMAINS)
     write_json(OUT / "knowledge" / "facts.json", facts)
-    by_area: dict[str, int] = {}
+    by_domain: dict[str, int] = {}
     for f in facts:
-        by_area[f["area"]] = by_area.get(f["area"], 0) + 1
-    print(f"{len(facts)} faktów: {by_area}", file=sys.stderr)
+        by_domain[f["domain"]] = by_domain.get(f["domain"], 0) + 1
+    print(f"{len(facts)} faktów: {by_domain}", file=sys.stderr)
 
 
 if __name__ == "__main__":

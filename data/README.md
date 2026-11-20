@@ -5,33 +5,27 @@ Offline, w Pythonie (README główne, sekcja 8). Klucze bierze z `../.env.local`
 ```sh
 cd data
 uv sync
-uv run scrape_library.py   # innowacje z ../dane/mock (domyślnie; --live = prawdziwa Biblioteka ROPS)
-uv run bdl.py              # profile gmin regionu (config/brand.json) z API BDL GUS (bez klucza: limity, skrypt sam czeka)
-uv run parse_pdfs.py       # PDF-y z raw/docs/ → taxonomy, canvas, fragmenty raportów
-uv run enrich.py           # Groq: obszary, grupy, lematy, ETR           (GROQ_API_KEY)
-uv run seed_synthetic.py   # 200 potrzeb, 10 ekspertów, 2 nabory, pomysły, testy (bez API)
-uv run embed.py            # ładowanie do Supabase (bez embeddingów)     (SUPABASE_DB_URL)
-uv run eval.py             # hit@3, MRR@5, wykrywanie luk                (GROQ_API_KEY)
-
-uv run seed_innovations.py # szybki seed Biblioteki z out/innovations.json, bez kluczy API (SUPABASE_DB_URL)
+uv run bdl.py               # profile gmin regionu (config/brand.json) z API BDL GUS (bez klucza: limity, skrypt sam czeka)
+uv run seed_region.py       # gminy → ../supabase/seed/10_municipalities.sql
+uv run knowledge_facts.py   # fakty „… w liczbach” z BDL → out/knowledge/facts.json (wymaga bdl_wskazniki.py --level powiat)
+uv run knowledge_seed.py    # dziedziny, fakty, materiały, rozwiązania ROPS → ../supabase/seed/20_knowledge.sql + ../content/library/
+uv run seed_initiatives.py  # dane demo: inicjatywy, adopcje, wyzwania, mentorzy, programy → ../supabase/seed/30_demo.sql
+uv run load.py              # ładuje seed/*.sql do bazy z SUPABASE_DB_URL, w jednej transakcji
 ```
 
-- Przed `embed.py` w Supabase muszą być migracje `0001`–`0006`, a lista „Ucz się” to migracja `0008` (materiały są w tabeli `materials`, nowy materiał = nowy wiersz).
-- Formularz `/wniosek` (pytania, oświadczenia, klauzule RODO) czyta treść z `calls.form_schema.content`. Źródło dla naborów demo: `iws2_formularz.json`, wstawiany przez `seed_synthetic.py` + `embed.py`. Poprawka w treści = edycja `form_schema` w bazie (np. Table Editor Supabase), bez wdrożenia; kształt sprawdza `lib/call-schema.ts`. Aktywny nabór bez `content` pokazuje „Formularz jeszcze nie jest gotowy”. Szkic `/wniosek` zostaje tylko w przeglądarce (localStorage) — dane osobowe nie trafiają do bazy.
-- `embed.py` jest idempotentny: innowacje upsertuje po slugu (usuwa te spoza `out/innovations.json`), dane syntetyczne kasuje i wstawia od nowa.
-- Wyniki LLM są cache'owane (`out/enriched.json`, `raw/*_cache.json`), więc ponowne uruchomienie płaci tylko za zmiany.
-- Wszystko, co pochodzi z mocka albo z `seed_synthetic.py`, ma `synthetic = true`.
-- `golden_set.jsonl` odwołuje się do slugów z mocka. Po przejściu na `--live` trzeba go napisać od nowa.
+- Lokalnie wystarczy `npx supabase db reset`: stosuje migracje `0001`–`0005` i ładuje `supabase/seed/*.sql` (alfabetycznie). `load.py` robi to samo z seedami na zdalnej bazie (po `supabase db push`).
+- Pliki seed są w repo i idempotentne: upsert po kluczu, dane demo (`synthetic = true`) kasowane i wstawiane od nowa. Żaden skrypt z listy nie wywołuje LLM.
+- Słowniki (dziedziny, typy instytucji, etapy, tematy przekrojowe, wymiary i wagi radaru) są w `../config/taxonomy.json`; czyta je `common.py` i `lib/taxonomy.ts`. Klucz spoza słownika w seedzie = błąd od razu (`check_keys`).
+- Dane demo powstają z archetypów w `templates/initiatives.json` (bez nazw prawdziwych instytucji, mentorzy i programy z dopiskiem „(przykład)”). Reguły `places` mówią, w jakich gminach archetyp może się pojawić; ten sam archetyp w kilku gminach to „podobne inicjatywy”.
+- Formularz `/wniosek` czyta treść z `programs.form_schema.content`. Źródło dla programu demo: `forms/program_demo.json` (wzór fikcyjny, bez skutków prawnych). Kształt sprawdza `lib/call-schema.ts`. Szkic `/wniosek` zostaje tylko w przeglądarce.
 
 ## Zasobnik wiedzy („Biblioteka i wiedza”)
 
-Prawdziwe dane ze stron ROPS, osobno od korpusu matchmakingu (`out/innovations.json` zostaje bez zmian).
+Prawdziwe dane ze stron ROPS: w Radarze to „sprawdzone rozwiązania z Polski” (tabela `patterns`), ze źródłem i licencją CC BY 4.0.
 
 ```sh
 uv run scrape_knowledge.py     # Biblioteka ROPS (115 innowacji, filmy, paczki ZIP), raporty, publikacje, Mapa Wyzwań → out/knowledge/
 uv run knowledge_facts.py      # karty faktów „… w liczbach” policzone z BDL (gminy + powiaty) → out/knowledge/facts.json
-uv run knowledge_personas.py   # persony z Mapy Wyzwań + pasujące innowacje → out/knowledge/personas.json
-uv run knowledge_seed.py       # dane dla aplikacji → ../content/knowledge/*.json i ../supabase/seed_knowledge.sql
 uv run bdl_wskazniki.py        # dodatkowe wskaźniki gmin z BDL → out/gminy_wskazniki.json (bez klucza: limit 1000 zapytań / 12 h)
 uv run bdl_wskazniki.py --level powiat  # te same zmienne + 3 bazowe dla powiatów → out/powiaty_wskazniki.json
 uv run knowledge_map.py        # mapa: granice gmin z PRG (GUGiK, WFS) + BDL → ../public/mapa/region.json (wymaga mapshapera: npx mapshaper)
@@ -39,8 +33,7 @@ uv run knowledge_map.py        # mapa: granice gmin z PRG (GUGiK, WFS) + BDL →
 
 - Strona ROPS odpowiada na zwykłe żądania HTTP; każdy URL pobieramy raz (cache w `raw/knowledge/`, przerwa 2 s).
 - Sekcję „Autorzy” pomijamy (dane osobowe). Sekcje innowacji rozpoznajemy po treści nagłówka.
-- Obszary i typ innowacji przypisują reguły (`areas_auto`, `type_auto`); admin poprawia je w panelu.
-- Z bazą: migracja `0010_knowledge.sql`, potem `seed_knowledge.sql`, potem w panelu „Odśwież indeks wyszukiwarki”.
+- Dziedziny, typy instytucji, typ innowacji i słowa kluczowe rozwiązań przypisują reguły w `knowledge_seed.py` (`domains_auto`); admin poprawia je w Panelu, a „Odśwież indeks wyszukiwarki” liczy lepsze słowa kluczowe przez LLM.
 - Mapa: opisy i kategorie wskaźników są w `map_indicators.py` (gminy: 3 bazowe + `bdl_wskazniki.py`; powiaty: te same zmienne z `bdl_wskazniki.py --level powiat`). Gminy z PRG upraszczane mapshaperem z zachowaniem topologii; powiaty i obrys województwa to scalone gminy, więc granice warstw się pokrywają. Plik ma ~140 kB (~47 kB po kompresji) i ładuje się, gdy mapa wchodzi na ekran.
 - `uv run` z instalacji snap potrafi przerywać dłuższe skrypty (kod 120) — wtedy `.venv/bin/python <skrypt>.py`.
 

@@ -71,6 +71,9 @@
       }
     },
     "weights": { "przenaszalnosc": 0.3, "wplyw": 0.25, "dojrzalosc": 0.2, "nowosc": 0.15, "latwosc": 0.1 },
+    "maturityCap": { "pomysl": 1, "pilotaz": 3, "dziala": 5, "przeniesiona": 5 },
+    "transferredMinPortability": 3,
+    "noDataMax": 2,
     "levels": [
       { "min": 70, "key": "silny", "label": "silny sygnał" },
       { "min": 45, "key": "obiecujacy", "label": "obiecujący" },
