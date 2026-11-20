@@ -9,11 +9,12 @@ Wynik: out/gminy_wskazniki.json — opisy wskaźników (dla knowledge_map.py) i 
     cd data && uv run bdl_wskazniki.py"""
 import time
 
-from bdl import GMINA_KINDS, MALOPOLSKIE, Bdl, bdl_to_teryt
+from bdl import GMINA_KINDS, Bdl, bdl_to_teryt
 from common import OUT, write_json
 from map_indicators import ind
+from region import MIN_GMINY
 
-MIN_UNITS = 150
+MIN_UNITS = MIN_GMINY
 
 # (wskaźnik, zmienna BDL: id albo (temat, słowa w nazwie zmiennej))
 GMINA_BDL = [

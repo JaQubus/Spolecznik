@@ -3,6 +3,7 @@ import { Alert } from "@/components/ui/alert";
 import { assignedReports, requireExpert } from "@/lib/expert";
 import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
 import { formatDate } from "@/lib/pl";
+import { org } from "@/lib/brand";
 
 export const metadata = { title: "Moje zgłoszenia · Ekspert" };
 
@@ -16,7 +17,7 @@ export default async function Page() {
       <section className="max-w-2xl space-y-4">
         <h1 className="text-3xl font-bold">Zgłoszenia do pomocy</h1>
         <Alert title="Nie znaleźliśmy Twojego profilu eksperta">
-          <p>Poproś ROPS o dopisanie Cię do bazy ekspertów. Do tego czasu nie możemy pokazać przypisanych zgłoszeń.</p>
+          <p>Poproś {org.short} o dopisanie Cię do bazy ekspertów. Do tego czasu nie możemy pokazać przypisanych zgłoszeń.</p>
         </Alert>
       </section>
     );
@@ -28,12 +29,12 @@ export default async function Page() {
       <div className="space-y-3">
         <h1 className="text-3xl font-bold">Zgłoszenia do pomocy</h1>
         <p className="max-w-2xl text-lg">
-          Jesteś zalogowany jako <strong>{expert.name}</strong>. Tu są zgłoszenia i pomysły, przy których ROPS prosi Cię
-          o pomoc. Odpowiadasz bezpośrednio autorowi; ROPS widzi rozmowę.
+          Jesteś zalogowany jako <strong>{expert.name}</strong>. Tu są zgłoszenia i pomysły, przy których {org.short} prosi Cię
+          o pomoc. Odpowiadasz bezpośrednio autorowi; {org.short} widzi rozmowę.
         </p>
       </div>
       {reports.length === 0 ? (
-        <p className="text-lg">Nie masz jeszcze przypisanych zgłoszeń. Damy znać w powiadomieniach, gdy ROPS poprosi Cię o pomoc.</p>
+        <p className="text-lg">Nie masz jeszcze przypisanych zgłoszeń. Damy znać w powiadomieniach, gdy {org.short} poprosi Cię o pomoc.</p>
       ) : (
         <ul className="max-w-3xl border-t">
           {reports.map((r) => (

@@ -15,6 +15,7 @@ import subprocess
 import sys
 
 from common import OUT, ROOT, write_json
+from region import MIN_POWIATY
 from scrape_knowledge import _cache_path, fetch
 
 DIAG_2025 = {
@@ -156,7 +157,7 @@ def ioss_facts() -> list[dict]:
     out = []
     for f in IOSS_FACTS:
         values = [(r["powiat"], float(r["wartosc"]), r["rok"]) for r in rows if r["wskaznik"] == f["indicator"]]
-        if len(values) < 20:
+        if len(values) < MIN_POWIATY:
             sys.exit(f"Za mało powiatów dla wskaźnika {f['indicator']}: {len(values)}")
         lo, hi = min(values, key=lambda v: v[1]), max(values, key=lambda v: v[1])
         year = int(lo[2])

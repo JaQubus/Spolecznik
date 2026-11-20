@@ -8,7 +8,7 @@ import { innovationsForArea } from "@/lib/innovations";
 import { classify, ranked, withUnit, type LayerKey, type MapData, type MapIndicator, type MapUnit } from "@/lib/knowledge/map";
 import { formatNumber, plural } from "@/lib/pl";
 import { AREA_LABELS } from "@/lib/taxonomy";
-import mapJson from "@/public/mapa/malopolska.json";
+import mapJson from "@/public/mapa/region.json";
 import { LINK as linkClass } from "../shared";
 import { FocusHeading } from "@/components/a11y/focus-heading";
 import { IndicatorSelect } from "./indicator-select";

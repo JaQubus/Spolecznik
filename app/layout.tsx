@@ -5,6 +5,7 @@ import { A11Y_INIT_SCRIPT } from "@/components/a11y/init-script";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+import { brand } from "@/lib/brand";
 
 // latin-ext jest potrzebne dla polskich znaków.
 // Atkinson Hyperlegible: projektowany dla osób słabowidzących (patrz docs/design-system).
@@ -19,8 +20,8 @@ const atkinsonMono = Atkinson_Hyperlegible_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Społecznik", template: "%s · Społecznik" },
-  description: "Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.",
+  title: { default: brand.name, template: `%s · ${brand.name}` },
+  description: brand.tagline,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -42,7 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <footer className="bg-secondary print:hidden px-4 py-8 text-center text-base text-muted-foreground">
-          Społecznik · Małopolski Hub Innowacji Społecznych · dane demonstracyjne są syntetyczne ·{" "}
+          {brand.name} · {brand.hub} · dane demonstracyjne są syntetyczne ·{" "}
           <Link href="/api-docs" className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
             API dla integracji
           </Link>

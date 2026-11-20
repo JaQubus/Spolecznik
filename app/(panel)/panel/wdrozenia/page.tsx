@@ -5,8 +5,9 @@ import { innovationHref } from "@/lib/knowledge/hrefs";
 import { listPlans, plannedInnovations, type PlanRow } from "@/lib/panel/plans";
 import { formatDate, plural } from "@/lib/pl";
 import { INSTITUTION_LABELS } from "@/lib/schemas";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata = { title: "Wdrożenia · Panel ROPS" };
+export const metadata = { title: panelTitle("Wdrożenia") };
 
 const PAGE_SIZE = 50;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

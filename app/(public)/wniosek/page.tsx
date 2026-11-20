@@ -5,6 +5,7 @@ import { CallFormContent } from "@/lib/call-schema";
 import { todayInPoland } from "@/lib/pl";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { org } from "@/lib/brand";
 
 export const metadata = { title: "Wypełnij wniosek o grant" };
 
@@ -83,7 +84,7 @@ export default async function Page(props: PageProps<"/wniosek">) {
       <div className="space-y-4 print:hidden">
         <h1 className="text-3xl font-bold">Wypełnij wniosek o grant</h1>
         <p className="max-w-2xl text-lg">
-          Formularz aplikacyjny do naboru „{call.title}” (ROPS w Krakowie). Przeprowadzimy Cię przez niego krok po kroku,
+          Formularz aplikacyjny do naboru „{call.title}” ({org.shortWithCity}). Przeprowadzimy Cię przez niego krok po kroku,
           a na końcu dostaniesz wypełniony wniosek do wydruku, podpisu i wysłania.
         </p>
         <p className="max-w-2xl">Zajmie to około godziny. Przygotuj dane kontaktowe, krótki opis pomysłu i szacunkowe koszty.</p>

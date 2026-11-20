@@ -8,8 +8,9 @@ import { TEST_STATUSES } from "@/lib/schemas";
 import { TEST_STATUS_LABELS, testStatusLabel, type TestStatus } from "@/lib/test-status";
 import { ActionForm, SubmitButton } from "../action-form";
 import { updateTestStatus } from "../actions";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata = { title: "Testy · Panel ROPS" };
+export const metadata = { title: panelTitle("Testy") };
 
 const PAGE_SIZE = 50;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

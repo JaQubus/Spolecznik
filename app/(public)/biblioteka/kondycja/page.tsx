@@ -6,8 +6,9 @@ import { NoDatabase } from "@/components/layout/no-database";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { LINK as linkClass, first } from "../shared";
 import { KondycjaView } from "./kondycja-view";
+import { region } from "@/lib/brand";
 
-export const metadata: Metadata = { title: "Kondycja Małopolski" };
+export const metadata: Metadata = { title: `Kondycja ${region.genitive}` };
 
 export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
   const params = await props.searchParams;
@@ -21,9 +22,9 @@ export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
         </Link>
       </p>
       <header className="space-y-3">
-        <h1 className="text-4xl font-bold">Kondycja Małopolski</h1>
+        <h1 className="text-4xl font-bold">Kondycja {region.genitive}</h1>
         <p className="max-w-2xl text-xl">
-          Sprawdź na mapie każdą ze 183 gmin i każdy z 22 powiatów. Wybierz kategorię i wskaźnik, a potem kliknij gminę albo powiat, żeby zobaczyć jego kartę.
+          Sprawdź na mapie każdą ze {region.expectedMunicipalities} gmin i każdy z {region.expectedCounties} powiatów. Wybierz kategorię i wskaźnik, a potem kliknij gminę albo powiat, żeby zobaczyć jego kartę.
         </p>
       </header>
 

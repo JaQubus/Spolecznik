@@ -14,6 +14,7 @@ import { formatBytes, isHugeFile, TYPE_LABELS } from "@/lib/knowledge/labels";
 import { similarInnovations } from "@/lib/knowledge/similar";
 import { GROUP_LABELS } from "@/lib/taxonomy";
 import { safeDecode } from "../../shared";
+import { org } from "@/lib/brand";
 
 export async function generateMetadata(props: PageProps<"/biblioteka/innowacja/[slug]">): Promise<Metadata> {
   const i = await innovationPage(safeDecode((await props.params).slug));
@@ -41,7 +42,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
         ]} />
         <h1 className="text-4xl font-bold">{i.title}</h1>
         {i.synthetic && (
-          <p className="text-base text-muted-foreground">Przykładowe dane do pokazu, nie prawdziwa innowacja z Biblioteki ROPS.</p>
+          <p className="text-base text-muted-foreground">Przykładowe dane do pokazu, nie prawdziwa innowacja z Biblioteki {org.short}.</p>
         )}
 
         <dl className="grid max-w-[48rem] gap-x-6 gap-y-3 text-lg sm:grid-cols-[auto_1fr]">
@@ -72,7 +73,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
           )}
         </dl>
         {i.dissemination && (
-          <p className="text-lg"><strong>Wybrana przez ROPS do upowszechniania</strong> — przetestowana i polecana do wdrażania w innych miejscach.</p>
+          <p className="text-lg"><strong>Wybrana przez {org.short} do upowszechniania</strong> — przetestowana i polecana do wdrażania w innych miejscach.</p>
         )}
         {i.etrSummary && <EasyText text={i.etrSummary} />}
       </div>
@@ -125,7 +126,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
             <li>
               <a href={i.sourceUrl} className={`inline-flex items-start gap-2 ${link}`}>
                 <ArrowTopRightOnSquareIcon aria-hidden className="mt-1 size-5 shrink-0" />
-                Zobacz innowację na stronie ROPS w Krakowie
+                Zobacz innowację na stronie {org.shortWithCity}
               </a>
             </li>
           )}

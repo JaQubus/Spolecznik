@@ -6,6 +6,7 @@ import { NOVELTY_MIN_SIMILARITY } from "./schemas";
 import { keywordSearch, searchDocChunks } from "./search";
 import { createAdminClient } from "./supabase/admin";
 import { reportPageHref, type MessageSource } from "./thread-types";
+import { org } from "@/lib/brand";
 
 /**
  * „Zapytaj ROPS”: asystent jako pierwsza linia (#20). Ten sam mechanizm co „Zapytaj Bibliotekę” (/api/ask):
@@ -20,15 +21,15 @@ export type FirstLine =
   | { outcome: "bez_pytania" };
 
 export const FORWARD_MESSAGES: Record<"sprawa" | "brak_zrodel", string> = {
-  sprawa: "Pytanie dotyczy Twojej sprawy, więc nie zgaduję. Przekazałem pytanie do ROPS — pracownik odpowie tutaj, w tej rozmowie.",
-  brak_zrodel: "W Zasobniku nie znalazłem pewnej odpowiedzi, więc nie zgaduję. Przekazałem pytanie do ROPS — pracownik odpowie tutaj, w tej rozmowie.",
+  sprawa: `Pytanie dotyczy Twojej sprawy, więc nie zgaduję. Przekazałem pytanie do ${org.short} — pracownik odpowie tutaj, w tej rozmowie.`,
+  brak_zrodel: `W Zasobniku nie znalazłem pewnej odpowiedzi, więc nie zgaduję. Przekazałem pytanie do ${org.short} — pracownik odpowie tutaj, w tej rozmowie.`,
 };
 
 /** `message` jest już zanonimizowana (lib/pii.ts). Błędy AI i bazy kończą się przekazaniem, nigdy wyjątkiem. */
 export async function firstLine(message: string): Promise<FirstLine> {
   if (asksAboutOwnCase(message)) return { outcome: "przekazano", reason: "sprawa" };
   try {
-    const { lemmas } = await tagCard("Pytanie do ROPS", message);
+    const { lemmas } = await tagCard(`Pytanie do ${org.short}`, message);
     const [chunks, innovationHits] = await Promise.all([
       searchDocChunks(lemmas, 5),
       keywordSearch("innowacja", lemmas, 3).then((hits) => hits.filter((h) => h.similarity >= NOVELTY_MIN_SIMILARITY)),

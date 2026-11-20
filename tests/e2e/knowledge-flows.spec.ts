@@ -1,7 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { org, region } from "../../lib/brand";
 
-async function loginAs(page: Page, role: "administrator ROPS" | "mieszkaniec", next = "") {
+const ADMIN = `administrator ${org.short}`;
+
+async function loginAs(page: Page, role: string, next = "") {
   await page.goto(`/logowanie${next && `?dalej=${encodeURIComponent(next)}`}`);
   await page.getByRole("button", { name: `Wejdź jako ${role}` }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/logowanie"));
@@ -11,7 +14,7 @@ test("ścieżka demo w 3 kliknięciach: Zasobnik → Seniorzy → karta innowacj
   await page.goto("/biblioteka");
   await page.getByRole("link", { name: "Seniorzy", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Seniorzy" })).toBeVisible();
-  for (const h of ["Małopolska w liczbach", "Innowacje, które na to odpowiadają", "Materiały do nauki"]) {
+  for (const h of [`${region.name} w liczbach`, "Innowacje, które na to odpowiadają", "Materiały do nauki"]) {
     await expect(page.getByRole("heading", { level: 2, name: h })).toBeVisible();
   }
   await expect(page.getByText(/^Źródło:/).first()).toBeVisible();
@@ -69,7 +72,7 @@ test("niezalogowany trafia na logowanie", async ({ page }) => {
 });
 
 test("admin: trendy z tabelą i eksport CSV, bez naruszeń axe", async ({ page }) => {
-  await loginAs(page, "administrator ROPS", "/panel/trendy");
+  await loginAs(page, ADMIN, "/panel/trendy");
   await expect(page.getByRole("heading", { level: 1, name: "Trendy potrzeb" })).toBeVisible();
   await expect(page.getByRole("table", { name: /Liczba zgłoszeń według obszaru/ })).toBeVisible();
   const csv = await page.request.get("/panel/trendy/eksport?okres=month");
@@ -81,7 +84,7 @@ test("admin: trendy z tabelą i eksport CSV, bez naruszeń axe", async ({ page }
 
 test("admin dodaje innowację, po chwili znajduje ją w wyszukiwarce, potem usuwa", async ({ page }) => {
   const title = `Testowa herbatka sąsiedzka ${Date.now()}`;
-  await loginAs(page, "administrator ROPS", "/panel/wiedza");
+  await loginAs(page, ADMIN, "/panel/wiedza");
   await page.getByRole("link", { name: "Dodaj innowację" }).click();
 
   // Pusty formularz: podsumowanie błędów dostaje fokus.
@@ -107,18 +110,18 @@ test("admin dodaje innowację, po chwili znajduje ją w wyszukiwarce, potem usuw
   await expect(page.getByText("Rekord został usunięty.")).toBeVisible();
 });
 
-test("Kondycja Małopolski: gminy i powiaty, kategorie, top 5, karta po kliknięciu, bez naruszeń axe", async ({ page }) => {
+test(`Kondycja ${region.genitive}: gminy i powiaty, kategorie, top 5, karta po kliknięciu, bez naruszeń axe`, async ({ page }) => {
   await page.goto("/biblioteka/kondycja");
   const map = page.getByRole("group", { name: /^Mapa gmin:/ });
-  await expect(map.locator("a[data-id]")).toHaveCount(183);
+  await expect(map.locator("a[data-id]")).toHaveCount(region.expectedMunicipalities);
 
   // Kategoria bez danych dla gmin prowadzi na powiaty.
   await page.getByRole("link", { name: /^Placówki i kadra \(tylko powiaty\)$/ }).click();
-  await expect(page.getByRole("group", { name: /^Mapa powiatów:/ }).getByRole("link")).toHaveCount(22);
+  await expect(page.getByRole("group", { name: /^Mapa powiatów:/ }).getByRole("link")).toHaveCount(region.expectedCounties);
   await expect(page.getByRole("link", { name: /^Placówki i kadra \(\d+\)$/ })).toHaveAttribute("aria-current", "true");
 
   // Powrót na gminy z tym samym wskaźnikiem: komunikat, że jest tylko dla powiatów.
-  await page.getByRole("link", { name: /^Gminy \(183\)/ }).click();
+  await page.getByRole("link", { name: new RegExp(`^Gminy \\(${region.expectedMunicipalities}\\)`) }).click();
   await expect(page.getByText("Tego wskaźnika nie ma dla gmin")).toBeVisible();
 
   // Kategoria + „Co pokazać”; pod mapą piątka z najwyższą i z najniższą wartością.

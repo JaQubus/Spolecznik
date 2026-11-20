@@ -11,11 +11,9 @@ import { needTimeline, type NeedStatus } from "@/lib/need-status";
 import { needHistory, statusEvents } from "@/lib/panel/needs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AreaBadge } from "@/components/knowledge/icons";
+import { brand, org, region, STATUS_CODE } from "@/lib/brand";
 
 export const metadata = { title: "Status zgłoszenia" };
-
-// Alfabet z lib/status-code.ts: bez 0, 1, I, O.
-const CODE = /^SPL-[2-9A-HJ-NP-Z]{4}$/;
 
 type Report = {
   kind: "potrzeba" | "pomysl";
@@ -89,7 +87,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
   let key: string | null = null;
   let contact: string | null = null;
   let unavailable = false;
-  if (CODE.test(code)) {
+  if (STATUS_CODE.test(code)) {
     try {
       report = await findReport(code);
       if (report) {
@@ -122,8 +120,8 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         <h1 className="text-3xl font-bold">Nie znaleźliśmy tego zgłoszenia</h1>
         <p className="text-lg">
           Nie ma zgłoszenia o kodzie <strong className="font-mono tracking-wider">{code}</strong>. Sprawdź, czy kod
-          jest przepisany dokładnie — ma postać <span className="font-mono">SPL-</span> i cztery znaki, np.{" "}
-          <span className="font-mono">SPL-4K7Q</span>.
+          jest przepisany dokładnie — ma postać <span className="font-mono">{brand.statusPrefix}-</span> i cztery znaki, np.{" "}
+          <span className="font-mono">{brand.statusExample}</span>.
         </p>
         <Button asChild variant="outline"><Link href="/status">Wpisz kod jeszcze raz</Link></Button>
       </section>
@@ -166,7 +164,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         <div className="max-w-[44rem] space-y-4">
           <Alert title="Nie ma jeszcze gotowego rozwiązania">
             <p>
-              Zgłoszenie jest na mapie potrzeb Małopolski, więc ROPS wie, że trzeba tu szukać nowych pomysłów.
+              Zgłoszenie jest na mapie potrzeb {region.genitive}, więc {org.short} wie, że trzeba tu szukać nowych pomysłów.
               Masz pomysł, jak to rozwiązać? Pomożemy go opisać.
             </p>
           </Alert>
@@ -180,7 +178,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
             <Link href={`/zapytaj?kod=${code}`}>
               {withExpert
                 ? "Przejdź do rozmowy z ekspertem"
-                : `Napisz do ROPS w sprawie ${report.kind === "pomysl" ? "pomysłu" : "zgłoszenia"}`}
+                : `Napisz do ${org.short} w sprawie ${report.kind === "pomysl" ? "pomysłu" : "zgłoszenia"}`}
             </Link>
           </Button>
           {/* Zaproszenia i rozmowa gmin. Sam kod nie otwiera partnerstwa — /partnerstwo sprawdza klucz z przeglądarki. */}

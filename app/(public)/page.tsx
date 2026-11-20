@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { GMINA_OPTIONS } from "@/lib/gminy";
 import { SearchBar } from "./search-bar";
+import { brand } from "@/lib/brand";
 
 export default function Home() {
   return (
@@ -8,9 +9,9 @@ export default function Home() {
       {/* Kremowy pas pod nagłówkiem: białe pola na kremowym tle najlepiej odróżniają się od strony. */}
       <section className="full-bleed -mt-8 space-y-8 bg-secondary py-12 md:py-16">
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold sm:text-5xl">Społecznik</h1>
+          <h1 className="text-4xl font-bold sm:text-5xl">{brand.name}</h1>
           <p className="max-w-2xl text-xl">
-            Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.
+            {brand.tagline}
           </p>
         </div>
         <SearchBar gminy={GMINA_OPTIONS} />

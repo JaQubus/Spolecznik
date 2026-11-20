@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { cn } from "cn";
+import { region } from "@/lib/brand";
 
 export const TABS = [
-  { key: "challenges", label: "Wyzwania Małopolski" },
+  { key: "challenges", label: `Wyzwania ${region.genitive}` },
   { key: "library", label: "Biblioteka innowacji" },
   { key: "materials", label: "Materiały" },
 ] as const;

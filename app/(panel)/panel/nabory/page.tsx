@@ -5,8 +5,9 @@ import { formatDate } from "@/lib/pl";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DeleteForm } from "../action-form";
 import { setCallActive } from "../actions";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata = { title: "Nabory · Panel ROPS" };
+export const metadata = { title: panelTitle("Nabory") };
 
 export default async function Page(props: PageProps<"/panel/nabory">) {
   await requireAdmin();

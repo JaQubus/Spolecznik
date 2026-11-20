@@ -2,12 +2,13 @@ import Link from "next/link";
 import { AreaList } from "@/components/knowledge/tiles";
 import { flags } from "@/lib/flags";
 import { knowledge } from "@/lib/knowledge";
+import { region } from "@/lib/brand";
 
 /** „Wyzwania Małopolski”: główne tematy jako lista obszarów; każdy prowadzi do strony obszaru z liczbami i innowacjami. */
 export async function ChallengesTab() {
   const areas = await knowledge.areas();
   return (
-    <section aria-label="Wyzwania Małopolski" className="space-y-8">
+    <section aria-label={`Wyzwania ${region.genitive}`} className="space-y-8">
       <p className="max-w-[70rem] text-lg">
         Najważniejsze problemy społeczne w regionie. Wybierz temat, żeby zobaczyć liczby ze źródłami i sprawdzone rozwiązania.
       </p>

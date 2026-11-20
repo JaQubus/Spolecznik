@@ -1,4 +1,5 @@
 import "server-only";
+import { brand } from "@/lib/brand";
 
 /**
  * Wysyłka e-maili przez Resend (README §4), zwykłym fetch. Bez RESEND_API_KEY nic nie wysyłamy, tylko logujemy
@@ -15,7 +16,7 @@ export async function sendEmail(msg: { to: string; subject: string; text: string
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM || "Społecznik <onboarding@resend.dev>",
+      from: process.env.EMAIL_FROM || brand.emailFrom,
       to: [msg.to],
       subject: msg.subject,
       text: msg.text,

@@ -1,4 +1,4 @@
-// Mapa Małopolski: typy pliku public/mapa/malopolska.json (generuje data/knowledge_map.py) i podział na klasy.
+// Mapa regionu: typy pliku public/mapa/region.json (generuje data/knowledge_map.py) i podział na klasy.
 import { formatNumber } from "@/lib/pl";
 import type { AreaKey } from "./types";
 

@@ -10,6 +10,7 @@ import { InnovationTiles } from "@/components/knowledge/tiles";
 import { Button } from "@/components/ui/button";
 import { knowledge } from "@/lib/knowledge";
 import { plural } from "@/lib/pl";
+import { org, region } from "@/lib/brand";
 
 const SHOWN = 6;
 
@@ -62,13 +63,13 @@ export default async function Page(props: PageProps<"/biblioteka/obszar/[slug]">
             <a href={area.challengesSource.url} className="font-bold text-link underline decoration-1 underline-offset-4 hover:decoration-2">
               {area.challengesSource.title}
             </a>{" "}
-            (ROPS w Krakowie). {area.challengesSource.note}
+            ({org.shortWithCity}). {area.challengesSource.note}
           </p>
         )}
       </section>
 
       <section aria-labelledby="w-liczbach" className="space-y-4">
-        <h2 id="w-liczbach" className="text-3xl font-bold">Małopolska w liczbach</h2>
+        <h2 id="w-liczbach" className="text-3xl font-bold">{region.name} w liczbach</h2>
         <FactList facts={facts} />
       </section>
 

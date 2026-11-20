@@ -6,6 +6,7 @@ import { FieldHint } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { rememberedThreads, type MyNeed } from "@/lib/threads";
+import { brand } from "@/lib/brand";
 
 export const metadata = { title: "Sprawdź status" };
 
@@ -32,7 +33,7 @@ export default async function Page() {
         <form action={go} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="kod">Kod zgłoszenia</Label>
-            <FieldHint id="kod-pomoc">Kod jest w potwierdzeniu zgłoszenia, np. <span className="font-mono">SPL-4K7Q</span>.</FieldHint>
+            <FieldHint id="kod-pomoc">Kod jest w potwierdzeniu zgłoszenia, np. <span className="font-mono">{brand.statusExample}</span>.</FieldHint>
             {/* Kody do przepisania: Atkinson Hyperlegible Mono, żeby 0 i O się nie myliły. */}
             <Input id="kod" name="kod" aria-describedby="kod-pomoc" required autoComplete="off" spellCheck={false} className="max-w-xs font-mono tracking-wider uppercase" />
           </div>

@@ -13,8 +13,9 @@ import { getClusters } from "@/lib/knowledge/clusters";
 import { getTrends, parseBucket } from "@/lib/knowledge/trends";
 import { ClusterList } from "./clusters";
 import { GapMap } from "./gap-map";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata: Metadata = { title: "Trendy potrzeb · Panel ROPS", robots: { index: false } };
+export const metadata: Metadata = { title: panelTitle("Trendy potrzeb"), robots: { index: false } };
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 

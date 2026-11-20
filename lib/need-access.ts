@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { STATUS_CODE } from "./schemas";
+import { brand } from "@/lib/brand";
 
 /**
  * Dostęp do rozmowy o zgłoszeniu bez konta (README §6, „kod jak numer przesyłki”).
@@ -10,7 +11,7 @@ import { STATUS_CODE } from "./schemas";
  * Pomysły z Pracowni mają ten sam klucz (ideas.access_hash): otwiera rozmowę o pomyśle i listę „moich zgłoszeń”.
  */
 
-const COOKIE = "spl_zgloszenia";
+const COOKIE = brand.cookies.reports;
 const MAX_REMEMBERED = 20;
 const KEY = /^[A-Za-z0-9_-]{43}$/;
 

@@ -4,6 +4,7 @@ import {
   Innovation, InnovationsQuery, summarizeTests, toInnovation, toSummary, WEBHOOK_EVENTS, type InnovationDetailRow,
 } from "../../lib/api/contract.ts";
 import { buildOpenApi } from "../../lib/api/openapi.ts";
+import { region } from "../../lib/brand.ts";
 
 /** Pola, które nie mogą trafić do publicznego API (dane osobowe, treści zgłoszeń, klucze). */
 const SENSITIVE = ["raw_text", "rawText", "contact_email", "contactEmail", "author_id", "authorId", "tester_id", "testerId",
@@ -82,9 +83,10 @@ describe("mapowanie wierszy", () => {
     assert.equal(toSummary({ ...ROW, slug: "dom/ogród" }, "https://s.example").url, "https://s.example/biblioteka/innowacja/dom%2Fogr%C3%B3d");
   });
 
-  test("teryt przyjmuje tylko powiat z Małopolski", () => {
-    for (const ok of ["1201", "1261"]) assert.ok(InnovationsQuery.safeParse({ teryt: ok }).success, ok);
-    for (const bad of ["1201011", "0201", "12010", "abc"]) assert.ok(!InnovationsQuery.safeParse({ teryt: bad }).success, bad);
+  test(`teryt przyjmuje tylko powiat z ${region.genitive}`, () => {
+    const { countyExample: c, cityCountyExample: m } = region;
+    for (const ok of [c.teryt, m.teryt]) assert.ok(InnovationsQuery.safeParse({ teryt: ok }).success, ok);
+    for (const bad of [`${c.teryt}011`, "0001", `${c.teryt}0`, "abc"]) assert.ok(!InnovationsQuery.safeParse({ teryt: bad }).success, bad);
   });
 
   test("limit ma domyślną wartość i górną granicę", () => {

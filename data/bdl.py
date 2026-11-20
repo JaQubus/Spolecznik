@@ -18,9 +18,9 @@ import time
 import httpx
 
 from common import OUT, read_json, write_json
+from region import BDL_UNIT, SPLITS  # ID województwa w BDL, podziały gmin (config/brand.json)
 
 API = "https://bdl.stat.gov.pl/api/v1"
-MALOPOLSKIE = "011200000000"
 GMINA_LEVEL = 6
 
 # Temat P2137 „Ludność wg grup wieku i płci” (poziom gminy)
@@ -44,9 +44,7 @@ GMINA_KINDS = {"1", "2", "3"}
 # Podziały gmin w ostatnich 10 latach: nowa gmina (TERYT) → gmina, z której ją wydzielono.
 # Gmina-matka ma pod tym samym ID liczbę ludności sprzed podziału, więc „zmiana w 10 lat” pokazałaby
 # odejście mieszkańców nowej gminy jako wyludnianie. Dla obu gmin nie liczymy zmiany (brak danych).
-SPLITS = {
-    "1207132": "1207052",  # Szczawa wydzielona z Kamienicy (pow. limanowski), 1.01.2025
-}
+# Lista w config/brand.json (region.municipalitySplits), np. Szczawa wydzielona z Kamienicy (pow. limanowski), 1.01.2025.
 
 
 def bdl_to_teryt(unit_id: str) -> str:
@@ -94,7 +92,7 @@ class Bdl:
         """unit_id → {rok: wartość} dla wszystkich gmin województwa."""
         rows = self.all_pages(
             f"/data/by-variable/{var_id}",
-            **{"unit-parent-id": MALOPOLSKIE, "unit-level": GMINA_LEVEL, "year": years},
+            **{"unit-parent-id": BDL_UNIT, "unit-level": GMINA_LEVEL, "year": years},
         )
         return {r["id"]: {int(v["year"]): v["val"] for v in r["values"]} for r in rows}
 
@@ -160,9 +158,9 @@ def main() -> None:
     base = year - 10
     print(f"Rok danych: {year}, porównanie z {base}")
 
-    units = bdl.all_pages("/units", **{"parent-id": MALOPOLSKIE, "level": GMINA_LEVEL})
+    units = bdl.all_pages("/units", **{"parent-id": BDL_UNIT, "level": GMINA_LEVEL})
     gminy_units = [u for u in units if u["id"][-1] in GMINA_KINDS]
-    powiaty = {u["id"]: u["name"] for u in bdl.all_pages("/units", **{"parent-id": MALOPOLSKIE, "level": 5})}
+    powiaty = {u["id"]: u["name"] for u in bdl.all_pages("/units", **{"parent-id": BDL_UNIT, "level": 5})}
     print(f"Gmin: {len(gminy_units)} (z {len(units)} jednostek poziomu 6)")
 
     total = bdl.variable(VAR_TOTAL, [base, year])

@@ -12,10 +12,11 @@ import { MaterialsTab, parseMaterialParams } from "./materials-tab";
 import { SearchForm } from "./search-form";
 import { resultsSummary, SearchResults } from "./search-results";
 import { parseTab, SectionTabs } from "./section-tabs";
+import { region } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Biblioteka i wiedza",
-  description: "Sprawdzone innowacje społeczne z Małopolski, liczby o regionie i materiały do nauki.",
+  description: `Sprawdzone innowacje społeczne z ${region.genitive}, liczby o regionie i materiały do nauki.`,
 };
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
@@ -33,7 +34,7 @@ export default async function Page(props: PageProps<"/biblioteka">) {
         <div className="space-y-6">
           <h1 className="text-4xl font-bold sm:text-5xl">Biblioteka i wiedza</h1>
           <p className="max-w-2xl text-xl">
-            Sprawdzone rozwiązania z Małopolski, liczby o naszym regionie i materiały do nauki. W jednym miejscu.
+            Sprawdzone rozwiązania z {region.genitive}, liczby o naszym regionie i materiały do nauki. W jednym miejscu.
           </p>
           <SearchForm defaultValue={q} />
         </div>
@@ -72,7 +73,7 @@ export default async function Page(props: PageProps<"/biblioteka">) {
 
       <section id="zapytaj" aria-labelledby="zapytaj-tytul" className="scroll-mt-4 space-y-4">
         <h2 id="zapytaj-tytul" className="text-3xl font-bold">Zapytaj Bibliotekę</h2>
-        <p className="max-w-2xl text-lg">Zadaj pytanie o sytuację w Małopolsce albo o innowacje społeczne.</p>
+        <p className="max-w-2xl text-lg">Zadaj pytanie o sytuację {region.locative} albo o innowacje społeczne.</p>
         <AskLibrary />
       </section>
     </div>

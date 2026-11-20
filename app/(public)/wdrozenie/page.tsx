@@ -4,6 +4,7 @@ import { innovationOptions, pickInnovation } from "@/lib/innovations";
 import { STATUS_CODE } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ImplementationFlow } from "./implementation-flow";
+import { org } from "@/lib/brand";
 
 export const metadata = { title: "Jak to wdrożyć u nas?" };
 
@@ -31,7 +32,7 @@ export default async function Page(props: PageProps<"/wdrozenie">) {
         <h1 className="text-3xl font-bold">Jak to wdrożyć u nas?</h1>
         <p className="max-w-2xl text-lg">
           Odpowiedz na kilka pytań o swoją instytucję i gminę. Przygotujemy szkic planu wdrożenia pod nabór
-          „Usługa Wrażliwa” Regionalnego Ośrodka Polityki Społecznej w Krakowie: kto skorzysta, jakie kroki, ile może
+          „Usługa Wrażliwa” {org.nameGenitive}: kto skorzysta, jakie kroki, ile może
           kosztować i co zostanie po grancie. Wszystko, czego nie wiemy na pewno, oznaczymy jako szacunek albo założenie.
         </p>
       </div>

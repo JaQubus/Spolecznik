@@ -7,6 +7,7 @@ import type { PanelPartnership } from "@/lib/partnerships";
 import { ActionForm, SubmitButton } from "./action-form";
 import { removePartnershipMessage, replyInPartnership } from "./actions";
 import { ThreadLive } from "./thread-live";
+import { org } from "@/lib/brand";
 
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 
@@ -85,7 +86,7 @@ function PartnershipPanel({ partnership: p, needId }: { partnership: PanelPartne
         <input type="hidden" name="threadId" value={p.threadId} />
         <div className="space-y-2">
           <Label htmlFor={`partnerstwo-odp-${p.threadId}`}>Wiadomość do gmin</Label>
-          <FieldHint id={`partnerstwo-pomoc-${p.threadId}`}>Podpiszemy ją „ROPS Kraków”. Przeczytają ją wszystkie gminy w rozmowie.</FieldHint>
+          <FieldHint id={`partnerstwo-pomoc-${p.threadId}`}>Podpiszemy ją „{org.signature}”. Przeczytają ją wszystkie gminy w rozmowie.</FieldHint>
           <Textarea
             id={`partnerstwo-odp-${p.threadId}`}
             name="body"

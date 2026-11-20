@@ -11,8 +11,9 @@ import { anonymize } from "@/lib/pii";
 import { AreaBadge } from "@/components/knowledge/icons";
 import type { ThreadWaiting } from "@/lib/thread-types";
 import { WaitingBadge, waitingOrEmpty } from "./waiting";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata = { title: "Panel ROPS" };
+export const metadata = { title: panelTitle() };
 
 const PAGE_SIZE = 25;
 

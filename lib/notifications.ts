@@ -5,6 +5,7 @@ import { NEED_STATUS_LABELS, type NeedStatus } from "./need-status";
 import { ADMIN_CHANNEL, expertChannel, expertRole, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
 import { createAdminClient } from "./supabase/admin";
 import { testStatusLabel } from "./test-status";
+import { org } from "@/lib/brand";
 
 /** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin'). */
 export type NewNotification =
@@ -130,7 +131,7 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
         href: str(p.slug) ? innovationHref(str(p.slug)!) : null,
       };
     case "wiadomosc":
-      return { text: `ROPS dodał wiadomość do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
+      return { text: `${org.short} dodał wiadomość do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
     case "nowa_innowacja":
       return {
         text: `W Bibliotece jest nowe rozwiązanie, które może pasować do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}${str(p.title) ? `: „${short(str(p.title)!)}”` : ""}`,
@@ -138,7 +139,7 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
       };
     case "prosba_eksperta":
       return {
-        text: `ROPS prosi Cię o pomoc przy ${p.kind === "pomysl" ? "pomyśle" : "zgłoszeniu"}${code ? ` ${code}` : ""}`,
+        text: `${org.short} prosi Cię o pomoc przy ${p.kind === "pomysl" ? "pomyśle" : "zgłoszeniu"}${code ? ` ${code}` : ""}`,
         href: code ? `/ekspert/${code}` : "/ekspert",
       };
     // Partnerstwa: autor trafia na stronę statusu (jak przy nowa_wiadomosc: /partnerstwo wymaga klucza z przeglądarki,

@@ -12,3 +12,4 @@ Plan projektu: README.md (po polsku). Kod i identyfikatory po angielsku, teksty 
 - Ikony: Heroicons (`@heroicons/react/24/outline`), zawsze z klasą `size-*` i obok tekstu. shadcn generuje importy `lucide-react` — po `shadcn add` podmień je na Heroicons.
 - Dostępność to wymóg, nie dodatek: etykiety przy polach, `aria-live` dla wyników asynchronicznych, ikony zawsze z tekstem.
 - Pipeline danych: `cd data && uv run <skrypt>.py`.
+- Marka i region tylko z `config/brand.json`: w aplikacji przez `lib/brand.ts` (`brand`, `org`, `region`, `STATUS_CODE`, `panelTitle`), w Pythonie przez `data/region.py`. Nie wpisuj na sztywno nazwy serwisu, organizacji, regionu, prefiksu kodu zgłoszenia ani kodów TERYT. Moduły testowane czystym Node (`tests/unit`) importują `./brand.ts` względnie, bez aliasu `@/`.

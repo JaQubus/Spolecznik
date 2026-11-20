@@ -15,6 +15,7 @@ import type { Fiszka, IdeaResponse } from "@/lib/schemas";
 import { ApplicationDraft, type ActiveCall } from "./application-draft";
 import { AssistantChat } from "./assistant-chat";
 import { PosterSection, posterSource, type PosterState } from "./poster-section";
+import { org } from "@/lib/brand";
 
 const TITLE_MISSING = "Nazwij pomysł w kilku słowach, np. „Wspólne dojazdy seniorów do przychodni”.";
 
@@ -118,7 +119,7 @@ export function IdeaWorkshop({
             <EmailOptIn code={result.statusCode} accessKey={result.accessKey} />
           </div>
           <p className="max-w-2xl">
-            Pracownik ROPS przeczyta pomysł i odpisze w{" "}
+            Pracownik {org.short} przeczyta pomysł i odpisze w{" "}
             <Link href={`/zapytaj?kod=${result.statusCode}`} className={linkClass}>rozmowie o pomyśle</Link>. Może też
             zaprosić do niej eksperta.
           </p>

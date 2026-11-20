@@ -2,6 +2,7 @@ import { PrintNote } from "@/components/layout/print-note";
 import { Alert } from "@/components/ui/alert";
 import { formatFact, monthRange, STAGE_LABELS, zl } from "@/lib/implementation-plan";
 import { BUDGET_LABELS, GRANT, INSTITUTION_LABELS, PLAN_STAGES, type PlanDocument as Doc } from "@/lib/schemas";
+import { brand, org } from "@/lib/brand";
 
 // Szkic planu wdrożenia (#99) w kolejności części III–VI „Wniosku o grant” z naboru „Usługa Wrażliwa”.
 // Ten sam znacznik idzie na ekran, do druku (globals.css: [data-print-root], .doc) i do Panelu → Wdrożenia.
@@ -37,12 +38,12 @@ export function PlanDocument({ doc, headingRef }: { doc: Doc; headingRef?: React
   return (
     <article data-print-root className="doc max-w-[80ch] space-y-8">
       <div className="space-y-2">
-        <PrintNote dated>Szkic planu wdrożenia · Społecznik</PrintNote>
+        <PrintNote dated>Szkic planu wdrożenia · {brand.name}</PrintNote>
         <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-bold outline-none">
           {doc.innovation.title} w gminie {doc.gmina.nazwa}
         </h2>
         <p className="doc-text">
-          Szkic pod nabór „Usługa Wrażliwa” Regionalnego Ośrodka Polityki Społecznej w Krakowie: grant do {zl(GRANT.maxPln)} na
+          Szkic pod nabór „Usługa Wrażliwa” {org.nameGenitive}: grant do {zl(GRANT.maxPln)} na
           wdrożenie usługi społecznej opartej na innowacji, najwyżej {GRANT.maxMonths} miesięcy.
         </p>
         <table className="doc-kv">
@@ -143,7 +144,7 @@ export function PlanDocument({ doc, headingRef }: { doc: Doc; headingRef?: React
 
       {p.partners.length > 0 ? (
         <Section id="plan-partnerzy" title="Kto może pomóc">
-          <p className="doc-text text-muted-foreground">Eksperci i organizacje z bazy Społecznika.</p>
+          <p className="doc-text text-muted-foreground">Eksperci i organizacje z bazy {brand.nameGenitive}.</p>
           <ul className="list-disc space-y-1 pl-6">
             {p.partners.map((x) => <li key={x.id}><strong>{x.name}</strong>: {x.role}</li>)}
           </ul>
@@ -183,7 +184,7 @@ export function PlanDocument({ doc, headingRef }: { doc: Doc; headingRef?: React
       )}
 
       <PrintNote>
-        Wygenerowano w Społeczniku z opisu innowacji z Biblioteki i danych BDL GUS o gminie. Liczby oznaczone „szacunek”
+        Wygenerowano w {brand.nameLocative} z opisu innowacji z Biblioteki i danych BDL GUS o gminie. Liczby oznaczone „szacunek”
         i założenia trzeba sprawdzić przed złożeniem wniosku.
       </PrintNote>
     </article>
