@@ -8,6 +8,7 @@ import { cn } from "cn";
 import { A11yToolbar } from "@/components/a11y/a11y-toolbar";
 import { LogoMark } from "./logo-mark";
 import { NotificationBell } from "./notification-bell";
+import { brand } from "@/lib/brand";
 
 // Etykiety w UI to proste czasowniki — nazwy modułów (Społecznik·Dopasuj itd.) są tylko do pitchu.
 const NAV = [
@@ -133,7 +134,7 @@ export function SiteHeader() {
         <div className="flex min-h-20 flex-wrap items-center justify-between gap-x-4 gap-y-2 py-2 lg:shrink-0">
           <Link href="/" className="inline-flex min-h-12 items-center gap-3 rounded-lg text-xl font-bold tracking-tight sm:text-2xl">
             <LogoMark className="size-9 shrink-0 sm:size-10" />
-            Społecznik
+            {brand.name}
           </Link>
           <button
             ref={menuButton}

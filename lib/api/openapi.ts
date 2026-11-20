@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   API_LIMIT_PER_MINUTE, ApiError, CallChangedEvent, IdeaCreatedEvent, Innovation, InnovationList, InnovationsQuery, InnovationSummary, TestedIn,
 } from "./contract.ts";
+import { brand, org, region } from "../brand.ts";
 
 type Json = Record<string, unknown>;
 
@@ -48,9 +49,9 @@ function queryParameters() {
 }
 
 const WEBHOOK_HEADERS = [
-  { name: "X-Spolecznik-Event", in: "header", required: true, description: "Nazwa zdarzenia, jak pole event.", schema: { type: "string" } },
+  { name: `${brand.webhookHeaderPrefix}-Event`, in: "header", required: true, description: "Nazwa zdarzenia, jak pole event.", schema: { type: "string" } },
   {
-    name: "X-Spolecznik-Signature",
+    name: `${brand.webhookHeaderPrefix}-Signature`,
     in: "header",
     required: true,
     description: "sha256=<HMAC-SHA256 surowej treści żądania, klucz: secret z webhook_endpoints, zapis szesnastkowy>.",
@@ -77,16 +78,16 @@ export function buildOpenApi() {
   return {
     openapi: "3.1.0",
     info: {
-      title: "Społecznik — publiczne API",
+      title: `${brand.name} — publiczne API`,
       version: "1.0.0",
-      summary: "Katalog innowacji społecznych Małopolski do odczytu i webhooki dla systemów Hubu.",
+      summary: `Katalog innowacji społecznych ${region.genitive} do odczytu i webhooki dla systemów Hubu.`,
       description:
-        "Publiczne API Społecznika (Małopolski Hub Innowacji Społecznych). Bez klucza i bez danych osobowych: " +
+        `Publiczne API ${brand.nameGenitive} (${brand.hub}). Bez klucza i bez danych osobowych: ` +
         "zwraca tylko opublikowane innowacje. Powiaty identyfikuje kod TERYT. " +
         `Limit: ${API_LIMIT_PER_MINUTE} zapytań na minutę z jednego adresu IP. Opis po polsku: /api-docs.`,
-      contact: { name: "Dział Innowacji Społecznych ROPS w Krakowie", url: "https://rops.krakow.pl" },
+      contact: { name: org.contactName, url: org.url },
     },
-    servers: [{ url: "/", description: "Ta instancja Społecznika" }],
+    servers: [{ url: "/", description: `Ta instancja ${brand.nameGenitive}` }],
     security: [],
     tags: [
       { name: "Innowacje", description: "Katalog sprawdzonych innowacji społecznych (Biblioteka i wiedza)." },

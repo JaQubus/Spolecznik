@@ -3,6 +3,7 @@ import { z } from "zod";
 import { sendEmail } from "./email";
 import { keyMatches } from "./need-access";
 import { createAdminClient } from "./supabase/admin";
+import { brand, org } from "@/lib/brand";
 
 export type ReportKind = "potrzeba" | "pomysl";
 const TABLE = { potrzeba: "needs", pomysl: "ideas" } as const;
@@ -53,7 +54,7 @@ function statusLine(code: string): string {
   const site = process.env.SITE_URL?.replace(/\/$/, "");
   return site
     ? `Sprawdzisz to tutaj: ${site}/status/${code}`
-    : `Wejdź na stronę Społecznika, kliknij „Sprawdź status” i wpisz kod ${code}.`;
+    : `Wejdź na stronę ${brand.nameGenitive}, kliknij „Sprawdź status” i wpisz kod ${code}.`;
 }
 
 /**
@@ -73,7 +74,7 @@ export async function emailAuthor(kind: ReportKind, id: string, what: string): P
     const code = data.status_code as string;
     await sendEmail({
       to: data.contact_email as string,
-      subject: `Społecznik: ${what} (${code})`,
+      subject: `${brand.name}: ${what} (${code})`,
       text: [
         "Dzień dobry,",
         "",
@@ -83,7 +84,7 @@ export async function emailAuthor(kind: ReportKind, id: string, what: string): P
         "To wiadomość automatyczna, nie odpowiadaj na nią.",
         "Nie chcesz więcej takich wiadomości? Otwórz prywatny link do zgłoszenia i usuń adres e-mail.",
         "",
-        "Społecznik — Regionalny Ośrodek Polityki Społecznej w Krakowie",
+        `${brand.name} — ${org.name}`,
       ].join("\n"),
     });
   } catch (e) {
@@ -100,16 +101,16 @@ export async function emailTester(to: string, title: string | null, status: stri
   try {
     await sendEmail({
       to,
-      subject: `Społecznik: ${status} — test rozwiązania`,
+      subject: `${brand.name}: ${status} — test rozwiązania`,
       text: [
         "Dzień dobry,",
         "",
-        `ROPS zmienił status Waszego testu${title ? ` rozwiązania „${title}”` : ""}: ${status}.`,
+        `${org.short} zmienił status Waszego testu${title ? ` rozwiązania „${title}”` : ""}: ${status}.`,
         ...(site && href ? [`Opis rozwiązania: ${site}${href}`] : []),
         "",
         "To wiadomość automatyczna, nie odpowiadaj na nią. Adres służy tylko do powiadomień o tym teście.",
         "",
-        "Społecznik — Regionalny Ośrodek Polityki Społecznej w Krakowie",
+        `${brand.name} — ${org.name}`,
       ].join("\n"),
     });
   } catch (e) {

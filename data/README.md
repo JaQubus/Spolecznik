@@ -37,7 +37,7 @@ uv run knowledge_facts.py      # karty faktów: każdy cytat sprawdzany na podan
 uv run knowledge_personas.py   # persony z Mapy Wyzwań + pasujące innowacje → out/knowledge/personas.json
 uv run knowledge_seed.py       # dane dla aplikacji → ../content/knowledge/*.json i ../supabase/seed_knowledge.sql
 uv run bdl_wskazniki.py        # dodatkowe wskaźniki gmin z BDL → out/gminy_wskazniki.json (bez klucza: limit 1000 zapytań / 12 h)
-uv run knowledge_map.py        # mapa: granice gmin z PRG (GUGiK, WFS) + BDL + IOSS → ../public/mapa/malopolska.json (wymaga mapshapera: npx mapshaper)
+uv run knowledge_map.py        # mapa: granice gmin z PRG (GUGiK, WFS) + BDL + IOSS → ../public/mapa/region.json (wymaga mapshapera: npx mapshaper)
 ```
 
 - Strona ROPS odpowiada na zwykłe żądania HTTP; każdy URL pobieramy raz (cache w `raw/knowledge/`, przerwa 2 s).
@@ -52,4 +52,4 @@ uv run knowledge_map.py        # mapa: granice gmin z PRG (GUGiK, WFS) + BDL + I
 - Źródło: `../dane/powiaty/wszystkie_powiaty.csv` (eksport IOSS, rok 2024). Pliki per powiat obok to duplikaty i nie są czytane.
 - `powiaty_mapping.json` to jedyne miejsce porządków: pełne nazwy obciętych arkuszy XLS (`POMOC SPOŁECZNA - P` → „powody udzielania pomocy”, `Sheet6` → „świadczenia i usługi” itd.) i jednostki dla wskaźników, które ich nie mają (np. `Stopa bezrobocia` → `%`). Nowy wskaźnik bez jednostki → import wypisze ostrzeżenie.
 - Import jest idempotentny: upsert po (powiat, wskaźnik, rok); wiersze z tego samego roku, których nie ma już w pliku, są kasowane. Nowy rok = nowy CSV i ponowny import, poprzednie lata zostają.
-- Kondycja Małopolski (`app/(public)/biblioteka/kondycja/kondycja-view.tsx`) ma przełącznik gminy / powiaty i czyta wszystko z `../public/mapa/malopolska.json` (`knowledge_map.py`): granice obu poziomów z PRG GUGiK, wskaźniki gmin z BDL (`bdl.py` + `bdl_wskazniki.py` → `out/gminy_wskazniki.json`), powiatów z IOSS. Opisy i kategorie wskaźników są w `map_indicators.py` — kategoria bez danych na jednym poziomie jest na stronie oznaczona „tylko gminy” / „tylko powiaty”.
+- Kondycja Małopolski (`app/(public)/biblioteka/kondycja/kondycja-view.tsx`) ma przełącznik gminy / powiaty i czyta wszystko z `../public/mapa/region.json` (`knowledge_map.py`): granice obu poziomów z PRG GUGiK, wskaźniki gmin z BDL (`bdl.py` + `bdl_wskazniki.py` → `out/gminy_wskazniki.json`), powiatów z IOSS. Opisy i kategorie wskaźników są w `map_indicators.py` — kategoria bez danych na jednym poziomie jest na stronie oznaczona „tylko gminy” / „tylko powiaty”.

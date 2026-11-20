@@ -18,6 +18,7 @@ import { AREA_LABELS } from "@/lib/taxonomy";
 import { LINK as linkClass } from "../../shared";
 import { PrintButton } from "../print-button";
 import "./print.css";
+import { brand, org, region } from "@/lib/brand";
 
 export async function generateMetadata(props: PageProps<"/biblioteka/gmina/[teryt]">): Promise<Metadata> {
   const p = gminaProfile((await props.params).teryt);
@@ -31,7 +32,7 @@ const signed = (v: number, decimals: number) => `${v > 0 ? "+" : ""}${formatNumb
 
 /** Źródło w tabeli na wydruku — pełne nazwy są w „Źródła i metoda”. */
 const shortSource = (i: IndicatorRow) =>
-  `${i.source.title.startsWith("GUS") ? "GUS BDL" : "IOSS ROPS"} ${i.source.year}${i.derived ? ", przeliczone" : ""}`;
+  `${i.source.title.startsWith("GUS") ? "GUS BDL" : `IOSS ${org.short}`} ${i.source.year}${i.derived ? ", przeliczone" : ""}`;
 
 const show = (v: number | null, i: IndicatorRow) => (v == null ? "brak danych" : withUnit(v, i.unit, i.decimals));
 
@@ -60,7 +61,7 @@ export default async function Page(props: PageProps<"/biblioteka/gmina/[teryt]">
         <div className="print:hidden">
           <Breadcrumbs items={[{ href: "/biblioteka", label: "Biblioteka i wiedza" }, { href: "/biblioteka/gmina", label: "Raport gminy" }, { label: p.name }]} />
         </div>
-        <PrintNote dated>Raport gminy · Małopolski Hub Innowacji Społecznych (hubmi.pl/biblioteka/gmina/{p.teryt})</PrintNote>
+        <PrintNote dated>Raport gminy · {brand.hub} ({brand.domain}/biblioteka/gmina/{p.teryt})</PrintNote>
         <h1 className="text-4xl font-bold">Raport gminy: {p.name}</h1>
         <p className="text-lg">
           {p.type ? TYPE_WORDS[p.type] : "Gmina"}, {p.powiat}
@@ -75,7 +76,7 @@ export default async function Page(props: PageProps<"/biblioteka/gmina/[teryt]">
                 : "Podsumowanie złożone automatycznie z liczb tego raportu."}{" "}
             </span>
             {/* Na pierwszej stronie wydruku, nie tylko w „Źródła i metoda” na końcu — kartka krąży bez reszty raportu. */}
-            To materiał wyjściowy, nie ocena gminy. Dane: GUS i ROPS (IOSS); źródła i metoda na końcu raportu.
+            To materiał wyjściowy, nie ocena gminy. Dane: GUS i {org.short} (IOSS); źródła i metoda na końcu raportu.
           </p>
         </section>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 print:hidden">
@@ -86,7 +87,7 @@ export default async function Page(props: PageProps<"/biblioteka/gmina/[teryt]">
         </div>
         {synthetic && (
           <Alert title="Część danych to przykład">
-            <p>Zgłoszenia mieszkańców, nabory i część innowacji w tej wersji demonstracyjnej są przykładowe (wygenerowane). Dane GUS i ROPS są prawdziwe.</p>
+            <p>Zgłoszenia mieszkańców, nabory i część innowacji w tej wersji demonstracyjnej są przykładowe (wygenerowane). Dane GUS i {org.short} są prawdziwe.</p>
           </Alert>
         )}
       </div>
@@ -192,7 +193,7 @@ function FocusSection({ focus, report, n, gminaQuery }: { focus: FocusArea; repo
           <p className="max-w-[44rem] text-lg">
             {lead.label}{lead.level === "powiat" && ` (dane powiatu: ${p.powiat})`}: <strong>{show(lead.value, lead)}</strong>
             {lead.level === "gmina" && lead.cohortMedian != null && <>, typowo w gminach podobnych {show(lead.cohortMedian, lead)}</>}
-            {lead.level === "powiat" && lead.regionMedian != null && <>, typowo w powiatach Małopolski {show(lead.regionMedian, lead)}</>}
+            {lead.level === "powiat" && lead.regionMedian != null && <>, typowo w powiatach {region.genitive} {show(lead.regionMedian, lead)}</>}
             {comparisonText(lead) && <> — {comparisonText(lead)}</>}.{" "}
             <span className="text-base text-muted-foreground">Źródło: {lead.source.title}, {lead.source.year}.</span>
           </p>
@@ -281,7 +282,7 @@ function AreasTable({ report }: { report: GminaReport }) {
       <h2 id="osiem-obszarow" className="text-3xl font-bold">Osiem obszarów Mapy Wyzwań</h2>
       <p className="max-w-[44rem] text-lg">
         „Typowo” to mediana, czyli wartość środkowa: połowa gmin ma więcej, połowa mniej.
-        <span className="print:hidden"> Duże miasta, takie jak Kraków, jej nie zawyżają.</span>
+        <span className="print:hidden"> Duże miasta, takie jak {region.cityCountyExample.name}, jej nie zawyżają.</span>
         {p.areas.some((a) => a.level === "powiat") && (
           <>
             {" "}<strong>Obszary oznaczone „dane powiatu”</strong> nie mają danych o gminach: pokazujemy cały powiat i porównujemy go z innymi
@@ -291,13 +292,13 @@ function AreasTable({ report }: { report: GminaReport }) {
       </p>
       <div role="region" aria-labelledby="tabela-obszarow" tabIndex={0} className="relative overflow-x-auto">
         <table className="w-full min-w-[40rem] border-collapse text-base">
-          <caption id="tabela-obszarow" className="sr-only">Wskaźniki gminy {p.name} w ośmiu obszarach na tle gmin podobnych i Małopolski</caption>
+          <caption id="tabela-obszarow" className="sr-only">Wskaźniki gminy {p.name} w ośmiu obszarach na tle gmin podobnych i {region.genitive}</caption>
           <thead>
             <tr className="border-b border-border-strong text-left">
               <th scope="col" className={cell}>Obszar i wskaźnik</th>
               <th scope="col" className={cn(cell, "text-right")}>{p.name}</th>
               <th scope="col" className={cn(cell, "text-right")}>Typowo w gminach podobnych</th>
-              <th scope="col" className={cn(cell, "text-right")}>Typowo w Małopolsce</th>
+              <th scope="col" className={cn(cell, "text-right")}>Typowo {region.locative}</th>
               <th scope="col" className={cell}>Na tle porównania</th>
             </tr>
           </thead>
@@ -381,7 +382,7 @@ function Method({ report }: { report: GminaReport }) {
             {" "}— dane za {[...s.years].sort().join(", ")}.
           </li>
         ))}
-        <li>Obszary i wyzwania: Mapa Wyzwań Społecznych ROPS w Krakowie.</li>
+        <li>Obszary i wyzwania: Mapa Wyzwań Społecznych {org.shortWithCity}.</li>
       </ul>
       <ul className="list-disc space-y-2 pl-6">
         <li>Gminy podobne to gminy tego samego rodzaju (miejska, wiejska, miejsko-wiejska) i podobnej wielkości. Za mała grupa łączy się z sąsiednią.</li>

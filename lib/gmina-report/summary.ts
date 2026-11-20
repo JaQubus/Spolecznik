@@ -3,6 +3,7 @@
 import type { AreaKey } from "../knowledge/types.ts";
 import { AREA_LABELS } from "../taxonomy.ts";
 import type { GminaProfile, IndicatorRow } from "./score.ts";
+import { region } from "../brand.ts";
 
 export function formatNumber(v: number, decimals = 0): string {
   return v.toLocaleString("pl-PL", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
@@ -41,7 +42,7 @@ export function templateSummary(p: GminaProfile): string {
   let detail = "";
   if (lead?.value != null) {
     const typical = lead.cohortMedian ?? lead.regionMedian;
-    const where = lead.cohortMedian != null ? "w gminach podobnych" : "w powiatach Małopolski";
+    const where = lead.cohortMedian != null ? "w gminach podobnych" : `w powiatach ${region.genitive}`;
     detail = typical != null
       ? ` ${lead.label}: ${withUnit(lead.value, lead.unit, lead.decimals)}${lead.level === "powiat" ? " w powiecie" : ""}, a typowo ${where} ${withUnit(typical, lead.unit, lead.decimals)}.`
       : "";
@@ -107,7 +108,7 @@ const attr = (s: string) => s.replace(/"/g, "'");
 /** Jak wartość gminy wypada na tle porównania: „wyższa niż w 85% gmin podobnych”. */
 export function comparisonText(i: IndicatorRow): string | null {
   if (i.lowerPct == null || i.higherPct == null) return null;
-  const whom = i.level === "gmina" ? "gmin podobnych" : "powiatów Małopolski";
+  const whom = i.level === "gmina" ? "gmin podobnych" : `powiatów ${region.genitive}`;
   // Przy remisach (np. tyle samo przychodni co w połowie gmin) ani „wyższa”, ani „niższa” nie byłoby prawdą.
   if (i.lowerPct >= 50) return `wyższa niż w ${i.lowerPct}% ${whom}`;
   if (i.higherPct >= 50) return `niższa niż w ${i.higherPct}% ${whom}`;
@@ -128,7 +129,7 @@ export function summaryFacts(p: GminaProfile): string {
     const rows = a.indicators.filter((i) => i.value != null).map((i) => {
       const typical = i.level === "gmina"
         ? i.cohortMedian != null && `typowo w gminach podobnych ${withUnit(i.cohortMedian, i.unit, i.decimals)}`
-        : i.regionMedian != null && `typowo w powiatach Małopolski ${withUnit(i.regionMedian, i.unit, i.decimals)}`;
+        : i.regionMedian != null && `typowo w powiatach ${region.genitive} ${withUnit(i.regionMedian, i.unit, i.decimals)}`;
       return [`${i.label}: ${withUnit(i.value!, i.unit, i.decimals)}`, typical, comparisonText(i)].filter(Boolean).join("; ");
     });
     return `<obszar_do_uwagi nazwa="${AREA_LABELS[area]}" poziom="${a.level}">${rows.join(" | ")}</obszar_do_uwagi>`;
@@ -152,7 +153,7 @@ export function cohortProfile(p: GminaProfile, area: AreaKey): string {
     return v != null ? `${i.label}${i.level === "powiat" ? " (dane powiatów)" : ""}: typowo ${withUnit(v, i.unit, i.decimals)}` : null;
   }).filter(Boolean);
   return [
-    `Typowa gmina z grupy: ${p.cohort.label} (${p.cohort.members.length} gmin w Małopolsce).`,
+    `Typowa gmina z grupy: ${p.cohort.label} (${p.cohort.members.length} gmin ${region.locative}).`,
     typical.length ? `Obszar ${AREA_LABELS[area].toLowerCase()}: ${typical.join("; ")}.` : "",
   ].join(" ").trim();
 }

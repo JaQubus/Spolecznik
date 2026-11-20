@@ -1,5 +1,5 @@
 import "server-only";
-import mapJson from "@/public/mapa/malopolska.json";
+import mapJson from "@/public/mapa/region.json";
 import type { AreaKey, InnovationType } from "@/lib/knowledge/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isMissingTable, isSupabaseConfigured } from "@/lib/supabase/server";
@@ -8,7 +8,7 @@ import { buildCohorts, profileFor, type GminaProfile, type ReportData } from "./
 import { templateSummary } from "./summary";
 import { summaryVersion } from "./version";
 
-/** Dane raportu: te same co mapa „Kondycja Małopolski” (data/knowledge_map.py → public/mapa/malopolska.json). */
+/** Dane raportu: te same co mapa „Kondycja” (data/knowledge_map.py → public/mapa/region.json). */
 export const REPORT_DATA = { gminy: mapJson.layers.gminy, powiaty: mapJson.layers.powiaty } as unknown as ReportData;
 export const COHORTS = buildCohorts(REPORT_DATA.gminy.units);
 

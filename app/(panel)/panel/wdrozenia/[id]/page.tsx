@@ -6,8 +6,9 @@ import { PlanDocument } from "@/components/wdrozenie/plan-document";
 import { requireAdmin, viewerClient } from "@/lib/auth";
 import { getPlan } from "@/lib/panel/plans";
 import { formatDate } from "@/lib/pl";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata = { title: "Plan wdrożenia · Panel ROPS" };
+export const metadata = { title: panelTitle("Plan wdrożenia") };
 
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 

@@ -4,6 +4,7 @@ import {
   BUDGET_LABELS, BUDGET_MAX_PLN, GRANT, INSTITUTION_LABELS,
   type BudgetRange, type CheckedPlan, type GminaFact, type ImplementationPlan, type PlanDocument,
 } from "./schemas.ts";
+import { brand, org } from "./brand.ts";
 
 export type PartnerInfo = { id: string; name: string };
 
@@ -94,7 +95,7 @@ export function planToText(doc: PlanDocument): string {
     `SZKIC PLANU WDROŻENIA: ${doc.innovation.title}`,
     `Gmina: ${doc.gmina.label}`,
     `Wnioskodawca: ${INSTITUTION_LABELS[doc.input.institutionType]}`,
-    "Pod nabór „Usługa Wrażliwa” (ROPS w Krakowie). Szkic do sprawdzenia, nie gotowy wniosek.",
+    `Pod nabór „Usługa Wrażliwa” (${org.shortWithCity}). Szkic do sprawdzenia, nie gotowy wniosek.`,
     "",
     "CEL USŁUGI", p.goal, "",
     "NA CZYM POLEGA USŁUGA", p.description, "",
@@ -112,7 +113,7 @@ export function planToText(doc: PlanDocument): string {
     "KADRA I ZASOBY", p.staffAndResources, "",
     `WIDEŁKI KOSZTÓW (SZACUNEK): od ${zl(p.costEstimate.minPln)} do ${zl(p.costEstimate.maxPln)}. ${p.costEstimate.basis}`,
     "",
-    p.partners.length > 0 && "PARTNERZY (z bazy ekspertów Społecznika)",
+    p.partners.length > 0 && `PARTNERZY (z bazy ekspertów ${brand.nameGenitive})`,
     ...p.partners.map((x) => `- ${x.name}: ${x.role}`),
     p.partnerTypes.length > 0 && "JAKICH PARTNERÓW SZUKAĆ",
     ...p.partnerTypes.map((t) => `- ${t}`),

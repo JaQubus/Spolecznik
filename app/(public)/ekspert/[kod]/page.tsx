@@ -11,6 +11,7 @@ import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { needThread } from "@/lib/threads";
 import { ReplyForm } from "./reply-form";
 import { ThreadLive } from "./thread-live";
+import { org } from "@/lib/brand";
 
 export const metadata = { title: "Zgłoszenie · Ekspert" };
 
@@ -70,7 +71,7 @@ export default async function Page(props: PageProps<"/ekspert/[kod]">) {
             {fiszka.dla_kogo && (<><dt className="font-bold">Dla kogo</dt><dd>{safe(fiszka.dla_kogo)}</dd></>)}
           </dl>
         )}
-        <p className="text-base text-muted-foreground">Dane osobowe w opisie są zamaskowane. Pełnej treści zgłoszenia nie widzi nikt poza ROPS.</p>
+        <p className="text-base text-muted-foreground">Dane osobowe w opisie są zamaskowane. Pełnej treści zgłoszenia nie widzi nikt poza {org.short}.</p>
       </section>
 
       <section aria-labelledby="rozmowa" className="space-y-4">

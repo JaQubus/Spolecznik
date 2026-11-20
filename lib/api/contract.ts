@@ -2,6 +2,7 @@
 // Bez "server-only" i z rozszerzeniami .ts w importach, żeby test jednostkowy (node --test) czytał go wprost.
 import { z } from "zod";
 import { GROUPS, MWS_AREAS } from "../schemas.ts";
+import { brand, org, region, COUNTY_TERYT } from "../brand.ts";
 
 const tags = (values: readonly string[]) => `Wartości: ${values.join(", ")}.`;
 
@@ -20,7 +21,7 @@ export const InnovationsQuery = z.object({
     .meta({ description: "Grupa docelowa z Biblioteki Innowacji." }),
   teryt: z
     .string()
-    .regex(/^12\d{2}$/, "Podaj kod TERYT powiatu z Małopolski: 4 cyfry, np. 1201")
+    .regex(COUNTY_TERYT, `Podaj kod TERYT powiatu z ${region.genitive}: 4 cyfry, np. ${region.countyExample.teryt}`)
     .optional()
     .meta({ description: "Innowacje testowane w powiecie (kod TERYT, 4 cyfry). Gmin nie podajemy: wskazywałyby instytucję.", examples: ["1201"] }),
   limit: z.coerce
@@ -45,12 +46,12 @@ export const InnovationSummary = z
     id: z.uuid(),
     slug: z.string().nullable(),
     title: z.string(),
-    url: z.url().meta({ description: "Karta innowacji w Społeczniku." }),
+    url: z.url().meta({ description: `Karta innowacji w ${brand.nameLocative}.` }),
     category: z.string().nullable(),
     innovationType: z.string().nullable().meta({ description: "przedmiot, metoda, usluga albo technologia." }),
     areas: z.array(z.string()).meta({ description: `Obszary Mapy Wyzwań. ${tags(MWS_AREAS)}` }),
     targetGroups: z.array(z.string()).meta({ description: `Grupy docelowe. ${tags(GROUPS)}` }),
-    crossTopics: z.array(z.string()).meta({ description: "Tematy przekrojowe z briefu ROPS." }),
+    crossTopics: z.array(z.string()).meta({ description: `Tematy przekrojowe z briefu ${org.short}.` }),
     solution: z.string().nullable().meta({ description: "Na czym polega rozwiązanie." }),
     easyToRead: z.string().nullable().meta({ description: "Opis w tekście łatwym do czytania (ETR)." }),
     testsCount: z.int().meta({ description: "Liczba zgłoszonych testów w gminach." }),

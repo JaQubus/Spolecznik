@@ -7,6 +7,7 @@ import {
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { cn } from "cn";
 import { Alert } from "@/components/ui/alert";
+import { brand, org, region } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
 import { CheckboxOption } from "@/components/ui/checkbox";
 import { FieldError, FieldHint } from "@/components/ui/field";
@@ -112,7 +113,7 @@ function ContactStep() {
       <div className="grid gap-6">
         <TextField path="wnioskodawca.nazwa" label="Nazwa podmiotu" autoComplete="organization" />
         <TextField path="wnioskodawca.adresSiedziby" label="Adres siedziby podmiotu" hint="Ulica i numer, kod pocztowy, miejscowość." />
-        <TextField path="wnioskodawca.adresFilii" label="Adres filii, oddziału lub innej formy działalności w Małopolsce (jeśli siedziba jest poza województwem)" />
+        <TextField path="wnioskodawca.adresFilii" label={`Adres filii, oddziału lub innej formy działalności ${region.locative} (jeśli siedziba jest poza województwem)`} />
         <CheckboxOption id={fieldId("wnioskodawca.korespondencjaTaSama")} checked={w.korespondencjaTaSama}
           onChange={(e) => update("wnioskodawca.korespondencjaTaSama", e.target.checked)} label="Adres do korespondencji jest taki sam jak adres siedziby" />
         {!w.korespondencjaTaSama && <TextField path="wnioskodawca.adresKorespondencji" label="Adres do korespondencji" />}
@@ -132,7 +133,7 @@ function ContactStep() {
       <Alert title="Bez danych osobowych">
         <p>
           Pytamy tylko o dane instytucji. Imię, nazwisko i kontakt osoby upoważnionej oraz osoby do kontaktów roboczych
-          wpiszesz dopiero w formularzu elektronicznym ROPS. We wniosku zostawimy na nie puste miejsce.
+          wpiszesz dopiero w formularzu elektronicznym {org.short}. We wniosku zostawimy na nie puste miejsce.
         </p>
       </Alert>
       <div className="grid gap-6 border-t pt-6">
@@ -382,7 +383,7 @@ function MeritSection({ slugOfInnovation }: { slugOfInnovation: string | null })
     <section aria-labelledby="ocena" className="grid gap-4 print:hidden">
       <h3 id="ocena" className="text-2xl font-bold">Jak oceni to komisja?</h3>
       <p className="max-w-[68ch]">
-        Sztuczna inteligencja przeczyta część opisową według karty oceny merytorycznej ROPS i podpowie, co poprawić.
+        Sztuczna inteligencja przeczyta część opisową według karty oceny merytorycznej {org.short} i podpowie, co poprawić.
         Wysyłamy tylko opis usługi, plan i koszty, bez danych kontaktowych. To podpowiedź, nie ocena komisji.
       </p>
       <Button type="button" variant="outline" className="justify-self-start" onClick={run} disabled={busy}>
@@ -406,7 +407,7 @@ function MeritSection({ slugOfInnovation }: { slugOfInnovation: string | null })
               })}
             </ul>
             {review.frameworkGaps.length > 0 && (
-              <Alert title="Czego z Ramowego Planu Wdrożenia ROPS brakuje w szkicu">
+              <Alert title={`Czego z Ramowego Planu Wdrożenia ${org.short} brakuje w szkicu`}>
                 <ul className="list-disc space-y-1 pl-6">{review.frameworkGaps.map((g) => <li key={g}>{g}</li>)}</ul>
               </Alert>
             )}
@@ -445,7 +446,7 @@ function FinishStep({ goTo, today, planSlug }: { goTo: (step: number) => void; t
   async function copy() {
     try {
       await navigator.clipboard.writeText(applicationToText(app, content));
-      setCopied("Skopiowano tekst wniosku. Wklejaj go pole po polu do formularza elektronicznego ROPS.");
+      setCopied(`Skopiowano tekst wniosku. Wklejaj go pole po polu do formularza elektronicznego ${org.short}.`);
     } catch {
       setCopied("Nie udało się skopiować. Pobierz plik Word i skopiuj tekst z niego.");
     }
@@ -462,7 +463,7 @@ function FinishStep({ goTo, today, planSlug }: { goTo: (step: number) => void; t
         ) : (
           <Alert tone="success" title="Szkic wniosku jest gotowy">
             <p>
-              Wniosek składa się tylko przez formularz elektroniczny ROPS. Skopiuj tekst albo pobierz plik Word i przenieś treść
+              Wniosek składa się tylko przez formularz elektroniczny {org.short}. Skopiuj tekst albo pobierz plik Word i przenieś treść
               do formularza. Oświadczenia wydrukuj, podpisz i dołącz jako skan.
             </p>
           </Alert>
@@ -500,7 +501,7 @@ function FinishStep({ goTo, today, planSlug }: { goTo: (step: number) => void; t
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button asChild variant={invalid === null ? "default" : "outline"}>
             <a href={content.call.formUrl} target="_blank" rel="noreferrer">
-              <ArrowTopRightOnSquareIcon aria-hidden /> Otwórz formularz ROPS<span className="sr-only"> (w nowej karcie)</span>
+              <ArrowTopRightOnSquareIcon aria-hidden /> Otwórz formularz {org.short}<span className="sr-only"> (w nowej karcie)</span>
             </a>
           </Button>
           <Button type="button" variant="outline" onClick={copy}><ClipboardDocumentIcon aria-hidden /> Kopiuj tekst</Button>
@@ -634,7 +635,7 @@ function Form(props: Props) {
       goTo(Math.min(Math.max(Number(saved.step) || 0, 0), STEPS.length - 1));
       setStatus(`Wczytano szkic z pliku „${file.name}”.`);
     } catch {
-      setStatus("To nie jest plik szkicu wniosku ze Społecznika. Wybierz plik zapisany przyciskiem „Zapisz szkic do pliku”.");
+      setStatus(`To nie jest plik szkicu wniosku ze ${brand.nameGenitive}. Wybierz plik zapisany przyciskiem „Zapisz szkic do pliku”.`);
     }
     setTimeout(() => heading.current?.focus(), 0);
   }

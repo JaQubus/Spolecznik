@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import type { GminaOption } from "@/lib/gminy";
+import { org } from "@/lib/brand";
 
 type Status = "planowany" | "zakonczony";
 
@@ -183,7 +184,7 @@ export function TestForm({
           <div className="space-y-2">
             <Label htmlFor="email">E-mail do powiadomień (nieobowiązkowy)</Label>
             <FieldHint id="email-pomoc">
-              Napiszemy, gdy ROPS potwierdzi pilotaż albo zmieni status testu. Bez konta — adres służy tylko do tego.
+              Napiszemy, gdy {org.short} potwierdzi pilotaż albo zmieni status testu. Bez konta — adres służy tylko do tego.
             </FieldHint>
             <FieldError id="email-blad">{errors.email}</FieldError>
             <Input

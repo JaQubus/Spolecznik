@@ -7,6 +7,7 @@ import { FieldError, FieldHint } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { AskResponse } from "@/lib/schemas";
+import { org } from "@/lib/brand";
 
 const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
@@ -55,7 +56,7 @@ export function AskLibrary() {
         {error && <Alert ref={errorBox} tabIndex={-1} tone="error" title="Coś poszło nie tak"><p>{error}</p></Alert>}
         <div className="space-y-2">
           <Label htmlFor="pytanie">Twoje pytanie</Label>
-          <FieldHint id="pytanie-pomoc">Odpowiadamy tylko na podstawie raportów ROPS i podajemy stronę, z której to wiemy.</FieldHint>
+          <FieldHint id="pytanie-pomoc">Odpowiadamy tylko na podstawie raportów {org.short} i podajemy stronę, z której to wiemy.</FieldHint>
           <FieldError id="pytanie-blad">{fieldError}</FieldError>
           <Textarea
             ref={field}

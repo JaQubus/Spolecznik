@@ -8,6 +8,7 @@ import type { NeedThread, ReportKind } from "@/lib/threads";
 import { ActionForm, SubmitButton } from "./action-form";
 import { replyInThread } from "./actions";
 import { ThreadLive } from "./thread-live";
+import { org } from "@/lib/brand";
 
 const WHO: Record<ReportKind, { title: string; empty: string }> = {
   potrzeba: {
@@ -55,7 +56,7 @@ export function ThreadSection({
             <fieldset className="space-y-2">
               <legend className="mb-2 text-lg font-bold">Podpis</legend>
               <RadioGroup name="as" defaultValue="rops">
-                <RadioGroupOption id="as-rops" value="rops" label="ROPS Kraków" />
+                <RadioGroupOption id="as-rops" value="rops" label={org.signature} />
                 <RadioGroupOption id="as-ekspert" value="ekspert" label={`W imieniu eksperta: ${thread.expert.name}`} />
               </RadioGroup>
             </fieldset>

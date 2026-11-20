@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { isAdmin } from "@/lib/auth";
 import { MissingMigrationError, rebuildStep } from "@/lib/gmina-report/rebuild";
+import { org } from "@/lib/brand";
 
 // Jedna porcja trwa do ok. 30 s (BUDGET_MS) plus ostatnie wywołanie Groq.
 export const maxDuration = 60;
@@ -22,7 +23,7 @@ function hasSecret(request: Request): boolean {
  */
 export async function POST(request: Request) {
   if (!hasSecret(request) && !(await isAdmin())) {
-    return Response.json({ error: "Przeliczać raporty może tylko administrator ROPS" }, { status: 403 });
+    return Response.json({ error: `Przeliczać raporty może tylko administrator ${org.short}` }, { status: 403 });
   }
   try {
     return Response.json(await rebuildStep(BUDGET_MS));

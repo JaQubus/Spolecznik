@@ -6,6 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { PrintNote } from "@/components/layout/print-note";
 import type { IdeaPoster as Poster, POSTER_ICONS, POSTER_NEEDS, POSTER_SHAPES } from "@/lib/schemas";
+import { brand } from "@/lib/brand";
 
 type Icon = typeof UserIcon;
 
@@ -55,7 +56,7 @@ export function IdeaPoster({ poster }: { poster: Poster }) {
       className="poster max-w-[52rem] space-y-8 rounded-[16px] border border-border-strong bg-background p-5 sm:p-8 print:max-w-none print:space-y-4 print:rounded-none print:border-0 print:p-0"
     >
       <header className="space-y-2">
-        <PrintNote dated>Plakat pomysłu · Społecznik</PrintNote>
+        <PrintNote dated>Plakat pomysłu · {brand.name}</PrintNote>
         <h3 id="plakat-haslo" className="text-3xl font-bold text-balance">{poster.headline}</h3>
         <p className="max-w-[60ch] text-xl">{poster.oneLiner}</p>
       </header>
@@ -117,7 +118,7 @@ export function IdeaPoster({ poster }: { poster: Poster }) {
         )}
       </div>
 
-      <PrintNote>Plakat przygotowany w Społeczniku z fiszki pomysłu. To wizualizacja do rozmowy, a nie gotowy projekt.</PrintNote>
+      <PrintNote>Plakat przygotowany w {brand.nameLocative} z fiszki pomysłu. To wizualizacja do rozmowy, a nie gotowy projekt.</PrintNote>
     </article>
   );
 }

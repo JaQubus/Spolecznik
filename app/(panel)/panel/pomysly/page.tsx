@@ -8,8 +8,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { ActionForm, DeleteForm, SubmitButton } from "../action-form";
 import { updateIdeaStatus } from "../actions";
 import { WaitingBadge, waitingOrEmpty } from "../waiting";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata = { title: "Pomysły · Panel ROPS" };
+export const metadata = { title: panelTitle("Pomysły") };
 
 const selectClass = "h-12 rounded-lg border-2 border-input bg-background px-3 text-base hover:border-foreground";
 const linkClass = "text-base underline decoration-1 underline-offset-4 hover:decoration-2";

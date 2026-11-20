@@ -10,6 +10,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { canOpen, needThread } from "@/lib/threads";
 import { invite, respond } from "./actions";
 import { PartnershipConversation } from "./partnership-conversation";
+import { org } from "@/lib/brand";
 
 export const metadata = { title: "Partnerstwo gmin" };
 
@@ -56,11 +57,11 @@ export default async function Page(props: PageProps<"/partnerstwo">) {
         <h1 className="text-3xl font-bold">Partnerstwo gmin</h1>
         <p className="text-lg">
           Gminy z podobnym problemem mogą porozmawiać we wspólnej rozmowie: wymienić się doświadczeniem, razem
-          wystąpić o pieniądze albo wdrożyć to samo rozwiązanie. Rozmowę prowadzi pracownik ROPS.
+          wystąpić o pieniądze albo wdrożyć to samo rozwiązanie. Rozmowę prowadzi pracownik {org.short}.
         </p>
         <p>
           Zgłoszenie <span className="font-mono font-bold tracking-wider">{code}</span>.{" "}
-          <Link href={`/zapytaj?kod=${code}`} className={linkClass}>Wróć do rozmowy z ROPS</Link>
+          <Link href={`/zapytaj?kod=${code}`} className={linkClass}>Wróć do rozmowy z {org.short}</Link>
         </p>
       </div>
 
@@ -114,7 +115,7 @@ export default async function Page(props: PageProps<"/partnerstwo">) {
               <li key={p.threadId} className="flex flex-wrap items-center justify-between gap-3 border-b py-4">
                 <div className="min-w-0 flex-1 basis-64 space-y-1">
                   <p className="font-bold">{p.isInitiator ? "Twoje zaproszenie" : `Zaprasza: ${p.initiator}`}</p>
-                  <p className="text-muted-foreground">W rozmowie: {list(p.joined)} i ROPS</p>
+                  <p className="text-muted-foreground">W rozmowie: {list(p.joined)} i {org.short}</p>
                   <NoPartners code={code} partnership={p} />
                 </div>
                 <Button asChild variant="outline" size="sm">
@@ -137,7 +138,7 @@ export default async function Page(props: PageProps<"/partnerstwo">) {
           {preview.gminy.length === 0 ? (
             <p className="text-muted-foreground">
               Nie znaleźliśmy innych gmin z podobnym problemem. Kiedy ktoś zgłosi coś podobnego, wróć tutaj albo
-              zapytaj ROPS w rozmowie o zgłoszeniu.
+              zapytaj {org.short} w rozmowie o zgłoszeniu.
             </p>
           ) : (
             <>
@@ -152,8 +153,8 @@ export default async function Page(props: PageProps<"/partnerstwo">) {
               </div>
               <ul className="list-disc space-y-1 pl-6">
                 <li>Gminy zobaczą rozmowę dopiero, gdy się zgodzą. Do tego czasu nie poznasz ich zgłoszeń.</li>
-                <li>Pełnej treści Twojego zgłoszenia nikt poza ROPS nie zobaczy.</li>
-                <li>W rozmowie zawsze jest pracownik ROPS, który ją prowadzi.</li>
+                <li>Pełnej treści Twojego zgłoszenia nikt poza {org.short} nie zobaczy.</li>
+                <li>W rozmowie zawsze jest pracownik {org.short}, który ją prowadzi.</li>
               </ul>
               <form action={invite}>
                 <input type="hidden" name="code" value={code} />
@@ -202,7 +203,7 @@ function ThreadView({
           {p.isInitiator ? "Twoje zaproszenie." : `Zaprasza: ${p.initiator}.`}
           {p.summary && <> Problem: {p.summary}</>}
         </p>
-        <p><strong>W rozmowie:</strong> {list(p.joined)} oraz pracownik ROPS (prowadzi rozmowę).</p>
+        <p><strong>W rozmowie:</strong> {list(p.joined)} oraz pracownik {org.short} (prowadzi rozmowę).</p>
         <NoPartners code={code} partnership={p} />
         {p.waiting > 0 && (
           <p className="text-muted-foreground">
@@ -212,7 +213,7 @@ function ThreadView({
         <p>
           <Link href={`/partnerstwo?potrzeba=${code}`} className={linkClass}>Wszystkie partnerstwa i zaproszenia</Link>
           {" · "}
-          <Link href={`/zapytaj?kod=${code}`} className={linkClass}>Rozmowa z ROPS o zgłoszeniu</Link>
+          <Link href={`/zapytaj?kod=${code}`} className={linkClass}>Rozmowa z {org.short} o zgłoszeniu</Link>
         </p>
       </div>
 
@@ -227,7 +228,7 @@ function NoPartners({ code, partnership: p }: { code: string; partnership: Partn
   return (
     <p className="max-w-[68ch]">
       Żadna z zaproszonych gmin nie dołączyła.{" "}
-      <Link href={`/zapytaj?kod=${code}`} className={linkClass}>Poproś ROPS o pomoc w znalezieniu partnerów</Link>
+      <Link href={`/zapytaj?kod=${code}`} className={linkClass}>Poproś {org.short} o pomoc w znalezieniu partnerów</Link>
       {" "}— napisz w rozmowie o zgłoszeniu.
     </p>
   );

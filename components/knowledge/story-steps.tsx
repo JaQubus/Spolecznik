@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Innovation } from "@/lib/knowledge/types";
 import { formatNumber, plural } from "@/lib/pl";
+import { brand, org } from "@/lib/brand";
 
 /** Tekst ze strony ROPS: akapity po nowych liniach, wiersze z „•” jako lista. */
 function Prose({ text }: { text: string }) {
@@ -34,10 +35,10 @@ export function StorySteps({ innovation: i }: { innovation: Innovation }) {
   // Wyniki z Próby (/przetestuj) wracają tutaj. Przy zerze testów mówimy to wprost i zapraszamy do testu,
   // zamiast milczeć — brak zdania wyglądałby jak brak takiej możliwości.
   const testsLine = tests > 0
-    ? `W Społeczniku przetestowano ją ${tests} ${plural(tests, "raz", "razy", "razy")}${i.avgRating != null ? `, średnia ocena ${formatNumber(i.avgRating)} na 5` : ""}.`
+    ? `W ${brand.nameLocative} przetestowano ją ${tests} ${plural(tests, "raz", "razy", "razy")}${i.avgRating != null ? `, średnia ocena ${formatNumber(i.avgRating)} na 5` : ""}.`
     : (
       <>
-        W Społeczniku nikt jeszcze jej nie przetestował.{" "}
+        W {brand.nameLocative} nikt jeszcze jej nie przetestował.{" "}
         <Link href={`/przetestuj?innowacja=${i.slug ?? i.id}`} className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
           Przetestuj ją u siebie i oceń
         </Link>
@@ -46,7 +47,7 @@ export function StorySteps({ innovation: i }: { innovation: Innovation }) {
   const steps = [
     { title: "Jaki problem rozwiązuje", body: i.problem, extra: i.beneficiaries && { label: "Dla kogo", text: i.beneficiaries } },
     { title: "Na czym polega rozwiązanie", body: i.solution, extra: i.components && { label: "Z czego się składa", text: i.components } },
-    { title: "Skąd wiemy, że działa", body: i.evidence ?? "ROPS nie opisał jeszcze wyników testu tej innowacji.", note: testsLine },
+    { title: "Skąd wiemy, że działa", body: i.evidence ?? `${org.short} nie opisał jeszcze wyników testu tej innowacji.`, note: testsLine },
     // Dwa różne pola (z karty PDF i ze strony ROPS) — każde ze swoją etykietą, gdy są oba.
     i.howToUse
       ? { title: "Jak skorzystać i kto może to wdrożyć", body: i.howToUse, extra: i.whoCanUse && { label: "Kto może to wdrożyć", text: i.whoCanUse } }

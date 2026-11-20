@@ -18,7 +18,7 @@ export type AreaIndicator = {
 };
 
 /**
- * Wskaźniki obszarów Mapy Wyzwań. Klucze jak w public/mapa/malopolska.json (data/map_indicators.py,
+ * Wskaźniki obszarów Mapy Wyzwań. Klucze jak w public/mapa/region.json (data/map_indicators.py,
  * data/bdl_wskazniki.py). Dane gminne mają pierwszeństwo; cztery obszary mają dziś tylko dane powiatowe (IOSS 2024).
  */
 export const AREA_INDICATORS: Record<AreaKey, AreaIndicator[]> = {

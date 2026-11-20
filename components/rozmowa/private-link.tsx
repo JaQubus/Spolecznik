@@ -7,6 +7,7 @@ import { FieldHint } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { privateLinkPath } from "@/lib/thread-types";
+import { org } from "@/lib/brand";
 
 const noSubscribe = () => () => {};
 
@@ -17,7 +18,7 @@ const COPY = {
   },
   pomysl: {
     label: "Prywatny link do pomysłu",
-    hint: "Zapisz go, żeby wrócić do pomysłu i rozmowy z ROPS z innego telefonu albo komputera. Nie pokazuj go innym — kto ma link, może czytać rozmowę.",
+    hint: `Zapisz go, żeby wrócić do pomysłu i rozmowy z ${org.short} z innego telefonu albo komputera. Nie pokazuj go innym — kto ma link, może czytać rozmowę.`,
   },
 };
 

@@ -1,6 +1,7 @@
 import { plural } from "@/lib/pl";
 import type { Innovation, Persona } from "@/lib/knowledge/types";
 import { InnovationTiles } from "./tiles";
+import { org } from "@/lib/brand";
 
 /** „Poznaj: Janina” — fikcyjna persona z Mapy Wyzwań i innowacje, które mogą jej pomóc. */
 export function PersonaStory({ persona: p, innovations }: { persona: Persona; innovations: Innovation[] }) {
@@ -12,7 +13,7 @@ export function PersonaStory({ persona: p, innovations }: { persona: Persona; in
           Poznaj: {p.name}{p.age && `, ${p.age} ${plural(p.age, "rok", "lata", "lat")}`}
         </h2>
         <p className="text-base text-muted-foreground">
-          To postać wymyślona przez ROPS w Mapie Wyzwań Społecznych. Pokazuje, jak problem wygląda w życiu.
+          To postać wymyślona przez {org.short} w Mapie Wyzwań Społecznych. Pokazuje, jak problem wygląda w życiu.
         </p>
       </div>
       <div className="grid gap-8 md:grid-cols-2">

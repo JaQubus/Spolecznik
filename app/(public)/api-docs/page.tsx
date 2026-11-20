@@ -2,10 +2,11 @@ import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import { API_LIMIT_PER_MINUTE } from "@/lib/api/contract";
 import { buildOpenApi } from "@/lib/api/openapi";
+import { brand, region } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "API dla integracji",
-  description: "Publiczne API Społecznika: katalog innowacji do odczytu, specyfikacja OpenAPI i webhooki dla systemów Hubu.",
+  description: `Publiczne API ${brand.nameGenitive}: katalog innowacji do odczytu, specyfikacja OpenAPI i webhooki dla systemów Hubu.`,
 };
 
 const link = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
@@ -35,14 +36,14 @@ const SAMPLE_EVENT = `{
 }`;
 
 const REGISTER_SQL = `insert into webhook_endpoints (url, events, description)
-values ('https://przyklad.pl/spolecznik', '{idea.created,call.activated}', 'Baza grantowa')
+values ('https://przyklad.pl/webhook', '{idea.created,call.activated}', 'Baza grantowa')
 returning secret;`;
 
 const VERIFY_JS = `import { createHmac, timingSafeEqual } from "node:crypto";
 
 // rawBody: surowe bajty żądania, zanim zamienisz je na obiekt
 const expected = "sha256=" + createHmac("sha256", SECRET).update(rawBody).digest("hex");
-const received = request.headers["x-spolecznik-signature"] ?? "";
+const received = request.headers["${brand.webhookHeaderPrefix.toLowerCase()}-signature"] ?? "";
 const ok = received.length === expected.length && timingSafeEqual(Buffer.from(received), Buffer.from(expected));`;
 
 export default function Page() {
@@ -55,7 +56,7 @@ export default function Page() {
       <div className="space-y-6">
         <h1 className="text-4xl font-bold">API dla integracji</h1>
         <p className="text-xl">
-          Katalog innowacji Społecznika jest otwarty do odczytu dla gmin, organizacji i systemów Hubu, np. bazy grantowej.
+          Katalog innowacji {brand.nameGenitive} jest otwarty do odczytu dla gmin, organizacji i systemów Hubu, np. bazy grantowej.
           Odpowiedzi są w JSON, a powiaty mają kody TERYT.
         </p>
         <p className="text-lg">
@@ -119,7 +120,8 @@ export default function Page() {
         <h2 id="teryt" className="text-3xl font-bold">Kody TERYT</h2>
         <p className="text-lg">
           TERYT to wspólny klucz z innymi systemami. API posługuje się kodem powiatu: 4 cyfry, np.{" "}
-          <code className="font-mono">1201</code> (bocheński) albo <code className="font-mono">1261</code> (Kraków). To pierwsze 4
+          <code className="font-mono">{region.countyExample.teryt}</code> ({region.countyExample.name}) albo{" "}
+          <code className="font-mono">{region.cityCountyExample.teryt}</code> ({region.cityCountyExample.name}). To pierwsze 4
           cyfry 7-cyfrowego kodu gminy, więc dane z innych systemów łatwo do niego sprowadzić.
         </p>
         <p className="text-lg">
@@ -152,14 +154,14 @@ export default function Page() {
 
         <h3 className="pt-4 text-2xl font-bold">Jak dodać adres</h3>
         <p className="text-lg">
-          Na razie adres dodaje administrator Społecznika w bazie. W odpowiedzi dostaje klucz <code className="font-mono">secret</code>,
+          Na razie adres dodaje administrator {brand.nameGenitive} w bazie. W odpowiedzi dostaje klucz <code className="font-mono">secret</code>,
           który przekazuje Tobie.
         </p>
         <pre className={code}>{REGISTER_SQL}</pre>
 
         <h3 className="pt-4 text-2xl font-bold">Jak sprawdzić, że żądanie jest od nas</h3>
         <p className="text-lg">
-          Nagłówek <code className="font-mono">X-Spolecznik-Signature</code> zawiera podpis HMAC-SHA256 treści żądania. Policz go
+          Nagłówek <code className="font-mono">{brand.webhookHeaderPrefix}-Signature</code> zawiera podpis HMAC-SHA256 treści żądania. Policz go
           z surowych bajtów, a nie z ponownie zapisanego JSON, i porównaj:
         </p>
         <pre className={code}>{VERIFY_JS}</pre>

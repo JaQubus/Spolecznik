@@ -10,6 +10,7 @@ import { INNOVATION_TYPES, MATERIAL_KINDS, type Area, type Fact, type Innovation
 import { GROUPS, MWS_AREAS } from "@/lib/schemas";
 import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { saveArea, saveFact, saveInnovation, saveMaterial } from "./actions";
+import { org } from "@/lib/brand";
 
 type Action = (state: FormState, fd: FormData) => Promise<FormState>;
 
@@ -69,7 +70,7 @@ export function InnovationForm({ innovation: i }: { innovation: Innovation | nul
           <TextField name="beneficiaries" label="Grupa docelowa" multiline rows={3} defaultValue={i?.beneficiaries} error={e.beneficiaries} />
           <TextField name="solution" label="2. Na czym polega rozwiązanie" required multiline defaultValue={i?.solution} error={e.solution} />
           <TextField name="evidence" label="3. Skąd wiemy, że działa" multiline defaultValue={i?.evidence} error={e.evidence}
-            hint="Wyniki testu. Jeśli ich nie ma, zostaw puste — pokażemy informację, że ROPS jeszcze ich nie opisał." />
+            hint={`Wyniki testu. Jeśli ich nie ma, zostaw puste — pokażemy informację, że ${org.short} jeszcze ich nie opisał.`} />
           <TextField name="whoCanUse" label="4. Kto może skorzystać i wdrożyć" required multiline defaultValue={i?.whoCanUse} error={e.whoCanUse} />
           <TextField name="etrSummary" label="Łatwy tekst" multiline rows={3} defaultValue={i?.etrSummary} error={e.etrSummary}
             hint="2–4 krótkie zdania w formie „Ty”, bez trudnych słów. Pokazujemy je po kliknięciu „Łatwy tekst”." />
@@ -82,7 +83,7 @@ export function InnovationForm({ innovation: i }: { innovation: Innovation | nul
             <CheckboxField name="videoSignLanguage" label="Film ma tłumaczenie na polski język migowy (PJM)" defaultChecked={i?.video?.signLanguage} />
           </fieldset>
           <TextField name="pdfUrl" label="Opis innowacji w PDF (adres)" type="url" inputMode="url" defaultValue={i?.pdfUrl} error={e.pdfUrl} />
-          <TextField name="sourceUrl" label="Strona innowacji na rops.krakow.pl" type="url" inputMode="url" defaultValue={i?.sourceUrl} error={e.sourceUrl} />
+          <TextField name="sourceUrl" label={`Strona innowacji na ${org.domain}`} type="url" inputMode="url" defaultValue={i?.sourceUrl} error={e.sourceUrl} />
           <CheckboxField name="dissemination" label="Wybrana do upowszechniania" defaultChecked={i?.dissemination} />
           <PublishedField value={i?.published ?? true} />
         </>
@@ -119,7 +120,7 @@ export function FactForm({ fact: f }: { fact: Fact | null }) {
             <legend className="px-1 text-xl font-bold">Źródło</legend>
             <p>Fakt bez źródła wyświetli się tylko z etykietą „przykład”.</p>
             <TextField name="sourceTitle" label="Tytuł raportu" defaultValue={f?.sourceTitle} error={e.sourceTitle} />
-            <TextField name="sourcePublisher" label="Wydawca" defaultValue={f?.sourcePublisher ?? "Regionalny Ośrodek Polityki Społecznej w Krakowie"} error={e.sourcePublisher} />
+            <TextField name="sourcePublisher" label="Wydawca" defaultValue={f?.sourcePublisher ?? org.name} error={e.sourcePublisher} />
             <TextField name="sourceUrl" label="Adres raportu" type="url" inputMode="url" defaultValue={f?.sourceUrl} error={e.sourceUrl} />
             <div className="grid gap-6 sm:grid-cols-2">
               <TextField name="sourceYear" label="Rok wydania" inputMode="numeric" defaultValue={f?.sourceYear} error={e.sourceYear} />

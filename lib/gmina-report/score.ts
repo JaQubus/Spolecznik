@@ -6,7 +6,7 @@ import {
   type Direction, type Level,
 } from "./config.ts";
 
-/** To, czego raport potrzebuje z public/mapa/malopolska.json (lib/knowledge/map.ts → MapData). */
+/** To, czego raport potrzebuje z public/mapa/region.json (lib/knowledge/map.ts → MapData). */
 export type Unit = { id: string; name: string; parent: string | null; kind: string | null; values: Record<string, number | null> };
 export type IndicatorMeta = {
   key: string;

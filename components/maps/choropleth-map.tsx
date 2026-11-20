@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { MapData } from "@/lib/knowledge/map";
-import mapJson from "@/public/mapa/malopolska.json";
+import mapJson from "@/public/mapa/region.json";
 import { MapHover, type HoverDetail } from "./map-hover";
 
 export type MapItem = {
@@ -18,7 +18,7 @@ type Shapes = { width: number; height: number; shapes: Shape[] };
 const mapData = mapJson as unknown as MapData;
 const [, , mapWidth, mapHeight] = mapData.viewBox.split(" ").map(Number);
 
-/** Kształty gmin z PRG GUGiK — te same co na mapie Kondycji (public/mapa/malopolska.json, data/knowledge_map.py). */
+/** Kształty gmin z PRG GUGiK — te same co na mapie Kondycji (public/mapa/region.json, data/knowledge_map.py). */
 export const GMINA_SHAPES: Shapes = {
   width: mapWidth,
   height: mapHeight,

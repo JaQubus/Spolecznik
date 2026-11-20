@@ -1,13 +1,14 @@
 import { formatPLN, parseAmount } from "@/lib/form-fields";
 import type { UwContent } from "@/lib/uw-content";
 import { filledRows, indicatorTotals, monthLabel, planTotal, type GrantApplication, type Row } from "@/lib/uw-application";
+import { org } from "@/lib/brand";
 
 // Wniosek o grant „Usługa Wrażliwa” w układzie wzoru ROPS (części I–VI i oświadczenia). Ten sam znacznik idzie
 // do druku/PDF i do pliku Word (WORD_CSS z /wniosek), dlatego tylko proste klasy .doc z globals.css.
 
 const or = (s: string) => s.trim() || "—";
 /** Danych osób nie zbieramy (zasada projektu): wnioskodawca wpisuje je dopiero w formularzu elektronicznym ROPS. */
-const PERSON_LATER = "uzupełnij w formularzu elektronicznym ROPS";
+const PERSON_LATER = `uzupełnij w formularzu elektronicznym ${org.short}`;
 
 function Checks({ items, checked }: { items: string[]; checked: (i: number) => boolean }) {
   return (

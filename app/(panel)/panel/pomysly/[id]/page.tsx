@@ -14,8 +14,9 @@ import { needThread } from "@/lib/threads";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
 import { assignIdeaExpert, updateIdeaStatus } from "../../actions";
 import { ThreadSection } from "../../thread-section";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata = { title: "Pomysł · Panel ROPS" };
+export const metadata = { title: panelTitle("Pomysł") };
 
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 

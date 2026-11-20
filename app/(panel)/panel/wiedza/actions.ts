@@ -13,6 +13,7 @@ import { indexEntity, unindexEntity } from "@/lib/knowledge/indexing";
 import { StoreError, type Entity, type EntityKind } from "@/lib/knowledge/store";
 import { INNOVATION_TYPES, MATERIAL_KINDS, type Area, type Fact, type Innovation, type Material } from "@/lib/knowledge/types";
 import { GROUPS, MWS_AREAS } from "@/lib/schemas";
+import { org } from "@/lib/brand";
 
 // ── Pomocnicze ──────────────────────────────────────────────
 
@@ -23,7 +24,7 @@ const list = (fd: FormData, k: string) => fd.getAll(k).map(String);
 const int = (fd: FormData, k: string) => (text(fd, k) ? Number(text(fd, k).replace(/\s/g, "")) : null);
 const num = (fd: FormData, k: string) => (text(fd, k) ? Number(text(fd, k).replace(/\s/g, "").replace(",", ".")) : null);
 
-const url = z.string().url("Wpisz pełny adres, np. https://rops.krakow.pl/…");
+const url = z.string().url(`Wpisz pełny adres, np. ${org.url}/…`);
 const optionalUrl = url.nullable();
 
 /** Błędy zod → komunikaty przy polach (nazwa pola = nazwa w formularzu). */

@@ -10,6 +10,7 @@ import { getViewer, isTestLoginEnabled, safeNext } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { logout, passwordLogin, testLogin } from "./actions";
 import { LoginForm } from "./login-form";
+import { org } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Logowanie" };
 
@@ -27,7 +28,7 @@ const ROLE_LABELS: Record<string, string> = {
   organizacja: "organizacja",
   jst: "samorząd (JST)",
   ekspert: "ekspert",
-  admin: "administrator ROPS",
+  admin: `administrator ${org.short}`,
 };
 
 export default async function Page(props: PageProps<"/logowanie">) {
@@ -60,7 +61,7 @@ export default async function Page(props: PageProps<"/logowanie">) {
           {viewer.role === "ekspert" && (
             <p>
               <Link href="/ekspert" className="text-lg font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
-                Przejdź do zgłoszeń, przy których ROPS prosi Cię o pomoc
+                Przejdź do zgłoszeń, przy których {org.short} prosi Cię o pomoc
               </Link>
             </p>
           )}
@@ -71,7 +72,7 @@ export default async function Page(props: PageProps<"/logowanie">) {
       ) : (
         <>
           <p className="text-lg">
-            Konto jest dla samorządów, ekspertów i pracowników ROPS. Żeby opisać problem, sprawdzić status albo
+            Konto jest dla samorządów, ekspertów i pracowników {org.short}. Żeby opisać problem, sprawdzić status albo
             przeglądać bibliotekę, nie musisz się logować.
           </p>
 
@@ -100,12 +101,12 @@ export default async function Page(props: PageProps<"/logowanie">) {
             <section aria-labelledby="konto-testowe" className="space-y-4">
               <h2 id="konto-testowe" className="text-2xl font-bold">Konto testowe</h2>
               <Alert title="Tylko do testów">
-                <p>Wybierz rolę jednym przyciskiem. To zastępuje prawdziwe konta, dopóki nie podłączymy logowania ROPS.</p>
+                <p>Wybierz rolę jednym przyciskiem. To zastępuje prawdziwe konta, dopóki nie podłączymy logowania {org.short}.</p>
               </Alert>
               <form action={testLogin} className="flex flex-col gap-3 sm:flex-row">
                 <input type="hidden" name="dalej" value={next} />
                 <Button type="submit" name="rola" value="admin" variant={supabaseEnabled ? "outline" : "default"}>
-                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako administrator ROPS
+                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako administrator {org.short}
                 </Button>
                 <Button type="submit" name="rola" value="ekspert" variant="outline">
                   <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako ekspert
@@ -115,7 +116,7 @@ export default async function Page(props: PageProps<"/logowanie">) {
                 </Button>
               </form>
               <FieldHint>
-                Ekspert widzi tylko zgłoszenia, które ROPS do niego przypisał. Konto mieszkańca pozwala sprawdzić, że panel
+                Ekspert widzi tylko zgłoszenia, które {org.short} do niego przypisał. Konto mieszkańca pozwala sprawdzić, że panel
                 administratora jest dla niego niedostępny.
               </FieldHint>
             </section>

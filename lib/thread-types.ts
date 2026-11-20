@@ -1,3 +1,4 @@
+import { brand, org } from "@/lib/brand";
 // Wspólne dla serwera (lib/threads.ts) i klienta (komponent rozmowy).
 
 export const AUTHOR_ROLES = ["autor", "rops", "ekspert", "ai"] as const;
@@ -29,13 +30,13 @@ export type ThreadWaiting = "czlowiek" | "pilne" | null;
 
 export const ROLE_LABELS: Record<AuthorRole, string> = {
   autor: "Zgłaszający",
-  rops: "ROPS Kraków",
+  rops: org.signature,
   ekspert: "Ekspert",
   ai: "Asystent AI",
 };
 
 /** Opis pod każdą wiadomością asystenta — tekstem, nie tylko kolorem, więc słyszy go też czytnik ekranu. */
-export const AI_DISCLAIMER = "Odpowiedź automatyczna asystenta Społecznika. Pracownik ROPS też ją zobaczy i odpowie, jeśli trzeba.";
+export const AI_DISCLAIMER = `Odpowiedź automatyczna asystenta ${brand.nameGenitive}. Pracownik ${org.short} też ją zobaczy i odpowie, jeśli trzeba.`;
 
 /** Link do strony raportu w PDF (jak w „Zapytaj Bibliotekę”). */
 export const reportPageHref = (url: string, page?: number | null) => (page ? `${url}#page=${page}` : url);

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { brand, org, region } from "../../lib/brand";
 import { axe, headingLevels, horizontalOverflow } from "./a11y";
 
 // #26: axe na kluczowych ekranach poza Zasobnikiem (ten ma knowledge-a11y.spec.ts). Tylko odczyt — nic nie wysyłamy,
@@ -7,13 +8,13 @@ const PUBLIC = [
   ["strona główna", "/"],
   ["Opisz problem", "/opisz"],
   ["Sprawdź status", "/status"],
-  ["status: nieznany kod", "/status/SPL-ZZZZ"],
+  ["status: nieznany kod", `/status/${brand.statusPrefix}-ZZZZ`],
   ["Zgłoś pomysł", "/pomysl"],
   ["Jak to wdrożyć u nas?", "/wdrozenie"],
   ["Przetestuj rozwiązanie", "/przetestuj"],
   ["Zapytaj eksperta", "/zapytaj"],
   ["wniosek", "/wniosek"],
-  ["Kondycja Małopolski", "/biblioteka/kondycja"],
+  [`Kondycja ${region.genitive}`, "/biblioteka/kondycja"],
   ["Ucz się", "/biblioteka/ucz-sie"],
   ["logowanie", "/logowanie"],
   ["API dla integracji", "/api-docs"],
@@ -30,7 +31,7 @@ const PANEL = [
 
 async function loginAsAdmin(page: Page) {
   await page.goto("/logowanie");
-  await page.getByRole("button", { name: "Wejdź jako administrator ROPS" }).click();
+  await page.getByRole("button", { name: `Wejdź jako administrator ${org.short}` }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/logowanie"));
 }
 
@@ -81,7 +82,7 @@ test.describe("ekrany publiczne", () => {
   });
 });
 
-test.describe("panel ROPS (konto testowe admina)", () => {
+test.describe(`panel ${org.short} (konto testowe admina)`, () => {
   screens(PANEL, loginAsAdmin);
 
   test("otwarty dzwonek powiadomień", async ({ page }) => {
