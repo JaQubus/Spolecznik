@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, test } from "node:test";
 import { rankChallenges, scorePartner, type ChallengeCandidate, type MatchInput, type PartnerCandidate } from "../../lib/pathways/match.ts";
 import { conditionHolds, describeCondition, easeOfAdoption, fillTemplate, recommendPathways, type PathwayInput } from "../../lib/pathways/rules.ts";
-import { buildPathwaysView, type PathwaySource } from "../../lib/pathways/view.ts";
+import { buildPathwaysView, extraMetrics, type PathwaySource } from "../../lib/pathways/view.ts";
 import { sameStem, sharedWords } from "../../lib/stems.ts";
 import {
   FUNNEL, FUNNEL_KEYS, INNOVATION_KIND_KEYS, PARTNER_KIND_KEYS, PARTNER_SUPPORT_KEYS, PATHWAY_KEYS, PATHWAY_RULES, PATHWAYS, RADAR_KEYS,
@@ -263,3 +263,23 @@ describe("przypadek demo 2: zgłoszenie patentowe uczelni z Rzeszowa (kompozyt z
     assert.ok(view.partners.some((m) => m.partner.kind === "pci" && m.pathway === "rozwoj"), "akcelerator albo laboratorium PCI");
   });
 });
+
+describe("mierniki od AI", () => {
+  // Odpowiedź modelu z przejścia demo na żywo (przypadek 2): trzy z czterech powtarzały mierniki z konfiguracji.
+  test("bez powtórzeń mierników z konfiguracji, nowe zostają", () => {
+    const configured = ["List intencyjny z firmą z sektora w 6 miesięcy", "Umowa licencyjna albo umowa o testy u licencjobiorcy w 12 miesięcy"];
+    assert.deepEqual(extraMetrics(configured, [
+      "List intencyjny od firmy z sektora lotniczego podpisany do 6 miesiąca",
+      "Podpisanie umowy licencyjnej lub umowy o testy do 12 miesiąca",
+      "Uzyskany prototyp spełniający wymogi wytrzymałościowe w testach laboratoryjnych do 9 miesiąca",
+    ]), ["Uzyskany prototyp spełniający wymogi wytrzymałościowe w testach laboratoryjnych do 9 miesiąca"]);
+    assert.deepEqual(extraMetrics(["Udział w najbliższym naborze akceleratora PCI"], ["Udział w akceleratorze PCI potwierdzony do 12 miesiąca"]), []);
+  });
+
+  test("miernik dopasowany do karty zostaje (przypadek 1)", () => {
+    const configured = ["Liczba szkół wdrażających model: 3 w ciągu roku szkolnego", "Plan przeniesienia dla szkoły (program, role nauczycieli, koszty) gotowy w 3 miesiące"];
+    const ai = ["Odsetek uczniów zatrudnionych w regionie w nowej szkole: co najmniej 70% w ciągu pierwszego roku"];
+    assert.deepEqual(extraMetrics(configured, ai), ai);
+  });
+});
+

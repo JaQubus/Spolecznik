@@ -60,7 +60,7 @@ export function PathwaysSection({
                 </h3>
                 <p>{story?.why ?? p.description}</p>
                 {p.alsoVariants.length > 0 && (
-                  <p className="text-muted-foreground">Warto rozważyć także: {p.alsoVariants.map((v) => v.label.toLowerCase()).join(", ")}.</p>
+                  <p className="text-muted-foreground">Warto rozważyć także: {p.alsoVariants.map((v) => v.label.charAt(0).toLowerCase() + v.label.slice(1)).join(", ")}.</p>
                 )}
 
                 <div className="space-y-1">
