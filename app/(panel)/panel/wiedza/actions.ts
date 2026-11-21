@@ -7,12 +7,11 @@ import { after } from "next/server";
 import { z } from "zod";
 import type { FormState } from "@/components/knowledge/admin-fields";
 import { getViewer } from "@/lib/auth";
-import { alertNeedsAboutInnovation } from "@/lib/innovation-alerts";
 import { knowledge } from "@/lib/knowledge";
 import { indexEntity, unindexEntity } from "@/lib/knowledge/indexing";
 import { StoreError, type Entity, type EntityKind } from "@/lib/knowledge/store";
-import { INNOVATION_TYPES, MATERIAL_KINDS, type Area, type Fact, type Innovation, type Material } from "@/lib/knowledge/types";
-import { GROUPS, MWS_AREAS } from "@/lib/schemas";
+import { INNOVATION_TYPES, MATERIAL_KINDS, type Domain, type Fact, type Material, type Pattern } from "@/lib/knowledge/types";
+import { CROSS_KEYS, DOMAIN_KEYS, INSTITUTION_KEYS } from "@/lib/taxonomy";
 import { org } from "@/lib/brand";
 
 // ── Pomocnicze ──────────────────────────────────────────────
@@ -70,7 +69,7 @@ async function persist<K extends EntityKind>(
   } catch (e) {
     return { ok: false, message: e instanceof StoreError ? e.message : "Nie udało się zapisać. Spróbuj ponownie za chwilę.", errors: {} };
   }
-  // Embedding + lematy + tagi liczą się po wysłaniu odpowiedzi — admin nie czeka na LLM.
+  // Lematy i dziedziny liczą się po wysłaniu odpowiedzi — admin nie czeka na LLM.
   after(async () => {
     try {
       await indexEntity(kind, entity);
@@ -80,22 +79,24 @@ async function persist<K extends EntityKind>(
       console.error("[panel/wiedza] indeksowanie po zapisie nieudane:", e);
     }
   });
-  revalidatePath("/biblioteka", "layout");
+  revalidatePath("/wiedza", "layout");
+  revalidatePath("/rozwiazania", "layout");
   redirect(`${back}?zapisano=1`);
 }
 
-// ── Innowacja ───────────────────────────────────────────────
+// ── Sprawdzone rozwiązanie ──────────────────────────────────
 
-const InnovationInput = z.object({
-  title: z.string().min(3, "Wpisz nazwę innowacji (co najmniej 3 znaki)."),
+const PatternInput = z.object({
+  title: z.string().min(3, "Wpisz nazwę rozwiązania (co najmniej 3 znaki)."),
   slug: z.string().regex(/^[a-z0-9-]+$/, "Adres może mieć tylko małe litery bez polskich znaków, cyfry i myślniki."),
-  groups: z.array(z.enum(GROUPS)).min(1, "Zaznacz co najmniej jedną grupę „dla kogo”."),
-  areas: z.array(z.enum(MWS_AREAS)).max(3, "Zaznacz najwyżej 3 obszary."),
+  domains: z.array(z.enum(DOMAIN_KEYS)).min(1, "Zaznacz co najmniej jedną dziedzinę.").max(3, "Zaznacz najwyżej 3 dziedziny."),
+  crossTopics: z.array(z.enum(CROSS_KEYS)),
+  institutionTypes: z.array(z.enum(INSTITUTION_KEYS)),
   innovationType: z.enum(INNOVATION_TYPES).nullable(),
-  problem: z.string().min(10, "Opisz, jaki problem rozwiązuje innowacja."),
+  problem: z.string().min(10, "Opisz, jaki problem rozwiązuje."),
   solution: z.string().min(10, "Opisz, na czym polega rozwiązanie."),
   evidence: z.string().nullable(),
-  whoCanUse: z.string().min(5, "Napisz, kto może skorzystać z innowacji albo ją wdrożyć."),
+  whoCanUse: z.string().min(5, "Napisz, kto może przenieść to rozwiązanie do siebie."),
   beneficiaries: z.string().nullable(),
   etrSummary: z.string().nullable(),
   video: z.string().nullable().refine((v) => !v || youtubeId(v), "Wklej link do filmu na YouTube, np. https://www.youtube.com/watch?v=…"),
@@ -103,14 +104,15 @@ const InnovationInput = z.object({
   sourceUrl: optionalUrl,
 });
 
-export async function saveInnovation(_: FormState, fd: FormData): Promise<FormState> {
+export async function savePattern(_: FormState, fd: FormData): Promise<FormState> {
   const id = text(fd, "id") || randomUUID();
-  const existing = await knowledge.innovation(id, { all: true });
-  const parsed = InnovationInput.safeParse({
+  const existing = await knowledge.pattern(id, { all: true });
+  const parsed = PatternInput.safeParse({
     title: text(fd, "title"),
     slug: text(fd, "slug") || slugify(text(fd, "title")),
-    groups: list(fd, "groups"),
-    areas: list(fd, "areas"),
+    domains: list(fd, "domains"),
+    crossTopics: list(fd, "crossTopics"),
+    institutionTypes: list(fd, "institutionTypes"),
     innovationType: optional(fd, "innovationType"),
     problem: text(fd, "problem"),
     solution: text(fd, "solution"),
@@ -124,15 +126,19 @@ export async function saveInnovation(_: FormState, fd: FormData): Promise<FormSt
   });
   if (!parsed.success) return { ok: false, message: "", errors: fieldErrors(parsed.error) };
   const v = parsed.data;
-  const clash = (await knowledge.innovations({}, { all: true })).find((i) => i.slug === v.slug && i.id !== id);
-  if (clash) return { ok: false, message: "", errors: { slug: `Ten adres ma już innowacja „${clash.title}”. Zmień go.` } };
+  const clash = (await knowledge.patterns({}, { all: true })).find((i) => i.slug === v.slug && i.id !== id);
+  if (clash) return { ok: false, message: "", errors: { slug: `Ten adres ma już rozwiązanie „${clash.title}”. Zmień go.` } };
 
   const ytId = v.video ? youtubeId(v.video) : null;
-  const innovation: Innovation = {
-    ...(existing ?? { materialsZip: null, licenseUrl: null, dissemination: false, synthetic: false }),
-    id, slug: v.slug, title: v.title, groups: v.groups, areas: v.areas, innovationType: v.innovationType,
-    // Admin zatwierdził obszary i typ — nie są już „przypisane automatycznie”.
-    areasAuto: false, typeAuto: false,
+  const pattern: Pattern = {
+    ...(existing ?? {
+      category: null, howToUse: null, components: null, materialsZip: null, licenseUrl: null, sourceName: null,
+      dissemination: false, synthetic: false, adoptionsCount: 0, avgRating: null,
+    }),
+    id, slug: v.slug, title: v.title, domains: v.domains, crossTopics: v.crossTopics, institutionTypes: v.institutionTypes,
+    innovationType: v.innovationType,
+    // Admin zatwierdził dziedziny i typ — nie są już „przypisane automatycznie”.
+    domainsAuto: false,
     problem: v.problem, solution: v.solution, evidence: v.evidence, whoCanUse: v.whoCanUse,
     beneficiaries: v.beneficiaries, etrSummary: v.etrSummary, pdfUrl: v.pdfUrl, sourceUrl: v.sourceUrl,
     video: ytId
@@ -147,17 +153,14 @@ export async function saveInnovation(_: FormState, fd: FormData): Promise<FormSt
     dissemination: checked(fd, "dissemination"),
     published: checked(fd, "published"),
   };
-  // Pierwsza publikacja (nowa albo z „szkicu”) → autorzy otwartych potrzeb z tych obszarów dostają powiadomienie.
-  const firstPublish = innovation.published && !existing?.published;
-  return persist("innowacja", innovation, id, `/panel/wiedza/innowacja/${id}`,
-    firstPublish ? () => alertNeedsAboutInnovation(innovation) : undefined);
+  return persist("rozwiazanie", pattern, id, `/panel/wiedza/rozwiazanie/${id}`);
 }
 
 // ── Fakt ────────────────────────────────────────────────────
 
 const FactInput = z.object({
-  area: z.enum(MWS_AREAS, "Wybierz obszar."),
-  displayValue: z.string().min(1, "Wpisz liczbę tak, jak ma się wyświetlić, np. „841,5 tys.”."),
+  domain: z.enum(DOMAIN_KEYS, "Wybierz dziedzinę."),
+  displayValue: z.string().min(1, "Wpisz liczbę tak, jak ma się wyświetlić, np. „21,4%”."),
   value: z.number().nullable(),
   unit: z.string().nullable(),
   sentence: z.string().min(10, "Napisz jedno zdanie prostym językiem, co znaczy ta liczba."),
@@ -181,7 +184,7 @@ const FactInput = z.object({
 export async function saveFact(_: FormState, fd: FormData): Promise<FormState> {
   const id = text(fd, "id") || randomUUID();
   const parsed = FactInput.safeParse({
-    area: text(fd, "area"), displayValue: text(fd, "displayValue"), value: num(fd, "value"), unit: optional(fd, "unit"),
+    domain: text(fd, "domain"), displayValue: text(fd, "displayValue"), value: num(fd, "value"), unit: optional(fd, "unit"),
     sentence: text(fd, "sentence"), dataYear: int(fd, "dataYear"), isExample: checked(fd, "isExample"),
     sourceTitle: optional(fd, "sourceTitle"), sourcePublisher: optional(fd, "sourcePublisher"), sourceUrl: optional(fd, "sourceUrl"),
     sourceYear: int(fd, "sourceYear"), sourcePage: int(fd, "sourcePage"), quote: optional(fd, "quote"),
@@ -202,7 +205,7 @@ const MaterialInput = z.object({
   format: z.string().nullable(),
   sizeMb: z.number().positive("Rozmiar to liczba większa od zera, np. 1,8.").nullable(),
   language: z.enum(["pl", "en", "uk"]),
-  areas: z.array(z.enum(MWS_AREAS)),
+  domains: z.array(z.enum(DOMAIN_KEYS)),
   year: z.number().int().min(1990).max(2100, "Wpisz rok, np. 2024.").nullable(),
 });
 
@@ -211,43 +214,44 @@ export async function saveMaterial(_: FormState, fd: FormData): Promise<FormStat
   const parsed = MaterialInput.safeParse({
     kind: text(fd, "kind"), title: text(fd, "title"), description: optional(fd, "description"), url: text(fd, "url"),
     format: optional(fd, "format"), sizeMb: num(fd, "sizeMb"), language: text(fd, "language") || "pl",
-    areas: list(fd, "areas"), year: int(fd, "year"),
+    domains: list(fd, "domains"), year: int(fd, "year"),
   });
   if (!parsed.success) return { ok: false, message: "", errors: fieldErrors(parsed.error) };
   const { sizeMb, ...v } = parsed.data;
   const existing = (await knowledge.materials({}, { all: true })).find((m) => m.id === id);
   const material: Material = {
+    slug: slugify(v.title) || id, publisher: null,
     ...existing, ...v, id, sizeBytes: sizeMb ? Math.round(sizeMb * 1_000_000) : null,
     sort: existing?.sort ?? 999, published: checked(fd, "published"),
   };
   return persist("material", material, id, `/panel/wiedza/material/${id}`);
 }
 
-// ── Obszar ──────────────────────────────────────────────────
+// ── Dziedzina ───────────────────────────────────────────────
 
-const AreaInput = z.object({
-  name: z.string().min(3, "Wpisz nazwę obszaru."),
+const DomainInput = z.object({
+  name: z.string().min(3, "Wpisz nazwę dziedziny."),
   lead: z.string().min(10, "Napisz jedno zdanie na kafel.").max(120, "Zdanie na kafel może mieć najwyżej 120 znaków."),
   definition: z.string().min(20, "Napisz 2–3 zdania prostym językiem."),
   challenges: z.array(z.string()).min(1, "Wpisz co najmniej jedno wyzwanie (każde w nowej linii)."),
 });
 
-export async function saveArea(_: FormState, fd: FormData): Promise<FormState> {
+export async function saveDomain(_: FormState, fd: FormData): Promise<FormState> {
   const key = text(fd, "id");
-  const existing = await knowledge.area(key, { all: true });
-  if (!existing) return { ok: false, message: "Nie ma takiego obszaru. Obszary wynikają z Mapy Wyzwań i nie można dodawać nowych.", errors: {} };
-  const parsed = AreaInput.safeParse({
+  const existing = await knowledge.domain(key, { all: true });
+  if (!existing) return { ok: false, message: "Nie ma takiej dziedziny. Dziedziny są w config/taxonomy.json — nowe dodaje się tam.", errors: {} };
+  const parsed = DomainInput.safeParse({
     name: text(fd, "name"), lead: text(fd, "lead"), definition: text(fd, "definition"),
     challenges: text(fd, "challenges").split("\n").map((l) => l.replace(/^[-•]\s*/, "").trim()).filter(Boolean),
   });
   if (!parsed.success) return { ok: false, message: "", errors: fieldErrors(parsed.error) };
-  const area: Area = { ...existing, ...parsed.data, published: checked(fd, "published") };
-  return persist("obszar", area, key, `/panel/wiedza/obszar/${key}`);
+  const domain: Domain = { ...existing, ...parsed.data, published: checked(fd, "published") };
+  return persist("dziedzina", domain, key, `/panel/wiedza/dziedzina/${key}`);
 }
 
 // ── Usuwanie i pełne indeksowanie ───────────────────────────
 
-const KINDS = ["innowacja", "fakt", "material"] as const;
+const KINDS = ["rozwiazanie", "fakt", "material"] as const;
 
 export async function removeEntity(fd: FormData): Promise<void> {
   const viewer = await getViewer();
@@ -259,21 +263,21 @@ export async function removeEntity(fd: FormData): Promise<void> {
     await unindexEntity(kind, id).catch((e) => console.error("[panel/wiedza] usuwanie z indeksu:", e));
     await audit("usuniecie", kind, id, viewer.label).catch(() => {});
   });
-  revalidatePath("/biblioteka", "layout");
+  revalidatePath("/wiedza", "layout");
   redirect(`/panel/wiedza?rodzaj=${kind}&usunieto=1`);
 }
 
-/** Przelicza indeks wyszukiwarki dla całego Zasobnika (np. po imporcie seeda). */
+/** Przelicza indeks wyszukiwarki dla całej bazy wiedzy (np. po imporcie seeda). */
 export async function reindexAll(): Promise<void> {
   const viewer = await getViewer();
   if (viewer?.role !== "admin") redirect("/logowanie");
-  const [innovations, areas, materials] = await Promise.all([
-    knowledge.innovations({}, { all: true }), knowledge.areas({ all: true }), knowledge.materials({}, { all: true }),
+  const [patterns, domains, materials] = await Promise.all([
+    knowledge.patterns({}, { all: true }), knowledge.domains({ all: true }), knowledge.materials({}, { all: true }),
   ]);
   after(async () => {
-    for (const a of areas) await indexEntity("obszar", a).catch((e) => console.error("[reindex] obszar", a.key, e));
+    for (const d of domains) await indexEntity("dziedzina", d).catch((e) => console.error("[reindex] dziedzina", d.key, e));
     for (const m of materials) await indexEntity("material", m).catch((e) => console.error("[reindex] material", m.id, e));
-    for (const i of innovations) await indexEntity("innowacja", i).catch((e) => console.error("[reindex] innowacja", i.slug, e));
+    for (const p of patterns) await indexEntity("rozwiazanie", p).catch((e) => console.error("[reindex] rozwiazanie", p.slug, e));
   });
   redirect("/panel/wiedza?indeks=1");
 }

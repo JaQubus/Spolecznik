@@ -36,9 +36,8 @@ export function ActionForm({
 }
 
 const DELETED = {
-  need: { noun: "zgłoszenie", done: "usunięte" },
-  idea: { noun: "pomysł", done: "usunięty" },
-  call: { noun: "nabór", done: "usunięty" },
+  inicjatywa: { noun: "inicjatywa", done: "usunięta" },
+  program: { noun: "program", done: "usunięty" },
 } as const;
 
 /**
@@ -55,7 +54,7 @@ export function DeleteForm({
 }: {
   entity: keyof typeof DELETED;
   id: string;
-  /** Co usuwamy, np. „zgłoszenie SPL-4K7Q” — do etykiet przycisków. */
+  /** Co usuwamy, np. „inicjatywę RAD-4K7Q” — do etykiet przycisków. */
   label: string;
   consequence: React.ReactNode;
   collapsed?: boolean;

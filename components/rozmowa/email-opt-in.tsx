@@ -28,7 +28,7 @@ export function EmailOptIn({ code, accessKey, current = null, id = "email-powiad
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/kontakt", {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, key: accessKey, email: value }),
@@ -62,7 +62,7 @@ export function EmailOptIn({ code, accessKey, current = null, id = "email-powiad
       <Label htmlFor={id}>{saved ? "Zmień e-mail do powiadomień" : "Twój e-mail (nieobowiązkowy)"}</Label>
       <FieldHint id={`${id}-pomoc`}>
         {saved && <>Powiadomienia idą teraz na: <strong>{saved}</strong>. </>}
-        Napiszemy, gdy {org.short} albo ekspert odpowie lub zmieni się status. Użyjemy adresu tylko do tego zgłoszenia,
+        Napiszemy, gdy zespół {org.short} albo mentor odpowie lub zmieni się status. Użyjemy adresu tylko do tego zgłoszenia,
         a w mailu nie będzie jego treści. Zmienisz go albo usuniesz w każdej chwili tutaj, na stronie statusu
         zgłoszenia albo po otwarciu prywatnego linku.
       </FieldHint>

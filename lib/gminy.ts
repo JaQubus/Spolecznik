@@ -4,7 +4,7 @@ import wskaznikiJson from "@/data/out/gminy_wskazniki.json";
 import type { GminaFact } from "./schemas";
 import { createAdminClient } from "./supabase/admin";
 
-/** Podpowiedź w polu „Gmina”: nazwa do wpisania i opis, który rozróżnia np. Bochnię miejską i wiejską. */
+/** Podpowiedź w polu „Gmina”: nazwa do wpisania i opis, który rozróżnia gminę miejską i wiejską o tej samej nazwie. */
 export type GminaOption = { teryt: string; nazwa: string; opis: string };
 
 /**
@@ -39,32 +39,47 @@ function normalize(name: string): string {
     .replace(/[%_\\]/g, ""); // znaki specjalne ILIKE
 }
 
+type MunicipalityRow = {
+  teryt: string; name: string; county: string; kind: string | null; population: number | null;
+  share_65plus: number | string | null; population_change_10y: number | string | null; indicators: Record<string, unknown> | null;
+};
+const COLUMNS = "teryt, name, county, kind, population, share_65plus, population_change_10y, indicators";
+const num = (v: number | string | null) => (v == null ? null : Number(v));
+
+/** Wiersz tabeli municipalities → profil gminy (te same pola co data/out/gminy.json). */
+function fromRow(r: MunicipalityRow): Gmina {
+  return {
+    teryt: r.teryt, nazwa: r.name, powiat: r.county, typ: r.kind, ludnosc: r.population,
+    udzial_65plus: num(r.share_65plus), zmiana_ludnosci_10l: num(r.population_change_10y), wskazniki: r.indicators ?? {},
+  };
+}
+
 /**
  * Gmina po TERYT (wybrana z podpowiedzi), a bez niego po nazwie (bez rozróżniania wielkości liter).
  * Przy dwóch gminach o tej samej nazwie i bez TERYT bierze większą.
  */
 export async function findGmina(name: string | null | undefined, teryt?: string): Promise<Gmina | null> {
   if (teryt) {
-    const { data, error } = await createAdminClient().from("gminy").select("*").eq("teryt", teryt).maybeSingle();
+    const { data, error } = await createAdminClient().from("municipalities").select(COLUMNS).eq("teryt", teryt).maybeSingle();
     if (error) throw error;
-    if (data) return data as Gmina;
+    if (data) return fromRow(data as MunicipalityRow);
   }
   if (!name) return null;
   const q = normalize(name);
   if (!q) return null;
   const { data, error } = await createAdminClient()
-    .from("gminy")
-    .select("*")
-    .ilike("nazwa", q)
-    .order("ludnosc", { ascending: false, nullsFirst: false })
+    .from("municipalities")
+    .select(COLUMNS)
+    .ilike("name", q)
+    .order("population", { ascending: false, nullsFirst: false })
     .limit(1);
   if (error) throw error;
-  return (data?.[0] as Gmina) ?? null;
+  return data?.[0] ? fromRow(data[0] as MunicipalityRow) : null;
 }
 
 const pct = (n: number) => `${n.toLocaleString("pl-PL", { maximumFractionDigits: 1 })}%`;
 
-/** Profil gminy prostym tekstem — kontekst dla reranku („co dostosować u Ciebie”). */
+/** Profil gminy prostym tekstem — kontekst dla reranku i radaru („co dostosować u Ciebie”). */
 export function describeGmina(g: Gmina): string {
   const parts = [`Gmina ${g.nazwa}${g.typ ? ` (${g.typ})` : ""}, powiat ${g.powiat}.`];
   if (g.ludnosc != null) parts.push(`Ludność: ${g.ludnosc.toLocaleString("pl-PL")}.`);
@@ -77,7 +92,7 @@ export function describeGmina(g: Gmina): string {
 type Indicator = { key: string; label: string; unit: string; bdl: string; year: number };
 const INDICATORS = wskaznikiJson.indicators as Indicator[];
 const INDICATOR_VALUES = wskaznikiJson.values as Record<string, Record<string, number | null>>;
-/** Wskaźniki „na N mieszkańców” przeliczane na liczbę osób w gminie, bo tej liczby potrzebuje wniosek (pkt III.5). */
+/** Wskaźniki „na N mieszkańców” przeliczane na liczbę osób w gminie, bo tej liczby potrzebuje plan przeniesienia. */
 const PER_RESIDENTS: Record<string, { label: string; per: number }> = {
   beneficjenci: { label: "Osoby korzystające z pomocy społecznej", per: 10_000 },
   urodzenia: { label: "Urodzenia w roku", per: 1000 },
@@ -85,7 +100,7 @@ const PER_RESIDENTS: Record<string, { label: string; per: number }> = {
 
 /**
  * Profil gminy jako lista liczb ze źródłem (BDL GUS: data/bdl.py i data/bdl_wskazniki.py).
- * Plan wdrożenia (/api/middleman) pokazuje tylko te liczby, więc każda ma podany wskaźnik i rok.
+ * Plan przeniesienia (/api/transfer) pokazuje tylko te liczby, więc każda ma podany wskaźnik i rok.
  * Wartości „wyliczone” to iloczyn dwóch liczb z BDL i są tak podpisane.
  */
 export function gminaFacts(g: Gmina): GminaFact[] {
@@ -122,7 +137,7 @@ export function gminaFacts(g: Gmina): GminaFact[] {
   return facts;
 }
 
-/** „Bochnia (gmina wiejska, powiat bocheński)”, „Kraków (miasto na prawach powiatu)”. */
+/** „Czarna (gmina wiejska, powiat bieszczadzki)”, „Rzeszów (miasto na prawach powiatu)”. */
 export function gminaLabel(g: Pick<Gmina, "nazwa" | "powiat" | "typ">): string {
   if (g.powiat.startsWith("m. ")) return `${g.nazwa} (miasto na prawach powiatu)`;
   return `${g.nazwa} (gmina ${g.typ ?? ""}, powiat ${g.powiat})`.replace("gmina ,", "gmina,");

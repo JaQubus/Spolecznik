@@ -24,16 +24,15 @@ const ERRORS: Record<string, string> = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  mieszkaniec: "mieszkaniec",
-  organizacja: "organizacja",
-  jst: "samorząd (JST)",
-  ekspert: "ekspert",
+  author: "autor",
+  institution: "instytucja",
+  mentor: "mentor",
   admin: `administrator ${org.short}`,
 };
 
 export default async function Page(props: PageProps<"/logowanie">) {
   const params = await props.searchParams;
-  // ?next= (Panel, proxy.ts) albo ?dalej= (starsze linki z Zasobnika).
+  // ?next= (Panel, proxy.ts) albo ?dalej= (formularz logowania).
   const next = safeNext(first(params.next) || first(params.dalej));
   const error = ERRORS[first(params.blad)];
   const viewer = await getViewer();
@@ -58,10 +57,10 @@ export default async function Page(props: PageProps<"/logowanie">) {
               </Link>
             </p>
           )}
-          {viewer.role === "ekspert" && (
+          {viewer.role === "mentor" && (
             <p>
-              <Link href="/ekspert" className="text-lg font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
-                Przejdź do zgłoszeń, przy których {org.short} prosi Cię o pomoc
+              <Link href="/mentor" className="text-lg font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+                Przejdź do inicjatyw, przy których zespół {org.short} prosi Cię o pomoc
               </Link>
             </p>
           )}
@@ -72,8 +71,8 @@ export default async function Page(props: PageProps<"/logowanie">) {
       ) : (
         <>
           <p className="text-lg">
-            Konto jest dla samorządów, ekspertów i pracowników {org.short}. Żeby opisać problem, sprawdzić status albo
-            przeglądać bibliotekę, nie musisz się logować.
+            Konto jest dla mentorów, instytucji i zespołu {org.short}. Żeby zgłosić albo wskazać inicjatywę, sprawdzić
+            status czy przeglądać bazę, nie musisz się logować.
           </p>
 
           {supabaseEnabled && (
@@ -108,16 +107,16 @@ export default async function Page(props: PageProps<"/logowanie">) {
                 <Button type="submit" name="rola" value="admin" variant={supabaseEnabled ? "outline" : "default"}>
                   <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako administrator {org.short}
                 </Button>
-                <Button type="submit" name="rola" value="ekspert" variant="outline">
-                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako ekspert
+                <Button type="submit" name="rola" value="mentor" variant="outline">
+                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako mentor
                 </Button>
-                <Button type="submit" name="rola" value="mieszkaniec" variant="outline">
-                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako mieszkaniec
+                <Button type="submit" name="rola" value="author" variant="outline">
+                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako autor
                 </Button>
               </form>
               <FieldHint>
-                Ekspert widzi tylko zgłoszenia, które {org.short} do niego przypisał. Konto mieszkańca pozwala sprawdzić, że panel
-                administratora jest dla niego niedostępny.
+                Mentor widzi tylko inicjatywy, które zespół {org.short} do niego przypisał. Konto autora pozwala sprawdzić, że
+                Panel jest dla niego niedostępny.
               </FieldHint>
             </section>
           )}

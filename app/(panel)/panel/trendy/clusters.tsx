@@ -1,29 +1,29 @@
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { CLUSTER_MIN_SIZE } from "@/lib/knowledge/cluster-needs";
-import { NEEDS_LIMIT, type Clusters } from "@/lib/knowledge/clusters";
+import { CLUSTER_MIN_SIZE } from "@/lib/knowledge/cluster-cards";
+import { INITIATIVES_LIMIT, type Clusters } from "@/lib/knowledge/clusters";
 import { plural } from "@/lib/pl";
-import { AREA_LABELS } from "@/lib/taxonomy";
+import { domainLabel } from "@/lib/taxonomy";
 import { ActionForm, SubmitButton } from "../action-form";
 import { labelClustersAction } from "./actions";
 
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 
-/** Grupy podobnych zgłoszeń: po wspólnych słowach kluczowych, z nazwą z LLM liczoną wsadowo. */
+/** Grupy podobnych inicjatyw: po wspólnych słowach kluczowych, z nazwą z LLM liczoną wsadowo. */
 export function ClusterList({ data }: { data: Clusters }) {
-  const { clusters, unlabeled, source, needs, capped } = data;
+  const { clusters, unlabeled, source, initiatives, capped } = data;
   return (
     <section aria-labelledby="grupy" className="space-y-6">
-      <h2 id="grupy" className="text-2xl font-bold">Grupy podobnych zgłoszeń</h2>
+      <h2 id="grupy" className="text-2xl font-bold">Grupy podobnych inicjatyw</h2>
       <p className="max-w-[44rem] text-base text-muted-foreground">
-        Zgłoszenia, które mają co najmniej dwa wspólne słowa kluczowe, przy czym rzadkie słowa ważą więcej niż częste.
-        Pokazujemy grupy od {CLUSTER_MIN_SIZE} zgłoszeń. Nazwy grup tworzy AI na podstawie słów i kilku streszczeń. Zanim zaczniesz
-        działać, sprawdź zgłoszenia w grupie.
+        Inicjatywy, które mają co najmniej dwa wspólne słowa kluczowe, przy czym rzadkie słowa ważą więcej niż częste.
+        Pokazujemy grupy od {CLUSTER_MIN_SIZE} inicjatyw. Nazwy grup tworzy AI na podstawie słów i kilku streszczeń. Zanim zaczniesz
+        działać, sprawdź inicjatywy w grupie.
       </p>
       <p className="max-w-[44rem] text-base text-muted-foreground">
         {capped
-          ? `Grupy liczymy z ${NEEDS_LIMIT} najnowszych zgłoszeń — starsze nie są tu brane pod uwagę.`
-          : `Grupy liczymy ze wszystkich zgłoszeń (${needs}).`}
+          ? `Grupy liczymy z ${INITIATIVES_LIMIT} najnowszych inicjatyw — starsze nie są tu brane pod uwagę.`
+          : `Grupy liczymy ze wszystkich inicjatyw (${initiatives}).`}
       </p>
 
       {unlabeled > 0 && (
@@ -39,7 +39,7 @@ export function ClusterList({ data }: { data: Clusters }) {
       )}
 
       {clusters.length === 0 ? (
-        <p className="text-muted-foreground">Za mało podobnych zgłoszeń, żeby utworzyć grupy.</p>
+        <p className="text-muted-foreground">Za mało podobnych inicjatyw, żeby utworzyć grupy.</p>
       ) : (
         <ol className="max-w-[48rem] border-t">
           {clusters.map((c) => (
@@ -47,15 +47,15 @@ export function ClusterList({ data }: { data: Clusters }) {
               <h3 className="text-xl font-bold">{c.label ?? `Bez nazwy: ${c.keywords.slice(0, 3).join(", ")}`}</h3>
               {c.description && <p>{c.description}</p>}
               <p className="text-base text-muted-foreground">
-                <strong className="text-foreground">{c.ids.length}</strong> {plural(c.ids.length, "zgłoszenie", "zgłoszenia", "zgłoszeń")}
+                <strong className="text-foreground">{c.ids.length}</strong> {plural(c.ids.length, "inicjatywa", "inicjatywy", "inicjatyw")}
                 {" · "}{c.gminy} {plural(c.gminy, "gmina", "gminy", "gmin")}
-                {c.areas.length > 0 && ` · ${c.areas.map((a) => AREA_LABELS[a]).join(", ")}`}
+                {c.domains.length > 0 && ` · ${c.domains.map(domainLabel).join(", ")}`}
               </p>
               <p className="text-base">Wspólne słowa: {c.keywords.join(", ")}</p>
               {source === "baza" && (
                 <p>
                   <Link href={`/panel?grupa=${c.key}`} className={`inline-flex min-h-12 items-center ${linkClass}`}>
-                    Zobacz zgłoszenia z grupy<span className="sr-only">: {c.label ?? c.keywords.join(", ")}</span>
+                    Zobacz inicjatywy z grupy<span className="sr-only">: {c.label ?? c.keywords.join(", ")}</span>
                   </Link>
                 </p>
               )}

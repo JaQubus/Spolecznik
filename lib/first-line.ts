@@ -1,64 +1,76 @@
 import "server-only";
 import { asksAboutOwnCase } from "./first-line-guard";
-import { innovationHref } from "./knowledge/hrefs";
+import { knowledge } from "./knowledge";
+import { initiativeHref, patternHref } from "./knowledge/hrefs";
 import { answerInThread, tagCard, type KnowledgeSource } from "./llm";
 import { NOVELTY_MIN_SIMILARITY } from "./schemas";
-import { keywordSearch, searchDocChunks } from "./search";
+import { keywordSearch } from "./search";
 import { createAdminClient } from "./supabase/admin";
-import { reportPageHref, type MessageSource } from "./thread-types";
+import type { MessageSource } from "./thread-types";
 import { org } from "@/lib/brand";
 
 /**
- * „Zapytaj ROPS”: asystent jako pierwsza linia (#20). Ten sam mechanizm co „Zapytaj Bibliotekę” (/api/ask):
- * lematy pytania z LLM → fragmenty raportów i innowacje z Zasobnika → odpowiedź tylko ze źródłami.
- * Bez źródeł albo przy pytaniu o własną sprawę asystent nie zgaduje, tylko przekazuje pytanie człowiekowi.
+ * Asystent jako pierwsza linia w rozmowie autora z zespołem. Lematy pytania z LLM → fakty o regionie, sprawdzone
+ * rozwiązania i opublikowane inicjatywy → odpowiedź tylko ze źródłami. Bez źródeł albo przy pytaniu o własną
+ * sprawę asystent nie zgaduje, tylko przekazuje pytanie człowiekowi.
  */
 export type FirstLine =
   | { outcome: "odpowiedz"; body: string; sources: MessageSource[] }
-  /** reason: „sprawa” — pytanie o status, termin, decyzję; „brak_zrodel” — Zasobnik nie zna odpowiedzi albo AI nie działa. */
+  /** reason: „sprawa” — pytanie o status, termin, decyzję; „brak_zrodel” — baza nie zna odpowiedzi albo AI nie działa. */
   | { outcome: "przekazano"; reason: "sprawa" | "brak_zrodel" }
   /** Wiadomość nie jest pytaniem (podziękowanie, uzupełnienie) — asystent milczy, przeczyta ją człowiek. */
   | { outcome: "bez_pytania" };
 
 export const FORWARD_MESSAGES: Record<"sprawa" | "brak_zrodel", string> = {
-  sprawa: `Pytanie dotyczy Twojej sprawy, więc nie zgaduję. Przekazałem pytanie do ${org.short} — pracownik odpowie tutaj, w tej rozmowie.`,
-  brak_zrodel: `W Zasobniku nie znalazłem pewnej odpowiedzi, więc nie zgaduję. Przekazałem pytanie do ${org.short} — pracownik odpowie tutaj, w tej rozmowie.`,
+  sprawa: `Pytanie dotyczy Twojej sprawy, więc nie zgaduję. Przekazałem pytanie do zespołu ${org.short} — odpowiedź pojawi się tutaj, w tej rozmowie.`,
+  brak_zrodel: `W bazie wiedzy nie znalazłem pewnej odpowiedzi, więc nie zgaduję. Przekazałem pytanie do zespołu ${org.short} — odpowiedź pojawi się tutaj, w tej rozmowie.`,
 };
+
+const FACTS = 4;
 
 /** `message` jest już zanonimizowana (lib/pii.ts). Błędy AI i bazy kończą się przekazaniem, nigdy wyjątkiem. */
 export async function firstLine(message: string): Promise<FirstLine> {
   if (asksAboutOwnCase(message)) return { outcome: "przekazano", reason: "sprawa" };
   try {
-    const { lemmas } = await tagCard(`Pytanie do ${org.short}`, message);
-    const [chunks, innovationHits] = await Promise.all([
-      searchDocChunks(lemmas, 5),
-      keywordSearch("innowacja", lemmas, 3).then((hits) => hits.filter((h) => h.similarity >= NOVELTY_MIN_SIMILARITY)),
+    const { lemmas, domains } = await tagCard(`Pytanie do ${org.short}`, message);
+    const relevant = (hits: Awaited<ReturnType<typeof keywordSearch>>) => hits.filter((h) => h.similarity >= NOVELTY_MIN_SIMILARITY);
+    const [patternHits, initiativeHits, facts] = await Promise.all([
+      keywordSearch("pattern", lemmas, 3).then(relevant),
+      keywordSearch("initiative", lemmas, 3).then(relevant),
+      domains.length ? knowledge.facts().then((all) => all.filter((f) => domains.includes(f.domain)).slice(0, FACTS)) : [],
     ]);
-    if (chunks.length === 0 && innovationHits.length === 0) return { outcome: "przekazano", reason: "brak_zrodel" };
 
-    const ids = innovationHits.map((h) => h.ref_id);
     const supabase = createAdminClient();
-    const [bodies, slugs] = ids.length
-      ? await Promise.all([
-          supabase.from("search_index").select("ref_id, body").eq("kind", "innowacja").in("ref_id", ids),
-          supabase.from("innovations").select("id, slug").in("id", ids),
-        ])
-      : [{ data: [], error: null }, { data: [], error: null }];
-    if (bodies.error) throw bodies.error;
-    if (slugs.error) throw slugs.error;
-    const bodyById = new Map((bodies.data ?? []).map((b) => [b.ref_id as string, b.body as string]));
-    const slugById = new Map((slugs.data ?? []).map((s) => [s.id as string, s.slug as string | null]));
+    const patternIds = patternHits.map((h) => h.ref_id);
+    const initiativeIds = initiativeHits.map((h) => h.ref_id);
+    const [patterns, initiatives] = await Promise.all([
+      patternIds.length
+        ? supabase.from("patterns").select("id, slug, title, problem, solution").in("id", patternIds)
+        : { data: [], error: null },
+      // Tylko opublikowane: treść cudzych zgłoszeń przed weryfikacją jest prywatna.
+      initiativeIds.length
+        ? supabase.from("public_initiatives").select("id, slug, title, summary, card").in("id", initiativeIds)
+        : { data: [], error: null },
+    ]);
+    if (patterns.error) throw patterns.error;
+    if (initiatives.error) throw initiatives.error;
+    if (facts.length === 0 && !patterns.data?.length && !initiatives.data?.length) return { outcome: "przekazano", reason: "brak_zrodel" };
 
     // Ta sama kolejność w obu listach: numer źródła z modelu wskazuje wpis w `stored`.
     const known: KnowledgeSource[] = [];
     const stored: MessageSource[] = [];
-    for (const c of chunks) {
-      known.push({ kind: "raport", docTitle: c.doc_title, year: c.year, page: c.page, text: c.text });
-      stored.push({ kind: "raport", title: c.doc_title, year: c.year, page: c.page, href: c.url ? reportPageHref(c.url, c.page) : null });
+    for (const f of facts) {
+      known.push({ kind: "fakt", title: f.sourceTitle ?? "Bank Danych Lokalnych GUS", text: `${f.displayValue}: ${f.sentence}` });
+      stored.push({ kind: "fakt", title: f.sourceTitle ?? "Bank Danych Lokalnych GUS", href: f.sourceUrl, year: f.dataYear });
     }
-    for (const h of innovationHits) {
-      known.push({ kind: "innowacja", title: h.title, text: bodyById.get(h.ref_id) ?? "" });
-      stored.push({ kind: "innowacja", title: h.title, href: innovationHref(slugById.get(h.ref_id) ?? h.ref_id) });
+    for (const p of patterns.data ?? []) {
+      known.push({ kind: "rozwiazanie", title: p.title as string, text: `${p.problem ?? ""} ${p.solution ?? ""}`.trim() });
+      stored.push({ kind: "rozwiazanie", title: p.title as string, href: patternHref((p.slug as string | null) ?? (p.id as string)) });
+    }
+    for (const i of initiatives.data ?? []) {
+      const card = (i.card ?? {}) as { problem?: string; solution?: string };
+      known.push({ kind: "inicjatywa", title: i.title as string, text: [i.summary, card.problem, card.solution].filter(Boolean).join(" ") });
+      stored.push({ kind: "inicjatywa", title: i.title as string, href: i.slug ? initiativeHref(i.slug as string) : null });
     }
 
     const result = await answerInThread(message, known);

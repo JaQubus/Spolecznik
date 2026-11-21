@@ -1,48 +1,54 @@
 import { z } from "zod";
 import { STATUS_CODE } from "./brand.ts";
+import { CROSS_KEYS, DOMAIN_KEYS, INSTITUTION_KEYS, STAGE_KEYS } from "./taxonomy.ts";
 
-// Oś 1: obszary Mapy Wyzwań Społecznych
-export const MWS_AREAS = [
-  "rodzina_piecza", "bezdomnosc", "niepelnosprawnosc", "ubostwo",
-  "cudzoziemcy", "zdrowie", "zdrowie_psychiczne", "seniorzy",
-] as const;
-
-// Oś 2: kategorie Biblioteki Innowacji (grupy docelowe)
-export const GROUPS = [
-  "seniorzy", "dzieci_mlodziez_rodzina", "ograniczona_mobilnosc",
-  "niepelnosprawnosc_sensoryczna", "zdrowie_medycyna", "rynek_pracy",
-  "cudzoziemcy", "bezdomnosc", "niepelnosprawnosc_intelektualna",
-] as const;
-
-// Tematy przekrojowe z briefu
-export const CROSS = [
-  "samotnosc", "wykluczenie_cyfrowe", "dostep_do_uslug",
-  "depopulacja_suburbanizacja", "wspolpraca_miedzysektorowa",
-] as const;
-
-// biblioteka / obszar / material — karty Zasobnika wiedzy (migracja 0005), osobno od korpusu matchmakingu.
-export const CARD_KINDS = ["innowacja", "potrzeba", "pomysl", "ekspert", "nabor", "biblioteka", "obszar", "material"] as const;
+/** Rodzaje kart we wspólnym indeksie wyszukiwania (search_index.kind, 0001_core.sql). */
+export const CARD_KINDS = ["initiative", "pattern", "challenge", "mentor", "program", "domain", "material"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
-export const NEED_STATUSES = [
-  "zgloszone", "w_analizie", "ekspert", "odpowiedz", "luka", "zamkniete",
-] as const;
+/** Statusy inicjatywy (initiatives.status). Publiczna jest dopiero po weryfikacji w Panelu (initiatives.published). */
+export const INITIATIVE_STATUSES = ["submitted", "in_review", "featured", "supported", "scaling", "archived"] as const;
+export type InitiativeStatus = (typeof INITIATIVE_STATUSES)[number];
 
-/** Statusy testu (Próba). Tester zgłasza tylko „planowany” albo „zakonczony”, resztę ustawia ROPS w Panelu → Testy. */
-export const TEST_STATUSES = ["planowany", "potwierdzony", "w_trakcie", "zakonczony"] as const;
+/** own: autor zgłasza swoją inicjatywę · nomination: ktoś wskazuje cudzą, którą zauważył. */
+export const SUBMISSION_KINDS = ["own", "nomination"] as const;
+export type SubmissionKind = (typeof SUBMISSION_KINDS)[number];
 
-export const NeedCard = z.object({
-  summary: z.string(), // 1–2 zdania, bez danych osobowych
-  areas: z.array(z.enum(MWS_AREAS)).min(1).max(3),
-  groups: z.array(z.enum(GROUPS)).max(3),
-  cross: z.array(z.enum(CROSS)).max(3),
-  gmina: z.string().nullable(), // nazwa → TERYT po stronie serwera
-  keywords: z.array(z.string()).min(3).max(12), // FORMY PODSTAWOWE: "senior", "samotność"
-  alreadyTried: z.string().nullable(),
+/** Statusy adopcji („Wypróbowaliśmy u nas”). Zgłaszający podaje „planowany” albo „zakonczony”, resztę ustawia Panel. */
+export const ADOPTION_STATUSES = ["planowany", "potwierdzony", "w_trakcie", "zakonczony"] as const;
+
+const keywords = z.array(z.string()).min(3).max(12); // FORMY PODSTAWOWE: "uczeń", "robotyka", "transport publiczny"
+
+/** Karta inicjatywy z intake (initiatives.card). Bez danych osobowych; nazwa instytucji zostaje tylko w raw_text. */
+export const InitiativeCard = z.object({
+  title: z.string().min(3).max(120),
+  summary: z.string(), // 1–2 zdania prostym językiem
+  problem: z.string(),
+  solution: z.string(),
+  effects: z.string().nullable(), // co już dało; null, gdy jeszcze nic nie wiadomo
+  beneficiaries: z.string().nullable(),
+  domains: z.array(z.enum(DOMAIN_KEYS)).min(1).max(3),
+  institutionType: z.enum(INSTITUTION_KEYS).nullable(),
+  stage: z.enum(STAGE_KEYS),
+  cross: z.array(z.enum(CROSS_KEYS)).max(3),
+  municipality: z.string().nullable(), // nazwa → TERYT po stronie serwera
+  keywords,
   clarity: z.number().min(0).max(1),
-  followUp: z.string().nullable(), // pytanie doprecyzowujące albo null
+  followUps: z.array(z.string()).max(2), // pytania doprecyzowujące, gdy opisu nie wystarcza do oceny
 });
-export type NeedCard = z.infer<typeof NeedCard>;
+export type InitiativeCard = z.infer<typeof InitiativeCard>;
+
+/** „Szukam rozwiązania”: instytucja opisuje problem (challenges.card). */
+export const ChallengeCard = z.object({
+  summary: z.string(),
+  domains: z.array(z.enum(DOMAIN_KEYS)).min(1).max(3),
+  institutionType: z.enum(INSTITUTION_KEYS).nullable(),
+  municipality: z.string().nullable(),
+  keywords,
+  clarity: z.number().min(0).max(1),
+  followUp: z.string().nullable(),
+});
+export type ChallengeCard = z.infer<typeof ChallengeCard>;
 
 export const RerankItem = z.object({
   id: z.string(),
@@ -53,19 +59,33 @@ export const RerankItem = z.object({
 export const RerankResult = z.object({ items: z.array(RerankItem).max(5) });
 export type RerankItem = z.infer<typeof RerankItem>;
 
-// Wejścia endpointów
-export const IntakeRequest = z.object({
-  text: z.string().min(3).max(5000),
-  gmina: z.string().optional(),
-  area: z.enum(MWS_AREAS).optional(), // obszar wybrany wcześniej, np. z „Biblioteki i wiedzy”
-  previousCard: NeedCard.optional(), // przy odpowiedzi na pytanie doprecyzowujące
+const teryt = z.string().regex(/^\d{7}$/); // gmina wybrana z podpowiedzi — rozstrzyga gminę miejską i wiejską o tej samej nazwie
+
+// ── Wejścia endpointów ──
+export const INTAKE_MODES = ["own", "nomination", "challenge"] as const;
+export type IntakeMode = (typeof INTAKE_MODES)[number];
+
+/** /api/intake: tekst → karta. previousCard przy odpowiedzi na pytanie doprecyzowujące (kształt zależy od trybu). */
+export const IntakeRequest = z.discriminatedUnion("mode", [
+  z.object({ mode: z.enum(["own", "nomination"]), text: z.string().min(3).max(5000), gmina: z.string().optional(), previousCard: InitiativeCard.optional() }),
+  z.object({ mode: z.literal("challenge"), text: z.string().min(3).max(5000), gmina: z.string().optional(), previousCard: ChallengeCard.optional() }),
+]);
+
+/** /api/initiatives: zapis zgłoszenia albo wskazania po intake. */
+export const InitiativeRequest = z.object({
+  kind: z.enum(SUBMISSION_KINDS),
+  card: InitiativeCard,
+  text: z.string().min(3).max(10000), // oryginalny opis (+ odpowiedzi na dopytanie) — tylko do initiatives.raw_text
+  gmina: z.string().max(100).optional(), // to, co użytkownik wpisał w pole „Gmina”
+  teryt: teryt.optional(),
 });
 
-export const MatchRequest = z.object({
-  card: NeedCard,
-  text: z.string().min(3).max(10000), // oryginalny opis (+ odpowiedź na dopytanie) — tylko do needs.raw_text
-  gmina: z.string().max(100).optional(), // to, co użytkownik wpisał w pole „Gmina”
-  teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi — rozstrzyga np. Bochnię miejską i wiejską
+/** /api/challenges: „Szukam rozwiązania” po intake. */
+export const ChallengeRequest = z.object({
+  card: ChallengeCard,
+  text: z.string().min(3).max(10000),
+  gmina: z.string().max(100).optional(),
+  teryt: teryt.optional(),
 });
 
 export const FeedbackRequest = z.object({
@@ -73,39 +93,25 @@ export const FeedbackRequest = z.object({
   value: z.union([z.literal(1), z.literal(-1), z.literal(0)]), // 0 = cofnięcie oceny
 });
 
-// /api/index-card: lematy i tagi obu osi dla karty w indeksie (README 5.3)
-export const IndexCardRequest = z.object({
-  kind: z.enum(CARD_KINDS),
-  refId: z.uuid(),
-});
+// /api/index-card: lematy i dziedziny karty w indeksie
+export const IndexCardRequest = z.object({ kind: z.enum(CARD_KINDS), refId: z.uuid() });
 export const CardTags = z.object({
-  lemmas: z.array(z.string()).min(3).max(20), // FORMY PODSTAWOWE, jak keywords w NeedCard
-  areas: z.array(z.enum(MWS_AREAS)).max(3),
-  groups: z.array(z.enum(GROUPS)).max(3),
+  lemmas: z.array(z.string()).min(3).max(20), // FORMY PODSTAWOWE, jak keywords w kartach
+  domains: z.array(z.enum(DOMAIN_KEYS)).max(3),
 });
 export type CardTags = z.infer<typeof CardTags>;
 
-// /panel/trendy: etykiety grup podobnych potrzeb, liczone wsadowo i trzymane w need_cluster_labels
+// /panel/trendy: etykiety grup podobnych inicjatyw i wyzwań, liczone wsadowo i trzymane w cluster_labels
 export const ClusterLabels = z.object({
   clusters: z.array(z.object({
-    n: z.number().int(),           // numer grupy z <grupa n="…">
-    label: z.string().max(80),     // krótkie hasło, np. „Samotność seniorów na wsi”
+    n: z.number().int(),              // numer grupy z <grupa n="…">
+    label: z.string().max(80),        // krótkie hasło, np. „Robotyka w małych szkołach”
     description: z.string().max(300), // jedno zdanie
   })),
 });
 export type ClusterLabels = z.infer<typeof ClusterLabels>;
 
-/** Raport gminy (#104): 2–3 zdania z gotowych liczb. Liczby sprawdza lib/gmina-report/summary.ts → checkSummary. */
-export const GminaSummary = z.object({ summary: z.string().max(700) });
-
-// /api/ask: Zapytaj Bibliotekę (RAG po doc_chunks)
-export const AskRequest = z.object({ question: z.string().min(3).max(1000) });
-export const AskAnswer = z.object({
-  answered: z.boolean(), // false, gdy fragmenty raportów nie zawierają odpowiedzi
-  answer: z.string(),
-  sources: z.array(z.number().int()).max(5), // numery fragmentów z <fragment n="…">
-});
-// Rozmowa: asystent jako pierwsza linia „Zapytaj ROPS” (lib/first-line.ts)
+// Rozmowa: asystent jako pierwsza linia (lib/first-line.ts)
 export const FirstLineAnswer = z.object({
   // odpowiedz: źródła zawierają odpowiedź · przekaz: nie zawierają albo pytanie o własną sprawę · bez_pytania: to nie pytanie
   decision: z.enum(["odpowiedz", "przekaz", "bez_pytania"]),
@@ -113,133 +119,115 @@ export const FirstLineAnswer = z.object({
   sources: z.array(z.number().int()).max(5), // numery źródeł z <zrodlo n="…">
 });
 
-export type AskResponse = {
-  answered: boolean;
-  answer: string;
-  sources: { docTitle: string; year: number | null; url: string | null; page: number | null }[];
-};
-
-// Pracownia: fiszka pomysłu (ideas.fiszka). Klucze jak w data/out/synthetic.json.
-export const Fiszka = z.object({
-  krotki_opis: z.string().min(1).max(500),
+/** Warsztat (/zglos/warsztat): szkic pomysłu przed zgłoszeniem. */
+export const Sketch = z.object({
+  summary: z.string().min(1).max(500),
   problem: z.string().max(3000).default(""),
-  istota: z.string().max(3000).default(""),
-  dla_kogo: z.string().max(1000).default(""),
-  etap: z.string().max(200).default(""),
+  solution: z.string().max(3000).default(""),
+  beneficiaries: z.string().max(1000).default(""),
+  stage: z.string().max(200).default(""),
 });
-export type Fiszka = z.infer<typeof Fiszka>;
+export type Sketch = z.infer<typeof Sketch>;
 
 /** Kod zgłoszenia z lib/status-code.ts (bez 0, 1, I, O); prefiks z config/brand.json. */
 export { STATUS_CODE };
 
-// /api/ideas: zgłoszenie pomysłu z Pracowni
-export const IdeaRequest = z.object({
-  fiszka: Fiszka,
+/** /api/initiatives/workshop: zgłoszenie z warsztatu — kartę robi serwer z intake na szkicu. */
+export const WorkshopRequest = z.object({
+  sketch: Sketch,
   canvas: z.record(z.string(), z.string().max(3000)).default({}),
-  needCode: z.string().regex(STATUS_CODE).optional(), // pomysł z luki: /pomysl?potrzeba=SPL-…
   poster: z.lazy(() => IdeaPoster).optional(), // plakat z /api/poster, jeśli autor go wygenerował
 });
-/** accessKey: tajny klucz pomysłu — tylko dla autora (ciasteczko + prywatny link), jak w MatchResponse. */
-export type IdeaResponse = { ideaId: string; statusCode: string; accessKey: string };
 
-// /api/tests: Próba — zgłoszenie testu albo ocena po teście (#19)
-export const TestRequest = z
+/** accessKey: tajny klucz do rozmowy — tylko dla autora (ciasteczko + prywatny link). */
+export type SubmitResponseBase = { initiative: { id: string; statusCode: string; accessKey: string; gmina: string | null } };
+
+// /api/adoptions: „Wypróbowaliśmy u nas” — zgłoszenie przeniesienia albo ocena po nim
+export const AdoptionRequest = z
   .object({
-    innovationId: z.uuid(),
+    initiativeId: z.uuid().optional(),
+    patternId: z.uuid().optional(),
     gmina: z.string().min(2).max(100),
-    teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
-    status: z.enum(TEST_STATUSES).extract(["planowany", "zakonczony"]),
-    testerOrg: z.string().max(200).optional(),
+    teryt: teryt.optional(),
+    status: z.enum(ADOPTION_STATUSES).extract(["planowany", "zakonczony"]),
+    adopterOrg: z.string().max(200).optional(),
     plannedFor: z.iso.date().optional(),
-    contactEmail: z.email().max(254).optional(), // powiadomienia o statusie testu bez konta
+    contactEmail: z.email().max(254).optional(), // powiadomienia o statusie bez konta
     rating: z.number().int().min(1).max(5).optional(),
-    feedback: z.string().max(2000).optional(), // co działa
-    suggestions: z.string().max(2000).optional(), // co poprawić
+    worked: z.string().max(2000).optional(), // co działa
+    improve: z.string().max(2000).optional(), // co poprawić
   })
+  .refine((t) => (t.initiativeId == null) !== (t.patternId == null), { path: ["initiativeId"], message: "Wybierz inicjatywę albo rozwiązanie" })
   .refine((t) => t.status !== "zakonczony" || t.rating != null, { path: ["rating"], message: "Wybierz ocenę od 1 do 5" });
 
-// /api/rozmowy: wiadomość autora w wątku zgłoszenia (wchodzi po kodzie, bez konta)
+// /api/threads: wiadomość autora w wątku inicjatywy (wchodzi po kodzie, bez konta)
 export const ThreadPostRequest = z.object({
   code: z.string().regex(STATUS_CODE),
   body: z.string().trim().min(2, "Wpisz wiadomość").max(2000, "Wiadomość może mieć najwyżej 2000 znaków"),
-  expertId: z.uuid().optional(), // „Zapytaj eksperta” z wyników dopasowania
+  mentorId: z.uuid().optional(), // „Zapytaj mentora” z wyników
 });
 
 export const ThreadNotHelpfulRequest = z.object({ code: z.string().trim().toUpperCase().regex(STATUS_CODE) });
 
-// /api/assistant: asystent Pracowni
+// /api/assistant: asystent warsztatu
 export const AssistantRequest = z.object({
   messages: z
     .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) }))
     .min(1)
     .max(30),
-  fiszka: Fiszka.optional(),
+  sketch: Sketch.optional(),
 });
 export type AssistantResponse = {
   reply: string;
-  similar: { kind: "innowacja" | "pomysl"; id: string; title: string; similarity: number; slug: string | null }[];
+  similar: { kind: "initiative" | "pattern"; id: string; title: string; similarity: number; slug: string | null }[];
 };
 
-// /api/middleman: szkic planu wdrożenia pod nabór ROPS „Usługa Wrażliwa” (FEM 2021–2027, Działanie 6.23).
-// Sekcje odpowiadają częściom III–VI „Wniosku o grant” (zał. 2 do ogłoszenia naboru IS-430-3/25).
+// ── /api/transfer: plan przeniesienia inicjatywy albo rozwiązania do wskazanej gminy i instytucji ──
 
-/**
- * Limity z ogłoszenia naboru i karty oceny formalnej: grant do 600 tys. zł, wdrożenie do 18 miesięcy,
- * w tym przygotowanie do 6, a samą usługę świadczy się co najmniej 12 miesięcy.
- */
-export const GRANT = { maxPln: 600_000, maxMonths: 18, maxPreparationMonths: 6, minServiceMonths: 12 } as const;
+/** Ramy planu: pilotaż przeniesienia do 12 miesięcy, w tym przygotowanie do 3. */
+export const TRANSFER = { maxMonths: 12, maxPreparationMonths: 3 } as const;
 
-export const INSTITUTION_TYPES = ["jst", "ops", "pcpr", "cus", "ngo", "pes"] as const;
-export type InstitutionType = (typeof INSTITUTION_TYPES)[number];
-export const INSTITUTION_LABELS: Record<InstitutionType, string> = {
-  jst: "Urząd gminy lub starostwo",
-  ops: "Ośrodek pomocy społecznej (OPS, GOPS, MOPS)",
-  pcpr: "Powiatowe centrum pomocy rodzinie (PCPR)",
-  cus: "Centrum usług społecznych (CUS)",
-  ngo: "Organizacja pozarządowa",
-  pes: "Podmiot ekonomii społecznej",
-};
-
-export const BUDGET_RANGES = ["do_100", "100_300", "300_600", "nie_wiem"] as const;
+export const BUDGET_RANGES = ["do_20", "20_50", "50_150", "nie_wiem"] as const;
 export type BudgetRange = (typeof BUDGET_RANGES)[number];
 export const BUDGET_LABELS: Record<BudgetRange, string> = {
-  do_100: "do 100 tys. zł",
-  "100_300": "100–300 tys. zł",
-  "300_600": "300–600 tys. zł",
+  do_20: "do 20 tys. zł",
+  "20_50": "20–50 tys. zł",
+  "50_150": "50–150 tys. zł",
   nie_wiem: "Jeszcze nie wiem",
 };
-/** Górna granica widełek w złotych; „nie wiem” to limit grantu. */
-export const BUDGET_MAX_PLN: Record<BudgetRange, number> = {
-  do_100: 100_000, "100_300": 300_000, "300_600": GRANT.maxPln, nie_wiem: GRANT.maxPln,
-};
+/** Górna granica widełek w złotych; „nie wiem” = bez ostrzeżenia o budżecie. */
+export const BUDGET_MAX_PLN: Record<BudgetRange, number | null> = { do_20: 20_000, "20_50": 50_000, "50_150": 150_000, nie_wiem: null };
 
-export const MiddlemanRequest = z.object({
-  innovationId: z.uuid(),
+export const SOURCE_KINDS = ["initiative", "pattern"] as const;
+export type SourceKind = (typeof SOURCE_KINDS)[number];
+
+export const TransferRequest = z.object({
+  sourceKind: z.enum(SOURCE_KINDS),
+  sourceId: z.uuid(),
   gmina: z.string().min(1).max(100),
-  teryt: z.string().regex(/^\d{7}$/).optional(), // gmina wybrana z podpowiedzi (GminaField)
-  institutionType: z.enum(INSTITUTION_TYPES),
+  teryt: teryt.optional(),
+  institutionType: z.enum(INSTITUTION_KEYS),
   audienceSize: z.number().int().min(1).max(1_000_000).optional(), // przybliżona liczba odbiorców
-  staff: z.string().trim().max(300).optional(), // dostępna kadra
+  staff: z.string().trim().max(300).optional(), // dostępne osoby
   budget: z.enum(BUDGET_RANGES),
 });
-export type MiddlemanRequest = z.infer<typeof MiddlemanRequest>;
+export type TransferRequest = z.infer<typeof TransferRequest>;
 
 /** Liczba z profilu gminy z podanym źródłem (lib/gminy.ts → gminaFacts). Model wskazuje ją po id, nie przepisuje. */
 export type GminaFact = { id: string; label: string; value: number; unit: string; source: string };
 
-export const PLAN_STAGES = ["przygotowanie", "wdrozenie"] as const;
+export const PLAN_STAGES = ["przygotowanie", "uruchomienie"] as const;
 
 /** Odpowiedź modelu. Liczby o gminie tylko przez factId; liczby od modelu (osoby, koszty) są szacunkiem. */
-export const ImplementationPlan = z.object({
-  goal: z.string(), // cel usługi
-  description: z.string(), // III.2: na czym polega usługa i jak wykorzystuje innowację
-  serviceForm: z.string(), // np. w ramach Centrum Usług Społecznych
+export const TransferPlan = z.object({
+  goal: z.string(),
+  description: z.string(), // jak inicjatywa zadziała u nas
+  adaptation: z.string(), // co zmieniamy względem oryginału i dlaczego
   audience: z.object({
-    summary: z.string(), // kto skorzysta w tej gminie, bez liczb
+    summary: z.string(), // kto skorzysta, bez liczb
     facts: z.array(z.object({ factId: z.string(), why: z.string() })).max(6),
   }),
-  peopleSupported: z.object({ women: z.number().int().min(0), men: z.number().int().min(0), basis: z.string() }), // III.7
-  recruitment: z.string(), // III.6
+  peopleReached: z.object({ count: z.number().int().min(0), basis: z.string() }),
   steps: z.array(z.object({
     stage: z.enum(PLAN_STAGES),
     title: z.string(),
@@ -255,70 +243,31 @@ export const ImplementationPlan = z.object({
   partnerTypes: z.array(z.string()).max(5), // gdy w bazie nie ma partnerów: typy, bez nazw
   risks: z.array(z.object({ risk: z.string(), mitigation: z.string() })).max(6),
   successIndicators: z.array(z.string()).max(6),
-  horizontalPrinciples: z.string(), // IV: równość szans, dostępność, DNSH
-  sustainability: z.string(), // V: utrzymanie efektów po grancie
-  deinstitutionalization: z.string(), // VI
+  sustainability: z.string(), // co zostanie po pilotażu i kto za to zapłaci
   assumptions: z.array(z.string()), // jawnie oznaczone założenia
 });
-export type ImplementationPlan = z.infer<typeof ImplementationPlan>;
+export type TransferPlan = z.infer<typeof TransferPlan>;
 
-/** Plan po sprawdzeniu na serwerze (lib/implementation-plan.ts): fakty z wartościami, partnerzy z nazwami, suma i uwagi. */
-export type CheckedPlan = Omit<ImplementationPlan, "audience" | "partners"> & {
+/** Plan po sprawdzeniu na serwerze (lib/transfer-plan.ts): fakty z wartościami, partnerzy z nazwami, suma i uwagi. */
+export type CheckedPlan = Omit<TransferPlan, "audience" | "partners"> & {
   audience: { summary: string; facts: (GminaFact & { why: string })[] };
   partners: { id: string; name: string; role: string }[];
   totalPln: number; // suma kosztów działań
-  warnings: string[]; // niezgodności z limitami naboru, wykryte przez serwer
+  warnings: string[]; // niezgodności z ramami planu, wykryte przez serwer
 };
 
-/** Dokument zwracany przez /api/middleman i zapisywany w implementation_plans. */
+/** Dokument zwracany przez /api/transfer i zapisywany w transfer_plans. */
 export type PlanDocument = {
   id: string | null; // null, gdy zapis się nie udał
   createdAt: string;
-  innovation: { id: string; title: string };
+  source: { kind: SourceKind; id: string; title: string; href: string };
   gmina: { teryt: string; nazwa: string; label: string };
-  input: Omit<MiddlemanRequest, "innovationId" | "gmina" | "teryt">;
+  input: Omit<TransferRequest, "sourceKind" | "sourceId" | "gmina" | "teryt">;
   plan: CheckedPlan;
 };
 
-// /api/wniosek-uw/ocena: podpowiedzi pod kartę oceny merytorycznej wniosku „Usługa Wrażliwa” (#105).
-// Kryteria i punkty z „Wzoru karty oceny merytorycznej” (zał. 4 do ogłoszenia naboru IS-430-6/26).
-export const MERIT_CRITERIA = ["adekwatnosc", "efektywnosc", "zasieg", "utrzymanie", "doswiadczenie"] as const;
-export type MeritCriterion = (typeof MERIT_CRITERIA)[number];
-export const MERIT_LABELS: Record<MeritCriterion, { title: string; points: string; what: string }> = {
-  adekwatnosc: { title: "Adekwatność koncepcji wdrożenia innowacji", points: "0–20 pkt", what: "czy grupa docelowa i działania pasują do celu grantu oraz do problemów i potrzeb odbiorców" },
-  efektywnosc: { title: "Efektywność wdrożenia innowacji", points: "0–20 pkt", what: "czy koszty są racjonalne i niezawyżone wobec cen rynkowych i planowanych efektów" },
-  zasieg: { title: "Zasięg wdrożenia innowacji społecznej", points: "0–20 pkt", what: "na jakim terenie i dla ilu osób będzie świadczona usługa" },
-  utrzymanie: { title: "Koncepcja utrzymania efektów wdrożenia innowacji", points: "0–20 pkt", what: "jak efekty usługi przetrwają po zakończeniu finansowania" },
-  doswiadczenie: { title: "Doświadczenie Wnioskodawcy (kryterium premiujące)", points: "+10 pkt za 2 obszary, +20 za 3", what: "czy wniosek jednoznacznie wykazuje doświadczenie w więcej niż jednym obszarze" },
-};
-export const MERIT_VERDICTS = ["mocne", "do_poprawy", "slabe"] as const;
-export type MeritVerdict = (typeof MERIT_VERDICTS)[number];
-
-const meritText = z.string().trim().max(8000);
-export const MeritRequest = z.object({
-  innovation: z.string().trim().max(200),
-  innovationSlug: z.string().max(120).nullable(),
-  experienceAreas: z.number().int().min(0).max(3),
-  sections: z.object({
-    opis: meritText, diagnoza: meritText, rekrutacja: meritText, liczba: meritText, obszar: meritText,
-    efekty: meritText, plan: meritText, kwota: z.string().max(40), utrzymanie: meritText, doswiadczenie: meritText,
-  }),
-});
-export type MeritRequest = z.infer<typeof MeritRequest>;
-
-export const MeritReview = z.object({
-  criteria: z.array(z.object({
-    key: z.enum(MERIT_CRITERIA),
-    verdict: z.enum(MERIT_VERDICTS),
-    why: z.string(),
-    tips: z.array(z.string()).max(3),
-  })).min(1).max(MERIT_CRITERIA.length),
-  frameworkGaps: z.array(z.string()).max(5), // czego z Ramowego Planu ROPS brakuje w szkicu
-});
-export type MeritReview = z.infer<typeof MeritReview>;
-
-// /api/apply: szkic wniosku do aktywnego naboru
-export const ApplyRequest = z.object({ ideaId: z.uuid(), callId: z.uuid() });
+// /api/apply: szkic wniosku do otwartego programu
+export const ApplyRequest = z.object({ initiativeId: z.uuid(), programId: z.uuid() });
 export const ApplicationDraft = z.object({
   sections: z.array(z.object({ field: z.string(), label: z.string(), content: z.string() })).min(1),
   checklist: z.array(z.object({ criterion: z.string(), met: z.boolean(), note: z.string() })),
@@ -326,7 +275,7 @@ export const ApplicationDraft = z.object({
 export type ApplicationDraft = z.infer<typeof ApplicationDraft>;
 
 // /api/poster: plakat pomysłu — wizualizacja z tekstu, bo Groq nie generuje obrazów.
-/** Zamknięta lista ikon kroków; components/pomysl/idea-poster.tsx zamienia nazwy na Heroicons. */
+/** Zamknięta lista ikon kroków; components/workshop/idea-poster.tsx zamienia nazwy na Heroicons. */
 export const POSTER_ICONS = [
   "user", "user-group", "home", "map-pin", "phone", "chat-bubble-left-right", "calendar-days", "truck",
   "heart", "academic-cap", "wrench-screwdriver", "light-bulb", "hand-raised", "building-office",
@@ -371,40 +320,56 @@ export const IdeaPoster = z.object({
 });
 export type IdeaPoster = z.infer<typeof IdeaPoster>;
 export const PosterRequest = z.object({
-  fiszka: Fiszka,
+  sketch: Sketch,
   canvas: z.record(z.string(), z.string().max(3000)).default({}),
 });
 
-// Odpowiedź /api/match — wspólny typ dla serwera i klienta.
-export type InnovationMatch = RerankItem & {
-  matchId: string;
+// ── Odpowiedzi wyników — wspólne typy dla serwera i klienta ──
+
+/** Dopasowanie z uzasadnieniem: inicjatywa z regionu albo sprawdzone rozwiązanie z Polski. */
+export type Match = RerankItem & {
+  matchId: string | null;
+  kind: SourceKind;
   title: string;
   slug: string | null;
-  category: string | null;
-  etrSummary: string | null;
-  testsCount: number;
+  gmina: string | null; // tylko inicjatywy
+  summary: string | null;
+  adoptionsCount: number;
   avgRating: number | null;
 };
 
-export type MatchResponse = {
-  /** accessKey: tajny klucz do rozmowy — tylko dla autora (ciasteczko + prywatny link). */
-  need: { id: string; statusCode: string; accessKey: string; gmina: string | null; teryt: string | null };
-  matches: InnovationMatch[];
-  isGap: boolean;
-  similarNeeds: { count: number; gminy: string[] };
-  experts: { id: string; name: string; description: string }[];
-  calls: { id: string; title: string; closesAt: string | null }[];
+export type MentorHit = { id: string; name: string; bio: string };
+export type ProgramHit = { id: string; title: string; closesAt: string | null };
+
+/** Podobna inicjatywa z regionu: opublikowana ma tytuł i link, nieopublikowana tylko gminę (zgłoszenia są prywatne). */
+export type SimilarInitiative = { id: string; title: string | null; slug: string | null; gmina: string | null; similarity: number };
+
+export type InitiativeResponse = SubmitResponseBase & {
+  similar: SimilarInitiative[];
+  /** Ile innych gmin ma podobne inicjatywy (także nieopublikowane) — liczymy gminy, nie zgłoszenia. */
+  similarGminy: { count: number; gminy: string[] };
+  patterns: Match[];
+  mentors: MentorHit[];
+  programs: ProgramHit[];
 };
 
-/** Próg, poniżej którego potrzeba trafia na mapę luk. */
+export type ChallengeResponse = {
+  challengeId: string;
+  matches: Match[];
+  isGap: boolean;
+  mentors: MentorHit[];
+  programs: ProgramHit[];
+};
+
+/** Próg, poniżej którego wyzwanie trafia na mapę „popyt bez podaży”. */
 export const GAP_THRESHOLD = 50;
 /** Próg, poniżej którego dopytujemy zamiast szukać. */
 export const CLARITY_THRESHOLD = 0.6;
 /**
  * Progi podobieństwa = jaka część słów kluczowych zapytania pasuje do karty (keyword_search, 0–1).
- * Eksperci i nabory nie przechodzą przez rerank, więc odcinamy je samym progiem. Do dostrojenia na eval.py.
+ * Mentorzy i programy nie przechodzą przez rerank, więc odcinamy je samym progiem.
  */
 export const RELATED_MIN_SIMILARITY = 0.25;
-export const SIMILAR_NEED_MIN_SIMILARITY = 0.5;
-/** Od tego podobieństwa asystent Pracowni mówi „podobne już istnieje”. */
+export const SIMILAR_INITIATIVE_MIN_SIMILARITY = 0.4;
+/** Od tego podobieństwa asystent warsztatu mówi „podobne już istnieje”. */
 export const NOVELTY_MIN_SIMILARITY = 0.5;

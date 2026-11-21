@@ -1,8 +1,8 @@
-// Kontrakt publicznego API v1 (#67): jedno źródło dla tras app/api/v1, specyfikacji OpenAPI i /api-docs.
+// Kontrakt publicznego API v1: jedno źródło dla tras app/api/v1, specyfikacji OpenAPI i /api-docs.
 // Bez "server-only" i z rozszerzeniami .ts w importach, żeby test jednostkowy (node --test) czytał go wprost.
 import { z } from "zod";
-import { GROUPS, MWS_AREAS } from "../schemas.ts";
-import { brand, org, region, COUNTY_TERYT } from "../brand.ts";
+import { DOMAIN_KEYS, INSTITUTION_KEYS, STAGE_KEYS, CROSS_KEYS } from "../taxonomy.ts";
+import { brand, region, COUNTY_TERYT } from "../brand.ts";
 
 const tags = (values: readonly string[]) => `Wartości: ${values.join(", ")}.`;
 
@@ -10,114 +10,127 @@ const tags = (values: readonly string[]) => `Wartości: ${values.join(", ")}.`;
 export const API_LIMIT_PER_MINUTE = 60;
 
 // ── Zapytania ──────────────────────────────────────────────
-export const InnovationsQuery = z.object({
-  obszar: z
-    .enum(MWS_AREAS, `Podaj jeden z obszarów: ${MWS_AREAS.join(", ")}`)
+export const InitiativesQuery = z.object({
+  dziedzina: z
+    .enum(DOMAIN_KEYS, `Podaj jedną z dziedzin: ${DOMAIN_KEYS.join(", ")}`)
     .optional()
-    .meta({ description: "Obszar Mapy Wyzwań Społecznych." }),
-  grupa: z
-    .enum(GROUPS, `Podaj jedną z grup: ${GROUPS.join(", ")}`)
+    .meta({ description: "Dziedzina inicjatywy (config/taxonomy.json)." }),
+  instytucja: z
+    .enum(INSTITUTION_KEYS, `Podaj jeden z typów instytucji: ${INSTITUTION_KEYS.join(", ")}`)
     .optional()
-    .meta({ description: "Grupa docelowa z Biblioteki Innowacji." }),
+    .meta({ description: "Typ instytucji, która prowadzi inicjatywę." }),
+  etap: z
+    .enum(STAGE_KEYS, `Podaj jeden z etapów: ${STAGE_KEYS.join(", ")}`)
+    .optional()
+    .meta({ description: "Etap inicjatywy." }),
   teryt: z
     .string()
     .regex(COUNTY_TERYT, `Podaj kod TERYT powiatu z ${region.genitive}: 4 cyfry, np. ${region.countyExample.teryt}`)
     .optional()
-    .meta({ description: "Innowacje testowane w powiecie (kod TERYT, 4 cyfry). Gmin nie podajemy: wskazywałyby instytucję.", examples: ["1201"] }),
+    .meta({ description: "Inicjatywy z powiatu (kod TERYT, 4 cyfry).", examples: [region.countyExample.teryt] }),
   limit: z.coerce
     .number("Podaj liczbę od 1 do 100")
     .int("Podaj liczbę od 1 do 100")
     .min(1, "Podaj liczbę od 1 do 100")
     .max(100, "Podaj liczbę od 1 do 100")
     .default(50)
-    .meta({ description: "Ile innowacji zwrócić (1–100)." }),
+    .meta({ description: "Ile inicjatyw zwrócić (1–100)." }),
   offset: z.coerce
     .number("Podaj liczbę całkowitą od 0")
     .int("Podaj liczbę całkowitą od 0")
     .min(0, "Podaj liczbę całkowitą od 0")
     .default(0)
-    .meta({ description: "Ile innowacji pominąć (stronicowanie)." }),
+    .meta({ description: "Ile inicjatyw pominąć (stronicowanie)." }),
 });
-export type InnovationsQuery = z.infer<typeof InnovationsQuery>;
+export type InitiativesQuery = z.infer<typeof InitiativesQuery>;
 
 // ── Odpowiedzi ─────────────────────────────────────────────
-export const InnovationSummary = z
+export const InitiativeSummary = z
   .object({
     id: z.uuid(),
     slug: z.string().nullable(),
     title: z.string(),
-    url: z.url().meta({ description: `Karta innowacji w ${brand.nameLocative}.` }),
-    category: z.string().nullable(),
-    innovationType: z.string().nullable().meta({ description: "przedmiot, metoda, usluga albo technologia." }),
-    areas: z.array(z.string()).meta({ description: `Obszary Mapy Wyzwań. ${tags(MWS_AREAS)}` }),
-    targetGroups: z.array(z.string()).meta({ description: `Grupy docelowe. ${tags(GROUPS)}` }),
-    crossTopics: z.array(z.string()).meta({ description: `Tematy przekrojowe z briefu ${org.short}.` }),
-    solution: z.string().nullable().meta({ description: "Na czym polega rozwiązanie." }),
-    easyToRead: z.string().nullable().meta({ description: "Opis w tekście łatwym do czytania (ETR)." }),
-    testsCount: z.int().meta({ description: "Liczba zgłoszonych testów w gminach." }),
-    avgRating: z.number().nullable().meta({ description: "Średnia ocena po testach (1–5)." }),
+    url: z.url().meta({ description: `Karta inicjatywy w serwisie ${brand.name}.` }),
+    summary: z.string(),
+    domains: z.array(z.string()).meta({ description: `Dziedziny. ${tags(DOMAIN_KEYS)}` }),
+    institutionType: z.string().nullable().meta({ description: `Typ instytucji. ${tags(INSTITUTION_KEYS)}` }),
+    stage: z.string().nullable().meta({ description: `Etap. ${tags(STAGE_KEYS)}` }),
+    crossTopics: z.array(z.string()).meta({ description: `Tematy przekrojowe. ${tags(CROSS_KEYS)}` }),
+    countyTeryt: z.string().nullable().meta({ description: "Kod TERYT powiatu (4 cyfry).", examples: [region.countyExample.teryt] }),
+    county: z.string().nullable().meta({ examples: [region.countyExample.name] }),
+    municipality: z.string().nullable().meta({ description: "Gmina, w której działa inicjatywa.", examples: [region.municipalityExample.name] }),
+    signal: z.int().nullable().meta({ description: "Sygnał radaru 0–100 (po weryfikacji zespołu)." }),
+    status: z.string().meta({ description: "featured, supported albo scaling." }),
+    nominationsCount: z.int().meta({ description: "Ile osób wskazało tę inicjatywę." }),
+    adoptionsCount: z.int().meta({ description: "W ilu miejscach ją przeniesiono (zakończone adopcje)." }),
+    avgRating: z.number().nullable().meta({ description: "Średnia ocena po przeniesieniu (1–5)." }),
     synthetic: z.boolean().meta({ description: "true dla danych demonstracyjnych." }),
+    createdAt: z.iso.datetime({ offset: true }),
     updatedAt: z.iso.datetime({ offset: true }),
   })
-  .meta({ id: "InnovationSummary" });
-export type InnovationSummary = z.infer<typeof InnovationSummary>;
+  .meta({ id: "InitiativeSummary" });
+export type InitiativeSummary = z.infer<typeof InitiativeSummary>;
 
-export const TestedIn = z
-  .object({
-    teryt: z.string().meta({ description: "Kod TERYT powiatu (4 cyfry).", examples: ["1201"] }),
-    powiat: z.string().nullable().meta({ examples: ["bocheński"] }),
-    planned: z.int().meta({ description: "Testy zaplanowane." }),
-    completed: z.int().meta({ description: "Testy zakończone." }),
-  })
-  .meta({ id: "TestedIn" });
-
-export const Innovation = InnovationSummary.extend({
+export const Initiative = InitiativeSummary.extend({
   problem: z.string().nullable(),
+  solution: z.string().nullable(),
+  effects: z.string().nullable().meta({ description: "Co inicjatywa już dała." }),
   beneficiaries: z.string().nullable(),
-  whoCanUse: z.string().nullable(),
-  evidence: z.string().nullable(),
-  howToUse: z.string().nullable(),
-  components: z.string().nullable(),
-  sourceUrl: z.string().nullable(),
-  pdfUrl: z.string().nullable(),
-  videoUrl: z.string().nullable(),
-  licenseUrl: z.string().nullable(),
-  testedIn: z.array(TestedIn).meta({ description: "Powiaty, w których innowację testowano, z kodami TERYT." }),
-}).meta({ id: "Innovation" });
-export type Innovation = z.infer<typeof Innovation>;
+}).meta({ id: "Initiative" });
+export type Initiative = z.infer<typeof Initiative>;
 
-export const InnovationList = z
+export const InitiativeList = z
   .object({
-    items: z.array(InnovationSummary),
+    items: z.array(InitiativeSummary),
     total: z.int(),
     limit: z.int(),
     offset: z.int(),
   })
-  .meta({ id: "InnovationList" });
-export type InnovationList = z.infer<typeof InnovationList>;
+  .meta({ id: "InitiativeList" });
+export type InitiativeList = z.infer<typeof InitiativeList>;
 
 export const ApiError = z.object({ error: z.string() }).meta({ id: "Error" });
 
-// ── Webhooki (wysyła baza: supabase/migrations/0023_webhooks.sql) ──
-export const WEBHOOK_EVENTS = ["idea.created", "call.activated", "call.deactivated"] as const;
+// ── Webhooki (wysyła baza: supabase/migrations/0003_engagement.sql) ──
+export const WEBHOOK_EVENTS = ["initiative.created", "initiative.featured", "program.activated", "program.deactivated"] as const;
 
-export const IdeaCreatedEvent = z
+export const InitiativeCreatedEvent = z
   .object({
-    event: z.literal("idea.created"),
+    event: z.literal("initiative.created"),
     occurredAt: z.iso.datetime({ offset: true }),
     data: z.object({
       id: z.uuid(),
       createdAt: z.iso.datetime({ offset: true }),
-      status: z.string(),
-      needAreas: z.array(z.string()).meta({ description: "Obszary potrzeby, z której wyrósł pomysł (pusta lista bez potrzeby)." }),
+      submissionKind: z.enum(["own", "nomination"]).meta({ description: "own: zgłoszenie autora, nomination: wskazanie cudzej inicjatywy." }),
+      domains: z.array(z.string()),
+      institutionType: z.string().nullable(),
+      stage: z.string().nullable(),
+      countyTeryt: z.string().nullable(),
       synthetic: z.boolean(),
     }),
   })
-  .meta({ id: "IdeaCreatedEvent", description: "Nowy pomysł z Pracowni. Bez treści: pomysły są prywatne do czasu moderacji." });
+  .meta({ id: "InitiativeCreatedEvent", description: "Nowe zgłoszenie albo wskazanie. Bez treści: do weryfikacji inicjatywa jest prywatna." });
 
-export const CallChangedEvent = z
+export const InitiativeFeaturedEvent = z
   .object({
-    event: z.enum(["call.activated", "call.deactivated"]),
+    event: z.literal("initiative.featured"),
+    occurredAt: z.iso.datetime({ offset: true }),
+    data: z.object({
+      id: z.uuid(),
+      title: z.string(),
+      domains: z.array(z.string()),
+      institutionType: z.string().nullable(),
+      stage: z.string().nullable(),
+      countyTeryt: z.string().nullable(),
+      signal: z.int().nullable(),
+      synthetic: z.boolean(),
+    }),
+  })
+  .meta({ id: "InitiativeFeaturedEvent", description: "Zespół wyróżnił inicjatywę po weryfikacji." });
+
+export const ProgramChangedEvent = z
+  .object({
+    event: z.enum(["program.activated", "program.deactivated"]),
     occurredAt: z.iso.datetime({ offset: true }),
     data: z.object({
       id: z.uuid(),
@@ -128,107 +141,77 @@ export const CallChangedEvent = z
       synthetic: z.boolean(),
     }),
   })
-  .meta({ id: "CallChangedEvent", description: "Nabór otwarty albo zamknięty w Panelu." });
+  .meta({ id: "ProgramChangedEvent", description: "Program wsparcia otwarty albo zamknięty w Panelu." });
 
-// ── Wiersze bazy → odpowiedzi (tylko kolumny z listy, nigdy select("*")) ──
+// ── Wiersze widoku public_initiatives → odpowiedzi (tylko kolumny z listy, nigdy select("*")) ──
 export const SUMMARY_COLUMNS =
-  "id, slug, title, category, innovation_type, areas, target_groups, cross_topics, solution, etr_summary, tests_count, avg_rating, synthetic, updated_at";
-export const DETAIL_COLUMNS = `${SUMMARY_COLUMNS}, problem, beneficiaries, who_can_use, evidence, how_to_use, components, source_url, pdf_url, video_url, license_url`;
+  "id, slug, title, summary, domains, institution_type, stage, cross_topics, county_teryt, county, municipality, signal, status, " +
+  "nominations_count, adoptions_count, avg_rating, synthetic, created_at, updated_at";
+export const DETAIL_COLUMNS = `${SUMMARY_COLUMNS}, card`;
 
-export type InnovationRow = {
+export type InitiativeRow = {
   id: string;
   slug: string | null;
   title: string;
-  category: string | null;
-  innovation_type: string | null;
-  areas: string[] | null;
-  target_groups: string[] | null;
+  summary: string;
+  domains: string[] | null;
+  institution_type: string | null;
+  stage: string | null;
   cross_topics: string[] | null;
-  solution: string | null;
-  etr_summary: string | null;
-  tests_count: number;
+  county_teryt: string | null;
+  county: string | null;
+  municipality: string | null;
+  signal: number | null;
+  status: string;
+  nominations_count: number;
+  adoptions_count: number;
   avg_rating: number | string | null; // numeric z PostgREST bywa napisem
   synthetic: boolean;
+  created_at: string;
   updated_at: string;
 };
 
-export type InnovationDetailRow = InnovationRow & {
-  problem: string | null;
-  beneficiaries: string | null;
-  who_can_use: string | null;
-  evidence: string | null;
-  how_to_use: string | null;
-  components: string | null;
-  source_url: string | null;
-  pdf_url: string | null;
-  video_url: string | null;
-  license_url: string | null;
+export type InitiativeDetailRow = InitiativeRow & {
+  card: { problem?: string | null; solution?: string | null; effects?: string | null; beneficiaries?: string | null } | null;
 };
 
-/**
- * Kanoniczna strona opisu, jak innovationHref w lib/knowledge/hrefs.ts: jedna dla Zasobnika i pipeline'u dopasowań,
- * innowacja bez sluga — po id. Stare /biblioteka/[slug] tylko przekierowuje, więc go nie zwracamy.
- * Własna kopia, bo ten plik czyta też test jednostkowy (node --test, bez aliasu @/).
- */
-export function innovationPath(row: Pick<InnovationRow, "id" | "slug">): string {
-  return `/biblioteka/innowacja/${encodeURIComponent(row.slug ?? row.id)}`;
+/** Strona inicjatywy, jak initiativeHref w lib/knowledge/hrefs.ts (własna kopia: test czyta plik bez aliasu @/). */
+export function initiativePath(row: Pick<InitiativeRow, "id" | "slug">): string {
+  return `/inicjatywy/${encodeURIComponent(row.slug ?? row.id)}`;
 }
 
-export function toSummary(row: InnovationRow, origin: string): InnovationSummary {
+export function toSummary(row: InitiativeRow, origin: string): InitiativeSummary {
   return {
     id: row.id,
     slug: row.slug,
     title: row.title,
-    url: new URL(innovationPath(row), origin).toString(),
-    category: row.category,
-    innovationType: row.innovation_type,
-    areas: row.areas ?? [],
-    targetGroups: row.target_groups ?? [],
+    url: new URL(initiativePath(row), origin).toString(),
+    summary: row.summary,
+    domains: row.domains ?? [],
+    institutionType: row.institution_type,
+    stage: row.stage,
     crossTopics: row.cross_topics ?? [],
-    solution: row.solution,
-    easyToRead: row.etr_summary,
-    testsCount: row.tests_count,
+    countyTeryt: row.county_teryt,
+    county: row.county,
+    municipality: row.municipality,
+    signal: row.signal,
+    status: row.status,
+    nominationsCount: row.nominations_count,
+    adoptionsCount: row.adoptions_count,
     avgRating: row.avg_rating == null ? null : Math.round(Number(row.avg_rating) * 10) / 10,
     synthetic: row.synthetic,
+    createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
 }
 
-export function toInnovation(row: InnovationDetailRow, testedIn: Innovation["testedIn"], origin: string): Innovation {
+export function toInitiative(row: InitiativeDetailRow, origin: string): Initiative {
+  const card = row.card ?? {};
   return {
     ...toSummary(row, origin),
-    problem: row.problem,
-    beneficiaries: row.beneficiaries,
-    whoCanUse: row.who_can_use,
-    evidence: row.evidence,
-    howToUse: row.how_to_use,
-    components: row.components,
-    sourceUrl: row.source_url,
-    pdfUrl: row.pdf_url,
-    videoUrl: row.video_url,
-    licenseUrl: row.license_url,
-    testedIn,
+    problem: card.problem ?? null,
+    solution: card.solution ?? null,
+    effects: card.effects ?? null,
+    beneficiaries: card.beneficiaries ?? null,
   };
-}
-
-/**
- * Testy (teryt gminy, status) → liczby na powiat (pierwsze 4 cyfry kodu). Gmina z innowacją wskazywałaby
- * instytucję (migracja 0022_tests_private), więc nie wychodzi z serwera — tak samo jak treść ocen i dane testujących.
- */
-export function summarizeTests(
-  tests: { teryt: string | null; status: string }[],
-  powiaty: ReadonlyMap<string, string>,
-): Innovation["testedIn"] {
-  const byPowiat = new Map<string, { planned: number; completed: number }>();
-  for (const t of tests) {
-    if (!t.teryt) continue;
-    const teryt = t.teryt.slice(0, 4);
-    const c = byPowiat.get(teryt) ?? { planned: 0, completed: 0 };
-    if (t.status === "zakonczony") c.completed++;
-    else c.planned++;
-    byPowiat.set(teryt, c);
-  }
-  return [...byPowiat]
-    .map(([teryt, c]) => ({ teryt, powiat: powiaty.get(teryt) ?? null, ...c }))
-    .sort((a, b) => b.completed + b.planned - (a.completed + a.planned) || a.teryt.localeCompare(b.teryt));
 }

@@ -1,5 +1,5 @@
 import { brand } from "@/lib/brand";
-// Kod zgłoszenia jak numer przesyłki, np. SPL-4K7Q (prefiks z config/brand.json). Bez 0/O/1/I, żeby senior się nie pomylił.
+// Kod zgłoszenia jak numer przesyłki, np. RAD-4K7Q (prefiks z config/brand.json). Bez 0/O/1/I, żeby senior się nie pomylił.
 const ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 
 export function newStatusCode(): string {

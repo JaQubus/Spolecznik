@@ -1,34 +1,35 @@
 import Link from "next/link";
 import { StoryTile, StoryTiles } from "@/components/ui/story-tile";
+import { DomainIcon } from "@/components/taxonomy/icons";
+import { domainHref, patternHref } from "@/lib/knowledge/hrefs";
 import { TYPE_LABELS } from "@/lib/knowledge/labels";
-import type { Area, Innovation } from "@/lib/knowledge/types";
-import { GROUP_LABELS } from "@/lib/taxonomy";
-import { AreaIcon, GroupIcon, groupArea } from "./icons";
+import type { Domain, Pattern } from "@/lib/knowledge/types";
+import { domainLabel } from "@/lib/taxonomy";
 
-import { areaHref, innovationHref } from "@/lib/knowledge/hrefs";
+export { domainHref, patternHref };
 
-export { areaHref, innovationHref };
+const patternMeta = (p: Pattern) =>
+  [p.innovationType && TYPE_LABELS[p.innovationType], p.dissemination && "Wybrana do upowszechniania"].filter(Boolean).join(" · ");
 
-/** Kafle innowacji: ikona kategorii (bez miniatur filmów); jeden link na kafel (tytuł). */
-export function InnovationTiles({ items, className, level }: { items: Innovation[]; className?: string; level?: 3 | 4 }) {
+/** Kafle rozwiązań: ikona dziedziny (bez miniatur filmów); jeden link na kafel (tytuł). */
+export function PatternTiles({ items, className, level }: { items: Pattern[]; className?: string; level?: 3 | 4 }) {
   return (
     <StoryTiles className={className}>
-      {items.map((i) => {
-        const group = i.groups[0];
+      {items.map((p) => {
+        const domain = p.domains[0];
         return (
           <StoryTile
-            key={i.id}
+            key={p.id}
             level={level}
-            href={innovationHref(i.slug)}
-            title={i.title}
-            placeholder={group && (
-              <div data-area={groupArea(group)}className="flex size-full items-center justify-center bg-area-soft">
-                <GroupIcon group={group} className="size-16" />
+            href={patternHref(p.slug)}
+            title={p.title}
+            placeholder={domain && (
+              <div data-domain={domain} className="flex size-full items-center justify-center bg-domain-soft">
+                <DomainIcon domain={domain} className="size-24" iconClassName="size-14" />
               </div>
             )}
-            meta={i.groups.map((g) => GROUP_LABELS[g]).join(", ")}
-            note={[i.innovationType && TYPE_LABELS[i.innovationType], i.dissemination && "Wybrana do upowszechniania"]
-              .filter(Boolean).join(" · ")}
+            meta={p.domains.map(domainLabel).join(", ")}
+            note={patternMeta(p)}
           />
         );
       })}
@@ -36,23 +37,19 @@ export function InnovationTiles({ items, className, level }: { items: Innovation
   );
 }
 
-/** Innowacje jako zwykła lista wierszy (ResultList.md), w tym samym rozmiarze co lista obszarów. */
-export function InnovationList({ items, level = 3 }: { items: Innovation[]; level?: 3 | 4 }) {
+/** Rozwiązania jako zwykła lista wierszy (ResultList.md), w tym samym rozmiarze co lista dziedzin. */
+export function PatternList({ items, level = 3 }: { items: Pattern[]; level?: 3 | 4 }) {
   const H = `h${level}` as const;
   return (
     <ul className="max-w-[48rem] divide-y divide-border border-y border-border">
-      {items.map((i) => {
-        const meta = [
-          i.groups.map((g) => GROUP_LABELS[g]).join(", "),
-          i.innovationType && TYPE_LABELS[i.innovationType],
-          i.dissemination && "Wybrana do upowszechniania",
-        ].filter(Boolean).join(" · ");
+      {items.map((p) => {
+        const meta = [p.domains.map(domainLabel).join(", "), patternMeta(p)].filter(Boolean).join(" · ");
         return (
-          <li key={i.id} className="flex items-start gap-4 py-5">
-            {i.groups[0] && <GroupIcon group={i.groups[0]} className="mt-1 size-8 shrink-0" />}
+          <li key={p.id} className="flex items-start gap-4 py-5">
+            {p.domains[0] && <DomainIcon domain={p.domains[0]} className="mt-1 size-10" iconClassName="size-6" />}
             <div className="space-y-1">
               <H className="text-xl font-bold">
-                <Link href={innovationHref(i.slug)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{i.title}</Link>
+                <Link href={patternHref(p.slug)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{p.title}</Link>
               </H>
               {meta && <p>{meta}</p>}
             </div>
@@ -63,19 +60,19 @@ export function InnovationList({ items, level = 3 }: { items: Innovation[]; leve
   );
 }
 
-/** Obszary (główne tematy) jako lista wierszy: mała ikona, nazwa jako link i jedno zdanie. */
-export function AreaList({ areas, level = 3 }: { areas: Area[]; level?: 3 | 4 }) {
+/** Dziedziny jako lista wierszy: mała ikona, nazwa jako link i jedno zdanie. */
+export function DomainList({ domains, level = 3 }: { domains: Domain[]; level?: 3 | 4 }) {
   const H = `h${level}` as const;
   return (
     <ul className="max-w-[48rem] divide-y divide-border border-y border-border">
-      {areas.map((a) => (
-        <li key={a.key} className="flex items-start gap-4 py-5">
-          <AreaIcon area={a.key} className="size-12" iconClassName="size-7" />
+      {domains.map((d) => (
+        <li key={d.key} className="flex items-start gap-4 py-5">
+          <DomainIcon domain={d.key} className="size-12" iconClassName="size-7" />
           <div className="space-y-1">
             <H className="text-xl font-bold">
-              <Link href={areaHref(a.slug)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{a.name}</Link>
+              <Link href={domainHref(d.slug)} className="underline decoration-1 underline-offset-4 hover:decoration-2">{d.name}</Link>
             </H>
-            <p>{a.lead}</p>
+            <p>{d.lead}</p>
           </div>
         </li>
       ))}

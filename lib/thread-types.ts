@@ -1,15 +1,14 @@
 import { brand, org } from "@/lib/brand";
 // Wspólne dla serwera (lib/threads.ts) i klienta (komponent rozmowy).
 
-export const AUTHOR_ROLES = ["autor", "rops", "ekspert", "ai"] as const;
+export const AUTHOR_ROLES = ["author", "staff", "mentor", "ai"] as const;
 export type AuthorRole = (typeof AUTHOR_ROLES)[number];
 
-/** Źródło odpowiedzi asystenta: strona raportu (PDF) albo opis innowacji w Zasobniku. */
+/** Źródło odpowiedzi asystenta: fakt o regionie z BDL, sprawdzone rozwiązanie albo inicjatywa z bazy. */
 export type MessageSource = {
-  kind: "raport" | "innowacja";
+  kind: "fakt" | "rozwiazanie" | "inicjatywa";
   title: string;
   href: string | null;
-  page?: number | null;
   year?: number | null;
 };
 
@@ -19,7 +18,7 @@ export type ThreadMessage = {
   name: string;
   body: string;
   createdAt: string;
-  /** Tylko odpowiedzi asystenta (role = "ai") z Zasobnika. */
+  /** Tylko odpowiedzi asystenta (role = "ai"). */
   sources?: MessageSource[];
   /** Ustawia serwer, gdy w wątku pisze kilku autorów (partnerstwo) — sama rola nie mówi, czy to „Ty”. */
   mine?: boolean;
@@ -29,22 +28,19 @@ export type ThreadMessage = {
 export type ThreadWaiting = "czlowiek" | "pilne" | null;
 
 export const ROLE_LABELS: Record<AuthorRole, string> = {
-  autor: "Zgłaszający",
-  rops: org.signature,
-  ekspert: "Ekspert",
+  author: "Autor",
+  staff: org.signature,
+  mentor: "Mentor",
   ai: "Asystent AI",
 };
 
 /** Opis pod każdą wiadomością asystenta — tekstem, nie tylko kolorem, więc słyszy go też czytnik ekranu. */
-export const AI_DISCLAIMER = `Odpowiedź automatyczna asystenta ${brand.nameGenitive}. Pracownik ${org.short} też ją zobaczy i odpowie, jeśli trzeba.`;
-
-/** Link do strony raportu w PDF (jak w „Zapytaj Bibliotekę”). */
-export const reportPageHref = (url: string, page?: number | null) => (page ? `${url}#page=${page}` : url);
+export const AI_DISCLAIMER = `Odpowiedź automatyczna asystenta ${brand.nameGenitive}. Zespół ${org.short} też ją zobaczy i odpowie, jeśli trzeba.`;
 
 /** Kanał Realtime Broadcast wątku. Id wątku znają tylko posiadacz kodu i admin, więc kanał jest publiczny. */
 export const channelName = (threadId: string) => `rozmowa:${threadId}`;
 
-/** Prywatny link do rozmowy: otwiera ją na innym urządzeniu (app/r/[kod]/[klucz]). */
+/** Prywatny link do inicjatywy: otwiera rozmowę na innym urządzeniu (app/r/[kod]/[klucz]). */
 export const privateLinkPath = (code: string, key: string) => `/r/${code}/${key}`;
 
 /** Zdarzenie na kanale: sam sygnał, bez treści — klient pobiera wątek przez API. */

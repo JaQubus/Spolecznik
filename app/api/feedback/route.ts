@@ -1,7 +1,7 @@
 import { FeedbackRequest } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-/** 👍 / 👎 przy wyniku dopasowania. Zbieramy, nie trenujemy na tym (README, MoSCoW). */
+/** 👍 / 👎 przy wyniku dopasowania. Zbieramy do ewaluacji, nie trenujemy na tym. */
 export async function POST(request: Request) {
   const parsed = FeedbackRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {

@@ -1,15 +1,16 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-// README §9: axe na kluczowych ekranach ścieżki mieszkańca (Zasobnik — w knowledge-a11y.spec.ts).
+// Axe na kluczowych ekranach ścieżki głównej (baza wiedzy — w knowledge-a11y.spec.ts).
 const PAGES = [
   ["strona główna", "/"],
-  ["Opisz problem", "/opisz"],
-  ["Zgłoś pomysł", "/pomysl"],
+  ["Zgłoś inicjatywę", "/zglos"],
+  ["Wskaż inicjatywę", "/wskaz"],
+  ["Szukam rozwiązania", "/szukam"],
   ["Sprawdź status", "/status"],
   ["status — nieznany kod", "/status/XXXX-0000"],
-  ["Jak to wdrożyć u nas?", "/wdrozenie"],
-  ["Zapytaj eksperta", "/zapytaj"],
+  ["Przenieś do siebie", "/przenies"],
+  ["Rozmowy", "/rozmowy"],
   ["API dla integracji", "/api-docs"],
 ] as const;
 
@@ -85,7 +86,7 @@ test('Czytaj na głos czyta treść strony po polsku i zatrzymuje się po drugim
       },
     });
   });
-  await page.goto("/opisz");
+  await page.goto("/zglos");
   const button = page.getByRole("button", { name: "Czytaj na głos" });
   await button.click();
   await expect(button).toHaveAttribute("aria-pressed", "true");
@@ -93,15 +94,15 @@ test('Czytaj na głos czyta treść strony po polsku i zatrzymuje się po drugim
   const spoken = await page.evaluate(() => (window as unknown as { __spoken: { text: string; lang: string }[] }).__spoken);
   expect(spoken.length).toBeGreaterThan(0);
   expect(spoken.every((u) => u.lang === "pl-PL" && u.text.length <= 200)).toBe(true);
-  expect(spoken.map((u) => u.text).join(" ")).toContain("Opisz problem");
+  expect(spoken.map((u) => u.text).join(" ")).toContain("Zgłoś inicjatywę");
 
   await button.click();
   await expect(button).toHaveAttribute("aria-pressed", "false");
 });
 
 test('GminaField: anulacja wyboru odsunięciem kursora (WCAG 2.5.2)', async ({ page }) => {
-  // Test na /opisz, która renderuje GminaField bez Supabase.
-  await page.goto("/opisz");
+  // Test na /zglos, która renderuje GminaField bez Supabase.
+  await page.goto("/zglos");
   const gminaInput = page.locator("input").filter({ has: page.locator('input[aria-controls*="gmina"]') }).first();
   await gminaInput.click();
   await gminaInput.type("Boch");

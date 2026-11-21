@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ThreadMessage } from "@/lib/thread-types";
 import { org } from "@/lib/brand";
 
-/** Rozmowa gmin w partnerstwie. Jak rozmowa o zgłoszeniu: autor wchodzi po kodzie i kluczu, wszystko przez /api/partnerstwa. */
+/** Rozmowa autorów w partnerstwie. Jak rozmowa o zgłoszeniu: autor wchodzi po kodzie i kluczu, wszystko przez /api/partnerships. */
 export function PartnershipConversation({ code, threadId, initial }: { code: string; threadId: string; initial: ThreadMessage[] }) {
   const [messages, setMessages] = useState(initial);
   const [body, setBody] = useState("");
@@ -25,7 +25,7 @@ export function PartnershipConversation({ code, threadId, initial }: { code: str
   useEffect(() => { if (error) errorBox.current?.focus(); }, [error]);
 
   const reload = useCallback(async () => {
-    const res = await fetch(`/api/partnerstwa?kod=${encodeURIComponent(code)}&watek=${threadId}`, { cache: "no-store" }).catch(() => null);
+    const res = await fetch(`/api/partnerships?kod=${encodeURIComponent(code)}&watek=${threadId}`, { cache: "no-store" }).catch(() => null);
     const json = res?.ok ? await res.json().catch(() => null) : null;
     if (json) setMessages(json.messages);
   }, [code, threadId]);
@@ -35,7 +35,7 @@ export function PartnershipConversation({ code, threadId, initial }: { code: str
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (body.trim().length < 2) {
-      setFieldError("Wpisz wiadomość, np. co już próbowaliście albo o jaki nabór chcecie razem wystąpić.");
+      setFieldError("Wpisz wiadomość, np. jak u Was działa inicjatywa albo do jakiego programu chcecie razem wystąpić.");
       field.current?.focus();
       return;
     }
@@ -44,7 +44,7 @@ export function PartnershipConversation({ code, threadId, initial }: { code: str
     setNotice(null);
     setBusy(true);
     try {
-      const res = await fetch("/api/partnerstwa", {
+      const res = await fetch("/api/partnerships", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, threadId, body }),
@@ -74,8 +74,8 @@ export function PartnershipConversation({ code, threadId, initial }: { code: str
         <div className="space-y-2">
           <Label htmlFor="wiadomosc">Twoja wiadomość</Label>
           <FieldHint id="wiadomosc-pomoc">
-            Przeczytają ją gminy w partnerstwie i pracownik {org.short}. Podpiszemy ją nazwą Twojej gminy.
-            Nie podawaj nazwisk mieszkańców, numerów telefonów ani adresów.
+            Przeczytają ją autorzy inicjatyw w partnerstwie i zespół {org.short}. Podpiszemy ją nazwą Twojej gminy.
+            Nie podawaj nazwisk, numerów telefonów ani adresów.
           </FieldHint>
           <FieldError id="wiadomosc-blad">{fieldError}</FieldError>
           <Textarea

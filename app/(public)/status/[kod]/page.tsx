@@ -1,80 +1,58 @@
 import Link from "next/link";
 import { EmailOptIn } from "@/components/rozmowa/email-opt-in";
 import { PrivateLink } from "@/components/rozmowa/private-link";
-import { maskedContactEmail } from "@/lib/author-contact";
+import { DomainBadge } from "@/components/taxonomy/icons";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusTimeline, type TimelineStep } from "@/components/ui/status-timeline";
-import { keyMatches, rememberedKey } from "@/lib/need-access";
-import { needTimeline, type NeedStatus } from "@/lib/need-status";
-import { needHistory, statusEvents } from "@/lib/panel/needs";
+import { maskedContactEmail } from "@/lib/author-contact";
+import { keyMatches, rememberedKey } from "@/lib/initiatives/access";
+import { initiativeTimeline, type InitiativeStatus } from "@/lib/initiatives/status";
+import { initiativeHref } from "@/lib/knowledge/hrefs";
+import { initiativeHistory, statusEvents } from "@/lib/panel/initiatives";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { AreaBadge } from "@/components/knowledge/icons";
-import { brand, org, region, STATUS_CODE } from "@/lib/brand";
+import { brand, org, STATUS_CODE } from "@/lib/brand";
 
 export const metadata = { title: "Status zgłoszenia" };
 
 type Report = {
-  kind: "potrzeba" | "pomysl";
   id: string;
-  status: NeedStatus;
+  status: InitiativeStatus;
   createdAt: string;
+  title: string;
   summary: string;
-  areas: string[];
+  domains: string[];
   gmina: string | null;
+  submissionKind: "own" | "nomination";
+  /** Link do strony publicznej, gdy zespół opublikował inicjatywę. */
+  publicHref: string | null;
   /** Tylko do sprawdzenia klucza z ciasteczka — nie trafia na stronę. */
   accessHash: string | null;
 };
 
 /** Tylko pola bezpieczne do pokazania każdemu, kto zna kod — nigdy surowy tekst ani e-mail. */
 async function findReport(code: string): Promise<Report | null> {
-  const supabase = createAdminClient();
-  const { data: need, error } = await supabase
-    .from("needs")
-    .select("id, status, created_at, card, access_hash, gminy(nazwa)")
+  const { data, error } = await createAdminClient()
+    .from("initiatives")
+    .select("id, status, created_at, title, summary, domains, submission_kind, published, slug, duplicate_of, access_hash, municipalities(name)")
     .eq("status_code", code)
     .maybeSingle();
   if (error) throw error;
-  if (need) {
-    const card = need.card as { summary?: string; areas?: string[] };
-    const gmina = need.gminy as unknown as { nazwa: string } | null;
-    return {
-      kind: "potrzeba",
-      id: need.id,
-      status: need.status,
-      createdAt: need.created_at,
-      summary: card.summary ?? "",
-      areas: card.areas ?? [],
-      gmina: gmina?.nazwa ?? null,
-      accessHash: need.access_hash,
-    };
-  }
-
-  const { data: idea, error: ideaError } = await supabase
-    .from("ideas")
-    .select("id, status, created_at, fiszka, access_hash")
-    .eq("status_code", code)
-    .maybeSingle();
-  if (ideaError) throw ideaError;
-  if (!idea) return null;
-  const fiszka = idea.fiszka as { krotki_opis?: string };
+  if (!data) return null;
+  const visible = data.published && !data.duplicate_of && data.status !== "archived" && data.slug;
   return {
-    kind: "pomysl",
-    id: idea.id,
-    status: idea.status,
-    createdAt: idea.created_at,
-    summary: fiszka.krotki_opis ?? "",
-    areas: [],
-    gmina: null,
-    accessHash: idea.access_hash,
+    id: data.id,
+    status: data.status,
+    createdAt: data.created_at,
+    title: data.title,
+    summary: data.summary,
+    domains: data.domains ?? [],
+    gmina: (data.municipalities as unknown as { name: string } | null)?.name ?? null,
+    submissionKind: data.submission_kind,
+    publicHref: visible ? initiativeHref(data.slug as string) : null,
+    accessHash: data.access_hash,
   };
-}
-
-/** Oś czasu z historii zmian w Panelu: daty kroków i wiadomości ROPS dla zgłaszającego. */
-async function timeline(report: Report): Promise<TimelineStep[]> {
-  const history = await needHistory(report.id, report.kind === "potrzeba" ? "need" : "idea");
-  return needTimeline(report.createdAt, report.status, statusEvents(history));
 }
 
 export default async function Page(props: PageProps<"/status/[kod]">) {
@@ -91,11 +69,11 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
     try {
       report = await findReport(code);
       if (report) {
-        steps = await timeline(report);
+        steps = initiativeTimeline(report.createdAt, report.status, statusEvents(await initiativeHistory(report.id)));
         const remembered = await rememberedKey(code);
         key = keyMatches(report.accessHash, remembered) ? remembered : null;
         // Adres do powiadomień tylko dla autora (z kluczem) — i zamaskowany.
-        if (key) contact = await maskedContactEmail(report.kind, code).catch(() => null);
+        if (key) contact = await maskedContactEmail(code).catch(() => null);
       }
     } catch (e) {
       console.error("[status]", e);
@@ -128,23 +106,20 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
     );
   }
 
-  const closed = report.status === "zamkniete";
-  const withExpert = report.status === "ekspert" || report.status === "odpowiedz";
+  const closed = report.status === "archived";
 
   return (
     <section className="space-y-10">
       <div className="space-y-3">
         <h1 className="text-3xl font-bold">
-          {report.kind === "pomysl" ? "Twój pomysł" : "Twoje zgłoszenie"}{" "}
+          {report.submissionKind === "nomination" ? "Twoje wskazanie" : "Twoje zgłoszenie"}{" "}
           <span className="font-mono tracking-wider whitespace-nowrap">{code}</span>
         </h1>
-        {report.summary && <p className="max-w-[68ch] text-lg">{report.summary}</p>}
-        {(report.gmina || report.areas.length > 0) && (
-          <ul className="flex flex-wrap gap-2" aria-label="Gmina i obszary">
+        <p className="max-w-[68ch] text-lg"><strong>{report.title}.</strong> {report.summary}</p>
+        {(report.gmina || report.domains.length > 0) && (
+          <ul className="flex flex-wrap gap-2" aria-label="Gmina i dziedziny">
             {report.gmina && <li><Badge>Gmina {report.gmina}</Badge></li>}
-            {report.areas.slice(0, 3).map((a) => (
-              <li key={a}><AreaBadge area={a} /></li>
-            ))}
+            {report.domains.slice(0, 3).map((d) => <li key={d}><DomainBadge domain={d} /></li>)}
           </ul>
         )}
       </div>
@@ -154,43 +129,32 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         <StatusTimeline steps={steps} />
       </section>
 
-      {closed && (
-        <Alert tone="success" title="Zgłoszenie jest zamknięte">
-          <p>Dziękujemy. Jeśli problem wrócił, opisz go jeszcze raz.</p>
-        </Alert>
+      {report.publicHref && (
+        <p className="text-lg">
+          Inicjatywa jest w publicznej bazie:{" "}
+          <Link href={report.publicHref} className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">zobacz jej stronę</Link>.
+        </p>
       )}
 
-      {report.status === "luka" && (
-        <div className="max-w-[44rem] space-y-4">
-          <Alert title="Nie ma jeszcze gotowego rozwiązania">
-            <p>
-              Zgłoszenie jest na mapie potrzeb {region.genitive}, więc {org.short} wie, że trzeba tu szukać nowych pomysłów.
-              Masz pomysł, jak to rozwiązać? Pomożemy go opisać.
-            </p>
-          </Alert>
-          <Button asChild className="w-full sm:w-auto"><Link href={`/pomysl?potrzeba=${code}`}>Zgłoś pomysł</Link></Button>
-        </div>
+      {closed && (
+        <Alert title="Zgłoszenie jest zamknięte">
+          <p>Dziękujemy. Jeśli inicjatywa ruszyła na nowo albo się rozwinęła, zgłoś ją jeszcze raz.</p>
+        </Alert>
       )}
 
       {!closed && (
         <div className="flex flex-wrap gap-3">
           <Button asChild variant="outline">
-            <Link href={`/zapytaj?kod=${code}`}>
-              {withExpert
-                ? "Przejdź do rozmowy z ekspertem"
-                : `Napisz do ${org.short} w sprawie ${report.kind === "pomysl" ? "pomysłu" : "zgłoszenia"}`}
-            </Link>
+            <Link href={`/rozmowy?kod=${code}`}>Napisz do zespołu {org.short}</Link>
           </Button>
-          {/* Zaproszenia i rozmowa gmin. Sam kod nie otwiera partnerstwa — /partnerstwo sprawdza klucz z przeglądarki. */}
-          {report.kind === "potrzeba" && (
-            <Button asChild variant="outline">
-              <Link href={`/partnerstwo?potrzeba=${code}`}>Partnerstwo gmin</Link>
-            </Button>
-          )}
+          {/* Sam kod nie otwiera partnerstwa — /partnerstwo sprawdza klucz z przeglądarki. */}
+          <Button asChild variant="outline">
+            <Link href={`/partnerstwo?kod=${code}`}>Partnerstwo z autorami podobnych inicjatyw</Link>
+          </Button>
         </div>
       )}
 
-      {key && <PrivateLink code={code} accessKey={key} kind={report.kind} />}
+      {key && <PrivateLink code={code} accessKey={key} />}
       {key && <EmailOptIn code={code} accessKey={key} current={contact} />}
     </section>
   );

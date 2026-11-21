@@ -7,11 +7,10 @@ import { useState } from "react";
 import { cn } from "cn";
 
 const LINKS = [
-  { href: "/panel", label: "Zgłoszenia" },
-  { href: "/panel/pomysly", label: "Pomysły" },
-  { href: "/panel/nabory", label: "Nabory" },
-  { href: "/panel/testy", label: "Testy" },
-  { href: "/panel/wdrozenia", label: "Wdrożenia" },
+  { href: "/panel", label: "Radar" },
+  { href: "/panel/programy", label: "Programy" },
+  { href: "/panel/adopcje", label: "Adopcje" },
+  { href: "/panel/przeniesienia", label: "Przeniesienia" },
   { href: "/panel/trendy", label: "Trendy" },
   { href: "/panel/wiedza", label: "Wiedza" },
 ] as const;
@@ -24,7 +23,7 @@ export function PanelNav() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const current = (href: string) =>
-    href === "/panel" ? path === "/panel" || path.startsWith("/panel/zgloszenia") : path.startsWith(href);
+    href === "/panel" ? path === "/panel" || path.startsWith("/panel/inicjatywy") : path.startsWith(href);
   const active = LINKS.find((l) => current(l.href));
 
   return (

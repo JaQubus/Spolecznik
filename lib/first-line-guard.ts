@@ -2,7 +2,7 @@
 
 /**
  * Pytania o własną sprawę: status, etap, termin, decyzję, kod zgłoszenia. Na nie asystent nigdy nie odpowiada
- * z Zasobnika — raporty o tym nie mówią, a zgadywanie terminu czy decyzji szkodzi. Sprawdzamy przed wywołaniem LLM,
+ * z bazy wiedzy — źródła o tym nie mówią, a zgadywanie terminu czy decyzji szkodzi. Sprawdzamy przed wywołaniem LLM,
  * więc nie zależy to od modelu. Lepiej przekazać za dużo niż zmyślić.
  */
 const CASE_QUESTION = new RegExp(

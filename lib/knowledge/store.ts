@@ -1,22 +1,19 @@
 import "server-only";
-import type {
-  Area, AreaKey, Fact, Innovation, InnovationFilter, Material, MaterialFilter, Persona, ReadOptions,
-} from "./types";
+import type { Domain, DomainKey, Fact, Material, MaterialFilter, Pattern, PatternFilter, ReadOptions } from "./types";
 
-export type EntityKind = "innowacja" | "fakt" | "material" | "obszar";
-export type Entity = { innowacja: Innovation; fakt: Fact; material: Material; obszar: Area };
+export type EntityKind = "rozwiazanie" | "fakt" | "material" | "dziedzina";
+export type Entity = { rozwiazanie: Pattern; fakt: Fact; material: Material; dziedzina: Domain };
 
 /**
- * Źródło danych Zasobnika. Dwie implementacje: pliki JSON (bez kluczy) i Supabase.
+ * Źródło danych bazy wiedzy. Dwie implementacje: pliki JSON (bez kluczy) i Supabase.
  * Zwraca wszystkie rekordy — o widoczności (opublikowane / panel) decydują `queries`.
  */
 export interface KnowledgeStore {
   readonly mode: "pliki" | "baza";
-  areas(): Promise<Area[]>;
+  domains(): Promise<Domain[]>;
   facts(): Promise<Fact[]>;
   materials(): Promise<Material[]>;
-  innovations(): Promise<Innovation[]>;
-  personas(): Promise<Persona[]>;
+  patterns(): Promise<Pattern[]>;
   save<K extends EntityKind>(kind: K, entity: Entity[K]): Promise<void>;
   remove(kind: EntityKind, id: string): Promise<void>;
   /** null, jeśli zapis jest możliwy; inaczej wyjaśnienie dla admina. */
@@ -27,45 +24,42 @@ export class StoreError extends Error {}
 
 const visible = <T extends { published: boolean }>(rows: T[], o?: ReadOptions) => (o?.all ? rows : rows.filter((r) => r.published));
 
-export function filterInnovations(rows: Innovation[], f: InnovationFilter = {}): Innovation[] {
-  return rows.filter((i) =>
-    (!f.area || i.areas.includes(f.area)) &&
-    (!f.group || i.groups.includes(f.group)) &&
-    (!f.types?.length || (i.innovationType != null && f.types.includes(i.innovationType))) &&
-    (!f.hasVideo || i.video != null));
+export function filterPatterns(rows: Pattern[], f: PatternFilter = {}): Pattern[] {
+  return rows.filter((p) =>
+    (!f.domain || p.domains.includes(f.domain)) &&
+    (!f.types?.length || (p.innovationType != null && f.types.includes(p.innovationType))) &&
+    (!f.hasVideo || p.video != null));
 }
 
 export function filterMaterials(rows: Material[], f: MaterialFilter = {}): Material[] {
-  return rows.filter((m) => (!f.kind || m.kind === f.kind) && (!f.area || m.areas.includes(f.area)));
+  return rows.filter((m) => (!f.kind || m.kind === f.kind) && (!f.domain || m.domains.includes(f.domain)));
 }
 
 /** Wspólne zapytania na dowolnym źródle. Moduły UI importują `knowledge`, nie konkretny store. */
 export function queries(store: KnowledgeStore) {
   return {
     store,
-    async areas(o?: ReadOptions) {
-      return visible(await store.areas(), o).sort((a, b) => a.sort - b.sort);
+    async domains(o?: ReadOptions) {
+      return visible(await store.domains(), o).sort((a, b) => a.sort - b.sort);
     },
-    async area(slugOrKey: string, o?: ReadOptions) {
-      return visible(await store.areas(), o).find((a) => a.slug === slugOrKey || a.key === slugOrKey) ?? null;
+    async domain(slugOrKey: string, o?: ReadOptions) {
+      return visible(await store.domains(), o).find((d) => d.slug === slugOrKey || d.key === slugOrKey) ?? null;
     },
-    async facts(area?: AreaKey, o?: ReadOptions) {
-      return visible(await store.facts(), o).filter((f) => !area || f.area === area).sort((a, b) => a.sort - b.sort);
+    async facts(domain?: DomainKey, o?: ReadOptions) {
+      return visible(await store.facts(), o).filter((f) => !domain || f.domain === domain).sort((a, b) => a.sort - b.sort);
     },
     async materials(f?: MaterialFilter, o?: ReadOptions) {
       return filterMaterials(visible(await store.materials(), o), f).sort((a, b) => a.sort - b.sort);
     },
-    async innovations(f?: InnovationFilter, o?: ReadOptions) {
-      // Najpierw wybrane do upowszechniania (najlepiej opisane); dalej alfabetycznie. Film nie wpływa na kolejność.
-      return filterInnovations(visible(await store.innovations(), o), f).sort((a, b) =>
+    async patterns(f?: PatternFilter, o?: ReadOptions) {
+      // Najpierw wybrane do upowszechniania (najlepiej opisane) i najczęściej przenoszone; dalej alfabetycznie.
+      return filterPatterns(visible(await store.patterns(), o), f).sort((a, b) =>
         Number(b.dissemination) - Number(a.dissemination) ||
+        b.adoptionsCount - a.adoptionsCount ||
         a.title.localeCompare(b.title, "pl"));
     },
-    async innovation(slugOrId: string, o?: ReadOptions) {
-      return visible(await store.innovations(), o).find((i) => i.slug === slugOrId || i.id === slugOrId) ?? null;
-    },
-    async personas() {
-      return store.personas();
+    async pattern(slugOrId: string, o?: ReadOptions) {
+      return visible(await store.patterns(), o).find((p) => p.slug === slugOrId || p.id === slugOrId) ?? null;
     },
   };
 }

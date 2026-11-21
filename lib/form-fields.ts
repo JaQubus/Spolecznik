@@ -1,4 +1,4 @@
-// Narzędzia formularzy wniosków (/wniosek, /wniosek-o-grant): ścieżki pól, kwoty, kod pocztowy, NIP i REGON.
+// Narzędzia formularzy wniosków (/wniosek): ścieżki pól, kwoty, kod pocztowy, NIP i REGON.
 // Czyste funkcje bez importów, żeby działały w przeglądarce i w testach.
 
 // ---- Ścieżki pól: „osoba.imie”, „partnerzy.0.podmiot.nip”, „faza1.2.koszt”. Z nich powstają też id pól.

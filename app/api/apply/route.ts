@@ -7,7 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit } from "@/lib/rate-limit";
 import { aiErrorResponse } from "@/lib/groq";
 
-/** Generator wniosków: tylko przy aktywnym naborze. Szkic zapisujemy w applications. */
+/** Generator wniosków: tylko przy aktywnym programie. Szkic zapisujemy w applications. */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "apply", 3);
   if (limited) return limited;
@@ -15,36 +15,36 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
   }
-  const { ideaId, callId } = parsed.data;
+  const { initiativeId, programId } = parsed.data;
   const supabase = createAdminClient();
 
   try {
-    const [idea, call] = await Promise.all([
-      supabase.from("ideas").select("id, fiszka, canvas").eq("id", ideaId).maybeSingle(),
-      supabase.from("calls").select("id, title, description, active, opens_at, closes_at, criteria, form_schema").eq("id", callId).maybeSingle(),
+    const [initiative, program] = await Promise.all([
+      supabase.from("initiatives").select("id, card, canvas").eq("id", initiativeId).maybeSingle(),
+      supabase.from("programs").select("id, title, description, active, opens_at, closes_at, criteria, form_schema").eq("id", programId).maybeSingle(),
     ]);
-    if (idea.error) throw idea.error;
-    if (call.error) throw call.error;
-    if (!idea.data) return Response.json({ error: "Nie znaleziono pomysłu" }, { status: 404 });
-    if (!call.data) return Response.json({ error: "Nie znaleziono naboru" }, { status: 404 });
+    if (initiative.error) throw initiative.error;
+    if (program.error) throw program.error;
+    if (!initiative.data) return Response.json({ error: "Nie znaleziono inicjatywy" }, { status: 404 });
+    if (!program.data) return Response.json({ error: "Nie znaleziono programu" }, { status: 404 });
     const today = todayInPoland();
     const outsideWindow =
-      (call.data.opens_at && call.data.opens_at > today) ||
-      (call.data.closes_at && call.data.closes_at < today);
-    if (!call.data.active || outsideWindow) return Response.json({ error: "Ten nabór nie jest aktywny" }, { status: 409 });
+      (program.data.opens_at && program.data.opens_at > today) ||
+      (program.data.closes_at && program.data.closes_at < today);
+    if (!program.data.active || outsideWindow) return Response.json({ error: "Ten program nie przyjmuje teraz wniosków" }, { status: 409 });
 
-    const fields = parseCallFields(call.data.form_schema);
+    const fields = parseCallFields(program.data.form_schema);
     const draft = await draftApplication({
-      call: { title: call.data.title, description: call.data.description },
+      program: { title: program.data.title, description: program.data.description },
       fields: fields.map(({ key, label }) => ({ field: key, label })),
-      criteria: call.data.criteria,
-      fiszka: anonymize(JSON.stringify(idea.data.fiszka)).text,
-      canvas: anonymize(JSON.stringify(idea.data.canvas)).text,
+      criteria: program.data.criteria,
+      initiative: anonymize(JSON.stringify(initiative.data.card)).text,
+      canvas: anonymize(JSON.stringify(initiative.data.canvas)).text,
     });
 
     const { data: application, error } = await supabase
       .from("applications")
-      .insert({ idea_id: ideaId, call_id: callId, draft, status: "szkic" })
+      .insert({ initiative_id: initiativeId, program_id: programId, draft, status: "szkic" })
       .select("id")
       .single();
     if (error) throw error;

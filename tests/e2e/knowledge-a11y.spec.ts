@@ -2,17 +2,15 @@ import { expect, test } from "@playwright/test";
 import { region } from "../../lib/brand";
 import { axe, headingLevels, horizontalOverflow } from "./a11y";
 
-// Kryterium akceptacji modułu II: axe bez błędów na kluczowych ekranach Zasobnika (WCAG 2.1 A i AA).
+// Axe bez błędów na kluczowych ekranach bazy wiedzy (WCAG 2.1 A i AA).
 const PAGES = [
-  ["Zasobnik", "/biblioteka"],
-  ["wyniki wyszukiwania", "/biblioteka?q=samotno%C5%9B%C4%87%20starszych%20os%C3%B3b%20na%20wsi"],
-  ["strona obszaru", "/biblioteka/obszar/seniorzy"],
-  ["karta innowacji", "/biblioteka/innowacja/senior-cuder"],
-  ["zakładka Materiały", "/biblioteka?tab=materials"],
-  [`zakładka Wyzwania ${region.genitive}`, "/biblioteka?tab=challenges"],
-  ["Raport gminy: wybór gminy", "/biblioteka/gmina"],
-  [`Raport gminy: ${region.municipalityExample.name}`, `/biblioteka/gmina/${region.municipalityExample.teryt}`],
-  [`Raport gminy: ${region.cityCountyExample.name}`, `/biblioteka/gmina/${region.cityCountyExample.teryt}011`],
+  ["Wiedza", "/wiedza"],
+  ["wyniki wyszukiwania", "/wiedza?q=samotno%C5%9B%C4%87%20starszych%20os%C3%B3b"],
+  ["strona dziedziny", "/wiedza/dziedzina/uslugi-spoleczne"],
+  ["karta rozwiązania", "/rozwiazania/senior-cuder"],
+  ["zakładka Materiały", "/wiedza?tab=materialy"],
+  ["zakładka Rozwiązania", "/wiedza?tab=rozwiazania"],
+  [`mapa kondycji ${region.genitive}`, "/mapa/kondycja"],
 ] as const;
 
 for (const [name, url] of PAGES) {

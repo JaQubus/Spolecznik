@@ -1,14 +1,15 @@
-import { DocumentDuplicateIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import { DocumentDuplicateIcon, EyeIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { DomainBadge } from "@/components/taxonomy/icons";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { requireAdmin, viewerClient } from "@/lib/auth";
+import { statusLabel, type InitiativeStatus } from "@/lib/initiatives/status";
 import { getClusters } from "@/lib/knowledge/clusters";
-import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
-import { NEED_COLUMNS, needTriage, type NeedRow, type Triage } from "@/lib/panel/needs";
-import { formatDate, plural } from "@/lib/pl";
+import { effectiveSignal, INITIATIVE_COLUMNS, initiativeTriage, type InitiativeRow, type Triage } from "@/lib/panel/initiatives";
 import { anonymize } from "@/lib/pii";
-import { AreaBadge } from "@/components/knowledge/icons";
+import { formatDate, plural } from "@/lib/pl";
+import { institutionLabel, signalLevel } from "@/lib/taxonomy";
 import type { ThreadWaiting } from "@/lib/thread-types";
 import { WaitingBadge, waitingOrEmpty } from "./waiting";
 import { panelTitle } from "@/lib/brand";
@@ -17,15 +18,15 @@ export const metadata = { title: panelTitle() };
 
 const PAGE_SIZE = 25;
 
-const FILTERS: { key: string; label: string; statuses: NeedStatus[] | null; waiting?: true }[] = [
-  { key: "nowe", label: "Do przejrzenia", statuses: ["zgloszone", "luka"] },
-  // Rozmowy, w których asystent przekazał pytanie albo jego odpowiedź nie pomogła (#20).
+const FILTERS: { key: string; label: string; statuses: InitiativeStatus[] | null; waiting?: true }[] = [
+  { key: "nowe", label: "Do przejrzenia", statuses: ["submitted"] },
+  // Rozmowy, w których asystent przekazał pytanie albo jego odpowiedź nie pomogła.
   { key: "czeka", label: "Czekają na człowieka", statuses: null, waiting: true },
-  { key: "luka", label: "Luki", statuses: ["luka"] },
-  { key: "w_analizie", label: "W analizie", statuses: ["w_analizie"] },
-  { key: "ekspert", label: "Przypisano eksperta", statuses: ["ekspert"] },
-  { key: "odpowiedz", label: "Odpowiedź", statuses: ["odpowiedz"] },
-  { key: "zamkniete", label: "Zamknięte", statuses: ["zamkniete"] },
+  { key: "w_analizie", label: "W analizie", statuses: ["in_review"] },
+  { key: "wyroznione", label: "Wyróżnione", statuses: ["featured"] },
+  { key: "wsparcie", label: "Ze wsparciem", statuses: ["supported"] },
+  { key: "przenoszone", label: "Przenoszone dalej", statuses: ["scaling"] },
+  { key: "zamkniete", label: "Zamknięte", statuses: ["archived"] },
   { key: "wszystkie", label: "Wszystkie", statuses: null },
 ];
 
@@ -33,10 +34,11 @@ const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2"
 const chipLink =
   "inline-flex min-h-12 items-center rounded-full border border-border-strong px-4 text-base hover:border-foreground aria-[current=page]:border-foreground aria-[current=page]:bg-foreground aria-[current=page]:font-bold aria-[current=page]:text-background";
 
+/** Radar zespołu: zgłoszenia i wskazania od najsilniejszego sygnału, z podpowiedziami (duplikaty, mentor). */
 export default async function Page(props: PageProps<"/panel">) {
   const viewer = await requireAdmin();
   const params = await props.searchParams;
-  // Grupa podobnych zgłoszeń z /panel/trendy: domyślnie wszystkie statusy, bo grupa obejmuje też zamknięte.
+  // Grupa podobnych inicjatyw z /panel/trendy: domyślnie wszystkie statusy, bo grupa obejmuje też zamknięte.
   const groupKey = typeof params.grupa === "string" && /^[0-9a-f]{10}$/.test(params.grupa) ? params.grupa : null;
   const group = groupKey ? (await getClusters()).clusters.find((c) => c.key === groupKey) ?? null : null;
   const filter = FILTERS.find((f) => f.key === params.status) ?? (groupKey ? FILTERS.at(-1)! : FILTERS[0]);
@@ -45,18 +47,20 @@ export default async function Page(props: PageProps<"/panel">) {
   // Odczyt sesją użytkownika: RLS (is_admin) pilnuje dostępu drugi raz (konto testowe: service role, lib/auth.ts).
   const supabase = await viewerClient(viewer);
   let query = supabase
-    .from("needs")
-    .select(NEED_COLUMNS, { count: "exact" })
+    .from("initiatives")
+    .select(INITIATIVE_COLUMNS, { count: "exact" })
+    .is("duplicate_of", null)
+    .order("signal", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (filter.statuses) query = query.in("status", filter.statuses);
   if (groupKey) query = query.in("id", group?.ids ?? []);
-  if (filter.waiting) query = query.in("id", [...(await waitingOrEmpty("potrzeba")).keys()]);
+  if (filter.waiting) query = query.in("id", [...(await waitingOrEmpty()).keys()]);
   const { data, count, error } = await query;
   if (error) throw error;
 
-  const needs = (data ?? []) as unknown as NeedRow[];
-  const [triage, waiting] = await Promise.all([needTriage(needs), waitingOrEmpty("potrzeba", needs.map((n) => n.id))]);
+  const rows = (data ?? []) as unknown as InitiativeRow[];
+  const [triage, waiting] = await Promise.all([initiativeTriage(rows), waitingOrEmpty(rows.map((n) => n.id))]);
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const groupParam = groupKey ? `&grupa=${groupKey}` : "";
@@ -64,20 +68,20 @@ export default async function Page(props: PageProps<"/panel">) {
 
   return (
     <section className="space-y-6">
-      <h1 className="text-3xl font-bold">Zgłoszenia</h1>
-      {params.usunieto === "need" && <Alert tone="success" title="Usunięto zgłoszenie" />}
+      <h1 className="text-3xl font-bold">Radar</h1>
+      {params.usunieto === "inicjatywa" && <Alert tone="success" title="Usunięto inicjatywę" />}
       {groupKey && (
         <p className="text-lg">
           {group
-            ? <>Grupa podobnych zgłoszeń: <strong>{group.label ?? group.keywords.join(", ")}</strong>. </>
-            : "Tej grupy już nie ma: zgłoszenia zmieniły się od wejścia na Trendy. "}
-          <Link href={`/panel?status=${filter.key}`} className={linkClass}>Pokaż wszystkie zgłoszenia</Link>
+            ? <>Grupa podobnych inicjatyw: <strong>{group.label ?? group.keywords.join(", ")}</strong>. </>
+            : "Tej grupy już nie ma: inicjatywy zmieniły się od wejścia na Trendy. "}
+          <Link href={`/panel?status=${filter.key}`} className={linkClass}>Pokaż wszystkie</Link>
           {" · "}
           <Link href="/panel/trendy#grupy" className={linkClass}>Wróć do grup</Link>
         </p>
       )}
 
-      <nav aria-label="Filtruj zgłoszenia">
+      <nav aria-label="Filtruj inicjatywy">
         <ul className="flex flex-wrap gap-2">
           {FILTERS.map((f) => (
             <li key={f.key}>
@@ -90,52 +94,57 @@ export default async function Page(props: PageProps<"/panel">) {
       </nav>
 
       <p className="text-lg">
-        {filter.label}: <strong>{total}</strong> {plural(total, "zgłoszenie", "zgłoszenia", "zgłoszeń")}
+        {filter.label}: <strong>{total}</strong> {plural(total, "inicjatywa", "inicjatywy", "inicjatyw")}
         {pages > 1 && `, strona ${page} z ${pages}`}
       </p>
 
-      {needs.length === 0 ? (
-        <p className="text-muted-foreground">Nie ma tu żadnych zgłoszeń.</p>
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground">Nie ma tu żadnych inicjatyw.</p>
       ) : (
         <ol className="max-w-4xl border-t">
-          {needs.map((n) => <NeedItem key={n.id} need={n} triage={triage.get(n.id)} waiting={waiting.get(n.id) ?? null} />)}
+          {rows.map((n) => <InitiativeItem key={n.id} row={n} triage={triage.get(n.id)} waiting={waiting.get(n.id) ?? null} />)}
         </ol>
       )}
 
       {pages > 1 && (
         <nav aria-label="Strony" className="flex flex-wrap gap-6 text-lg">
-          {page > 1 && <Link href={href(page - 1)} className={`font-bold ${linkClass}`}>Nowsze zgłoszenia</Link>}
-          {page < pages && <Link href={href(page + 1)} className={`inline-flex min-h-12 items-center font-bold ${linkClass}`}>Starsze zgłoszenia</Link>}
+          {page > 1 && <Link href={href(page - 1)} className={`font-bold ${linkClass}`}>Poprzednia strona</Link>}
+          {page < pages && <Link href={href(page + 1)} className={`inline-flex min-h-12 items-center font-bold ${linkClass}`}>Następna strona</Link>}
         </nav>
       )}
     </section>
   );
 }
 
-/** Wiersz skrzynki (jak ResultList): bez ramek, linie między wierszami, analiza AI jako etykiety ze słowami. */
-function NeedItem({ need: n, triage, waiting }: { need: NeedRow; triage?: Triage; waiting: ThreadWaiting }) {
+/** Wiersz listy (jak ResultList): bez ramek, linie między wierszami, analiza jako etykiety ze słowami. */
+function InitiativeItem({ row: n, triage, waiting }: { row: InitiativeRow; triage?: Triage; waiting: ThreadWaiting }) {
   const pii = !!n.raw_text && anonymize(n.raw_text).found;
   const dups = triage?.duplicates.length ?? 0;
+  const signal = effectiveSignal(n);
   return (
     <li className="grid gap-2 border-b py-6">
       <h2 className="text-xl font-bold">
-        <Link href={`/panel/zgloszenia/${n.id}`} className={linkClass}>{n.card.summary}</Link>
+        <Link href={`/panel/inicjatywy/${n.id}`} className={linkClass}>{n.title}</Link>
       </h2>
+      <p className="max-w-[68ch]">{n.summary}</p>
       <p className="text-base text-muted-foreground">
         <span className="font-mono tracking-wider">{n.status_code}</span>
-        {" · "}{n.gminy ? `${n.gminy.nazwa}, powiat ${n.gminy.powiat}` : "gmina nieznana"}
+        {" · "}{n.submission_kind === "nomination" ? "wskazanie" : "zgłoszenie"}
+        {" · "}{n.municipalities ? `${n.municipalities.name}, powiat ${n.municipalities.county}` : "gmina nieznana"}
+        {n.institution_type && ` · ${institutionLabel(n.institution_type)}`}
         {" · "}{formatDate(n.created_at)}
-        {" · "}<strong className="text-foreground">{NEED_STATUS_LABELS[n.status]}</strong>
-        {n.best_fit != null && ` · najlepsze dopasowanie ${n.best_fit} na 100`}
+        {" · "}<strong className="text-foreground">{statusLabel(n.status)}</strong>
       </p>
-      <ul className="flex flex-wrap gap-2" aria-label="Analiza zgłoszenia">
+      <ul className="flex flex-wrap gap-2" aria-label="Analiza inicjatywy">
+        {signal != null && <li><Badge>Sygnał {signal}/100: {signalLevel(signal).label}{n.signal_override != null && " (korekta)"}</Badge></li>}
         <WaitingBadge waiting={waiting} />
-        {n.card.areas.slice(0, 3).map((a) => <li key={a}><AreaBadge area={a} /></li>)}
+        {n.published && <li><Badge variant="outline"><EyeIcon aria-hidden className="size-4" /> Opublikowana</Badge></li>}
+        {n.domains.slice(0, 3).map((d) => <li key={d}><DomainBadge domain={d} /></li>)}
+        {n.nominations_count > 1 && <li><Badge variant="outline">Wskazania: {n.nominations_count}</Badge></li>}
         {pii && <li><Badge variant="warning"><ShieldExclamationIcon aria-hidden className="size-4" /> Może zawierać dane osobowe</Badge></li>}
         {dups > 0 && <li><Badge variant="warning"><DocumentDuplicateIcon aria-hidden className="size-4" /> Możliwy duplikat ({dups})</Badge></li>}
       </ul>
-      {triage?.expertName && <p className="text-base">Sugerowany ekspert: <strong>{triage.expertName}</strong></p>}
+      {triage?.mentorName && <p className="text-base">Sugerowany mentor: <strong>{triage.mentorName}</strong></p>}
     </li>
   );
 }
-

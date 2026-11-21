@@ -11,15 +11,22 @@ CATEGORIES = ["ludnosc", "seniorzy", "pomoc", "placowki", "rodzina", "praca", "e
               "finanse", "otoczenie"]
 
 
-def ind(key, label, unit, decimals, category, question=None, scale="sequential", area=None):
-    return dict(key=key, label=label, unit=unit, decimals=decimals, scale=scale, area=area, category=category, question=question)
+# Dziedzina Radaru (config/taxonomy.json) dla kategorii — link „Zobacz inicjatywy i rozwiązania” przy wskaźniku.
+CATEGORY_DOMAIN = {"seniorzy": "uslugi_spoleczne", "pomoc": "uslugi_spoleczne", "placowki": "uslugi_spoleczne",
+                   "rodzina": "uslugi_spoleczne", "praca": "gospodarka", "edukacja": "edukacja", "zdrowie": "zdrowie",
+                   "kultura": "kultura", "finanse": "administracja", "otoczenie": "srodowisko"}
+
+
+def ind(key, label, unit, decimals, category, question=None, scale="sequential"):
+    return dict(key=key, label=label, unit=unit, decimals=decimals, scale=scale, domain=CATEGORY_DOMAIN.get(category),
+                category=category, question=question)
 
 
 GMINA_INDICATORS = [
     ind("ludnosc", "Liczba mieszkańców", "osób", 0, "ludnosc", "Ile osób mieszka w gminie?"),
     ind("zmiana_ludnosci_10l", "Zmiana liczby mieszkańców w 10 lat", "%", 1, "ludnosc",
         "Czy mieszkańców przybywa, czy ubywa? Ujemna liczba to spadek.", scale="diverging"),
-    ind("udzial_65plus", "Osoby w wieku 65+", "%", 1, "seniorzy", "Jaka część mieszkańców ma 65 lat lub więcej?", area="seniorzy"),
+    ind("udzial_65plus", "Osoby w wieku 65+", "%", 1, "seniorzy", "Jaka część mieszkańców ma 65 lat lub więcej?"),
 ]
 
 
@@ -28,7 +35,7 @@ POWIAT_BASE = [
     ind("ludnosc", "Liczba mieszkańców", "osób", 0, "ludnosc", "Ile osób mieszka w powiecie?"),
     ind("zmiana_ludnosci_10l", "Zmiana liczby mieszkańców w 10 lat", "%", 1, "ludnosc",
         "Czy mieszkańców przybywa, czy ubywa? Ujemna liczba to spadek.", scale="diverging"),
-    ind("udzial_65plus", "Osoby w wieku 65+", "%", 1, "seniorzy", "Jaka część mieszkańców ma 65 lat lub więcej?", area="seniorzy"),
+    ind("udzial_65plus", "Osoby w wieku 65+", "%", 1, "seniorzy", "Jaka część mieszkańców ma 65 lat lub więcej?"),
 ]
 
 

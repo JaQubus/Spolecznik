@@ -6,7 +6,7 @@ const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2"
 /**
  * Wiadomości wątku jako wiersze oddzielone liniami (ResultList), bez dymków i ramek.
  * role="log": nowe wiadomości czytnik ekranu ogłasza sam (aria-live polite), bez przerywania.
- * Odpowiedzi ROPS, eksperta i AI na kremowym tle; kto pisze, mówi zawsze podpis, nie kolor.
+ * Odpowiedzi zespołu, mentora i AI na kremowym tle; kto pisze, mówi zawsze podpis, nie kolor.
  * Asystent ma dodatkowo ikonę, napis „Odpowiedź automatyczna”, opis pod treścią i listę źródeł.
  * `own` to rola, której wiadomości podpisujemy „Ty”.
  */
@@ -30,7 +30,7 @@ export function MessageList({
             return (
               <li
                 key={m.id}
-                className={`space-y-1 border-b px-3 py-4 ${m.role === "autor" ? "" : "bg-secondary"} ${ai ? "border-l-4 border-l-border-strong" : ""}`}
+                className={`space-y-1 border-b px-3 py-4 ${m.role === "author" ? "" : "bg-secondary"} ${ai ? "border-l-4 border-l-border-strong" : ""}`}
               >
                 <p className="flex flex-wrap items-baseline gap-x-3">
                   {ai ? (
@@ -57,22 +57,26 @@ export function MessageList({
   );
 }
 
+const SOURCE_PREFIX: Record<MessageSource["kind"], string> = {
+  fakt: "Dane",
+  rozwiazanie: "Sprawdzone rozwiązanie",
+  inicjatywa: "Inicjatywa z regionu",
+};
+
 function Sources({ sources }: { sources: MessageSource[] }) {
   return (
     <div className="pt-1 text-base">
       <p className="font-bold">Źródła</p>
       <ul className="list-disc space-y-1 pl-6">
         {sources.map((s, n) => {
-          const label =
-            s.kind === "raport"
-              ? `${s.title}${s.year ? ` (${s.year})` : ""}${s.page ? `, strona ${s.page}` : ""}`
-              : `Innowacja w Zasobniku: ${s.title}`;
+          const label = `${SOURCE_PREFIX[s.kind]}: ${s.title}${s.year ? ` (${s.year})` : ""}`;
+          const external = !!s.href && /^https?:/.test(s.href);
           return (
             <li key={n}>
               {s.href ? (
-                s.kind === "raport" ? (
+                external ? (
                   <a href={s.href} target="_blank" rel="noreferrer" className={linkClass}>
-                    {label}<span className="sr-only"> (PDF, otwiera się w nowej karcie)</span>
+                    {label}<span className="sr-only"> (otwiera się w nowej karcie)</span>
                   </a>
                 ) : (
                   <a href={s.href} className={linkClass}>{label}</a>

@@ -2,7 +2,8 @@
 // zmiana kontraktu od razu zmienia specyfikację (/api/v1/openapi.json) i stronę /api-docs.
 import { z } from "zod";
 import {
-  API_LIMIT_PER_MINUTE, ApiError, CallChangedEvent, IdeaCreatedEvent, Innovation, InnovationList, InnovationsQuery, InnovationSummary, TestedIn,
+  API_LIMIT_PER_MINUTE, ApiError, Initiative, InitiativeCreatedEvent, InitiativeFeaturedEvent, InitiativeList, InitiativesQuery,
+  InitiativeSummary, ProgramChangedEvent,
 } from "./contract.ts";
 import { brand, org, region } from "../brand.ts";
 
@@ -22,7 +23,9 @@ function tidy(node: unknown): unknown {
   return out;
 }
 
-const COMPONENTS = [InnovationSummary, TestedIn, Innovation, InnovationList, ApiError, IdeaCreatedEvent, CallChangedEvent];
+const COMPONENTS = [
+  InitiativeSummary, Initiative, InitiativeList, ApiError, InitiativeCreatedEvent, InitiativeFeaturedEvent, ProgramChangedEvent,
+];
 
 function componentSchemas(): Record<string, Json> {
   const ids = new Set(COMPONENTS.map((s) => z.globalRegistry.get(s)?.id));
@@ -35,29 +38,37 @@ const json = (id: string, description: string) => ({ description, content: { "ap
 
 const ERRORS = {
   "429": {
-    ...json("Error", "Za dużo zapytań: najwyżej 60 na minutę z jednego adresu IP."),
+    ...json("Error", `Za dużo zapytań: najwyżej ${API_LIMIT_PER_MINUTE} na minutę z jednego adresu IP.`),
     headers: { "Retry-After": { description: "Po ilu sekundach spróbować ponownie.", schema: { type: "integer" } } },
   },
   "503": json("Error", "Baza danych jest niedostępna albo nie została skonfigurowana."),
 };
 
 function queryParameters() {
-  return Object.entries(InnovationsQuery.shape).map(([name, schema]) => {
+  return Object.entries(InitiativesQuery.shape).map(([name, schema]) => {
     const { description, ...rest } = tidy(z.toJSONSchema(schema, { io: "input" })) as Json;
     return { name, in: "query", required: false, description, schema: rest };
   });
 }
 
-const WEBHOOK_HEADERS = [
-  { name: `${brand.webhookHeaderPrefix}-Event`, in: "header", required: true, description: "Nazwa zdarzenia, jak pole event.", schema: { type: "string" } },
+/** Nagłówki ustawia baza (notify_webhooks w 0003_engagement.sql). */
+export const WEBHOOK_HEADERS = [
+  { name: "X-Webhook-Event", in: "header", required: true, description: "Nazwa zdarzenia, jak pole event.", schema: { type: "string" } },
   {
-    name: `${brand.webhookHeaderPrefix}-Signature`,
+    name: "X-Webhook-Signature",
     in: "header",
     required: true,
     description: "sha256=<HMAC-SHA256 surowej treści żądania, klucz: secret z webhook_endpoints, zapis szesnastkowy>.",
     schema: { type: "string", pattern: "^sha256=[0-9a-f]{64}$" },
   },
 ];
+
+const EVENT_SCHEMA: Record<string, string> = {
+  "initiative.created": "InitiativeCreatedEvent",
+  "initiative.featured": "InitiativeFeaturedEvent",
+  "program.activated": "ProgramChangedEvent",
+  "program.deactivated": "ProgramChangedEvent",
+};
 
 function webhook(id: string, summary: string, description: string) {
   return {
@@ -67,12 +78,11 @@ function webhook(id: string, summary: string, description: string) {
       description,
       tags: ["Webhooki"],
       parameters: WEBHOOK_HEADERS,
-      requestBody: { required: true, content: { "application/json": { schema: ref(id === "idea.created" ? "IdeaCreatedEvent" : "CallChangedEvent") } } },
+      requestBody: { required: true, content: { "application/json": { schema: ref(EVENT_SCHEMA[id]) } } },
       responses: { "200": { description: "Odbiorca przyjął zdarzenie. Kod spoza 2xx nie jest ponawiany." } },
     },
   };
 }
-
 
 export function buildOpenApi() {
   return {
@@ -80,47 +90,47 @@ export function buildOpenApi() {
     info: {
       title: `${brand.name} — publiczne API`,
       version: "1.0.0",
-      summary: `Katalog innowacji społecznych ${region.genitive} do odczytu i webhooki dla systemów Hubu.`,
+      summary: `Opublikowane inicjatywy ${region.genitive} do odczytu i webhooki dla systemów zewnętrznych.`,
       description:
-        `Publiczne API ${brand.nameGenitive} (${brand.hub}). Bez klucza i bez danych osobowych: ` +
-        "zwraca tylko opublikowane innowacje. Powiaty identyfikuje kod TERYT. " +
+        `Publiczne API serwisu ${brand.name} (${org.name}). Bez klucza i bez danych osobowych: ` +
+        "zwraca tylko inicjatywy opublikowane po weryfikacji zespołu. Powiaty identyfikuje kod TERYT. " +
         `Limit: ${API_LIMIT_PER_MINUTE} zapytań na minutę z jednego adresu IP. Opis po polsku: /api-docs.`,
       contact: { name: org.contactName, url: org.url },
     },
-    servers: [{ url: "/", description: `Ta instancja ${brand.nameGenitive}` }],
+    servers: [{ url: "/", description: `Ta instancja serwisu ${brand.name}` }],
     security: [],
     tags: [
-      { name: "Innowacje", description: "Katalog sprawdzonych innowacji społecznych (Biblioteka i wiedza)." },
+      { name: "Inicjatywy", description: "Inicjatywy ze szkół, uczelni, samorządów i instytucji publicznych regionu." },
       { name: "Specyfikacja", description: "Ten dokument." },
       { name: "Webhooki", description: "Zdarzenia, które baza wysyła na zarejestrowane adresy HTTPS." },
     ],
     paths: {
-      "/api/v1/innowacje": {
+      "/api/v1/inicjatywy": {
         get: {
-          operationId: "listInnovations",
-          summary: "Lista innowacji",
-          description: "Opublikowane innowacje, alfabetycznie, z filtrami. Odpowiedź może być do 5 minut w pamięci podręcznej.",
-          tags: ["Innowacje"],
+          operationId: "listInitiatives",
+          summary: "Lista inicjatyw",
+          description: "Opublikowane inicjatywy od najsilniejszego sygnału, z filtrami. Odpowiedź może być do 5 minut w pamięci podręcznej.",
+          tags: ["Inicjatywy"],
           parameters: queryParameters(),
           responses: {
-            "200": json("InnovationList", "Strona listy innowacji."),
+            "200": json("InitiativeList", "Strona listy inicjatyw."),
             "400": json("Error", "Nieprawidłowy parametr zapytania."),
             ...ERRORS,
           },
         },
       },
-      "/api/v1/innowacje/{slug}": {
+      "/api/v1/inicjatywy/{slug}": {
         get: {
-          operationId: "getInnovation",
-          summary: "Jedna innowacja",
-          description: "Pełny opis innowacji i powiaty (TERYT), w których ją testowano.",
-          tags: ["Innowacje"],
+          operationId: "getInitiative",
+          summary: "Jedna inicjatywa",
+          description: "Pełny opis opublikowanej inicjatywy: problem, rozwiązanie, efekty.",
+          tags: ["Inicjatywy"],
           parameters: [
             { name: "slug", in: "path", required: true, description: "Slug z pola slug albo id (UUID).", schema: { type: "string" } },
           ],
           responses: {
-            "200": json("Innovation", "Innowacja."),
-            "404": json("Error", "Nie ma takiej opublikowanej innowacji."),
+            "200": json("Initiative", "Inicjatywa."),
+            "404": json("Error", "Nie ma takiej opublikowanej inicjatywy."),
             ...ERRORS,
           },
         },
@@ -138,9 +148,10 @@ export function buildOpenApi() {
       },
     },
     webhooks: {
-      "idea.created": webhook("idea.created", "Nowy pomysł", "Ktoś zgłosił pomysł w Pracowni."),
-      "call.activated": webhook("call.activated", "Nabór otwarty", "Administrator otworzył nabór (albo dodał otwarty)."),
-      "call.deactivated": webhook("call.deactivated", "Nabór zamknięty", "Administrator zamknął nabór."),
+      "initiative.created": webhook("initiative.created", "Nowa inicjatywa", "Ktoś zgłosił albo wskazał inicjatywę."),
+      "initiative.featured": webhook("initiative.featured", "Inicjatywa wyróżniona", "Zespół wyróżnił inicjatywę po weryfikacji."),
+      "program.activated": webhook("program.activated", "Program otwarty", "Administrator otworzył program (albo dodał otwarty)."),
+      "program.deactivated": webhook("program.deactivated", "Program zamknięty", "Administrator zamknął program."),
     },
     components: { schemas: componentSchemas() },
   };

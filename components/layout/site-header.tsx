@@ -10,13 +10,13 @@ import { LogoMark } from "./logo-mark";
 import { NotificationBell } from "./notification-bell";
 import { brand } from "@/lib/brand";
 
-// Etykiety w UI to proste czasowniki — nazwy modułów (Społecznik·Dopasuj itd.) są tylko do pitchu.
+// Etykiety w UI to proste czasowniki albo nazwy miejsc, bez nazw modułów.
 const NAV = [
-  { href: "/opisz", label: "Opisz problem" },
-  { href: "/biblioteka", label: "Biblioteka i wiedza" },
-  { href: "/pomysl", label: "Zgłoś pomysł" },
-  { href: "/wdrozenie", label: "Jak to wdrożyć u nas?" },
-  { href: "/zapytaj", label: "Zapytaj eksperta" },
+  { href: "/zglos", label: "Zgłoś inicjatywę" },
+  { href: "/wskaz", label: "Wskaż inicjatywę" },
+  { href: "/szukam", label: "Szukam rozwiązania" },
+  { href: "/wiedza", label: "Wiedza" },
+  { href: "/rozmowy", label: "Rozmowy" },
   { href: "/status", label: "Sprawdź status" },
 ];
 

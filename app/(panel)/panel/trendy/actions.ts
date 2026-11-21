@@ -8,7 +8,7 @@ import { plural } from "@/lib/pl";
 import type { ActionResult } from "../actions";
 
 /**
- * Etykiety z LLM dla nowych grup podobnych potrzeb. Wsadowo, na żądanie admina, a nie przy każdym wejściu
+ * Etykiety z LLM dla nowych grup podobnych inicjatyw. Wsadowo, na żądanie admina, a nie przy każdym wejściu
  * na stronę: darmowy Groq ma 200 tys. tokenów dziennie na klucz wspólny z aplikacją.
  */
 export async function labelClustersAction(): Promise<ActionResult> {

@@ -1,5 +1,4 @@
 import data from "../config/taxonomy.json" with { type: "json" };
-import type { CROSS as OLD_CROSS, GROUPS, MWS_AREAS } from "./schemas";
 
 /**
  * Słowniki Radaru. Treść (etykiety, opisy do promptów, wagi radaru) jest w config/taxonomy.json — ten sam plik
@@ -51,20 +50,14 @@ export function signalLevel(signal: number): SignalLevel {
   return RADAR.levels.find((l) => signal >= l.min) ?? RADAR.levels[RADAR.levels.length - 1];
 }
 
-// ── Słowniki Społecznika: zostają, dopóki aplikacja nie przejdzie na nowy schemat (Radar 3b) ──
+/** Etykiety do list i plakietek. Nieznany klucz (np. z ręcznej edycji w bazie) pokazujemy dosłownie. */
+export const domainLabel = (k: string) => DOMAINS[k as DomainKey]?.label ?? k;
+export const institutionLabel = (k: string) => INSTITUTION_TYPES[k as InstitutionKey]?.label ?? k;
+export const stageLabel = (k: string) => STAGES[k as StageKey]?.label ?? k;
+export const crossLabel = (k: string) => CROSS[k as CrossKey]?.label ?? k;
 
-export const AREA_LABELS: Record<(typeof MWS_AREAS)[number], string> = {
-  rodzina_piecza: "Rodzina i piecza zastępcza",
-  bezdomnosc: "Bezdomność",
-  niepelnosprawnosc: "Niepełnosprawność",
-  ubostwo: "Ubóstwo",
-  cudzoziemcy: "Integracja cudzoziemców",
-  zdrowie: "Zdrowie",
-  zdrowie_psychiczne: "Zdrowie psychiczne",
-  seniorzy: "Seniorzy",
-};
-
-export const GROUP_LABELS: Record<(typeof GROUPS)[number], string> = {
+/** Kategorie Biblioteki Innowacji Społecznych (patterns.category) — tylko do podpisu źródła rozwiązania. */
+export const PATTERN_CATEGORY_LABELS: Record<string, string> = {
   seniorzy: "Dla seniorów",
   dzieci_mlodziez_rodzina: "Dla dzieci, młodzieży i rodziny",
   ograniczona_mobilnosc: "Dla osób o ograniczonej mobilności",
@@ -74,14 +67,6 @@ export const GROUP_LABELS: Record<(typeof GROUPS)[number], string> = {
   cudzoziemcy: "Dla cudzoziemców",
   bezdomnosc: "Dla osób w kryzysie bezdomności",
   niepelnosprawnosc_intelektualna: "Dla osób z niepełnosprawnością intelektualną",
-};
-
-export const CROSS_LABELS: Record<(typeof OLD_CROSS)[number], string> = {
-  samotnosc: "Samotność",
-  wykluczenie_cyfrowe: "Wykluczenie cyfrowe",
-  dostep_do_uslug: "Dostęp do usług społecznych",
-  depopulacja_suburbanizacja: "Depopulacja i suburbanizacja",
-  wspolpraca_miedzysektorowa: "Koordynacja międzysektorowa",
 };
 
 /** Typ gminy z 7. cyfry kodu TERYT: 1 miejska, 2 wiejska, 3 miejsko-wiejska. */

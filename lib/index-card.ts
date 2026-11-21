@@ -1,7 +1,6 @@
 import "server-only";
 import { tagCard } from "./llm";
-import { anonymize } from "./pii";
-import { Fiszka, NeedCard, type CardKind } from "./schemas";
+import { InitiativeCard, type CardKind } from "./schemas";
 import { upsertIndex } from "./search";
 import { createAdminClient } from "./supabase/admin";
 
@@ -10,10 +9,11 @@ type Source = {
   body: string;
   teryt: string | null;
   active: boolean;
-  // Gdy karta ma już lematy i tagi (np. potrzeba z intake), nie wołamy LLM.
+  institutionType?: string | null;
+  tags?: string[];
+  // Gdy karta ma już lematy i dziedziny (np. inicjatywa z intake), nie wołamy LLM.
   lemmas?: string[];
-  areas?: string[];
-  groups?: string[];
+  domains?: string[];
 };
 
 const join = (...parts: (string | null | undefined)[]) => parts.filter(Boolean).join("\n");
@@ -22,10 +22,10 @@ const join = (...parts: (string | null | undefined)[]) => parts.filter(Boolean).
 async function loadSource(kind: CardKind, refId: string): Promise<Source | null> {
   const supabase = createAdminClient();
   switch (kind) {
-    case "innowacja": {
+    case "pattern": {
       const { data, error } = await supabase
-        .from("innovations")
-        .select("title, problem, solution, beneficiaries, who_can_use, areas, target_groups")
+        .from("patterns")
+        .select("title, problem, solution, beneficiaries, who_can_use, domains, cross_topics, published")
         .eq("id", refId)
         .maybeSingle();
       if (error) throw error;
@@ -34,87 +34,58 @@ async function loadSource(kind: CardKind, refId: string): Promise<Source | null>
         title: data.title,
         body: join(data.problem, data.solution, data.beneficiaries, data.who_can_use),
         teryt: null,
-        active: true,
-        // Tagi nadane w Panelu albo przez enrich.py mają pierwszeństwo przed LLM.
-        areas: data.areas?.length ? data.areas : undefined,
-        groups: data.target_groups?.length ? data.target_groups : undefined,
+        active: data.published,
+        tags: data.cross_topics ?? [],
+        // Dziedziny nadane w Panelu albo regułami seedu mają pierwszeństwo przed LLM; lematy zawsze z LLM.
+        domains: data.domains?.length ? data.domains : undefined,
       };
     }
-    case "potrzeba": {
+    case "initiative": {
       const { data, error } = await supabase
-        .from("needs")
-        .select("card, teryt, status")
+        .from("initiatives")
+        .select("card, teryt, status, duplicate_of")
         .eq("id", refId)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      const card = NeedCard.parse(data.card);
+      const card = InitiativeCard.parse(data.card);
       return {
-        title: card.summary.slice(0, 140),
-        body: card.summary, // już zanonimizowane w intake
+        title: card.title,
+        body: `${card.problem} ${card.solution}`, // już zanonimizowane w intake
         teryt: data.teryt,
-        active: data.status !== "zamkniete",
+        active: data.status !== "archived" && !data.duplicate_of,
+        institutionType: card.institutionType,
+        tags: [card.stage, ...card.cross],
         lemmas: card.keywords,
-        areas: [...card.areas],
-        groups: [...card.groups],
+        domains: [...card.domains],
       };
     }
-    case "pomysl": {
-      const { data, error } = await supabase
-        .from("ideas")
-        .select("fiszka, status")
-        .eq("id", refId)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      const fiszka = Fiszka.parse(data.fiszka);
-      return {
-        title: anonymize(fiszka.krotki_opis).text.slice(0, 140),
-        body: anonymize(join(fiszka.krotki_opis, fiszka.istota, fiszka.dla_kogo)).text,
-        teryt: null,
-        active: data.status !== "zamkniete",
-      };
-    }
-    case "ekspert": {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("display_name, expertise, teryt")
-        .eq("id", refId)
-        .eq("role", "ekspert")
-        .maybeSingle();
+    case "mentor": {
+      const { data, error } = await supabase.from("mentors").select("name, bio, expertise, domains, active").eq("id", refId).maybeSingle();
       if (error) throw error;
       if (!data) return null;
       return {
-        title: data.display_name ?? "Ekspert",
-        body: (data.expertise ?? []).join(", "),
-        teryt: data.teryt,
-        active: true,
+        title: data.name, body: data.bio, teryt: null, active: data.active,
+        lemmas: data.expertise?.length ? data.expertise : undefined, domains: data.domains ?? [],
       };
     }
-    case "nabor": {
-      const { data, error } = await supabase
-        .from("calls")
-        .select("title, description, active")
-        .eq("id", refId)
-        .maybeSingle();
+    case "program": {
+      const { data, error } = await supabase.from("programs").select("title, description, domains, active").eq("id", refId).maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      return { title: data.title, body: join(data.title, data.description), teryt: null, active: data.active };
+      return { title: data.title, body: join(data.title, data.description), teryt: null, active: data.active, domains: data.domains?.length ? data.domains : undefined };
     }
     default:
-      return null; // biblioteka, obszar, material: karty Zasobnika indeksuje lib/knowledge/indexing.ts
+      return null; // challenge indeksuje lib/challenge-search.ts przy zapisie; domain i material — lib/knowledge/indexing.ts
   }
 }
 
-/**
- * Reindeks karty po zapisie (README 5.3): lematy i tagi (LLM), upsert do search_index.
- * Zwraca false, gdy karty nie ma w bazie.
- */
+/** Reindeks karty po zapisie: lematy i dziedziny (LLM), upsert do search_index. Zwraca false, gdy karty nie ma w bazie. */
 export async function reindexCard(kind: CardKind, refId: string): Promise<boolean> {
   const source = await loadSource(kind, refId);
   if (!source) return false;
 
-  const tags = !source.lemmas || !source.areas ? await tagCard(source.title, source.body) : null;
+  const tags = !source.lemmas || !source.domains ? await tagCard(source.title, source.body) : null;
 
   await upsertIndex({
     kind,
@@ -122,8 +93,9 @@ export async function reindexCard(kind: CardKind, refId: string): Promise<boolea
     title: source.title,
     body: source.body,
     lemmas: source.lemmas ?? tags?.lemmas ?? [],
-    areas: source.areas ?? tags?.areas ?? [],
-    targetGroups: source.groups ?? tags?.groups ?? [],
+    domains: source.domains ?? tags?.domains ?? [],
+    tags: source.tags,
+    institutionType: source.institutionType ?? null,
     teryt: source.teryt,
     active: source.active,
   });

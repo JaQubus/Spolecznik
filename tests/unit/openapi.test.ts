@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import {
-  Innovation, InnovationsQuery, summarizeTests, toInnovation, toSummary, WEBHOOK_EVENTS, type InnovationDetailRow,
+  Initiative, InitiativesQuery, toInitiative, toSummary, WEBHOOK_EVENTS, type InitiativeDetailRow,
 } from "../../lib/api/contract.ts";
 import { buildOpenApi } from "../../lib/api/openapi.ts";
 import { region } from "../../lib/brand.ts";
 
-/** Pola, które nie mogą trafić do publicznego API (dane osobowe, treści zgłoszeń, klucze). */
-const SENSITIVE = ["raw_text", "rawText", "contact_email", "contactEmail", "author_id", "authorId", "tester_id", "testerId",
-  "tester_org", "testerOrg", "feedback", "suggestions", "access_key", "accessKey", "secret", "published", "gmina", "planned_for"];
+/** Pola, które nie mogą trafić do publicznego API (dane osobowe, treści przed weryfikacją, klucze). */
+const SENSITIVE = ["raw_text", "rawText", "contact_email", "contactEmail", "author_id", "authorId", "access_hash", "accessHash",
+  "access_key", "accessKey", "secret", "published", "clarity", "followUps", "assigned_mentor", "signal_override"];
 
 /** Nazwy wszystkich właściwości w schematach JSON (rekurencyjnie). */
 function propertyNames(node: unknown, out = new Set<string>()): Set<string> {
@@ -22,12 +22,13 @@ function propertyNames(node: unknown, out = new Set<string>()): Set<string> {
   return out;
 }
 
-const ROW: InnovationDetailRow = {
-  id: "5b0c8f2e-1d3a-4c6b-9e7f-2a1b3c4d5e6f", slug: "kamienica", title: "Kamienica",
-  category: null, innovation_type: "usluga", areas: ["seniorzy"], target_groups: null, cross_topics: [],
-  solution: "Opis", etr_summary: null, tests_count: 2, avg_rating: "4.333", synthetic: true,
-  updated_at: "2026-10-04T10:00:00+00:00", problem: null, beneficiaries: null, who_can_use: null, evidence: null,
-  how_to_use: null, components: null, source_url: null, pdf_url: null, video_url: null, license_url: null,
+const ROW: InitiativeDetailRow = {
+  id: "5b0c8f2e-1d3a-4c6b-9e7f-2a1b3c4d5e6f", slug: "robotyka", title: "Robotyka w małych szkołach",
+  summary: "Jedna szkoła wozi zestawy robotów do sąsiednich.", domains: ["edukacja"], institution_type: "szkola_podstawowa",
+  stage: "dziala", cross_topics: ["obszary_wiejskie"], county_teryt: region.countyExample.teryt, county: region.countyExample.name,
+  municipality: region.municipalityExample.name, signal: 72, status: "featured", nominations_count: 2, adoptions_count: 3,
+  avg_rating: "4.333", synthetic: true, created_at: "2026-10-04T10:00:00+00:00", updated_at: "2026-10-05T10:00:00+00:00",
+  card: { problem: "Małe szkoły nie stać na sprzęt.", solution: "Wspólny zestaw.", effects: null, beneficiaries: "uczniowie" },
 };
 
 describe("specyfikacja OpenAPI", () => {
@@ -35,7 +36,7 @@ describe("specyfikacja OpenAPI", () => {
 
   test("opisuje endpointy v1 i webhooki", () => {
     assert.equal(spec.openapi, "3.1.0");
-    assert.deepEqual(Object.keys(spec.paths).sort(), ["/api/v1/innowacje", "/api/v1/innowacje/{slug}", "/api/v1/openapi.json"]);
+    assert.deepEqual(Object.keys(spec.paths).sort(), ["/api/v1/inicjatywy", "/api/v1/inicjatywy/{slug}", "/api/v1/openapi.json"]);
     assert.deepEqual(Object.keys(spec.webhooks).sort(), [...WEBHOOK_EVENTS].sort());
   });
 
@@ -45,8 +46,8 @@ describe("specyfikacja OpenAPI", () => {
   });
 
   test("parametry listy pochodzą ze schematu zapytania", () => {
-    const params = spec.paths["/api/v1/innowacje"].get.parameters.map((p) => p.name);
-    assert.deepEqual(params, Object.keys(InnovationsQuery.shape));
+    const params = spec.paths["/api/v1/inicjatywy"].get.parameters.map((p) => p.name);
+    assert.deepEqual(params, Object.keys(InitiativesQuery.shape));
   });
 
   test("schematy nie mają pól wrażliwych", () => {
@@ -57,41 +58,40 @@ describe("specyfikacja OpenAPI", () => {
 
 describe("mapowanie wierszy", () => {
   test("odpowiedź ma tylko pola z kontraktu i przechodzi jego walidację", () => {
-    const withExtra = { ...ROW, raw_text: "tajne", published: false, author_id: "x" };
-    const testedIn = summarizeTests(
-      [{ teryt: "1201011", status: "zakonczony" }, { teryt: "1201022", status: "planowany" }, { teryt: null, status: "planowany" }],
-      new Map([["1201", "bocheński"]]),
-    );
-    const out = toInnovation(withExtra, testedIn, "https://spolecznik.example");
-    assert.deepEqual(Object.keys(out).sort(), Object.keys(Innovation.shape).sort());
-    Innovation.parse(out);
+    const withExtra = { ...ROW, raw_text: "tajne", published: false, author_id: "x", contact_email: "a@b.pl" };
+    const out = toInitiative(withExtra, "https://radar.example");
+    assert.deepEqual(Object.keys(out).sort(), Object.keys(Initiative.shape).sort());
+    Initiative.parse(out);
     assert.equal(out.avgRating, 4.3);
-    assert.deepEqual(out.targetGroups, []);
-    // Dwie gminy powiatu bocheńskiego łączą się w jeden wiersz: na zewnątrz nie ma kodu gminy.
-    assert.deepEqual(out.testedIn, [{ teryt: "1201", powiat: "bocheński", planned: 1, completed: 1 }]);
+    assert.equal(out.problem, "Małe szkoły nie stać na sprzęt.");
+    assert.equal(out.effects, null);
   });
 
-  test("testy bez znanego powiatu dostają null zamiast nazwy", () => {
-    assert.deepEqual(summarizeTests([{ teryt: "1299011", status: "planowany" }], new Map()), [
-      { teryt: "1299", powiat: null, planned: 1, completed: 0 },
-    ]);
+  test("karta bez pól daje null zamiast wyjątku", () => {
+    const out = toInitiative({ ...ROW, card: null }, "https://radar.example");
+    assert.equal(out.solution, null);
   });
 
-  test("link prowadzi do kanonicznej strony opisu, nie do starego /biblioteka/[slug]", () => {
-    assert.equal(toSummary(ROW, "https://s.example").url, "https://s.example/biblioteka/innowacja/kamienica");
-    assert.equal(toSummary({ ...ROW, slug: null }, "https://s.example").url, `https://s.example/biblioteka/innowacja/${ROW.id}`);
-    assert.equal(toSummary({ ...ROW, slug: "dom/ogród" }, "https://s.example").url, "https://s.example/biblioteka/innowacja/dom%2Fogr%C3%B3d");
+  test("link prowadzi do strony inicjatywy", () => {
+    assert.equal(toSummary(ROW, "https://r.example").url, "https://r.example/inicjatywy/robotyka");
+    assert.equal(toSummary({ ...ROW, slug: null }, "https://r.example").url, `https://r.example/inicjatywy/${ROW.id}`);
+    assert.equal(toSummary({ ...ROW, slug: "dom/ogród" }, "https://r.example").url, "https://r.example/inicjatywy/dom%2Fogr%C3%B3d");
   });
 
   test(`teryt przyjmuje tylko powiat z ${region.genitive}`, () => {
     const { countyExample: c, cityCountyExample: m } = region;
-    for (const ok of [c.teryt, m.teryt]) assert.ok(InnovationsQuery.safeParse({ teryt: ok }).success, ok);
-    for (const bad of [`${c.teryt}011`, "0001", `${c.teryt}0`, "abc"]) assert.ok(!InnovationsQuery.safeParse({ teryt: bad }).success, bad);
+    for (const ok of [c.teryt, m.teryt]) assert.ok(InitiativesQuery.safeParse({ teryt: ok }).success, ok);
+    for (const bad of [`${c.teryt}011`, "0001", `${c.teryt}0`, "abc"]) assert.ok(!InitiativesQuery.safeParse({ teryt: bad }).success, bad);
+  });
+
+  test("filtry przyjmują tylko klucze z taksonomii", () => {
+    assert.ok(InitiativesQuery.safeParse({ dziedzina: "edukacja", instytucja: "uczelnia", etap: "pilotaz" }).success);
+    assert.ok(!InitiativesQuery.safeParse({ dziedzina: "seniorzy" }).success);
   });
 
   test("limit ma domyślną wartość i górną granicę", () => {
-    assert.deepEqual(InnovationsQuery.parse({}), { limit: 50, offset: 0 });
-    assert.equal(InnovationsQuery.parse({ limit: "10", offset: "20" }).offset, 20);
-    assert.ok(!InnovationsQuery.safeParse({ limit: "500" }).success);
+    assert.deepEqual(InitiativesQuery.parse({}), { limit: 50, offset: 0 });
+    assert.equal(InitiativesQuery.parse({ limit: "10", offset: "20" }).offset, 20);
+    assert.ok(!InitiativesQuery.safeParse({ limit: "500" }).success);
   });
 });
