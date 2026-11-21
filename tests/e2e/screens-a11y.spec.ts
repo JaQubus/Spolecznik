@@ -2,30 +2,33 @@ import { expect, test, type Page } from "@playwright/test";
 import { brand, org, region } from "../../lib/brand";
 import { axe, headingLevels, horizontalOverflow } from "./a11y";
 
-// #26: axe na kluczowych ekranach poza Zasobnikiem (ten ma knowledge-a11y.spec.ts). Tylko odczyt — nic nie wysyłamy,
+// Axe na kluczowych ekranach poza bazą wiedzy (ta ma knowledge-a11y.spec.ts). Tylko odczyt — nic nie wysyłamy,
 // więc testy nie wołają LLM i nie zapisują danych.
 const PUBLIC = [
   ["strona główna", "/"],
-  ["Opisz problem", "/opisz"],
+  ["Zgłoś inicjatywę", "/zglos"],
+  ["Wskaż inicjatywę", "/wskaz"],
+  ["Szukam rozwiązania", "/szukam"],
   ["Sprawdź status", "/status"],
   ["status: nieznany kod", `/status/${brand.statusPrefix}-ZZZZ`],
-  ["Zgłoś pomysł", "/pomysl"],
-  ["Jak to wdrożyć u nas?", "/wdrozenie"],
-  ["Przetestuj rozwiązanie", "/przetestuj"],
-  ["Zapytaj eksperta", "/zapytaj"],
+  ["Warsztat pomysłu", "/zglos/warsztat"],
+  ["Przenieś do siebie", "/przenies"],
+  ["Wypróbowaliśmy u nas", "/wyprobuj"],
+  ["Rozmowy", "/rozmowy"],
+  ["Inicjatywy", "/inicjatywy"],
   ["wniosek", "/wniosek"],
-  [`Kondycja ${region.genitive}`, "/biblioteka/kondycja"],
-  ["Ucz się", "/biblioteka/ucz-sie"],
+  [`Kondycja ${region.genitive}`, "/mapa/kondycja"],
+  ["Ucz się", "/wiedza/ucz-sie"],
   ["logowanie", "/logowanie"],
   ["API dla integracji", "/api-docs"],
 ] as const;
 
 const PANEL = [
-  ["Panel: zgłoszenia", "/panel"],
-  ["Panel: pomysły", "/panel/pomysly"],
-  ["Panel: nabory", "/panel/nabory"],
-  ["Panel: testy", "/panel/testy"],
-  ["Panel: trendy i mapa luk", "/panel/trendy"],
+  ["Panel: radar", "/panel"],
+  ["Panel: programy", "/panel/programy"],
+  ["Panel: adopcje", "/panel/adopcje"],
+  ["Panel: przeniesienia", "/panel/przeniesienia"],
+  ["Panel: trendy i popyt bez podaży", "/panel/trendy"],
   ["Panel: wiedza", "/panel/wiedza"],
 ] as const;
 
