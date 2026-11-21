@@ -1,12 +1,15 @@
+import { aiErrorResponse } from "@/lib/groq";
 import { assistantReply, tagCard, type SimilarItem } from "@/lib/llm";
 import { anonymize } from "@/lib/pii";
+import { rateLimit } from "@/lib/rate-limit";
 import { AssistantRequest, NOVELTY_MIN_SIMILARITY, type AssistantResponse } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { rateLimit } from "@/lib/rate-limit";
-import { aiErrorResponse } from "@/lib/groq";
 
-/** Asystent Pracowni: pytania, nieoczywiste kierunki i sprawdzanie nowości tym samym silnikiem co Dopasuj. */
+/**
+ * Asystent warsztatu: pytania, nieoczywiste kierunki i sprawdzanie nowości po lematach — wśród sprawdzonych
+ * rozwiązań i opublikowanych inicjatyw (nieopublikowanych zgłoszeń nie pokazujemy innym autorom).
+ */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "assistant", 15);
   if (limited) return limited;
@@ -14,57 +17,52 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
   }
-  const messages = parsed.data.messages.map((m) => ({ ...m, content: anonymize(m.content).text }));
-  const fiszka = parsed.data.fiszka && {
-    krotki_opis: anonymize(parsed.data.fiszka.krotki_opis).text,
-    problem: anonymize(parsed.data.fiszka.problem).text,
-    istota: anonymize(parsed.data.fiszka.istota).text,
-    dla_kogo: anonymize(parsed.data.fiszka.dla_kogo).text,
-    etap: parsed.data.fiszka.etap,
+  const clean = (s: string) => anonymize(s).text;
+  const messages = parsed.data.messages.map((m) => ({ ...m, content: clean(m.content) }));
+  const s = parsed.data.sketch;
+  const sketch = s && {
+    summary: clean(s.summary), problem: clean(s.problem), solution: clean(s.solution),
+    beneficiaries: clean(s.beneficiaries), stage: s.stage,
   };
 
   try {
-    // Nowość sprawdzamy po fiszce, a bez niej po wiadomościach autora — po lematach, jak Dopasuj.
-    const ideaText = fiszka
-      ? `${fiszka.problem}\n${fiszka.istota}\n${fiszka.dla_kogo}`
+    // Nowość sprawdzamy po szkicu, a bez niego po wiadomościach autora.
+    const text = sketch
+      ? `${sketch.problem}\n${sketch.solution}\n${sketch.beneficiaries}`
       : messages.filter((m) => m.role === "user").map((m) => m.content).join("\n");
-    const { lemmas } = await tagCard(fiszka?.krotki_opis ?? "Pomysł", ideaText);
-    const [innovationHits, ideaHits] = await Promise.all([
-      keywordSearch("innowacja", lemmas, 3),
-      keywordSearch("pomysl", lemmas, 3),
-    ]);
-    const hits = [
-      ...innovationHits.map((h) => ({ ...h, kind: "innowacja" as const })),
-      ...ideaHits.map((h) => ({ ...h, kind: "pomysl" as const })),
-    ].filter((h) => h.similarity >= NOVELTY_MIN_SIMILARITY);
-
+    const { lemmas } = await tagCard(sketch?.summary ?? "Pomysł", text);
     const supabase = createAdminClient();
-    const innovationIds = hits.filter((h) => h.kind === "innowacja").map((h) => h.ref_id);
-    const [{ data: bodies, error }, { data: slugs, error: slugError }] = await Promise.all([
-      hits.length
-        ? supabase.from("search_index").select("kind, ref_id, body").in("ref_id", hits.map((h) => h.ref_id))
-        : Promise.resolve({ data: [], error: null }),
-      innovationIds.length
-        ? supabase.from("innovations").select("id, slug").in("id", innovationIds)
-        : Promise.resolve({ data: [], error: null }),
+    const [patternHits, initiativeHits] = await Promise.all([
+      keywordSearch("pattern", lemmas, 3),
+      keywordSearch("initiative", lemmas, 6),
     ]);
-    if (error) throw error;
-    if (slugError) throw slugError;
-    const bodyByKey = new Map((bodies ?? []).map((b) => [`${b.kind}:${b.ref_id}`, b.body as string]));
-    const slugById = new Map((slugs ?? []).map((s) => [s.id as string, s.slug as string | null]));
-    const similar: SimilarItem[] = hits.map((h) => ({
-      kind: h.kind,
-      title: h.title,
-      body: bodyByKey.get(`${h.kind}:${h.ref_id}`) ?? "",
-      similarity: h.similarity,
-    }));
+    const relevant = <T extends { similarity: number }>(hits: T[]) => hits.filter((h) => h.similarity >= NOVELTY_MIN_SIMILARITY);
 
-    const reply = await assistantReply(messages, fiszka, similar);
+    const patternIds = relevant(patternHits).map((h) => h.ref_id);
+    const initiativeIds = relevant(initiativeHits).map((h) => h.ref_id);
+    const [patterns, initiatives] = await Promise.all([
+      patternIds.length ? supabase.from("patterns").select("id, slug, title, problem, solution").in("id", patternIds) : { data: [], error: null },
+      initiativeIds.length ? supabase.from("public_initiatives").select("id, slug, title, summary").in("id", initiativeIds) : { data: [], error: null },
+    ]);
+    if (patterns.error) throw patterns.error;
+    if (initiatives.error) throw initiatives.error;
+
+    const sim = new Map([...patternHits, ...initiativeHits].map((h) => [h.ref_id, h.similarity]));
+    const found = [
+      ...(patterns.data ?? []).map((p) => ({
+        kind: "pattern" as const, id: p.id as string, title: p.title as string, slug: p.slug as string | null,
+        body: `${p.problem ?? ""} ${p.solution ?? ""}`.trim(),
+      })),
+      ...(initiatives.data ?? []).slice(0, 3).map((i) => ({
+        kind: "initiative" as const, id: i.id as string, title: i.title as string, slug: i.slug as string | null, body: i.summary as string,
+      })),
+    ];
+    const similar: SimilarItem[] = found.map((f) => ({ kind: f.kind, title: f.title, body: f.body, similarity: sim.get(f.id) ?? 0 }));
+
+    const reply = await assistantReply(messages, sketch, similar);
     const response: AssistantResponse = {
       reply,
-      similar: hits.map((h) => ({
-        kind: h.kind, id: h.ref_id, title: h.title, similarity: h.similarity, slug: slugById.get(h.ref_id) ?? null,
-      })),
+      similar: found.map((f) => ({ kind: f.kind, id: f.id, title: f.title, similarity: sim.get(f.id) ?? 0, slug: f.slug })),
     };
     return Response.json(response);
   } catch (e) {

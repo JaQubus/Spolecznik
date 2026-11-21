@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import type { ThreadWaiting } from "@/lib/thread-types";
 import { waitingThreads } from "@/lib/threads";
 
-/** Rozmowy czekające na człowieka; bez migracji 0019 skrzynka działa dalej, tylko bez tej informacji. */
+/** Rozmowy czekające na człowieka; przy błędzie bazy lista działa dalej, tylko bez tej informacji. */
 export async function waitingOrEmpty(...args: Parameters<typeof waitingThreads>) {
   try {
     return await waitingThreads(...args);

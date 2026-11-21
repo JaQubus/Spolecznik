@@ -1,31 +1,24 @@
 import { GMINA_OPTIONS } from "@/lib/gminy";
-import { pickInnovation } from "@/lib/innovations";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { TestForm } from "./test-form";
+import { pickSource, sourceOptions } from "@/lib/patterns";
+import { AdoptionForm } from "./adoption-form";
 
-export const metadata = { title: "Przetestuj rozwiązanie" };
+export const metadata = { title: "Wypróbowaliśmy u nas" };
 
-async function options(): Promise<{ id: string; title: string; slug: string | null }[]> {
-  const { data, error } = await createAdminClient().from("innovations").select("id, title, slug").order("title");
-  if (error) throw error;
-  return data ?? [];
-}
-
-export default async function Page(props: PageProps<"/przetestuj">) {
+export default async function Page(props: PageProps<"/wyprobuj">) {
   const params = await props.searchParams;
-  const innovations = await options().catch(() => []);
-  const innovation = pickInnovation(params.innowacja, innovations);
+  const sources = await sourceOptions().catch(() => []);
+  const source = pickSource({ inicjatywa: params.inicjatywa, rozwiazanie: params.rozwiazanie }, sources);
 
   return (
     <section className="space-y-8">
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Przetestuj rozwiązanie</h1>
+        <h1 className="text-3xl font-bold">Wypróbowaliśmy u nas</h1>
         <p className="max-w-2xl text-lg">
-          Zgłoś, że chcesz sprawdzić rozwiązanie u siebie, a po teście oceń, jak poszło. Oceny widzą inne gminy,
-          więc łatwiej im zdecydować, czy warto spróbować.
+          Przenosicie inicjatywę z innej gminy albo sprawdzone rozwiązanie? Daj znać, a po pilotażu oceń, jak poszło.
+          Oceny widzą inne gminy, a udane przeniesienia podnoszą ocenę przenaszalności na radarze.
         </p>
       </div>
-      <TestForm innovations={innovations} gminy={GMINA_OPTIONS} initialInnovation={innovation} />
+      <AdoptionForm sources={sources} gminy={GMINA_OPTIONS} initialSource={source} />
     </section>
   );
 }

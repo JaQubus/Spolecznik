@@ -1,22 +1,19 @@
-import { runMatch } from "@/lib/match";
-import { rememberNeed } from "@/lib/need-access";
-import { MatchRequest } from "@/lib/schemas";
-import { rateLimit } from "@/lib/rate-limit";
+import { searchChallenge } from "@/lib/challenge-search";
 import { aiErrorResponse } from "@/lib/groq";
+import { rateLimit } from "@/lib/rate-limit";
+import { ChallengeRequest } from "@/lib/schemas";
 
+/** „Szukam rozwiązania”: wyzwanie instytucji → inicjatywy z regionu i sprawdzone rozwiązania z Polski. */
 export async function POST(request: Request) {
-  const limited = rateLimit(request, "match", 6);
+  const limited = rateLimit(request, "challenges", 6);
   if (limited) return limited;
-  const parsed = MatchRequest.safeParse(await request.json().catch(() => null));
+  const parsed = ChallengeRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
   }
   try {
-    const result = await runMatch(parsed.data);
-    // Ta przeglądarka zapamiętuje zgłoszenie — /zapytaj pokaże je bez wpisywania kodu.
-    await rememberNeed(result.need.statusCode, result.need.accessKey);
-    return Response.json(result);
+    return Response.json(await searchChallenge(parsed.data));
   } catch (e) {
-    return aiErrorResponse("match", e, "Nie udało się wyszukać rozwiązań");
+    return aiErrorResponse("challenges", e, "Nie udało się wyszukać rozwiązań");
   }
 }

@@ -1,7 +1,7 @@
 import { ArrowDownTrayIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 import Form from "next/form";
-import { AreaTrendCharts, AreaTrendTable } from "@/components/knowledge/trend-charts";
+import { DomainTrendCharts, DomainTrendTable } from "@/components/knowledge/trend-charts";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,30 +15,30 @@ import { ClusterList } from "./clusters";
 import { GapMap } from "./gap-map";
 import { panelTitle } from "@/lib/brand";
 
-export const metadata: Metadata = { title: panelTitle("Trendy potrzeb"), robots: { index: false } };
+export const metadata: Metadata = { title: panelTitle("Trendy"), robots: { index: false } };
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
-/** Widok tylko dla administratora: zgłoszone potrzeby zagregowane w obszarach, powiatach i słowach, plus mapa luk. */
+/** Widok tylko dla administratora: inicjatywy zagregowane w dziedzinach, powiatach i słowach, plus popyt bez podaży. */
 export default async function Page(props: PageProps<"/panel/trendy">) {
   await requireAdmin("/panel/trendy");
   const sp = await props.searchParams;
   const bucket = parseBucket(first(sp.okres));
   const gmina = /^\d{7}$/.test(first(sp.gmina)) ? first(sp.gmina) : null;
   const [t, gaps, clusters] = await Promise.all([getTrends(bucket), getGaps(), getClusters()]);
-  const maxPowiat = Math.max(1, ...t.byPowiat.map((p) => p.needs));
+  const maxCounty = Math.max(1, ...t.byCounty.map((p) => p.initiatives));
 
   return (
     <section className="space-y-12">
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Trendy potrzeb</h1>
+        <h1 className="text-3xl font-bold">Trendy</h1>
         <p className="max-w-[44rem] text-lg">
-          Co mieszkańcy, gminy i organizacje zgłaszają w „Opisz problem”: {t.total} zgłoszeń, pogrupowanych według obszarów Mapy Wyzwań.
-          Niżej mapa luk: gdzie zgłoszenia nie mają gotowego rozwiązania i w jakich obszarach otworzyć nabór, a także grupy podobnych zgłoszeń.
+          Inicjatywy zgłoszone i wskazane w serwisie: {t.total}, pogrupowane według dziedzin. Niżej popyt bez podaży: czego
+          instytucje szukały, a czego w bazie nie było, oraz grupy podobnych inicjatyw.
         </p>
         {t.synthetic && (
           <Alert title="Dane przykładowe">
-            <p>Te zgłoszenia są syntetyczne (wygenerowane do demonstracji). Nie dotyczą prawdziwych osób ani gmin.</p>
+            <p>Te inicjatywy są syntetyczne (wygenerowane do demonstracji). Nie dotyczą prawdziwych instytucji.</p>
           </Alert>
         )}
       </div>
@@ -60,13 +60,13 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
       </Form>
 
       <section aria-labelledby="w-czasie" className="space-y-6">
-        <h2 id="w-czasie" className="text-2xl font-bold">Zgłoszenia według obszaru w czasie</h2>
+        <h2 id="w-czasie" className="text-2xl font-bold">Nowe inicjatywy według dziedziny w czasie</h2>
         <p className="text-base text-muted-foreground">
-          Każdy wykres to jeden obszar, wszystkie w tej samej skali. Jedno zgłoszenie może dotyczyć kilku obszarów.
+          Każdy wykres to jedna dziedzina, wszystkie w tej samej skali. Jedna inicjatywa może dotyczyć kilku dziedzin.
           Najedź na słupek, żeby zobaczyć liczbę, albo skorzystaj z tabeli poniżej.
         </p>
-        <AreaTrendCharts trends={t} />
-        <AreaTrendTable trends={t} />
+        <DomainTrendCharts trends={t} />
+        <DomainTrendTable trends={t} />
       </section>
 
       <GapMap gaps={gaps} selected={gmina} hrefFor={(teryt) => `/panel/trendy?okres=${bucket}&gmina=${teryt}#luki-gmina`} />
@@ -74,13 +74,14 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
       <ClusterList data={clusters} />
 
       <section aria-labelledby="powiaty" className="space-y-4">
-        <h2 id="powiaty" className="text-2xl font-bold">Zgłoszenia według powiatu</h2>
+        <h2 id="powiaty" className="text-2xl font-bold">Inicjatywy według powiatu</h2>
+        <p className="text-base text-muted-foreground">Liczba wszystkich inicjatyw, w nawiasie opublikowane.</p>
         <ul className="max-w-[48rem] space-y-2">
-          {t.byPowiat.map((p) => (
-            <li key={p.powiat} className="grid grid-cols-[minmax(8rem,12rem)_1fr_3rem] items-center gap-3">
-              <span>{p.powiat}</span>
-              <span aria-hidden className="h-3 rounded-r bg-foreground" style={{ width: `${(p.needs / maxPowiat) * 100}%` }} />
-              <span className="text-right tabular-nums">{p.needs}</span>
+          {t.byCounty.map((p) => (
+            <li key={p.county} className="grid grid-cols-[minmax(8rem,12rem)_1fr_5rem] items-center gap-3">
+              <span>{p.county}</span>
+              <span aria-hidden className="h-3 rounded-r bg-foreground" style={{ width: `${(p.initiatives / maxCounty) * 100}%` }} />
+              <span className="text-right tabular-nums">{p.initiatives} ({p.published})</span>
             </li>
           ))}
         </ul>
@@ -89,7 +90,7 @@ export default async function Page(props: PageProps<"/panel/trendy">) {
       <section aria-labelledby="slowa" className="space-y-4">
         <h2 id="slowa" className="text-2xl font-bold">Co rośnie: słowa kluczowe</h2>
         <p className="text-base text-muted-foreground">
-          Ostatnie 30 dni do {formatDate(t.asOf)} w porównaniu z poprzednimi 30 dniami. Słowa w formie podstawowej z kart potrzeb.
+          Ostatnie 30 dni do {formatDate(t.asOf)} w porównaniu z poprzednimi 30 dniami. Słowa w formie podstawowej z kart inicjatyw i wyzwań.
         </p>
         <div role="region" aria-labelledby="slowa" tabIndex={0} className="relative max-w-[48rem] overflow-x-auto">
           <table className="w-full border-collapse text-base">

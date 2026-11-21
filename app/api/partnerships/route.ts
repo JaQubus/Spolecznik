@@ -3,7 +3,7 @@ import { isMember, partnershipMessages, postPartnershipMessage } from "@/lib/par
 import { anonymize } from "@/lib/pii";
 import { rateLimit } from "@/lib/rate-limit";
 import { STATUS_CODE } from "@/lib/schemas";
-import { canOpen, needThread } from "@/lib/threads";
+import { canOpen, initiativeThread } from "@/lib/threads";
 
 const PRIVATE = "Nie możemy otworzyć tej rozmowy. Otwórz ją na urządzeniu, z którego wysłano zgłoszenie, albo prywatnym linkiem";
 
@@ -14,17 +14,17 @@ const PostRequest = z.object({
 });
 
 /**
- * Partnerstwo widzi tylko zgłoszenie, które przyjęło zaproszenie (albo samo zaprasza), i tylko z kluczem w ciasteczku.
- * Brak zgłoszenia, brak klucza i brak zgody dają tę samą odpowiedź.
+ * Partnerstwo widzi tylko inicjatywa, która przyjęła zaproszenie (albo sama zaprasza), i tylko z kluczem w ciasteczku.
+ * Brak inicjatywy, brak klucza i brak zgody dają tę samą odpowiedź.
  */
 async function member(code: string, threadId: string): Promise<string | null> {
-  const need = await needThread({ code });
-  if (need?.kind !== "potrzeba" || !(await canOpen(need))) return null;
-  return (await isMember(need.id, threadId)) ? need.id : null;
+  const initiative = await initiativeThread({ code });
+  if (!initiative || !(await canOpen(initiative))) return null;
+  return (await isMember(initiative.id, threadId)) ? initiative.id : null;
 }
 
 export async function GET(request: Request) {
-  const limited = rateLimit(request, "partnerstwa-odczyt", 60);
+  const limited = rateLimit(request, "partnerships-read", 60);
   if (limited) return limited;
   const params = new URL(request.url).searchParams;
   const code = params.get("kod")?.trim().toUpperCase() ?? "";
@@ -33,18 +33,18 @@ export async function GET(request: Request) {
     return Response.json({ error: "Nieprawidłowy adres rozmowy" }, { status: 400 });
   }
   try {
-    const needId = await member(code, threadId);
-    if (!needId) return Response.json({ error: PRIVATE }, { status: 404 });
-    return Response.json({ threadId, messages: await partnershipMessages(threadId, needId) });
+    const initiativeId = await member(code, threadId);
+    if (!initiativeId) return Response.json({ error: PRIVATE }, { status: 404 });
+    return Response.json({ threadId, messages: await partnershipMessages(threadId, initiativeId) });
   } catch (e) {
-    console.error("[partnerstwa]", e);
+    console.error("[partnerships]", e);
     return Response.json({ error: "Nie udało się wczytać rozmowy" }, { status: 500 });
   }
 }
 
-/** Wiadomość gminy. Dane osobowe usuwamy przed zapisem — czytają ją inne gminy, nie tylko ROPS. */
+/** Wiadomość autora. Dane osobowe usuwamy przed zapisem — czytają ją autorzy innych inicjatyw, nie tylko zespół. */
 export async function POST(request: Request) {
-  const limited = rateLimit(request, "partnerstwa", 10);
+  const limited = rateLimit(request, "partnerships", 10);
   if (limited) return limited;
   const parsed = PostRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
@@ -52,13 +52,13 @@ export async function POST(request: Request) {
   }
   const { code, threadId, body } = parsed.data;
   try {
-    const needId = await member(code, threadId);
-    if (!needId) return Response.json({ error: PRIVATE }, { status: 404 });
+    const initiativeId = await member(code, threadId);
+    if (!initiativeId) return Response.json({ error: PRIVATE }, { status: 404 });
     const clean = anonymize(body);
-    await postPartnershipMessage(threadId, { needId }, clean.text);
-    return Response.json({ threadId, messages: await partnershipMessages(threadId, needId), removedPersonalData: clean.found });
+    await postPartnershipMessage(threadId, { initiativeId }, clean.text);
+    return Response.json({ threadId, messages: await partnershipMessages(threadId, initiativeId), removedPersonalData: clean.found });
   } catch (e) {
-    console.error("[partnerstwa]", e);
+    console.error("[partnerships]", e);
     return Response.json({ error: "Nie udało się wysłać wiadomości" }, { status: 500 });
   }
 }

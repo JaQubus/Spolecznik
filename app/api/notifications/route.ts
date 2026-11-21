@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { getViewer, type Viewer } from "@/lib/auth";
-import { currentExpert } from "@/lib/expert";
+import { currentMentor } from "@/lib/mentors";
 import type { NotificationsResponse } from "@/lib/notification-types";
 import { channelsFor, listNotifications, notificationsEnabled } from "@/lib/notifications";
 import { rateLimit } from "@/lib/rate-limit";
@@ -8,8 +8,8 @@ import { brand } from "@/lib/brand";
 
 /**
  * „Widziane do” zapisujemy w ciasteczku, nie w wierszu powiadomienia: powiadomienia do całej roli admin to jeden
- * wiersz dla wszystkich adminów, więc jedno pole „przeczytane” oznaczałoby je każdemu (dlatego migracja 0017 usuwa
- * nieużywane read_at). Wartość to „kto|czas”, żeby po zmianie konta w tej samej przeglądarce nie przenosić cudzego stanu.
+ * wiersz dla wszystkich adminów, więc jedno pole „przeczytane” oznaczałoby je każdemu.
+ * Wartość to „kto|czas”, żeby po zmianie konta w tej samej przeglądarce nie przenosić cudzego stanu.
  */
 const SEEN_COOKIE = brand.cookies.notificationsSeen;
 const viewerKey = (v: Viewer) => v.id ?? `test-${v.role}`;
@@ -28,27 +28,27 @@ const off = () => Response.json({ enabled: false } satisfies NotificationsRespon
 
 /** Lista do dzwonka: tylko dla zalogowanych (konto Supabase albo testowe), filtrowana po osobie i roli. */
 export async function GET(request: Request) {
-  const limited = rateLimit(request, "powiadomienia", 60);
+  const limited = rateLimit(request, "notifications", 60);
   if (limited) return limited;
   const viewer = await getViewer();
   if (!viewer || !notificationsEnabled()) return off();
   try {
-    // Ekspert z konta testowego nie ma user_id — jego powiadomienia idą po kluczu roli „ekspert:<id>”.
-    const expertId = viewer.via === "test" ? (await currentExpert(viewer))?.id ?? null : null;
-    const { items, unread } = await listNotifications(viewer, await readSeen(viewer), 20, expertId);
+    // Mentor z konta testowego nie ma user_id — jego powiadomienia idą po kluczu roli „mentor:<id>”.
+    const mentorId = viewer.via === "test" ? (await currentMentor(viewer))?.id ?? null : null;
+    const { items, unread } = await listNotifications(viewer, await readSeen(viewer), 20, mentorId);
     return Response.json(
-      { enabled: true, items, unread, channels: channelsFor(viewer, expertId) } satisfies NotificationsResponse,
+      { enabled: true, items, unread, channels: channelsFor(viewer, mentorId) } satisfies NotificationsResponse,
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e) {
-    console.error("[powiadomienia]", e);
+    console.error("[notifications]", e);
     return off();
   }
 }
 
 /** Otwarcie dzwonka: „widziane do” = czas najnowszego pokazanego powiadomienia (nie cofamy się). */
 export async function POST(request: Request) {
-  const limited = rateLimit(request, "powiadomienia-widziane", 30);
+  const limited = rateLimit(request, "notifications-seen", 30);
   if (limited) return limited;
   const viewer = await getViewer();
   if (!viewer) return new Response(null, { status: 401 });

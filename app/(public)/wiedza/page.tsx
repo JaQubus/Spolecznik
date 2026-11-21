@@ -1,27 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { GroupIcon } from "@/components/knowledge/icons";
+import { DOMAIN_ICONS } from "@/components/taxonomy/icons";
 import { searchKnowledge } from "@/lib/knowledge/search";
-import { GROUPS } from "@/lib/schemas";
-import { GROUP_LABELS } from "@/lib/taxonomy";
-import { AskLibrary } from "./ask-library";
-import { ChallengesTab } from "./challenges-tab";
-import { LibraryTab, parseLibraryParams } from "./library-tab";
+import { DOMAIN_KEYS, domainLabel } from "@/lib/taxonomy";
+import { DomainsTab } from "./domains-tab";
 import { MapBanner } from "./map-banner";
 import { MaterialsTab, parseMaterialParams } from "./materials-tab";
+import { parsePatternParams, PatternsTab } from "./patterns-tab";
 import { SearchForm } from "./search-form";
 import { resultsSummary, SearchResults } from "./search-results";
 import { parseTab, SectionTabs } from "./section-tabs";
 import { region } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "Biblioteka i wiedza",
-  description: `Sprawdzone innowacje społeczne z ${region.genitive}, liczby o regionie i materiały do nauki.`,
+  title: "Wiedza",
+  description: `Sprawdzone rozwiązania z Polski, liczby o ${region.genitive} i materiały do nauki.`,
 };
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
 
-export default async function Page(props: PageProps<"/biblioteka">) {
+export default async function Page(props: PageProps<"/wiedza">) {
   const sp = await props.searchParams;
   const q = first(sp.q);
   const tab = parseTab(first(sp.tab));
@@ -29,29 +27,33 @@ export default async function Page(props: PageProps<"/biblioteka">) {
 
   return (
     <div className="space-y-16">
-      {/* Kremowy pas: białe pole wyszukiwania na kremowym tle (SearchBar.md) i od razu drugie wejście — „dla kogo”. */}
+      {/* Kremowy pas: białe pole wyszukiwania na kremowym tle (SearchBar.md) i od razu drugie wejście — dziedziny. */}
       <section className="full-bleed -mt-8 space-y-10 bg-secondary py-12 md:py-16">
         <div className="space-y-6">
-          <h1 className="text-4xl font-bold sm:text-5xl">Biblioteka i wiedza</h1>
+          <h1 className="text-4xl font-bold sm:text-5xl">Wiedza</h1>
           <p className="max-w-2xl text-xl">
-            Sprawdzone rozwiązania z {region.genitive}, liczby o naszym regionie i materiały do nauki. W jednym miejscu.
+            Sprawdzone rozwiązania z Polski, liczby o {region.genitive} i materiały, które pomogą rozwinąć i przenieść inicjatywę.
           </p>
           <SearchForm defaultValue={q} />
         </div>
         <div className="space-y-4">
-          <h2 id="dla-kogo" className="text-2xl font-bold">Szukam rozwiązania dla…</h2>
-          <ul aria-labelledby="dla-kogo" className="flex flex-wrap gap-3">
-            {GROUPS.map((g) => (
-              <li key={g}>
-                <Link
-                  href={`/biblioteka?tab=library&dla=${g}#dzialy`}
-                  className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-background px-4 text-lg hover:border-foreground hover:bg-secondary"
-                >
-                  <GroupIcon group={g} className="size-5 shrink-0" />
-                  {GROUP_LABELS[g].replace(/^Dla /, "")}
-                </Link>
-              </li>
-            ))}
+          <h2 id="dziedziny" className="text-2xl font-bold">Rozwiązania w dziedzinie…</h2>
+          <ul aria-labelledby="dziedziny" className="flex flex-wrap gap-3">
+            {DOMAIN_KEYS.map((d) => {
+              const Icon = DOMAIN_ICONS[d];
+              return (
+                <li key={d}>
+                  <Link
+                    href={`/wiedza?tab=rozwiazania&dziedzina=${d}#dzialy`}
+                    data-domain={d}
+                    className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-background px-4 text-lg hover:border-foreground hover:bg-secondary"
+                  >
+                    <Icon aria-hidden className="size-5 shrink-0 text-domain" />
+                    {domainLabel(d)}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </section>
@@ -62,20 +64,13 @@ export default async function Page(props: PageProps<"/biblioteka">) {
       </p>
       {results && <SearchResults results={results} />}
 
-
       <div id="dzialy" className="scroll-mt-4 space-y-10">
         <SectionTabs current={tab} />
-        {tab === "library" && <LibraryTab params={parseLibraryParams(sp)} />}
-        {tab === "materials" && <MaterialsTab params={parseMaterialParams(sp)} />}
-        {tab === "challenges" && <ChallengesTab />}
+        {tab === "dziedziny" && <DomainsTab />}
+        {tab === "rozwiazania" && <PatternsTab params={parsePatternParams(sp)} />}
+        {tab === "materialy" && <MaterialsTab params={parseMaterialParams(sp)} />}
       </div>
       <MapBanner />
-
-      <section id="zapytaj" aria-labelledby="zapytaj-tytul" className="scroll-mt-4 space-y-4">
-        <h2 id="zapytaj-tytul" className="text-3xl font-bold">Zapytaj Bibliotekę</h2>
-        <p className="max-w-2xl text-lg">Zadaj pytanie o sytuację {region.locative} albo o innowacje społeczne.</p>
-        <AskLibrary />
-      </section>
     </div>
   );
 }

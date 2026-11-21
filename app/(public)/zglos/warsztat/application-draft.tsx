@@ -10,11 +10,11 @@ import { formatDate } from "@/lib/pl";
 import type { ApplicationDraft as Draft } from "@/lib/schemas";
 import { brand } from "@/lib/brand";
 
-export type ActiveCall = { id: string; title: string; closesAt: string | null };
+export type ActiveProgram = { id: string; title: string; closesAt: string | null };
 
-/** Generator wniosków (#17): widoczny tylko przy aktywnym naborze, eksport przez druk do PDF. */
-export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: ActiveCall[] }) {
-  const [callId, setCallId] = useState(calls[0]?.id ?? "");
+/** Generator wniosków: widoczny tylko przy aktywnym programie, eksport przez druk do PDF. */
+export function ApplicationDraft({ initiativeId, programs }: { initiativeId: string; programs: ActiveProgram[] }) {
+  const [programId, setProgramId] = useState(programs[0]?.id ?? "");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
       const res = await fetch("/api/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ideaId, callId }),
+        body: JSON.stringify({ initiativeId, programId }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Nie udało się przygotować szkicu");
@@ -41,7 +41,7 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
     }
   }
 
-  const call = calls.find((c) => c.id === callId);
+  const program = programs.find((c) => c.id === programId);
 
   if (draft) {
     const missing = draft.checklist.filter((c) => !c.met).length;
@@ -49,7 +49,7 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
       <div data-print-root className="space-y-8">
         <div className="space-y-2">
           <PrintNote dated>Szkic wniosku · {brand.name}</PrintNote>
-          <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold outline-none">Szkic wniosku{call ? `: ${call.title}` : ""}</h2>
+          <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold outline-none">Szkic wniosku{program ? `: ${program.title}` : ""}</h2>
           <p className="text-muted-foreground">To szkic do poprawienia. Miejsca oznaczone „DO UZUPEŁNIENIA” wymagają Twoich danych.</p>
         </div>
         <div className="max-w-[68ch] space-y-6">
@@ -63,7 +63,7 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
         {draft.checklist.length > 0 && (
           <section aria-labelledby="kryteria" className="max-w-[68ch] space-y-3">
             <h3 id="kryteria" className="text-xl font-bold">
-              Kryteria naboru{missing > 0 ? ` — do poprawy: ${missing}` : " — wszystkie spełnione"}
+              Kryteria programu{missing > 0 ? ` — do poprawy: ${missing}` : " — wszystkie spełnione"}
             </h3>
             <ul className="divide-y border-y">
               {draft.checklist.map((c) => (
@@ -81,7 +81,7 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
           </section>
         )}
         <PrintNote>
-          Szkic przygotowany w {brand.nameLocative} z fiszki pomysłu. Miejsca oznaczone „DO UZUPEŁNIENIA” wymagają Twoich danych.
+          Szkic przygotowany w {brand.nameLocative} ze szkicu pomysłu. Miejsca oznaczone „DO UZUPEŁNIENIA” wymagają Twoich danych.
         </PrintNote>
         <Button type="button" variant="outline" onClick={() => window.print()} className="print:hidden">
           <PrinterIcon aria-hidden className="size-4" /> Wydrukuj albo zapisz jako PDF
@@ -92,15 +92,15 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
 
   return (
     <div className="max-w-2xl space-y-4">
-      <p>Trwa nabór, do którego możesz zgłosić ten pomysł. Przygotujemy szkic wniosku z Twojej fiszki.</p>
-      {calls.length > 1 && (
+      <p>Trwa program, do którego możesz zgłosić ten pomysł. Przygotujemy szkic wniosku z Twojego szkicu.</p>
+      {programs.length > 1 && (
         <fieldset className="space-y-2">
-          <legend className="font-bold">Wybierz nabór</legend>
-          <RadioGroup value={callId} onValueChange={setCallId}>
-            {calls.map((c) => (
+          <legend className="font-bold">Wybierz program</legend>
+          <RadioGroup value={programId} onValueChange={setProgramId}>
+            {programs.map((c) => (
               <RadioGroupOption
                 key={c.id}
-                id={`nabor-${c.id}`}
+                id={`program-${c.id}`}
                 value={c.id}
                 label={c.title}
                 hint={c.closesAt ? `Wnioski do ${formatDate(c.closesAt)}` : undefined}
@@ -109,12 +109,12 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
           </RadioGroup>
         </fieldset>
       )}
-      {calls.length === 1 && call?.closesAt && <p className="text-muted-foreground">{call.title} · wnioski do {formatDate(call.closesAt)}</p>}
+      {programs.length === 1 && program?.closesAt && <p className="text-muted-foreground">{program.title} · wnioski do {formatDate(program.closesAt)}</p>}
       <div aria-live="polite">
         {busy && <p className="text-muted-foreground">Piszę szkic wniosku. To może potrwać kilkanaście sekund.</p>}
         {error && <Alert tone="error" title="Coś poszło nie tak"><p>{error}</p></Alert>}
       </div>
-      <Button type="button" variant="outline" disabled={busy || !callId} onClick={generate}>Przygotuj szkic wniosku</Button>
+      <Button type="button" variant="outline" disabled={busy || !programId} onClick={generate}>Przygotuj szkic wniosku</Button>
     </div>
   );
 }

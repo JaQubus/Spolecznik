@@ -1,16 +1,19 @@
 import { findGmina } from "@/lib/gminy";
+import { currentUserId } from "@/lib/initiatives/access";
 import { notify } from "@/lib/notifications";
 import { anonymize } from "@/lib/pii";
 import { rateLimit } from "@/lib/rate-limit";
-import { TestRequest } from "@/lib/schemas";
+import { AdoptionRequest } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
-/** Próba: „Chcę przetestować” albo ocena po teście. Liczniki na karcie innowacji odświeża trigger (0004). */
+/**
+ * „Wypróbowaliśmy u nas”: zapowiedź przeniesienia albo ocena po nim. Liczniki na karcie inicjatywy i rozwiązania
+ * odświeża trigger (0005_analytics.sql); udane przeniesienie podnosi też ocenę przenaszalności na radarze.
+ */
 export async function POST(request: Request) {
-  const limited = rateLimit(request, "tests", 5);
+  const limited = rateLimit(request, "adoptions", 5);
   if (limited) return limited;
-  const parsed = TestRequest.safeParse(await request.json().catch(() => null));
+  const parsed = AdoptionRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
   }
@@ -20,46 +23,51 @@ export async function POST(request: Request) {
     const gmina = await findGmina(t.gmina, t.teryt);
     if (!gmina) return Response.json({ error: "Nie znaleźliśmy gminy o tej nazwie" }, { status: 404 });
 
-    const tester = await createClient()
-      .then((s) => s.auth.getUser())
-      .then(({ data }) => data.user?.id ?? null)
-      .catch(() => null);
+    const supabase = createAdminClient();
+    // Inicjatywę można przenieść dopiero po publikacji — wcześniej nikt poza autorem i zespołem jej nie widzi.
+    if (t.initiativeId) {
+      const { data } = await supabase.from("public_initiatives").select("id").eq("id", t.initiativeId).maybeSingle();
+      if (!data) return Response.json({ error: "Nie znaleziono tej inicjatywy" }, { status: 404 });
+    }
 
     const clean = (s?: string) => (s?.trim() ? anonymize(s.trim()).text : null);
-    const { data: saved, error } = await createAdminClient().from("tests").insert({
-      innovation_id: t.innovationId,
-      tester_id: tester,
+    const { data: saved, error } = await supabase.from("adoptions").insert({
+      initiative_id: t.initiativeId ?? null,
+      pattern_id: t.patternId ?? null,
+      tester_id: await currentUserId(),
       teryt: gmina.teryt,
       status: t.status,
       rating: t.status === "zakonczony" ? t.rating : null,
-      feedback: clean(t.feedback),
-      suggestions: clean(t.suggestions),
-      tester_org: t.testerOrg?.trim() || null,
+      worked: clean(t.worked),
+      improve: clean(t.improve),
+      adopter_org: clean(t.adopterOrg),
       planned_for: t.plannedFor ?? null,
       contact_email: t.contactEmail ?? null,
-    }).select("id, innovations(title)").single();
+    }).select("id, initiatives(title), patterns(title)").single();
     if (error) {
-      if (error.code === "23503") return Response.json({ error: "Nie znaleziono tego rozwiązania" }, { status: 404 });
+      if (error.code === "23503") return Response.json({ error: "Nie znaleziono tej pozycji" }, { status: 404 });
       throw error;
     }
 
-    // Dzwonek admina (Panel → Testy). Błąd powiadomienia nie może zablokować potwierdzenia dla testera.
-    const innovation = saved.innovations as unknown as { title: string } | null;
+    // Dzwonek admina (Panel → Adopcje). Błąd powiadomienia nie może zablokować potwierdzenia.
+    const title = (saved.initiatives as unknown as { title: string } | null)?.title
+      ?? (saved.patterns as unknown as { title: string } | null)?.title ?? null;
     await notify({
       role: "admin",
-      kind: "nowy_test",
+      kind: "nowa_adopcja",
       payload: {
-        testId: saved.id,
-        innovationId: t.innovationId,
-        title: innovation?.title ?? null,
+        adoptionId: saved.id,
+        initiativeId: t.initiativeId ?? null,
+        patternId: t.patternId ?? null,
+        title,
         gmina: gmina.nazwa,
         status: t.status,
         rating: t.status === "zakonczony" ? t.rating : null,
       },
-    }).catch((e) => console.error("[tests] powiadomienie:", e));
+    }).catch((e) => console.error("[adoptions] powiadomienie:", e));
     return Response.json({ ok: true, gmina: gmina.nazwa });
   } catch (e) {
-    console.error("[tests]", e);
+    console.error("[adoptions]", e);
     return Response.json({ error: "Nie udało się zapisać" }, { status: 500 });
   }
 }

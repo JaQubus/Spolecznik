@@ -15,25 +15,25 @@ type ThreadView = { threadId: string | null; messages: ThreadMessage[]; waiting:
 
 /** Co mówimy po wysłaniu, zależnie od tego, co zrobił asystent (lib/first-line.ts). */
 const SENT: Record<string, string> = {
-  odpowiedz: `Wysłano. Asystent odpowiedział na podstawie Zasobnika — źródła są pod odpowiedzią. Pracownik ${org.short} też ją zobaczy.`,
-  przekazano: `Wysłano. Pytanie czeka na pracownika ${org.short}. Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.`,
+  odpowiedz: `Wysłano. Asystent odpowiedział na podstawie bazy wiedzy — źródła są pod odpowiedzią. Zespół ${org.short} też ją zobaczy.`,
+  przekazano: `Wysłano. Pytanie czeka na zespół ${org.short}. Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.`,
 };
 const SENT_DEFAULT = "Wysłano. Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.";
 
 /**
- * Rozmowa autora zgłoszenia z ROPS i ekspertem. Autor wchodzi po kodzie, więc wszystko idzie przez /api/rozmowy.
- * Na każdą wiadomość najpierw odpowiada asystent z Zasobnika albo przekazuje ją do ROPS (#20).
+ * Rozmowa autora inicjatywy z zespołem i mentorem. Autor wchodzi po kodzie, więc wszystko idzie przez /api/threads.
+ * Na każdą wiadomość najpierw odpowiada asystent z bazy wiedzy albo przekazuje ją zespołowi.
  */
 export function Conversation({
   code,
-  expertId,
-  expertName,
+  mentorId,
+  mentorName,
   closed,
   initial,
 }: {
   code: string;
-  expertId?: string;
-  expertName: string | null;
+  mentorId?: string;
+  mentorName: string | null;
   closed: boolean;
   initial: ThreadView;
 }) {
@@ -49,7 +49,7 @@ export function Conversation({
   useEffect(() => { if (error) errorBox.current?.focus(); }, [error]);
 
   const reload = useCallback(async () => {
-    const res = await fetch(`/api/rozmowy?kod=${encodeURIComponent(code)}`, { cache: "no-store" }).catch(() => null);
+    const res = await fetch(`/api/threads?kod=${encodeURIComponent(code)}`, { cache: "no-store" }).catch(() => null);
     const json = res?.ok ? await res.json().catch(() => null) : null;
     if (json) setThread({ threadId: json.threadId, messages: json.messages, waiting: json.waiting });
   }, [code]);
@@ -59,7 +59,7 @@ export function Conversation({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (body.trim().length < 2) {
-      setFieldError("Wpisz wiadomość, np. pytanie do eksperta albo to, co zmieniło się od zgłoszenia.");
+      setFieldError("Wpisz wiadomość, np. pytanie do mentora albo to, co zmieniło się od zgłoszenia.");
       field.current?.focus();
       return;
     }
@@ -68,10 +68,10 @@ export function Conversation({
     setNotice(null);
     setBusy("wiadomosc");
     try {
-      const res = await fetch("/api/rozmowy", {
+      const res = await fetch("/api/threads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, body, expertId }),
+        body: JSON.stringify({ code, body, mentorId }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Nie udało się wysłać wiadomości");
@@ -92,7 +92,7 @@ export function Conversation({
     setNotice(null);
     setBusy("pilne");
     try {
-      const res = await fetch("/api/rozmowy/pilne", {
+      const res = await fetch("/api/threads/urgent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
@@ -100,7 +100,7 @@ export function Conversation({
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Nie udało się przekazać pytania");
       setThread({ threadId: json.threadId, messages: json.messages, waiting: json.waiting });
-      setNotice(`Przekazaliśmy pytanie pracownikowi ${org.short} jako pilne. Odpowie tutaj, w tej rozmowie.`);
+      setNotice(`Przekazaliśmy pytanie zespołowi ${org.short} jako pilne. Odpowie tutaj, w tej rozmowie.`);
     } catch (e) {
       setError(`${e instanceof Error ? e.message : "Coś poszło nie tak"}. Spróbuj ponownie.`);
     } finally {
@@ -109,34 +109,34 @@ export function Conversation({
   }
 
   // Przycisk tylko pod ostatnią odpowiedzią: gdy po asystencie odpisał już człowiek, nie ma czego zgłaszać.
-  const lastReply = thread.messages.findLast((m) => m.role !== "autor");
+  const lastReply = thread.messages.findLast((m) => m.role !== "author");
   const canMarkNotHelpful = lastReply?.role === "ai" && !!lastReply.sources?.length && thread.waiting !== "pilne";
 
-  const recipient = expertName ? `ekspert (${expertName}) i pracownik ${org.short}` : `pracownik ${org.short}`;
+  const recipient = mentorName ? `mentor (${mentorName}) i zespół ${org.short}` : `zespół ${org.short}`;
 
   return (
     <div className="space-y-8">
       <MessageList
         messages={thread.messages}
-        own="autor"
-        empty={`Nikt jeszcze nie napisał. Zacznij rozmowę — najpierw odpowie asystent z Zasobnika, potem ${recipient}.`}
+        own="author"
+        empty={`Nikt jeszcze nie napisał. Zacznij rozmowę — najpierw odpowie asystent z bazy wiedzy, potem ${recipient}.`}
       />
 
       {!closed && canMarkNotHelpful && (
         <div className="max-w-2xl space-y-2">
-          <p>Odpowiedź asystenta nie pomogła? Przekażemy pytanie pracownikowi {org.short} jako pilne.</p>
+          <p>Odpowiedź asystenta nie pomogła? Przekażemy pytanie zespołowi {org.short} jako pilne.</p>
           <Button type="button" variant="outline" disabled={!!busy} onClick={notHelpful}>
             To nie odpowiada na moje pytanie
           </Button>
         </div>
       )}
       {!closed && thread.waiting === "pilne" && (
-        <p className="max-w-2xl font-bold">Twoje pytanie czeka na pracownika {org.short} jako pilne.</p>
+        <p className="max-w-2xl font-bold">Twoje pytanie czeka na zespół {org.short} jako pilne.</p>
       )}
 
       {closed ? (
         <Alert title="Rozmowa jest zamknięta">
-          <p>Zgłoszenie jest zamknięte, więc nie można już pisać. Jeśli problem wrócił, opisz go jeszcze raz.</p>
+          <p>Zgłoszenie jest zamknięte, więc nie można już pisać. Jeśli inicjatywa ruszyła na nowo, zgłoś ją jeszcze raz.</p>
         </Alert>
       ) : (
         <form onSubmit={submit} noValidate className="max-w-2xl space-y-4">
@@ -158,7 +158,7 @@ export function Conversation({
               aria-describedby={fieldError ? "wiadomosc-pomoc wiadomosc-blad" : "wiadomosc-pomoc"}
             />
           </div>
-          <p role="status" className="font-bold">{busy === "pilne" ? "Przekazuję pytanie…" : busy ? "Wysyłam. Asystent szuka odpowiedzi w Zasobniku…" : notice}</p>
+          <p role="status" className="font-bold">{busy === "pilne" ? "Przekazuję pytanie…" : busy ? "Wysyłam. Asystent szuka odpowiedzi w bazie wiedzy…" : notice}</p>
           <Button type="submit" disabled={!!busy} className="w-full sm:w-auto">Wyślij wiadomość</Button>
         </form>
       )}

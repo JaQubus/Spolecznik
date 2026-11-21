@@ -27,7 +27,7 @@ export function IndicatorSelect({ options, value, hint, query }: {
         defaultValue={value}
         onChange={(e) => {
           const q = new URLSearchParams({ ...query, wskaznik: e.target.value });
-          router.replace(`/biblioteka/kondycja?${q}`, { scroll: false });
+          router.replace(`/mapa/kondycja?${q}`, { scroll: false });
         }}
       >
         {options.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}

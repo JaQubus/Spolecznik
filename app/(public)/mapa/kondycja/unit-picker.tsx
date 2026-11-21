@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { UnitSearch } from "@/components/knowledge/unit-search";
 import type { LayerKey, MapUnit } from "@/lib/knowledge/map";
 
-/** Druga linijka przy nazwie gminy — w Małopolsce są pary gmin o tej samej nazwie (np. Bochnia miejska i wiejska). */
+/** Druga linijka przy nazwie gminy — w regionie są pary gmin o tej samej nazwie (gmina miejska i wiejska). */
 const gminaDetails = (u: MapUnit) =>
   u.parent ? `gmina ${u.kind ?? ""}, ${u.parent.replace(/ \(miasto na prawach powiatu\)$/, "")}` : null;
 const noDetails = () => null;
@@ -30,7 +30,7 @@ export function UnitPicker({ layer, units, selected, query }: {
       className="md:row-span-3 md:grid-rows-subgrid"
       onSelect={(id) => {
         const q = new URLSearchParams({ ...query, ...(id ? { id } : {}) });
-        router.push(`/biblioteka/kondycja?${q}${id ? "#karta" : ""}`, { scroll: false });
+        router.push(`/mapa/kondycja?${q}${id ? "#karta" : ""}`, { scroll: false });
       }}
     />
   );

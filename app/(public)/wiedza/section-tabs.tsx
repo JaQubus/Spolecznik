@@ -1,15 +1,14 @@
 import Link from "next/link";
 import { cn } from "cn";
-import { region } from "@/lib/brand";
 
 export const TABS = [
-  { key: "challenges", label: `Wyzwania ${region.genitive}` },
-  { key: "library", label: "Biblioteka innowacji" },
-  { key: "materials", label: "Materiały" },
+  { key: "dziedziny", label: "Dziedziny" },
+  { key: "rozwiazania", label: "Sprawdzone rozwiązania z Polski" },
+  { key: "materialy", label: "Materiały" },
 ] as const;
 export type TabKey = (typeof TABS)[number]["key"];
 
-export const parseTab = (v: string): TabKey => (TABS.some((t) => t.key === v) ? (v as TabKey) : "challenges");
+export const parseTab = (v: string): TabKey => (TABS.some((t) => t.key === v) ? (v as TabKey) : "dziedziny");
 
 /**
  * Zakładki jako linki z ?tab= (stan w adresie: działa „Wstecz”, można wysłać link).
@@ -17,12 +16,12 @@ export const parseTab = (v: string): TabKey => (TABS.some((t) => t.key === v) ? 
  */
 export function SectionTabs({ current }: { current: TabKey }) {
   return (
-    <nav aria-label="Działy biblioteki" className="border-b border-border">
+    <nav aria-label="Działy bazy wiedzy" className="border-b border-border">
       <ul className="flex flex-wrap gap-x-2">
         {TABS.map((t) => (
           <li key={t.key}>
             <Link
-              href={`/biblioteka?tab=${t.key}#dzialy`}
+              href={`/wiedza?tab=${t.key}#dzialy`}
               scroll={false}
               aria-current={t.key === current ? "page" : undefined}
               className={cn(

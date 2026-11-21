@@ -1,10 +1,13 @@
-import { intake } from "@/lib/llm";
-import { anonymize } from "@/lib/pii";
-import { CLARITY_THRESHOLD, IntakeRequest } from "@/lib/schemas";
-import { rateLimit } from "@/lib/rate-limit";
 import { aiErrorResponse } from "@/lib/groq";
-import { AREA_LABELS } from "@/lib/taxonomy";
+import { intakeChallenge, intakeInitiative } from "@/lib/llm";
+import { anonymize } from "@/lib/pii";
+import { rateLimit } from "@/lib/rate-limit";
+import { CLARITY_THRESHOLD, IntakeRequest } from "@/lib/schemas";
 
+/**
+ * Opis → karta. Tryby: own (zgłaszam swoją inicjatywę), nomination (wskazuję cudzą), challenge („Szukam rozwiązania”).
+ * Dane osobowe usuwamy przed wysłaniem do modelu. Najwyżej jedna runda dopytania: przy odpowiedzi już nie dopytujemy.
+ */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "intake", 10);
   if (limited) return limited;
@@ -12,17 +15,20 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
   }
-  const { text, gmina, area, previousCard } = parsed.data;
-  const context = [gmina && `Gmina: ${gmina}`, area && `Obszar: ${AREA_LABELS[area]}`].filter(Boolean).join("\n");
-  const { text: clean, found: piiFound } = anonymize(context ? `${text}\n${context}` : text);
+  const { text, gmina } = parsed.data;
+  const { text: clean, found: piiFound } = anonymize(gmina ? `${text}\nGmina: ${gmina}` : text);
 
   try {
-    const card = await intake(clean, previousCard);
-    // Obszar wybrany przez użytkownika (np. ze strony obszaru w Bibliotece) zawsze trafia na kartę.
-    if (area && !card.areas.includes(area)) card.areas = [area, ...card.areas].slice(0, 3);
-    // Najwyżej jedno dopytanie: przy odpowiedzi na pytanie już nie dopytujemy.
-    const needsFollowUp = !previousCard && card.clarity < CLARITY_THRESHOLD && !!card.followUp;
-    return Response.json({ card, needsFollowUp, piiFound });
+    if (parsed.data.mode === "challenge") {
+      const previous = parsed.data.previousCard;
+      const card = await intakeChallenge(clean, previous);
+      const followUps = !previous && card.clarity < CLARITY_THRESHOLD && card.followUp ? [card.followUp] : [];
+      return Response.json({ mode: "challenge", card, followUps, piiFound });
+    }
+    const previous = parsed.data.previousCard;
+    const card = await intakeInitiative(clean, parsed.data.mode, previous);
+    const followUps = !previous && card.clarity < CLARITY_THRESHOLD ? card.followUps.slice(0, 2) : [];
+    return Response.json({ mode: parsed.data.mode, card, followUps, piiFound });
   } catch (e) {
     return aiErrorResponse("intake", e, "Nie udało się przeanalizować opisu");
   }

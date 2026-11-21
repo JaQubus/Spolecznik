@@ -1,50 +1,48 @@
 import Link from "next/link";
 import { Alert } from "@/components/ui/alert";
-import { assignedReports, requireExpert } from "@/lib/expert";
-import { NEED_STATUS_LABELS, type NeedStatus } from "@/lib/need-status";
+import { statusLabel } from "@/lib/initiatives/status";
+import { assignedInitiatives, requireMentor } from "@/lib/mentors";
 import { formatDate } from "@/lib/pl";
 import { org } from "@/lib/brand";
 
-export const metadata = { title: "Moje zgłoszenia · Ekspert" };
+export const metadata = { title: "Moje inicjatywy · Mentor" };
 
 const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
-/** Wejście dla eksperta (#63): tylko zgłoszenia i pomysły, przy których ROPS poprosił go o pomoc. */
+/** Wejście dla mentora: tylko inicjatywy, przy których zespół poprosił go o pomoc. */
 export default async function Page() {
-  const { expert } = await requireExpert();
-  if (!expert) {
+  const { mentor } = await requireMentor();
+  if (!mentor) {
     return (
       <section className="max-w-2xl space-y-4">
-        <h1 className="text-3xl font-bold">Zgłoszenia do pomocy</h1>
-        <Alert title="Nie znaleźliśmy Twojego profilu eksperta">
-          <p>Poproś {org.short} o dopisanie Cię do bazy ekspertów. Do tego czasu nie możemy pokazać przypisanych zgłoszeń.</p>
+        <h1 className="text-3xl font-bold">Inicjatywy do wsparcia</h1>
+        <Alert title="Nie znaleźliśmy Twojego profilu mentora">
+          <p>Poproś zespół {org.short} o dopisanie Cię do bazy mentorów. Do tego czasu nie możemy pokazać przypisanych inicjatyw.</p>
         </Alert>
       </section>
     );
   }
-  const reports = await assignedReports(expert.id);
+  const items = await assignedInitiatives(mentor.id);
 
   return (
     <section className="space-y-8">
       <div className="space-y-3">
-        <h1 className="text-3xl font-bold">Zgłoszenia do pomocy</h1>
+        <h1 className="text-3xl font-bold">Inicjatywy do wsparcia</h1>
         <p className="max-w-2xl text-lg">
-          Jesteś zalogowany jako <strong>{expert.name}</strong>. Tu są zgłoszenia i pomysły, przy których {org.short} prosi Cię
-          o pomoc. Odpowiadasz bezpośrednio autorowi; {org.short} widzi rozmowę.
+          Jesteś zalogowany jako <strong>{mentor.name}</strong>. Tu są inicjatywy, przy których zespół {org.short} prosi Cię
+          o pomoc. Odpowiadasz bezpośrednio autorowi; zespół widzi rozmowę.
         </p>
       </div>
-      {reports.length === 0 ? (
-        <p className="text-lg">Nie masz jeszcze przypisanych zgłoszeń. Damy znać w powiadomieniach, gdy {org.short} poprosi Cię o pomoc.</p>
+      {items.length === 0 ? (
+        <p className="text-lg">Nie masz jeszcze przypisanych inicjatyw. Damy znać w powiadomieniach, gdy zespół poprosi Cię o pomoc.</p>
       ) : (
         <ul className="max-w-3xl border-t">
-          {reports.map((r) => (
+          {items.map((r) => (
             <li key={r.code} className="space-y-1 border-b py-5">
               <p>
-                <Link href={`/ekspert/${r.code}`} className={linkClass}>
-                  {r.kind === "pomysl" ? "Pomysł" : "Zgłoszenie"} {r.code}
-                </Link>
+                <Link href={`/mentor/${r.code}`} className={linkClass}>{r.title}</Link>
                 <span className="text-muted-foreground">
-                  {" · "}{NEED_STATUS_LABELS[r.status as NeedStatus] ?? r.status}{r.gmina && ` · ${r.gmina}`} · {formatDate(r.updatedAt)}
+                  {" · "}<span className="font-mono">{r.code}</span> · {statusLabel(r.status)}{r.gmina && ` · ${r.gmina}`} · {formatDate(r.updatedAt)}
                 </span>
               </p>
               {r.summary && <p className="max-w-[68ch]">{r.summary}</p>}

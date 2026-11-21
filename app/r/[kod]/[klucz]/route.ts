@@ -1,28 +1,28 @@
 import { redirect } from "next/navigation";
-import { isAccessKey, rememberNeed } from "@/lib/need-access";
+import { isAccessKey, rememberInitiative } from "@/lib/initiatives/access";
 import { rateLimit } from "@/lib/rate-limit";
 import { STATUS_CODE } from "@/lib/schemas";
-import { reportForKey } from "@/lib/threads";
+import { keyOpens } from "@/lib/threads";
 
 /**
- * Prywatny link (/r/SPL-4K7Q/klucz): zapamiętuje zgłoszenie w tej przeglądarce i przekierowuje bez klucza w adresie,
- * żeby nie został w historii ani w odnośnikach. Potrzeba i pomysł otwierają się w rozmowie na /zapytaj.
+ * Prywatny link (/r/KOD/klucz): zapamiętuje zgłoszenie w tej przeglądarce i przekierowuje bez klucza w adresie,
+ * żeby nie został w historii ani w odnośnikach. Zgłoszenie otwiera się w rozmowie na /rozmowy.
  */
 export async function GET(request: Request, ctx: RouteContext<"/r/[kod]/[klucz]">) {
-  const limited = rateLimit(request, "prywatny-link", 20);
+  const limited = rateLimit(request, "private-link", 20);
   if (limited) return limited;
   const { kod, klucz } = await ctx.params;
   const code = decodeURIComponent(kod).trim().toUpperCase();
 
-  let kind: Awaited<ReturnType<typeof reportForKey>> = null;
+  let ok = false;
   if (STATUS_CODE.test(code) && isAccessKey(klucz)) {
     try {
-      kind = await reportForKey(code, klucz);
+      ok = await keyOpens(code, klucz);
     } catch (e) {
       console.error("[prywatny link]", e);
     }
   }
-  if (!kind) redirect("/zapytaj?link=nieaktualny");
-  await rememberNeed(code, klucz);
-  redirect(`/zapytaj?kod=${code}`);
+  if (!ok) redirect("/rozmowy?link=nieaktualny");
+  await rememberInitiative(code, klucz);
+  redirect(`/rozmowy?kod=${code}`);
 }

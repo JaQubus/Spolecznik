@@ -1,9 +1,9 @@
 import { ContactRequest, saveContactEmail } from "@/lib/author-contact";
 import { rateLimit } from "@/lib/rate-limit";
 
-/** Nieobowiązkowy e-mail autora do powiadomień o zgłoszeniu (#65). Kod + klucz z prywatnego linku. */
+/** Nieobowiązkowy e-mail autora do powiadomień o zgłoszeniu. Kod + klucz z prywatnego linku. */
 export async function POST(request: Request) {
-  const limited = rateLimit(request, "kontakt", 10);
+  const limited = rateLimit(request, "contact", 10);
   if (limited) return limited;
   const parsed = ContactRequest.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {

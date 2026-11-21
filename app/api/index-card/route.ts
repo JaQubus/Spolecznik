@@ -1,22 +1,23 @@
 import { z } from "zod";
 import { isAdmin } from "@/lib/auth";
+import { aiErrorResponse } from "@/lib/groq";
 import { reindexCard } from "@/lib/index-card";
 import { knowledge } from "@/lib/knowledge";
-import { canUseHybridSearch, indexEntity } from "@/lib/knowledge/indexing";
+import { indexEntity } from "@/lib/knowledge/indexing";
 import { rateLimit } from "@/lib/rate-limit";
-import { aiErrorResponse } from "@/lib/groq";
 import { IndexCardRequest } from "@/lib/schemas";
 
-// Karty Zasobnika wiedzy (panel „Zarządzaj wiedzą”): { kind: "biblioteka" | "obszar" | "material", id }.
-const KnowledgeCard = z.object({ kind: z.enum(["biblioteka", "obszar", "material"]), id: z.string().min(1) });
+// Karty bazy wiedzy (Panel → Wiedza): { kind: "rozwiazanie" | "dziedzina" | "material", id }.
+const KnowledgeCard = z.object({ kind: z.enum(["rozwiazanie", "dziedzina", "material"]), id: z.string().min(1) });
 
 /**
- * Reindeks karty po zapisie (README 5.3). Karty matchmakingu (potrzeba, pomysł, innowacja, ekspert, nabór)
- * liczy lib/index-card.ts; karty Zasobnika — lib/knowledge/indexing.ts (tylko admin).
+ * Reindeks karty po zapisie — tylko admin, bo każde wywołanie kosztuje zapytanie do LLM. Karty dopasowań
+ * (inicjatywa, rozwiązanie, mentor, program) liczy lib/index-card.ts; karty bazy wiedzy — lib/knowledge/indexing.ts.
  */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "index-card", 20);
   if (limited) return limited;
+  if (!(await isAdmin())) return Response.json({ error: "Brak dostępu" }, { status: 403 });
   const body = await request.json().catch(() => null);
 
   const card = KnowledgeCard.safeParse(body);
@@ -38,20 +39,16 @@ export async function POST(request: Request) {
 }
 
 async function indexKnowledgeCard({ kind, id }: z.infer<typeof KnowledgeCard>): Promise<Response> {
-  if (!(await isAdmin())) return Response.json({ error: "Brak dostępu" }, { status: 403 });
-  if (!canUseHybridSearch()) {
-    return Response.json({ indexed: false, reason: "Wyszukiwarka Zasobnika działa po słowach w danych — indeks nie jest potrzebny." });
-  }
   const all = { all: true };
   const notFound = () => Response.json({ error: "Nie ma takiej karty" }, { status: 404 });
   try {
-    if (kind === "biblioteka") {
-      const i = await knowledge.innovation(id, all);
-      return i ? Response.json({ indexed: await indexEntity("innowacja", i) }) : notFound();
+    if (kind === "rozwiazanie") {
+      const p = await knowledge.pattern(id, all);
+      return p ? Response.json({ indexed: await indexEntity("rozwiazanie", p) }) : notFound();
     }
-    if (kind === "obszar") {
-      const a = await knowledge.area(id, all);
-      return a ? Response.json({ indexed: await indexEntity("obszar", a) }) : notFound();
+    if (kind === "dziedzina") {
+      const d = await knowledge.domain(id, all);
+      return d ? Response.json({ indexed: await indexEntity("dziedzina", d) }) : notFound();
     }
     const m = (await knowledge.materials({}, all)).find((x) => x.id === id);
     return m ? Response.json({ indexed: await indexEntity("material", m) }) : notFound();

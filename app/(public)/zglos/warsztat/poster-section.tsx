@@ -2,30 +2,30 @@
 
 import { PhotoIcon, PrinterIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import { IdeaPoster } from "@/components/pomysl/idea-poster";
+import { IdeaPoster } from "@/components/workshop/idea-poster";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import type { Fiszka, IdeaPoster as Poster } from "@/lib/schemas";
+import type { IdeaPoster as Poster, Sketch } from "@/lib/schemas";
 
-/** Plakat razem z fiszką i canvasem, z których powstał — po zmianach w fiszce podpowiadamy odświeżenie. */
+/** Plakat razem ze szkicem i kanwą, z których powstał — po zmianach w szkicu podpowiadamy odświeżenie. */
 export type PosterState = { poster: Poster; source: string };
 
-export function posterSource(fiszka: Fiszka, canvas: Record<string, string>) {
-  return JSON.stringify([fiszka, Object.entries(canvas).filter(([, v]) => v.trim())]);
+export function posterSource(sketch: Sketch, canvas: Record<string, string>) {
+  return JSON.stringify([sketch, Object.entries(canvas).filter(([, v]) => v.trim())]);
 }
 
 /**
  * Plakat pomysłu (wizualizacja z briefu, moduł III): Groq nie rysuje obrazów, więc plakat to tekst z /api/poster
- * narysowany w HTML i SVG. Zapisuje się razem z pomysłem, żeby ROPS zobaczył go w Panelu.
+ * narysowany w HTML i SVG. Zapisuje się razem z pomysłem, żeby zespół zobaczył go w Panelu.
  */
 export function PosterSection({
-  fiszka,
+  sketch,
   canvas,
   state,
   onChange,
   onMissingTitle,
 }: {
-  fiszka: Fiszka;
+  sketch: Sketch;
   canvas: Record<string, string>;
   state: PosterState | null;
   onChange: (state: PosterState) => void;
@@ -34,11 +34,11 @@ export function PosterSection({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [announce, setAnnounce] = useState("");
-  const source = posterSource(fiszka, canvas);
+  const source = posterSource(sketch, canvas);
   const stale = state !== null && state.source !== source;
 
   async function generate() {
-    if (fiszka.krotki_opis.trim().length < 3) {
+    if (sketch.summary.trim().length < 3) {
       onMissingTitle();
       return;
     }
@@ -50,7 +50,7 @@ export function PosterSection({
       const res = await fetch("/api/poster", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fiszka, canvas: filled }),
+        body: JSON.stringify({ sketch, canvas: filled }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Nie udało się przygotować plakatu");
@@ -71,7 +71,7 @@ export function PosterSection({
         {error && <Alert tone="error" title="Coś poszło nie tak"><p>{error}</p></Alert>}
       </div>
       {stale && !busy && (
-        <p className="max-w-2xl">Fiszka zmieniła się od czasu, gdy powstał plakat. Odśwież go, żeby pokazywał aktualny pomysł.</p>
+        <p className="max-w-2xl">Szkic zmienił się od czasu, gdy powstał plakat. Odśwież go, żeby pokazywał aktualny pomysł.</p>
       )}
       <div className="flex flex-wrap gap-3 print:hidden">
         <Button type="button" variant="outline" disabled={busy} onClick={generate}>

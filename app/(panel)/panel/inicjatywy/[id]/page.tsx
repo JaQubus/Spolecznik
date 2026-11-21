@@ -2,6 +2,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { DomainBadge } from "@/components/taxonomy/icons";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { FieldHint } from "@/components/ui/field";
@@ -9,143 +10,155 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { requireAdmin, viewerClient } from "@/lib/auth";
-import { NEED_STATUS_LABELS } from "@/lib/need-status";
-import { DUPLICATE_MIN, NEED_COLUMNS, needHistory, needNeighbours, type AuditRow, type NeedRow } from "@/lib/panel/needs";
+import { statusLabel, STATUS_LABELS } from "@/lib/initiatives/status";
+import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
+import {
+  DUPLICATE_MIN, effectiveSignal, INITIATIVE_COLUMNS, initiativeHistory, initiativeNeighbours, type AuditRow, type InitiativeRow,
+} from "@/lib/panel/initiatives";
+import { panelPartnerships, type PanelPartnership } from "@/lib/partnerships";
 import { anonymize } from "@/lib/pii";
 import { formatDate } from "@/lib/pl";
-import { NEED_STATUSES } from "@/lib/schemas";
+import { INITIATIVE_STATUSES } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { AREA_LABELS, CROSS_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
-import { innovationHref } from "@/components/knowledge/tiles";
-import { panelPartnerships, type PanelPartnership } from "@/lib/partnerships";
-import { needThread } from "@/lib/threads";
+import { crossLabel, institutionLabel, signalLevel, stageLabel } from "@/lib/taxonomy";
+import { initiativeThread } from "@/lib/threads";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
-import { assignExpert, removePersonalData, updateNeedStatus } from "../../actions";
+import { assignMentor, removePersonalData, setPublished, updateInitiativeStatus } from "../../actions";
 import { PartnershipSection } from "../../partnership-section";
 import { ThreadSection } from "../../thread-section";
 import { panelTitle } from "@/lib/brand";
 
-export const metadata = { title: panelTitle("Zgłoszenie") };
+export const metadata = { title: panelTitle("Inicjatywa") };
 
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 
-export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
+export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
   const viewer = await requireAdmin();
   const { id } = await props.params;
   if (!z.uuid().safeParse(id).success) notFound();
 
   const supabase = await viewerClient(viewer);
-  const { data, error } = await supabase.from("needs").select(NEED_COLUMNS).eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("initiatives").select(INITIATIVE_COLUMNS).eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) notFound();
-  const need = data as unknown as NeedRow;
+  const row = data as unknown as InitiativeRow;
 
   const admin = createAdminClient();
-  const [history, experts, neighbours, matches, assigned, thread, partnerships] = await Promise.all([
-    needHistory(id),
-    needNeighbours(need, "ekspert", 3),
-    needNeighbours(need, "potrzeba", 5),
-    supabase.from("matches").select("ref_id, fit, why").eq("need_id", id).eq("kind", "innowacja").order("fit", { ascending: false }),
-    need.assigned_expert
-      ? admin.from("search_index").select("title").eq("kind", "ekspert").eq("ref_id", need.assigned_expert).maybeSingle()
+  const [history, mentors, neighbours, matches, assigned, thread, partnerships] = await Promise.all([
+    initiativeHistory(id),
+    initiativeNeighbours(row, "mentor", 3),
+    initiativeNeighbours(row, "initiative", 5),
+    supabase.from("matches").select("target_id, target_kind, fit, why").eq("initiative_id", id).order("fit", { ascending: false }),
+    row.assigned_mentor
+      ? admin.from("mentors").select("name").eq("id", row.assigned_mentor).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
-    // Bez migracji 0011 reszta strony ma działać dalej.
-    needThread({ kind: "potrzeba", id }).catch((e) => { console.error("[panel] rozmowa:", e); return null; }),
-    // Bez migracji 0023 tak samo.
+    initiativeThread({ id }).catch((e) => { console.error("[panel] rozmowa:", e); return null; }),
     panelPartnerships(id).catch((e) => { console.error("[panel] partnerstwa:", e); return [] as PanelPartnership[]; }),
   ]);
   if (matches.error) throw matches.error;
 
   const duplicateHits = neighbours.filter((n) => n.similarity >= DUPLICATE_MIN);
-  const innovationIds = (matches.data ?? []).map((m) => m.ref_id);
-  const [duplicates, innovations] = await Promise.all([
+  const patternIds = (matches.data ?? []).filter((m) => m.target_kind === "pattern").map((m) => m.target_id as string);
+  const [duplicates, patterns] = await Promise.all([
     duplicateHits.length
-      ? supabase.from("needs").select("id, status_code, status, gminy(nazwa)").in("id", duplicateHits.map((d) => d.ref_id))
+      ? supabase.from("initiatives").select("id, status_code, status, municipalities(name)").in("id", duplicateHits.map((d) => d.ref_id))
       : Promise.resolve({ data: [], error: null }),
-    innovationIds.length
-      ? supabase.from("innovations").select("id, title, slug, corpus, published").in("id", innovationIds)
-      : Promise.resolve({ data: [], error: null }),
+    patternIds.length ? supabase.from("patterns").select("id, title, slug").in("id", patternIds) : Promise.resolve({ data: [], error: null }),
   ]);
-  const duplicateById = new Map((duplicates.data ?? []).map((d) => [d.id as string, d as unknown as { status_code: string; status: keyof typeof NEED_STATUS_LABELS; gminy: { nazwa: string } | null }]));
-  // Kartę w Bibliotece mają tylko opublikowane innowacje z korpusu „biblioteka” (lib/knowledge/supabase-store.ts);
-  // innowacje samego pipeline'u matchmakingu (data/embed.py) zostają bez linku.
-  const innovationById = new Map((innovations.data ?? []).map((i) => [
-    i.id as string,
-    { title: i.title as string, href: i.slug && i.corpus === "biblioteka" && i.published ? innovationHref(i.slug) : null },
-  ]));
+  const duplicateById = new Map((duplicates.data ?? []).map((d) => [d.id as string, d as unknown as { status_code: string; status: string; municipalities: { name: string } | null }]));
+  const patternById = new Map((patterns.data ?? []).map((p) => [p.id as string, { title: p.title as string, href: patternHref((p.slug as string | null) ?? (p.id as string)) }]));
 
-  const card = need.card;
-  const pii = !!need.raw_text && anonymize(need.raw_text).found;
-  const assignedName = assigned.data?.title as string | undefined;
-  // Jeden zielony przycisk na widok: przypisanie eksperta, a gdy nie ma kogo przypisać — zapis statusu.
-  const canAssign = need.status !== "ekspert" && experts.length > 0;
+  const card = row.card;
+  const pii = !!row.raw_text && anonymize(row.raw_text).found;
+  const assignedName = assigned.data?.name as string | undefined;
+  const signal = effectiveSignal(row);
+  // Jeden zielony przycisk na widok: przypisanie mentora, a gdy nie ma kogo przypisać — zapis statusu.
+  const canAssign = !row.assigned_mentor && mentors.length > 0;
 
   return (
     <article className="max-w-4xl space-y-10">
       <div className="space-y-3">
         <Link href="/panel" className={`inline-flex min-h-12 items-center gap-2 text-lg font-bold ${linkClass}`}>
-          <ArrowLeftIcon aria-hidden className="size-5" /> Wszystkie zgłoszenia
+          <ArrowLeftIcon aria-hidden className="size-5" /> Radar
         </Link>
-        <h1 className="text-3xl font-bold">Zgłoszenie <span className="font-mono tracking-wider">{need.status_code}</span></h1>
+        <h1 className="text-3xl font-bold">{row.title}</h1>
         <p className="text-muted-foreground">
-          {need.gminy ? `${need.gminy.nazwa}, powiat ${need.gminy.powiat}` : "Gmina nieznana"}
-          {" · "}{formatDate(need.created_at)}
-          {" · "}<strong className="text-foreground">{NEED_STATUS_LABELS[need.status]}</strong>
-          {need.synthetic && " · dane syntetyczne"}
+          <span className="font-mono tracking-wider">{row.status_code}</span>
+          {" · "}{row.submission_kind === "nomination" ? "wskazanie" : "zgłoszenie autora"}
+          {" · "}{row.municipalities ? `${row.municipalities.name}, powiat ${row.municipalities.county}` : "gmina nieznana"}
+          {" · "}{formatDate(row.created_at)}
+          {" · "}<strong className="text-foreground">{statusLabel(row.status)}</strong>
+          {row.synthetic && " · dane syntetyczne"}
         </p>
+        <ul className="flex flex-wrap gap-2" aria-label="Sygnał i publikacja">
+          {signal != null && <li><Badge>Sygnał {signal}/100: {signalLevel(signal).label}{row.signal_override != null && " (korekta)"}</Badge></li>}
+          <li><Badge variant="outline">{row.published ? "Opublikowana" : "Nieopublikowana"}</Badge></li>
+          {row.nominations_count > 0 && <li><Badge variant="outline">Wskazania: {row.nominations_count}</Badge></li>}
+        </ul>
+        {row.published && row.slug && (
+          <p><Link href={initiativeHref(row.slug)} className={`font-bold ${linkClass}`}>Zobacz stronę publiczną</Link></p>
+        )}
       </div>
 
       <section aria-labelledby="karta" className="space-y-3">
         <h2 id="karta" className="text-2xl font-bold">Jak zrozumiała to AI</h2>
         <p className="max-w-[68ch] text-lg">{card.summary}</p>
-        <TagList label="Obszary" items={card.areas.map((a) => AREA_LABELS[a])} />
-        <TagList label="Grupy" items={card.groups.map((g) => GROUP_LABELS[g])} />
-        <TagList label="Tematy przekrojowe" items={card.cross.map((c) => CROSS_LABELS[c])} />
-        {card.alreadyTried && <p><strong>Już próbowano:</strong> {card.alreadyTried}</p>}
+        <dl className="grid max-w-[68ch] gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
+          <dt className="font-bold">Problem</dt><dd>{card.problem}</dd>
+          <dt className="font-bold">Rozwiązanie</dt><dd>{card.solution}</dd>
+          {card.effects && (<><dt className="font-bold">Efekty</dt><dd>{card.effects}</dd></>)}
+          {card.beneficiaries && (<><dt className="font-bold">Dla kogo</dt><dd>{card.beneficiaries}</dd></>)}
+          <dt className="font-bold">Etap</dt><dd>{stageLabel(card.stage)}</dd>
+          {card.institutionType && (<><dt className="font-bold">Instytucja</dt><dd>{institutionLabel(card.institutionType)}</dd></>)}
+          <dt className="font-bold">Jasność opisu</dt><dd>{Math.round(card.clarity * 100)} na 100</dd>
+        </dl>
+        <ul className="flex flex-wrap gap-2" aria-label="Dziedziny">{card.domains.map((d) => <li key={d}><DomainBadge domain={d} /></li>)}</ul>
+        <TagList label="Tematy przekrojowe" items={card.cross.map(crossLabel)} />
+        <TagList label="Słowa kluczowe" items={card.keywords} />
       </section>
 
-      <section aria-labelledby="tresc-zgloszenia" className="space-y-3">
-        <h2 id="tresc-zgloszenia" className="text-2xl font-bold">Treść od zgłaszającego</h2>
-        <FieldHint>Pełną treść widzą tylko zgłaszający i administratorzy. Do AI i statystyk trafia wersja bez danych osobowych.</FieldHint>
-        {need.raw_text ? (
-          <p className="max-w-[68ch] rounded-[16px] bg-secondary px-5 py-4 whitespace-pre-wrap">{need.raw_text}</p>
+      <section aria-labelledby="tresc" className="space-y-3">
+        <h2 id="tresc" className="text-2xl font-bold">Treść od autora</h2>
+        <FieldHint>Pełną treść widzą tylko autor i administratorzy. Do AI i statystyk trafia wersja bez danych osobowych.</FieldHint>
+        {row.raw_text ? (
+          <p className="max-w-[68ch] rounded-[16px] bg-secondary px-5 py-4 whitespace-pre-wrap">{row.raw_text}</p>
         ) : (
           <p className="text-muted-foreground">Brak treści.</p>
         )}
         {pii && (
           <div className="space-y-3">
             <Alert title="Może zawierać dane osobowe">
-              <p>W treści są numery, adresy e-mail, adresy, hasła, klucze albo numery kart.Nie przekazuj jej dalej. Jeśli nie są potrzebne, usuń je.</p>
+              <p>W treści są numery, adresy e-mail, adresy, hasła, klucze albo numery kart. Nie przekazuj jej dalej. Jeśli nie są potrzebne, usuń je.</p>
               <p>Imion i nazwisk system nie rozpoznaje — sprawdź je ręcznie.</p>
             </Alert>
             <ActionForm action={removePersonalData} className="space-y-2">
-              <input type="hidden" name="needId" value={need.id} />
+              <input type="hidden" name="initiativeId" value={row.id} />
               <SubmitButton variant="outline" pendingText="Usuwanie…">Usuń dane osobowe z treści</SubmitButton>
             </ActionForm>
           </div>
         )}
       </section>
 
-      <section aria-labelledby="ekspert" className="space-y-3">
-        <h2 id="ekspert" className="text-2xl font-bold">Ekspert</h2>
-        {assignedName && <p>Przypisany ekspert: <strong>{assignedName}</strong></p>}
-        {experts.length === 0 ? (
-          <p className="text-muted-foreground">Brak sugestii — słowa kluczowe zgłoszenia nie pasują do żadnego eksperta.</p>
+      <section aria-labelledby="mentor" className="space-y-3">
+        <h2 id="mentor" className="text-2xl font-bold">Mentor</h2>
+        {assignedName && <p>Przypisany mentor: <strong>{assignedName}</strong></p>}
+        {mentors.length === 0 ? (
+          <p className="text-muted-foreground">Brak sugestii — słowa kluczowe inicjatywy nie pasują do żadnego mentora.</p>
         ) : (
           <ul className="border-t">
-            {experts.map((e, i) => (
-              <li key={e.ref_id} className="flex flex-wrap items-center justify-between gap-3 border-b py-4">
+            {mentors.map((m, i) => (
+              <li key={m.ref_id} className="flex flex-wrap items-center justify-between gap-3 border-b py-4">
                 <div className="min-w-0 flex-1 basis-64">
-                  <p className="font-bold">{e.title}{i === 0 && " (najlepiej pasuje)"}</p>
-                  <p className="line-clamp-2 text-muted-foreground">{e.body}</p>
-                  <p className="text-base text-muted-foreground">Zgodność słów kluczowych {Math.round(e.similarity * 100)} na 100</p>
+                  <p className="font-bold">{m.title}{i === 0 && " (najlepiej pasuje)"}</p>
+                  <p className="line-clamp-2 text-muted-foreground">{m.body}</p>
+                  <p className="text-base text-muted-foreground">Zgodność słów kluczowych {Math.round(m.similarity * 100)} na 100</p>
                 </div>
-                {e.ref_id !== need.assigned_expert && (
-                  <ActionForm action={assignExpert} className="space-y-2">
-                    <input type="hidden" name="needId" value={need.id} />
-                    <input type="hidden" name="expertId" value={e.ref_id} />
-                    <SubmitButton variant={canAssign && i === 0 ? "default" : "outline"} size={canAssign && i === 0 ? "default" : "sm"} aria-label={`Przypisz eksperta: ${e.title}`}>
-                      Przypisz eksperta
+                {m.ref_id !== row.assigned_mentor && (
+                  <ActionForm action={assignMentor} className="space-y-2">
+                    <input type="hidden" name="initiativeId" value={row.id} />
+                    <input type="hidden" name="mentorId" value={m.ref_id} />
+                    <SubmitButton variant={canAssign && i === 0 ? "default" : "outline"} size={canAssign && i === 0 ? "default" : "sm"} aria-label={`Przypisz mentora: ${m.title}`}>
+                      Przypisz mentora
                     </SubmitButton>
                   </ActionForm>
                 )}
@@ -155,25 +168,40 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
         )}
       </section>
 
-      <ThreadSection kind="potrzeba" id={need.id} thread={thread} closed={need.status === "zamkniete"} />
+      <ThreadSection id={row.id} thread={thread} closed={row.status === "archived"} />
 
-      <PartnershipSection partnerships={partnerships} needId={need.id} />
+      <PartnershipSection partnerships={partnerships} initiativeId={row.id} />
+
+      <section aria-labelledby="publikacja" className="space-y-3">
+        <h2 id="publikacja" className="text-2xl font-bold">Publikacja</h2>
+        <p className="max-w-[68ch]">
+          {row.published
+            ? "Inicjatywa jest w publicznej bazie, w API i w „Przenieś do siebie”."
+            : "Inicjatywa jest prywatna: widzą ją tylko autor i zespół. Opublikuj ją po weryfikacji."}
+        </p>
+        <ActionForm action={setPublished}>
+          <input type="hidden" name="initiativeId" value={row.id} />
+          <input type="hidden" name="published" value={row.published ? "false" : "true"} />
+          <SubmitButton variant="outline" pendingText="Zapisywanie…">{row.published ? "Ukryj z publicznej bazy" : "Opublikuj"}</SubmitButton>
+        </ActionForm>
+      </section>
 
       <section aria-labelledby="status" className="space-y-3">
         <h2 id="status" className="text-2xl font-bold">Status</h2>
-        <ActionForm action={updateNeedStatus} className="space-y-6">
-          <input type="hidden" name="needId" value={need.id} />
+        <ActionForm action={updateInitiativeStatus} className="space-y-6">
+          <input type="hidden" name="initiativeId" value={row.id} />
           <fieldset className="space-y-2">
             <legend className="mb-2 text-lg font-bold">Nowy status</legend>
-            <RadioGroup name="status" defaultValue={need.status}>
-              {NEED_STATUSES.map((s) => (
-                <RadioGroupOption key={s} id={`status-${s}`} value={s} label={NEED_STATUS_LABELS[s]} />
-              ))}
+            <RadioGroup name="status" defaultValue={row.status}>
+              {INITIATIVE_STATUSES.map((s) => <RadioGroupOption key={s} id={`status-${s}`} value={s} label={STATUS_LABELS[s]} />)}
             </RadioGroup>
           </fieldset>
           <div className="space-y-2">
-            <Label htmlFor="note">Wiadomość dla zgłaszającego (nieobowiązkowa)</Label>
-            <FieldHint id="note-pomoc">Zobaczy ją na stronie statusu po wpisaniu kodu. Możesz ją wysłać bez zmiany statusu — zastąpi wtedy poprzednią wiadomość przy tym kroku. Nie wpisuj danych osobowych.</FieldHint>
+            <Label htmlFor="note">Wiadomość dla autora (nieobowiązkowa)</Label>
+            <FieldHint id="note-pomoc">
+              Zobaczy ją na stronie statusu po wpisaniu kodu. Możesz ją wysłać bez zmiany statusu. „Wyróżniona” publikuje inicjatywę.
+              Nie wpisuj danych osobowych.
+            </FieldHint>
             <Textarea id="note" name="note" maxLength={1000} aria-describedby="note-pomoc" className="max-w-xl min-h-24" />
           </div>
           <SubmitButton variant={canAssign ? "outline" : "default"}>Zapisz status</SubmitButton>
@@ -185,16 +213,14 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
           <h2 id="duplikaty" className="text-2xl font-bold">Możliwe duplikaty</h2>
           <ul className="border-t">
             {duplicateHits.map((d) => {
-              const row = duplicateById.get(d.ref_id);
+              const dup = duplicateById.get(d.ref_id);
               return (
                 <li key={d.ref_id} className="grid gap-1 border-b py-4">
-                  <p>
-                    <Link href={`/panel/zgloszenia/${d.ref_id}`} className={`font-bold ${linkClass}`}>{d.title}</Link>
-                  </p>
+                  <p><Link href={`/panel/inicjatywy/${d.ref_id}`} className={`font-bold ${linkClass}`}>{d.title}</Link></p>
                   <p className="text-base text-muted-foreground">
-                    {row && <><span className="font-mono tracking-wider">{row.status_code}</span>{" · "}</>}
-                    {row?.gminy?.nazwa ?? "gmina nieznana"}
-                    {row && ` · ${NEED_STATUS_LABELS[row.status]}`}
+                    {dup && <><span className="font-mono tracking-wider">{dup.status_code}</span>{" · "}</>}
+                    {dup?.municipalities?.name ?? "gmina nieznana"}
+                    {dup && ` · ${statusLabel(dup.status)}`}
                     {` · zgodność słów kluczowych ${Math.round(d.similarity * 100)} na 100`}
                   </p>
                 </li>
@@ -204,23 +230,17 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
         </section>
       )}
 
-      <section aria-labelledby="rozwiazania" className="space-y-3">
-        <h2 id="rozwiazania" className="text-2xl font-bold">Rozwiązania pokazane zgłaszającemu</h2>
+      <section aria-labelledby="inspiracje" className="space-y-3">
+        <h2 id="inspiracje" className="text-2xl font-bold">Rozwiązania pokazane autorowi</h2>
         {(matches.data ?? []).length === 0 ? (
-          <p className="text-muted-foreground">Brak dopasowań — to zgłoszenie jest na mapie luk.</p>
+          <p className="text-muted-foreground">Brak dopasowanych sprawdzonych rozwiązań.</p>
         ) : (
           <ul className="border-t">
             {(matches.data ?? []).map((m) => {
-              const innovation = innovationById.get(m.ref_id);
+              const p = patternById.get(m.target_id as string);
               return (
-                <li key={m.ref_id} className="grid gap-1 border-b py-4">
-                  <p className="font-bold">
-                    {innovation?.href ? (
-                      <Link href={innovation.href} className={linkClass}>{innovation.title}</Link>
-                    ) : (
-                      innovation?.title ?? "Innowacja usunięta"
-                    )}
-                  </p>
+                <li key={m.target_id as string} className="grid gap-1 border-b py-4">
+                  <p className="font-bold">{p ? <Link href={p.href} className={linkClass}>{p.title}</Link> : "Pozycja usunięta"}</p>
                   <p className="text-base text-muted-foreground">Dopasowanie {m.fit} na 100</p>
                   {m.why && <p>{m.why}</p>}
                 </li>
@@ -233,7 +253,7 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
       <section aria-labelledby="historia" className="space-y-3">
         <h2 id="historia" className="text-2xl font-bold">Historia zmian</h2>
         {history.length === 0 ? (
-          <p className="text-muted-foreground">Nikt jeszcze nie zmieniał tego zgłoszenia.</p>
+          <p className="text-muted-foreground">Nikt jeszcze nie zmieniał tej inicjatywy.</p>
         ) : (
           <ol className="border-t">
             {history.map((h, i) => (
@@ -246,16 +266,16 @@ export default async function Page(props: PageProps<"/panel/zgloszenia/[id]">) {
       </section>
 
       <section aria-labelledby="usun" className="max-w-2xl space-y-3 border-t pt-8">
-        <h2 id="usun" className="text-2xl font-bold">Usuń zgłoszenie</h2>
+        <h2 id="usun" className="text-2xl font-bold">Usuń inicjatywę</h2>
         <DeleteForm
-          entity="need"
-          id={need.id}
-          label={`zgłoszenie ${need.status_code}`}
+          entity="inicjatywa"
+          id={row.id}
+          label={`inicjatywę ${row.status_code}`}
           consequence={
             <>
-              Znikną też rozmowa, dopasowania i powiadomienia, a kod{" "}
-              <span className="font-mono tracking-wider">{need.status_code}</span> przestanie działać. Pomysły zgłoszone
-              do tej potrzeby zostaną. Używaj do zgłoszeń testowych i spamu — prawdziwe zgłoszenie lepiej zamknąć.
+              Znikną też rozmowa, dopasowania, adopcje i powiadomienia, a kod{" "}
+              <span className="font-mono tracking-wider">{row.status_code}</span> przestanie działać. Używaj do zgłoszeń
+              testowych i spamu — prawdziwe zgłoszenie lepiej zamknąć.
             </>
           }
         />
@@ -278,10 +298,13 @@ function TagList({ label, items }: { label: string; items: string[] }) {
 
 function describeChange(h: AuditRow): string {
   const d = h.diff ?? {};
-  const to = d.to as keyof typeof NEED_STATUS_LABELS | undefined;
   const note = d.note ? ` — „${d.note}”` : "";
-  if (h.action === "need.remove_pii") return "Usunięto dane osobowe z treści";
-  if (h.action === "need.note") return `Wiadomość dla zgłaszającego${note}`;
-  if (to) return `Status: ${NEED_STATUS_LABELS[to]}${note}`;
-  return h.action;
+  switch (h.action) {
+    case "initiative.remove_pii": return "Usunięto dane osobowe z treści";
+    case "initiative.note": return `Wiadomość dla autora${note}`;
+    case "initiative.publish": return "Opublikowano";
+    case "initiative.unpublish": return "Ukryto z publicznej bazy";
+    case "initiative.assign_mentor": return `Przypisano mentora${note}`;
+    default: return d.to ? `Status: ${statusLabel(String(d.to))}${note}` : h.action;
+  }
 }

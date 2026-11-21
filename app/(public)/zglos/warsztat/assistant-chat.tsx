@@ -2,23 +2,23 @@
 
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { innovationHref } from "@/lib/knowledge/hrefs";
+import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldHint } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { AssistantResponse, Fiszka } from "@/lib/schemas";
+import type { AssistantResponse, Sketch } from "@/lib/schemas";
 
 type Message = { role: "user" | "assistant"; content: string };
 
 const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
 /**
- * Asystent Pracowni: pyta, podsuwa kierunki i sprawdza nowość tym samym silnikiem co Dopasuj.
+ * Asystent warsztatu: pyta, podsuwa kierunki i sprawdza nowość wśród rozwiązań i opublikowanych inicjatyw.
  * Każda odpowiedź idzie do aria-live, więc czytnik ekranu ją odczyta.
  */
-export function AssistantChat({ fiszka }: { fiszka: () => Fiszka | undefined }) {
+export function AssistantChat({ sketch }: { sketch: () => Sketch | undefined }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [similar, setSimilar] = useState<AssistantResponse["similar"]>([]);
   const [draft, setDraft] = useState("");
@@ -38,7 +38,7 @@ export function AssistantChat({ fiszka }: { fiszka: () => Fiszka | undefined }) 
       const res = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history.slice(-20), fiszka: fiszka() }),
+        body: JSON.stringify({ messages: history.slice(-20), sketch: sketch() }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Asystent nie odpowiedział");
@@ -75,13 +75,12 @@ export function AssistantChat({ fiszka }: { fiszka: () => Fiszka | undefined }) 
             <ul className="list-disc space-y-1 pl-6">
               {similar.map((s) => (
                 <li key={`${s.kind}:${s.id}`}>
-                  {s.kind === "innowacja" && s.slug ? (
-                    <Link href={innovationHref(s.slug)} className={linkClass}>{s.title}</Link>
-                  ) : s.kind === "innowacja" ? (
-                    <span>{s.title}</span>
+                  {s.slug ? (
+                    <Link href={s.kind === "pattern" ? patternHref(s.slug) : initiativeHref(s.slug)} className={linkClass}>{s.title}</Link>
                   ) : (
-                    <span>{s.title} <span className="text-muted-foreground">(pomysł w toku)</span></span>
+                    <span>{s.title}</span>
                   )}
+                  <span className="text-muted-foreground"> ({s.kind === "pattern" ? "sprawdzone rozwiązanie z Polski" : "inicjatywa z regionu"})</span>
                 </li>
               ))}
             </ul>

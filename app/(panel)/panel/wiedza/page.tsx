@@ -6,19 +6,18 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
 import { knowledge } from "@/lib/knowledge";
-import { canUseHybridSearch } from "@/lib/knowledge/indexing";
 import { MATERIAL_KIND_LABELS } from "@/lib/knowledge/labels";
-import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
+import { domainLabel } from "@/lib/taxonomy";
 import { reindexAll } from "./actions";
 import { panelTitle } from "@/lib/brand";
 
 export const metadata: Metadata = { title: panelTitle("Zarządzaj wiedzą"), robots: { index: false } };
 
 const TABS = [
-  { key: "innowacja", label: "Innowacje", add: "Dodaj innowację" },
+  { key: "rozwiazanie", label: "Sprawdzone rozwiązania", add: "Dodaj rozwiązanie" },
   { key: "fakt", label: "Fakty", add: "Dodaj fakt" },
   { key: "material", label: "Materiały", add: "Dodaj materiał" },
-  { key: "obszar", label: "Opisy obszarów", add: null },
+  { key: "dziedzina", label: "Opisy dziedzin", add: null },
 ] as const;
 type Tab = (typeof TABS)[number]["key"];
 
@@ -37,11 +36,11 @@ const editLink = (kind: Tab, id: string, title: string) => (
 export default async function Page(props: PageProps<"/panel/wiedza">) {
   await requireAdmin("/panel/wiedza");
   const sp = await props.searchParams;
-  const tab: Tab = TABS.find((t) => t.key === first(sp.rodzaj))?.key ?? "innowacja";
+  const tab: Tab = TABS.find((t) => t.key === first(sp.rodzaj))?.key ?? "rozwiazanie";
   const current = TABS.find((t) => t.key === tab)!;
   const all = { all: true };
-  const [innovations, facts, materials, areas, blocker] = await Promise.all([
-    knowledge.innovations({}, all), knowledge.facts(undefined, all), knowledge.materials({}, all), knowledge.areas(all),
+  const [patterns, facts, materials, domains, blocker] = await Promise.all([
+    knowledge.patterns({}, all), knowledge.facts(undefined, all), knowledge.materials({}, all), knowledge.domains(all),
     knowledge.store.writeBlocker(),
   ]);
   const cellHead = "p-3 text-left";
@@ -52,8 +51,8 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Zarządzaj wiedzą</h1>
         <p className="max-w-[44rem] text-lg">
-          Dodawaj i poprawiaj innowacje, fakty, materiały i opisy obszarów. Ukryte rekordy widzisz tylko Ty.
-          Po zapisie innowacja trafia do wyszukiwarki po kilku sekundach.
+          Dodawaj i poprawiaj sprawdzone rozwiązania, fakty, materiały i opisy dziedzin. Ukryte rekordy widzisz tylko Ty.
+          Po zapisie rozwiązanie trafia do wyszukiwarki po kilku sekundach.
         </p>
         {first(sp.usunieto) && <Alert tone="success" title="Usunięto">Rekord został usunięty.</Alert>}
         {first(sp.indeks) && <Alert tone="success" title="Odświeżam indeks">Wyszukiwarka przelicza wszystkie wpisy. To potrwa kilka minut.</Alert>}
@@ -86,7 +85,7 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
         {current.add && (
           <Button asChild><Link href={`/panel/wiedza/${tab}/nowy`}><PlusIcon aria-hidden />{current.add}</Link></Button>
         )}
-        {canUseHybridSearch() && (
+        {knowledge.store.mode === "baza" && (
           <form action={reindexAll}>
             <Button type="submit" variant="outline"><ArrowPathIcon aria-hidden />Odśwież indeks wyszukiwarki</Button>
           </form>
@@ -96,21 +95,21 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
       <div role="region" aria-labelledby="tabela-rekordow" tabIndex={0} className="relative overflow-x-auto">
         <table className="w-full border-collapse text-base">
           <caption id="tabela-rekordow" className="sr-only">{current.label}: lista rekordów</caption>
-          {tab === "innowacja" && (
+          {tab === "rozwiazanie" && (
             <>
               <thead><tr className="border-b border-border-strong">
-                <th scope="col" className={cellHead}>Nazwa</th><th scope="col" className={cellHead}>Dla kogo</th>
+                <th scope="col" className={cellHead}>Nazwa</th><th scope="col" className={cellHead}>Dziedziny</th>
                 <th scope="col" className={cellHead}>Film</th><th scope="col" className={cellHead}>Status</th>
                 <th scope="col" className={cellHead}><span className="sr-only">Akcje</span></th>
               </tr></thead>
               <tbody>
-                {innovations.map((i) => (
+                {patterns.map((i) => (
                   <tr key={i.id} className="border-b border-border">
                     <th scope="row" className={`${cell} text-left font-normal`}>{i.title}</th>
-                    <td className={cell}>{i.groups.map((g) => GROUP_LABELS[g]).join(", ")}</td>
+                    <td className={cell}>{i.domains.map(domainLabel).join(", ")}{i.domainsAuto && " (automatycznie)"}</td>
                     <td className={cell}>{i.video ? "tak" : "nie"}</td>
                     <td className={cell}><Status published={i.published} /></td>
-                    <td className={cell}>{editLink("innowacja", i.id, i.title)}</td>
+                    <td className={cell}>{editLink("rozwiazanie", i.id, i.title)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -119,7 +118,7 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
           {tab === "fakt" && (
             <>
               <thead><tr className="border-b border-border-strong">
-                <th scope="col" className={cellHead}>Liczba</th><th scope="col" className={cellHead}>Obszar</th>
+                <th scope="col" className={cellHead}>Liczba</th><th scope="col" className={cellHead}>Dziedzina</th>
                 <th scope="col" className={cellHead}>Źródło</th><th scope="col" className={cellHead}>Status</th>
                 <th scope="col" className={cellHead}><span className="sr-only">Akcje</span></th>
               </tr></thead>
@@ -127,7 +126,7 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
                 {facts.map((f) => (
                   <tr key={f.id} className="border-b border-border">
                     <th scope="row" className={`${cell} text-left font-normal`}><strong>{f.displayValue}</strong> — {f.sentence}</th>
-                    <td className={cell}>{AREA_LABELS[f.area]}</td>
+                    <td className={cell}>{domainLabel(f.domain)}</td>
                     <td className={cell}>{f.isExample ? <strong>przykład</strong> : `${f.sourceTitle ?? "brak"}${f.sourcePage ? `, s. ${f.sourcePage}` : ""}`}</td>
                     <td className={cell}><Status published={f.published} /></td>
                     <td className={cell}>{editLink("fakt", f.id, f.displayValue)}</td>
@@ -154,19 +153,19 @@ export default async function Page(props: PageProps<"/panel/wiedza">) {
               </tbody>
             </>
           )}
-          {tab === "obszar" && (
+          {tab === "dziedzina" && (
             <>
               <thead><tr className="border-b border-border-strong">
-                <th scope="col" className={cellHead}>Obszar</th><th scope="col" className={cellHead}>Zdanie na kafel</th>
+                <th scope="col" className={cellHead}>Dziedzina</th><th scope="col" className={cellHead}>Zdanie na kafel</th>
                 <th scope="col" className={cellHead}>Status</th><th scope="col" className={cellHead}><span className="sr-only">Akcje</span></th>
               </tr></thead>
               <tbody>
-                {areas.map((a) => (
+                {domains.map((a) => (
                   <tr key={a.key} className="border-b border-border">
                     <th scope="row" className={`${cell} text-left font-normal`}>{a.name}</th>
                     <td className={cell}>{a.lead}</td>
                     <td className={cell}><Status published={a.published} /></td>
-                    <td className={cell}>{editLink("obszar", a.key, a.name)}</td>
+                    <td className={cell}>{editLink("dziedzina", a.key, a.name)}</td>
                   </tr>
                 ))}
               </tbody>

@@ -1,38 +1,34 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { cn } from "cn";
-import { InnovationList } from "@/components/knowledge/tiles";
+import { PatternList } from "@/components/knowledge/tiles";
 import { knowledge } from "@/lib/knowledge";
 import { TYPE_LABELS } from "@/lib/knowledge/labels";
-import { INNOVATION_TYPES, type AreaKey, type GroupKey, type InnovationType } from "@/lib/knowledge/types";
+import { INNOVATION_TYPES, type InnovationType } from "@/lib/knowledge/types";
 import { plural } from "@/lib/pl";
-import { GROUPS, MWS_AREAS } from "@/lib/schemas";
-import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
+import { DOMAIN_KEYS, domainLabel, type DomainKey } from "@/lib/taxonomy";
 
-export type LibraryParams = { area?: AreaKey; group?: GroupKey; types: InnovationType[]; page: number };
+export type PatternParams = { domain?: DomainKey; types: InnovationType[]; page: number };
 
 const PER_PAGE = 15;
 
-export function parseLibraryParams(sp: Record<string, string | string[] | undefined>): LibraryParams {
+export function parsePatternParams(sp: Record<string, string | string[] | undefined>): PatternParams {
   const one = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]) ?? "";
   const many = (k: string) => (Array.isArray(sp[k]) ? sp[k] : sp[k] ? [sp[k]] : []) as string[];
-  const area = one("obszar");
-  const group = one("dla");
+  const domain = one("dziedzina");
   return {
-    area: (MWS_AREAS as readonly string[]).includes(area) ? (area as AreaKey) : undefined,
-    group: (GROUPS as readonly string[]).includes(group) ? (group as GroupKey) : undefined,
+    domain: (DOMAIN_KEYS as readonly string[]).includes(domain) ? (domain as DomainKey) : undefined,
     types: many("typ").filter((t): t is InnovationType => (INNOVATION_TYPES as readonly string[]).includes(t)),
     page: Math.max(1, Math.floor(Number(one("strona"))) || 1),
   };
 }
 
-function pageHref(p: LibraryParams, page: number): string {
-  const q = new URLSearchParams({ tab: "library" });
-  if (p.area) q.set("obszar", p.area);
-  if (p.group) q.set("dla", p.group);
+function pageHref(p: PatternParams, page: number): string {
+  const q = new URLSearchParams({ tab: "rozwiazania" });
+  if (p.domain) q.set("dziedzina", p.domain);
   p.types.forEach((t) => q.append("typ", t));
   if (page > 1) q.set("strona", String(page));
-  return `/biblioteka?${q}#dzialy`;
+  return `/wiedza?${q}#dzialy`;
 }
 
 /** Numery stron do pokazania: pierwsza, ostatnia i sąsiedzi bieżącej; null to przerwa („…”). */
@@ -50,10 +46,10 @@ function StepLink({ href, className, children }: { href: string | null; classNam
   return <Link href={href} scroll={false} className={className}>{children}</Link>;
 }
 
-function Pagination({ params: p, current, total }: { params: LibraryParams; current: number; total: number }) {
+function Pagination({ params: p, current, total }: { params: PatternParams; current: number; total: number }) {
   const step = "inline-flex min-h-12 items-center gap-1 rounded-full px-4 text-lg hover:bg-secondary";
   return (
-    <nav aria-label="Strony listy innowacji">
+    <nav aria-label="Strony listy rozwiązań">
       <ul className="flex flex-wrap items-center gap-1">
         <li>
           <StepLink href={current > 1 ? pageHref(p, current - 1) : null} className={step}>
@@ -90,24 +86,28 @@ function Pagination({ params: p, current, total }: { params: LibraryParams; curr
 }
 
 /**
- * Biblioteka innowacji: lista i licznik w role="status". Bez osobnego formularza filtrów — „dla kogo” wybiera się
- * przyciskami „Szukam rozwiązania dla…” nad zakładkami; obszar i rodzaj nadal działają z adresu (?obszar=, ?typ=).
+ * Sprawdzone rozwiązania z Polski (Biblioteka Innowacji Społecznych w Krakowie): lista i licznik w role="status".
+ * Dziedzinę wybiera się przyciskami nad zakładkami; dziedzina i rodzaj działają z adresu (?dziedzina=, ?typ=).
  */
-export async function LibraryTab({ params: p }: { params: LibraryParams }) {
-  const items = await knowledge.innovations({ area: p.area, group: p.group, types: p.types });
+export async function PatternsTab({ params: p }: { params: PatternParams }) {
+  const items = await knowledge.patterns({ domain: p.domain, types: p.types });
   const n = items.length;
   const pages = Math.max(1, Math.ceil(n / PER_PAGE));
   const current = Math.min(p.page, pages);
   const shown = items.slice((current - 1) * PER_PAGE, current * PER_PAGE);
   // Aktywne filtry z adresu — bez formularza trzeba je pokazać i dać sposób, żeby je wyczyścić.
-  const filters = [p.group && GROUP_LABELS[p.group].toLowerCase(), p.area && AREA_LABELS[p.area].toLowerCase(), p.types.length > 0 && p.types.map((t) => TYPE_LABELS[t].toLowerCase()).join(", ")]
+  const filters = [p.domain && domainLabel(p.domain).toLowerCase(), p.types.length > 0 && p.types.map((t) => TYPE_LABELS[t].toLowerCase()).join(", ")]
     .filter((f): f is string => Boolean(f));
 
   return (
-    <section aria-label="Biblioteka innowacji" className="space-y-8">
+    <section aria-label="Sprawdzone rozwiązania z Polski" className="space-y-8">
+      <p className="max-w-[44rem] text-lg">
+        Innowacje społeczne sprawdzone w innych regionach. Opisy pochodzą z Biblioteki Innowacji Społecznych Regionalnego
+        Ośrodka Polityki Społecznej w Krakowie — źródło jest przy każdej pozycji.
+      </p>
       <p role="status" className="text-lg">
         <strong>
-          {n === 0 ? "Brak innowacji dla wybranych filtrów." : `Znaleziono ${n} ${plural(n, "innowację", "innowacje", "innowacji")}`}
+          {n === 0 ? "Brak rozwiązań dla wybranych filtrów." : `Znaleziono ${n} ${plural(n, "rozwiązanie", "rozwiązania", "rozwiązań")}`}
           {n > 0 && filters.length > 0 && ` · ${filters.join(", ")}`}
           {n > 0 && "."}
           {pages > 1 && ` Strona ${current} z ${pages}.`}
@@ -115,14 +115,14 @@ export async function LibraryTab({ params: p }: { params: LibraryParams }) {
         {filters.length > 0 && (
           <>
             {" "}
-            <Link href="/biblioteka?tab=library#dzialy" scroll={false} className="underline decoration-1 underline-offset-4 hover:decoration-2">
+            <Link href="/wiedza?tab=rozwiazania#dzialy" scroll={false} className="underline decoration-1 underline-offset-4 hover:decoration-2">
               Pokaż wszystkie
             </Link>
           </>
         )}
       </p>
-      <div id="lista-innowacji">
-        <InnovationList items={shown} />
+      <div id="lista-rozwiazan">
+        <PatternList items={shown} />
       </div>
       {pages > 1 && <Pagination params={p} current={current} total={pages} />}
     </section>

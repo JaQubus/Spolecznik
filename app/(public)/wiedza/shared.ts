@@ -1,9 +1,5 @@
-import { GROUPS } from "@/lib/schemas";
-
-/** Pierwsza wartość parametru z adresu (?dla=…&q=…), przycięta. */
+/** Pierwsza wartość parametru z adresu (?dziedzina=…&q=…), przycięta. */
 export const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
-
-export const isGroup = (v: string): v is (typeof GROUPS)[number] => (GROUPS as readonly string[]).includes(v);
 
 /** Link w treści: pogrubiony i podkreślony (kolor nie jest jedynym wyróżnikiem). */
 export const LINK = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";

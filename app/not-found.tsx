@@ -4,8 +4,8 @@ import { brand } from "@/lib/brand";
 
 // Szablon tytułu z layoutu nie obejmuje not-found, więc tytuł jest pełny.
 const LINKS = [
-  { href: "/opisz", label: "Opisz problem" },
-  { href: "/biblioteka", label: "Biblioteka i wiedza" },
+  { href: "/zglos", label: "Zgłoś inicjatywę" },
+  { href: "/wiedza", label: "Wiedza" },
   { href: "/status", label: "Sprawdź status zgłoszenia" },
 ];
 

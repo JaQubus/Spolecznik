@@ -4,21 +4,21 @@ import Link from "next/link";
 import { cn } from "cn";
 import { NoDatabase } from "@/components/layout/no-database";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
-import { LINK as linkClass, first } from "../shared";
+import { LINK as linkClass, first } from "../../wiedza/shared";
 import { KondycjaView } from "./kondycja-view";
 import { region } from "@/lib/brand";
 
 export const metadata: Metadata = { title: `Kondycja ${region.genitive}` };
 
-export default async function Page(props: PageProps<"/biblioteka/kondycja">) {
+export default async function Page(props: PageProps<"/mapa/kondycja">) {
   const params = await props.searchParams;
   const layer = first(params.poziom) === "powiaty" ? "powiaty" : "gminy";
 
   return (
     <div className="space-y-10">
       <p>
-        <Link href="/biblioteka" className={cn(linkClass, "inline-flex min-h-12 items-center gap-2")}>
-          <ArrowLeftIcon aria-hidden className="size-5" /> Biblioteka i wiedza
+        <Link href="/wiedza" className={cn(linkClass, "inline-flex min-h-12 items-center gap-2")}>
+          <ArrowLeftIcon aria-hidden className="size-5" /> Wiedza
         </Link>
       </p>
       <header className="space-y-3">

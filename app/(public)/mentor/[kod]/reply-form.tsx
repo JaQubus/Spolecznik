@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { replyAsExpert, type ReplyResult } from "../actions";
+import { replyAsMentor, type ReplyResult } from "../actions";
 
-/** Odpowiedź eksperta: wynik ogłaszany w role="status", pole czyszczone po wysłaniu. */
+/** Odpowiedź mentora: wynik ogłaszany w role="status", pole czyszczone po wysłaniu. */
 export function ReplyForm({ code, name }: { code: string; name: string }) {
   const form = useRef<HTMLFormElement>(null);
   const [state, action, pending] = useActionState(async (prev: ReplyResult, fd: FormData) => {
-    const result = await replyAsExpert(prev, fd);
+    const result = await replyAsMentor(prev, fd);
     if (result?.ok) form.current?.reset();
     return result;
   }, null);

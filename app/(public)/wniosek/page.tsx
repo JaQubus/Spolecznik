@@ -18,10 +18,10 @@ async function activeCall(): Promise<ActiveCall | null> {
   await connection();
   if (!isSupabaseConfigured()) return null;
   const today = todayInPoland();
-  // Kilka otwartych naborów: najpierw ten, który kończy się najwcześniej (tak samo jak lista w /pomysl),
+  // Kilka otwartych naborów: najpierw ten, który kończy się najwcześniej (tak samo jak lista w /zglos/warsztat),
   // i tylko z gotowym formularzem; bez order() Postgres oddawał je w przypadkowej kolejności.
   const { data, error } = await createAdminClient()
-    .from("calls")
+    .from("programs")
     .select("id, title, form_schema")
     .eq("active", true)
     .or(`opens_at.is.null,opens_at.lte.${today}`)

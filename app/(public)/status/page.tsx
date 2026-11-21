@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { MyNeeds } from "@/components/rozmowa/my-needs";
+import { MyInitiatives } from "@/components/rozmowa/my-initiatives";
 import { Button } from "@/components/ui/button";
 import { FieldHint } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { rememberedThreads, type MyNeed } from "@/lib/threads";
+import { rememberedThreads, type MyInitiative } from "@/lib/threads";
 import { brand } from "@/lib/brand";
 
 export const metadata = { title: "Sprawdź status" };
@@ -21,7 +21,7 @@ export default async function Page() {
   // i build robi z /status stronę statyczną — lista „moje zgłoszenia” nigdy by się nie pokazała.
   await connection();
   // Kto zapomniał kodu, zobaczy zgłoszenia wysłane z tej przeglądarki. Bez bazy — po prostu sam formularz.
-  const mine: MyNeed[] = await rememberedThreads().catch((e) => {
+  const mine: MyInitiative[] = await rememberedThreads().catch((e) => {
     console.error("[status] moje zgłoszenia:", e);
     return [];
   });
@@ -41,7 +41,7 @@ export default async function Page() {
         </form>
       </section>
 
-      {mine.length > 0 && <MyNeeds mine={mine} primary="status" />}
+      {mine.length > 0 && <MyInitiatives mine={mine} primary="status" />}
     </div>
   );
 }

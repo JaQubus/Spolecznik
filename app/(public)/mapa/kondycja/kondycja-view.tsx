@@ -1,15 +1,15 @@
 import { CheckIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { innovationHref } from "@/lib/knowledge/hrefs";
+import { domainHref, patternHref } from "@/lib/knowledge/hrefs";
 import { cn } from "cn";
 import { MAP_CATEGORIES } from "@/components/knowledge/map-categories";
 import { Alert } from "@/components/ui/alert";
-import { innovationsForArea } from "@/lib/innovations";
+import { knowledge } from "@/lib/knowledge";
 import { classify, ranked, withUnit, type LayerKey, type MapData, type MapIndicator, type MapUnit } from "@/lib/knowledge/map";
 import { formatNumber, plural } from "@/lib/pl";
-import { AREA_LABELS } from "@/lib/taxonomy";
+import { DOMAINS, domainLabel } from "@/lib/taxonomy";
 import mapJson from "@/public/mapa/region.json";
-import { LINK as linkClass } from "../shared";
+import { LINK as linkClass } from "../../wiedza/shared";
 import { FocusHeading } from "@/components/a11y/focus-heading";
 import { IndicatorSelect } from "./indicator-select";
 import type { HoverDetail } from "@/components/maps/map-hover";
@@ -23,7 +23,7 @@ import { UnitPicker } from "./unit-picker";
 const DATA = mapJson as unknown as MapData;
 const LAYERS: LayerKey[] = ["gminy", "powiaty"];
 const TOP = 5;
-/** Wskaźnik pokazywany, gdy w adresie nie ma żadnego: najbliższy temu, czym zajmuje się ROPS. */
+/** Wskaźnik pokazywany, gdy w adresie nie ma żadnego. */
 const DEFAULT_INDICATOR = "beneficjenci";
 const WORDS = {
   gminy: { gen: "gmin", card: "gminy", only: "tylko gminy" },
@@ -33,7 +33,7 @@ const WORDS = {
 const otherLayer = (l: LayerKey): LayerKey => (l === "gminy" ? "powiaty" : "gminy");
 
 export const kondycjaHref = (layer: LayerKey, indicator: string, id?: string | null) =>
-  `/biblioteka/kondycja?poziom=${layer}&wskaznik=${indicator}${id ? `&id=${id}#karta` : ""}`;
+  `/mapa/kondycja?poziom=${layer}&wskaznik=${indicator}${id ? `&id=${id}#karta` : ""}`;
 
 /** Wybrana jednostka po przełączeniu poziomu: gmina → jej powiat (pierwsze 4 cyfry TERYT); z powiatu do gmin wybór znika. */
 const carryId = (to: LayerKey, id: string | undefined) => (to === "powiaty" && id ? id.slice(0, 4) : null);
@@ -101,7 +101,7 @@ function resolve(layer: LayerKey, key: string | undefined) {
 }
 
 /**
- * Kondycja Małopolski: przełącznik gminy / powiaty, kategorie wskaźników (te same na obu poziomach),
+ * Kondycja regionu: przełącznik gminy / powiaty, kategorie wskaźników (te same na obu poziomach),
  * mapa, pierwsza piątka i karta terytorium po kliknięciu.
  */
 export async function KondycjaView({ layer, requested, selectedId }: { layer: LayerKey; requested?: string; selectedId?: string }) {
@@ -227,10 +227,10 @@ export async function KondycjaView({ layer, requested, selectedId }: { layer: La
           <p role="status" className="max-w-2xl text-lg">
             {indicator.question} Dane za {indicator.source.year} rok, {L.units.length} {words.gen}.
           </p>
-          {indicator.area && (
+          {indicator.domain && (
             <p>
-              <Link href={`/biblioteka/obszar/${indicator.area.replace(/_/g, "-")}`} className={`inline-flex min-h-12 items-center ${linkClass}`}>
-                Zobacz rozwiązania: {AREA_LABELS[indicator.area]}
+              <Link href={domainHref(DOMAINS[indicator.domain].slug)} className={`inline-flex min-h-12 items-center ${linkClass}`}>
+                Zobacz rozwiązania: {domainLabel(indicator.domain)}
               </Link>
             </p>
           )}
@@ -318,7 +318,7 @@ export async function KondycjaView({ layer, requested, selectedId }: { layer: La
 
 /**
  * Karta terytorium po kliknięciu: wybrany wskaźnik z miejscem w rankingu, w czym jednostka najbardziej
- * odstaje od reszty, cała kategoria i rozwiązania z Biblioteki dla obszaru. Gmina linkuje do danych swojego powiatu.
+ * odstaje od reszty, cała kategoria i sprawdzone rozwiązania z dziedziny wskaźnika. Gmina linkuje do danych swojego powiatu.
  */
 async function TerritoryCard({ layer, unit, indicator }: { layer: LayerKey; unit: MapUnit; indicator: MapIndicator }) {
   const L = DATA.layers[layer];
@@ -339,8 +339,8 @@ async function TerritoryCard({ layer, unit, indicator }: { layer: LayerKey; unit
     .filter((s) => s != null && s.edge < 3 && s.place.ties <= 2)
     .sort((a, b) => a!.edge - b!.edge)
     .slice(0, 5) as { i: MapIndicator; place: Place }[];
-  const area = indicator.area ?? inCategory.find((i) => i.area)?.area ?? null;
-  const innovations = area ? await innovationsForArea(area, []) : [];
+  const domain = indicator.domain ?? inCategory.find((i) => i.domain)?.domain ?? null;
+  const patterns = domain ? (await knowledge.patterns({ domain })).slice(0, 3) : [];
   const powiat = layer === "gminy" ? DATA.layers.powiaty.units.find((p) => p.id === unit.id.slice(0, 4)) : null;
 
   return (
@@ -405,14 +405,14 @@ async function TerritoryCard({ layer, unit, indicator }: { layer: LayerKey; unit
         </p>
       )}
 
-      {area && (
+      {domain && (
         <div className="space-y-3">
-          <h3 className="text-xl font-bold">Rozwiązania z Biblioteki: {AREA_LABELS[area].toLowerCase()}</h3>
-          {innovations.length ? (
+          <h3 className="text-xl font-bold">Sprawdzone rozwiązania: {domainLabel(domain).toLowerCase()}</h3>
+          {patterns.length ? (
             <ul className="max-w-3xl space-y-2">
-              {innovations.map((i) => (
+              {patterns.map((i) => (
                 <li key={i.id}>
-                  <Link href={innovationHref(i.slug ?? i.id)} className={linkClass}>{i.title}</Link>
+                  <Link href={patternHref(i.slug ?? i.id)} className={linkClass}>{i.title}</Link>
                   {i.solution && <p className="line-clamp-2 text-base text-muted-foreground">{i.solution}</p>}
                 </li>
               ))}
@@ -421,8 +421,8 @@ async function TerritoryCard({ layer, unit, indicator }: { layer: LayerKey; unit
             <p>W Bibliotece nie ma jeszcze rozwiązań dla tego tematu.</p>
           )}
           <p>
-            <Link href={`/biblioteka/obszar/${area.replace(/_/g, "-")}`} className={`inline-flex min-h-12 items-center ${linkClass}`}>
-              Wszystkie rozwiązania: {AREA_LABELS[area].toLowerCase()}
+            <Link href={domainHref(DOMAINS[domain].slug)} className={`inline-flex min-h-12 items-center ${linkClass}`}>
+              Wszystkie rozwiązania: {domainLabel(domain).toLowerCase()}
             </Link>
           </p>
         </div>

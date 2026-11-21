@@ -1,7 +1,7 @@
 import type { MapData } from "@/lib/knowledge/map";
 import mapJson from "@/public/mapa/region.json";
 
-// Dekoracyjne tło banera „Kondycja Małopolski” na /biblioteka: gminy w pięciu odcieniach (kwintyle udziału osób 65+).
+// Dekoracyjne tło banera mapy kondycji regionu na /wiedza: gminy w pięciu odcieniach (kwintyle udziału osób 65+).
 // Osobny plik zamiast SVG w stronie — granice gmin to ~70 KB, a tak przeglądarka pobiera je raz i trzyma w pamięci.
 export const dynamic = "force-static";
 
