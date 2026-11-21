@@ -11,8 +11,8 @@ import { listPublicInitiatives, publicInitiativesAvailable } from "@/lib/initiat
 import { initiativeHref } from "@/lib/knowledge/hrefs";
 import { plural } from "@/lib/pl";
 import {
-  DOMAIN_KEYS, domainLabel, INSTITUTION_KEYS, institutionLabel, signalLevel, STAGE_KEYS, stageLabel,
-  type DomainKey, type InstitutionKey, type StageKey,
+  DOMAIN_KEYS, domainLabel, INNOVATION_KIND_KEYS, innovationKindLabel, INSTITUTION_KEYS, institutionLabel, SECTOR_KEYS, sectorLabel,
+  signalLevel, STAGE_KEYS, stageLabel, type DomainKey, type InnovationKindKey, type InstitutionKey, type SectorKey, type StageKey,
 } from "@/lib/taxonomy";
 import { region } from "@/lib/brand";
 
@@ -28,7 +28,9 @@ export default async function Page(props: PageProps<"/inicjatywy">) {
   const domain = pick<DomainKey>(DOMAIN_KEYS, one(sp.dziedzina));
   const institution = pick<InstitutionKey>(INSTITUTION_KEYS, one(sp.instytucja));
   const stage = pick<StageKey>(STAGE_KEYS, one(sp.etap));
-  const items = await listPublicInitiatives({ domain, institution, stage });
+  const kind = pick<InnovationKindKey>(INNOVATION_KIND_KEYS, one(sp.typ));
+  const sector = pick<SectorKey>(SECTOR_KEYS, one(sp.sektor));
+  const items = await listPublicInitiatives({ domain, institution, stage, kind, sector });
   const n = items.length;
 
   return (
@@ -40,22 +42,36 @@ export default async function Page(props: PageProps<"/inicjatywy">) {
         </p>
       </header>
 
-      <Form action="/inicjatywy" className="flex flex-col gap-6 rounded-[16px] bg-secondary p-5 md:flex-row md:items-end">
-        <div className="flex flex-1 flex-col gap-2">
+      <Form action="/inicjatywy" className="flex flex-col gap-6 rounded-[16px] bg-secondary p-5 md:flex-row md:flex-wrap md:items-end">
+        <div className="flex flex-1 flex-col gap-2 md:min-w-56">
+          <Label htmlFor="f-typ">Typ innowacji</Label>
+          <NativeSelect id="f-typ" name="typ" defaultValue={kind ?? ""}>
+            <option value="">Wszystkie typy</option>
+            {INNOVATION_KIND_KEYS.map((k) => <option key={k} value={k}>{innovationKindLabel(k)}</option>)}
+          </NativeSelect>
+        </div>
+        <div className="flex flex-1 flex-col gap-2 md:min-w-56">
+          <Label htmlFor="f-sektor">Sektor PCI</Label>
+          <NativeSelect id="f-sektor" name="sektor" defaultValue={sector ?? ""}>
+            <option value="">Wszystkie sektory</option>
+            {SECTOR_KEYS.map((k) => <option key={k} value={k}>{sectorLabel(k)}</option>)}
+          </NativeSelect>
+        </div>
+        <div className="flex flex-1 flex-col gap-2 md:min-w-56">
           <Label htmlFor="f-dziedzina">Dziedzina</Label>
           <NativeSelect id="f-dziedzina" name="dziedzina" defaultValue={domain ?? ""}>
             <option value="">Wszystkie dziedziny</option>
             {DOMAIN_KEYS.map((d) => <option key={d} value={d}>{domainLabel(d)}</option>)}
           </NativeSelect>
         </div>
-        <div className="flex flex-1 flex-col gap-2">
+        <div className="flex flex-1 flex-col gap-2 md:min-w-56">
           <Label htmlFor="f-instytucja">Typ instytucji</Label>
           <NativeSelect id="f-instytucja" name="instytucja" defaultValue={institution ?? ""}>
             <option value="">Wszystkie typy</option>
             {INSTITUTION_KEYS.map((k) => <option key={k} value={k}>{institutionLabel(k)}</option>)}
           </NativeSelect>
         </div>
-        <div className="flex flex-1 flex-col gap-2">
+        <div className="flex flex-1 flex-col gap-2 md:min-w-56">
           <Label htmlFor="f-etap">Etap</Label>
           <NativeSelect id="f-etap" name="etap" defaultValue={stage ?? ""}>
             <option value="">Wszystkie etapy</option>
@@ -81,7 +97,8 @@ export default async function Page(props: PageProps<"/inicjatywy">) {
               </h2>
               <p>{i.summary}</p>
               <p className="text-base text-muted-foreground">
-                {[i.municipality && `gmina ${i.municipality}`, i.institution_type && institutionLabel(i.institution_type), i.stage && stageLabel(i.stage)]
+                {[i.innovation_kind && `innowacja ${innovationKindLabel(i.innovation_kind).toLowerCase()}`, i.municipality && `gmina ${i.municipality}`,
+                  i.institution_type && institutionLabel(i.institution_type), i.stage && stageLabel(i.stage), i.trl != null && `TRL ${i.trl}`]
                   .filter(Boolean).join(" · ")}
               </p>
               <p className="flex flex-wrap gap-2">

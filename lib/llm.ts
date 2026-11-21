@@ -2,9 +2,11 @@ import "server-only";
 import { groqChat, groqObject, type ChatMessage } from "./groq";
 import {
   ApplicationDraft, CardTags, ChallengeCard, ClusterLabels, FirstLineAnswer, IdeaPoster, InitiativeCard, RerankResult, TransferPlan,
-  BUDGET_LABELS, TRANSFER, type GminaFact, type RerankItem, type Sketch, type SubmissionKind, type TransferRequest,
+  BUDGET_LABELS, normalizeCard, TRANSFER, type GminaFact, type RerankItem, type Sketch, type SubmissionKind, type TransferRequest,
 } from "./schemas";
-import { CROSS, DOMAINS, INSTITUTION_TYPES, STAGES, institutionLabel } from "./taxonomy";
+import {
+  CREATOR_ROLES, CROSS, DOMAINS, INNOVATION_KINDS, INSTITUTION_TYPES, IP_STATUSES, SECTORS, STAGES, TRL_LEVELS, institutionLabel,
+} from "./taxonomy";
 import { brand, org, region } from "@/lib/brand";
 
 // Warstwa LLM ukryta za tym modułem — w produkcji podmieniamy dostawcę tutaj.
@@ -25,6 +27,13 @@ Typy instytucji (institutionType): ${list(INSTITUTION_TYPES)}
 Etapy (stage): ${list(STAGES)}
 Tematy przekrojowe (cross): ${list(CROSS)}`;
 
+/** Słowniki modelu innowacji pod PCI — tylko dla karty inicjatywy. */
+const INNOVATION_TAXONOMY = `Typy innowacji (innovationKind): ${list(INNOVATION_KINDS)}
+Sektory PCI (sectors): ${list(SECTORS)}
+Poziomy gotowości technologicznej (trl): ${Object.entries(TRL_LEVELS).map(([k, v]) => `${k} = ${v.description}`).join("; ")}
+Ochrona własności intelektualnej (ipStatus): ${list(IP_STATUSES)}
+Role twórców (creatorRoles): ${list(CREATOR_ROLES)}`;
+
 const INITIATIVE_SYSTEM = `Jesteś asystentem ${brand.nameGenitive} — kampanii ${org.nameGenitive}, która szuka lokalnych inicjatyw
 ze szkół, uczelni, samorządów i instytucji publicznych ${region.genitive} z potencjałem na większą zmianę.
 Zamieniasz opis inicjatywy na jej kartę.
@@ -39,10 +48,23 @@ Zasady:
 - stage: pomysl, gdy to tylko plan; pilotaz przy pierwszej próbie; dziala, gdy działa regularnie; przeniesiona, gdy działa też gdzie indziej.
 - institutionType: typ instytucji, która prowadzi inicjatywę; null, gdy opis tego nie mówi.
 - keywords: 3–12 słów kluczowych w FORMIE PODSTAWOWEJ (mianownik l.p.), np. "uczeń", "robotyka", "transport publiczny".
+- innovationKind: jeden typ, który najlepiej opisuje istotę zmiany. Innowacja nie musi być technologią.
+  edukacyjna: zmienia, jak i czego uczą się uczniowie lub studenci (też program zajęć współtworzony z firmami, staże, praktyki).
+  organizacyjna: zmienia sposób zarządzania albo współpracy samych instytucji (wspólne usługi, podział zadań, spółdzielnia).
+  spoleczna: nowa usługa albo forma wsparcia dla mieszkańców. procesowa: usprawniona procedura, obsługa, e-usługa.
+- sectors: 1–2 sektory PCI, którym rozwiązanie może służyć; "inne" tylko samodzielnie, gdy żaden sektor PCI nie pasuje.
+- trl: tylko dla innowacji technologicznej, liczba 1–9 według tego, co opis mówi o testach; null dla pozostałych typów
+  i gdy opis nie pozwala ocenić. Kotwice: sam pomysł albo obliczenia = 2–3; model lub próbki sprawdzone w laboratorium = 4;
+  prototyp w warunkach zbliżonych do rzeczywistych = 5–6; w rzeczywistych warunkach = 7; regularne użycie = 8–9.
+  Brak wzmianki o testach = co najwyżej 3.
+- ipStatus: tylko gdy opis wprost mówi o patencie, zgłoszeniu, wzorze albo otwartej licencji; inaczej null.
+- creatorRoles: role osób, które to tworzą (np. uczniowie i nauczyciel); [] gdy opis tego nie mówi. Bez imion.
 - clarity: 0–1, na ile opis wystarcza, żeby ocenić, czy inicjatywę da się przenieść gdzie indziej.
-- followUps: gdy clarity < 0.6, 1–2 krótkie pytania o to, czego najbardziej brakuje (np. efekty, koszty, kto prowadzi); inaczej [].
+- followUps: gdy clarity < 0.6, 1–2 krótkie pytania o to, czego najbardziej brakuje (np. efekty, koszty, kto prowadzi,
+  a dla technologii: na jakim etapie są testy); inaczej [].
 
-${TAXONOMY}`;
+${TAXONOMY}
+${INNOVATION_TAXONOMY}`;
 
 const NOMINATION_NOTE = `Opis pisze osoba, która WSKAZUJE cudzą inicjatywę, bo ją zauważyła. Nie wie wszystkiego:
 nie zgaduj brakujących faktów, a w followUps pytaj tylko o to, co obserwator może wiedzieć (gdzie, kto prowadzi, od kiedy).`;
@@ -52,7 +74,7 @@ export async function intakeInitiative(text: string, kind: SubmissionKind, previ
     ? `Poprzednia karta:\n${JSON.stringify(previous)}\n\nOdpowiedzi na pytania doprecyzowujące:\n<opis>${text}</opis>`
     : `<opis>${text}</opis>`;
   const system = kind === "nomination" ? `${INITIATIVE_SYSTEM}\n\n${NOMINATION_NOTE}` : INITIATIVE_SYSTEM;
-  return groqObject(InitiativeCard, { model: models.fast, system, prompt });
+  return normalizeCard(await groqObject(InitiativeCard, { model: models.fast, system, prompt }));
 }
 
 const CHALLENGE_SYSTEM = `Jesteś asystentem ${brand.nameGenitive}. Instytucja publiczna ${region.genitive} szuka sprawdzonego rozwiązania

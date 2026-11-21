@@ -6,8 +6,10 @@ import { StorySteps } from "@/components/knowledge/story-steps";
 import { DomainBadge } from "@/components/taxonomy/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getPublicInitiative, publicInitiativesAvailable } from "@/lib/initiatives/public";
-import { crossLabel, institutionLabel, signalLevel, stageLabel } from "@/lib/taxonomy";
+import { getPublicCreators, getPublicInitiative, publicInitiativesAvailable, type PublicCreator } from "@/lib/initiatives/public";
+import {
+  creatorRoleLabel, crossLabel, innovationKindLabel, institutionLabel, ipStatusLabel, sectorLabel, signalLevel, stageLabel, trlLabel,
+} from "@/lib/taxonomy";
 import { safeDecode } from "../../wiedza/shared";
 
 async function load(props: PageProps<"/inicjatywy/[slug]">) {
@@ -25,6 +27,7 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
   const i = await load(props);
   if (!i) notFound();
   const param = `inicjatywa=${encodeURIComponent(i.slug ?? i.id)}`;
+  const creators = await getPublicCreators(i.id).catch((e) => { console.error("[inicjatywa] twórcy:", e); return [] as PublicCreator[]; });
 
   return (
     <article className="space-y-14">
@@ -38,8 +41,15 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
         </p>
         <dl className="grid max-w-[48rem] gap-x-6 gap-y-3 text-lg sm:grid-cols-[auto_1fr]">
           {i.municipality && (<><dt className="font-bold">Gdzie</dt><dd>gmina {i.municipality}{i.county && `, powiat ${i.county.replace(/^m\. /, "")}`}</dd></>)}
-          {i.institution_type && (<><dt className="font-bold">Kto prowadzi</dt><dd>{institutionLabel(i.institution_type)}</dd></>)}
+          {(i.institution_name || i.institution_type) && (<><dt className="font-bold">Kto prowadzi</dt><dd>{i.institution_name ?? institutionLabel(i.institution_type!)}</dd></>)}
+          {creators.length > 0 && (
+            <><dt className="font-bold">Twórcy</dt><dd>{creatorNames(creators)}</dd></>
+          )}
+          {i.innovation_kind && (<><dt className="font-bold">Typ innowacji</dt><dd>{innovationKindLabel(i.innovation_kind)}</dd></>)}
+          {i.sectors.length > 0 && (<><dt className="font-bold">Sektory PCI</dt><dd>{i.sectors.map(sectorLabel).join(", ")}</dd></>)}
           {i.stage && (<><dt className="font-bold">Etap</dt><dd>{stageLabel(i.stage)}</dd></>)}
+          {i.trl != null && (<><dt className="font-bold">Gotowość technologii</dt><dd>{trlLabel(i.trl)}</dd></>)}
+          {i.ip_status && (<><dt className="font-bold">Ochrona</dt><dd>{ipStatusLabel(i.ip_status)}</dd></>)}
           {i.domains.length > 0 && (
             <>
               <dt className="font-bold">Dziedziny</dt>
@@ -69,4 +79,12 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
       </section>
     </article>
   );
+}
+
+/** Podpisy za zgodą, a role bez podpisu zbite z liczbą: „Uczeń ×3” zamiast „Uczeń, Uczeń, Uczeń”. */
+function creatorNames(creators: PublicCreator[]): string {
+  const named = creators.filter((c) => c.display_name).map((c) => c.display_name as string);
+  const roles = new Map<string, number>();
+  for (const c of creators) if (!c.display_name) roles.set(c.role, (roles.get(c.role) ?? 0) + 1);
+  return [...named, ...[...roles].map(([role, n]) => (n > 1 ? `${creatorRoleLabel(role)} ×${n}` : creatorRoleLabel(role)))].join(", ");
 }

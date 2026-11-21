@@ -15,6 +15,11 @@ export type InitiativeRow = {
   domains: string[];
   institution_type: string | null;
   stage: string | null;
+  innovation_kind: string | null;
+  sectors: string[];
+  trl: number | null;
+  ip_status: string | null;
+  institutions: { name: string; slug: string } | null;
   status: InitiativeStatus;
   signal: number | null;
   signal_override: number | null;
@@ -31,7 +36,27 @@ export type InitiativeRow = {
 
 export const INITIATIVE_COLUMNS =
   "id, status_code, slug, submission_kind, card, title, summary, domains, institution_type, stage, status, signal, signal_override, " +
-  "published, duplicate_of, nominations_count, raw_text, teryt, assigned_mentor, synthetic, created_at, municipalities(name, county)";
+  "innovation_kind, sectors, trl, ip_status, institutions(name, slug), published, duplicate_of, nominations_count, raw_text, teryt, assigned_mentor, synthetic, created_at, municipalities(name, county)";
+
+export type CreatorRow = {
+  id: string;
+  role: string;
+  display_name: string | null;
+  under_18: boolean;
+  guardian_consent: boolean;
+  show_publicly: boolean;
+};
+
+/** Twórcy inicjatywy ze stanem zgód (tylko Panel — publicznie widok public_initiative_creators). */
+export async function initiativeCreators(initiativeId: string): Promise<CreatorRow[]> {
+  const { data, error } = await createAdminClient()
+    .from("initiative_creators")
+    .select("sort, creators(id, role, display_name, under_18, guardian_consent, show_publicly)")
+    .eq("initiative_id", initiativeId)
+    .order("sort");
+  if (error) throw error;
+  return (data ?? []).flatMap((r) => (r.creators ? [r.creators as unknown as CreatorRow] : []));
+}
 
 /** Sygnał do sortowania i pokazania: ręczna korekta z Panelu ma pierwszeństwo przed oceną radaru. */
 export const effectiveSignal = (r: Pick<InitiativeRow, "signal" | "signal_override">) => r.signal_override ?? r.signal;

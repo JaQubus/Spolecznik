@@ -2,7 +2,7 @@ import { aiErrorResponse } from "@/lib/groq";
 import { currentUserId, rememberInitiative } from "@/lib/initiatives/access";
 import { createInitiative } from "@/lib/initiatives/create";
 import { rateLimit } from "@/lib/rate-limit";
-import { InitiativeRequest } from "@/lib/schemas";
+import { InitiativeRequest, normalizeCard } from "@/lib/schemas";
 
 /** Zgłoszenie albo wskazanie po intake: zapis z kodem i kluczem, wyniki (partnerzy, rozwiązania, mentorzy, programy). */
 export async function POST(request: Request) {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Nieprawidłowe dane", issues: parsed.error.issues }, { status: 400 });
   }
   try {
-    const result = await createInitiative({ ...parsed.data, authorId: await currentUserId() });
+    const result = await createInitiative({ ...parsed.data, card: normalizeCard(parsed.data.card), authorId: await currentUserId() });
     // Ta przeglądarka zapamiętuje zgłoszenie — /rozmowy i /status pokażą je bez wpisywania kodu.
     await rememberInitiative(result.initiative.statusCode, result.initiative.accessKey);
     return Response.json(result);

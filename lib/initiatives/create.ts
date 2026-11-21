@@ -15,6 +15,7 @@ import { newAccessKey } from "./access";
 
 type CreateInput = {
   kind: SubmissionKind;
+  /** Już znormalizowana (normalizeCard) przy wejściu do systemu: po LLM albo po żądaniu klienta. */
   card: InitiativeCard;
   text: string;
   gmina?: string;
@@ -66,6 +67,10 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
         institution_type: card.institutionType,
         stage: card.stage,
         cross_topics: card.cross,
+        innovation_kind: card.innovationKind,
+        sectors: card.sectors,
+        trl: card.trl,
+        ip_status: card.ipStatus,
         teryt: gminaRow?.teryt ?? null,
         nominations_count: kind === "nomination" ? 1 : 0,
         ...(canvas ? { canvas } : {}),
@@ -92,6 +97,7 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
 
   // Indeks i powiadomienie nie mogą zablokować wyniku dla autora.
   const sideEffects = await Promise.allSettled([
+    saveCreators(initiative.id, card.creatorRoles),
     upsertIndex({
       kind: "initiative",
       refId: initiative.id,
@@ -99,7 +105,7 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
       body: `${card.problem} ${card.solution}`,
       lemmas: card.keywords,
       domains: [...card.domains],
-      tags: [card.stage, ...card.cross],
+      tags: [card.stage, card.innovationKind, ...card.sectors, ...card.cross],
       institutionType: card.institutionType,
       teryt: gminaRow?.teryt ?? null,
     }),
@@ -118,6 +124,17 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
     patterns: await matchDetails(ranked.filter((m) => m.fit >= GAP_THRESHOLD), kindOf, matchIds),
     ...support,
   };
+}
+
+/**
+ * Twórcy z ról w karcie: bez imion i bez kontaktu, niewidoczni publicznie, dopóki sami (albo opiekun) się nie zgodzą.
+ * Uczeń domyślnie liczy się jako osoba poniżej 18 lat — Panel zmienia to po potwierdzeniu.
+ */
+async function saveCreators(initiativeId: string, roles: InitiativeCard["creatorRoles"]) {
+  if (roles.length === 0) return;
+  // Jedna funkcja w bazie = jedna transakcja: albo twórcy i powiązania, albo nic (bez osieroconych wierszy).
+  const { error } = await createAdminClient().rpc("add_initiative_creators", { p_initiative: initiativeId, p_roles: roles });
+  if (error) throw error;
 }
 
 /** Opublikowane z tytułem i linkiem; nieopublikowane tylko z gminą — treść cudzych zgłoszeń jest prywatna. */

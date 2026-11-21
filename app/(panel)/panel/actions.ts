@@ -119,6 +119,52 @@ export async function setPublished(_prev: ActionResult, formData: FormData): Pro
   return { ok: true, message: published ? "Opublikowano. Inicjatywa jest w publicznej bazie." : "Ukryto inicjatywę z publicznej bazy." };
 }
 
+const CreatorConsentInput = z.object({
+  initiativeId: z.uuid(),
+  creatorId: z.uuid(),
+  displayName: z.string().trim().max(120),
+});
+
+/**
+ * Zgody twórcy po potwierdzeniu z nim (albo z opiekunem): wiek, zgoda opiekuna, podpis i pokazanie go publicznie.
+ * Pola wyboru bez zaznaczenia nie trafiają do formularza, stąd odczyt przez `=== "on"`.
+ */
+export async function setCreatorConsent(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = CreatorConsentInput.safeParse({
+    initiativeId: formData.get("initiativeId"), creatorId: formData.get("creatorId"), displayName: formData.get("displayName") ?? "",
+  });
+  if (!parsed.success) return { ok: false, message: "Podpis może mieć do 120 znaków." };
+  const { initiativeId, creatorId } = parsed.data;
+  const displayName = anonymize(parsed.data.displayName).text || null;
+  const under18 = formData.get("under18") === "on";
+  const guardianConsent = under18 && formData.get("guardianConsent") === "on";
+  const showPublicly = formData.get("showPublicly") === "on";
+  if (showPublicly && !displayName) return { ok: false, message: "Żeby pokazać podpis publicznie, wpisz go." };
+  if (under18 && showPublicly && !guardianConsent) {
+    return { ok: false, message: "Osobę poniżej 18 lat można pokazać tylko za zgodą opiekuna." };
+  }
+  try {
+    const admin = createAdminClient();
+    // Twórca musi należeć do tej inicjatywy — formularz nie może zmienić cudzego.
+    const { data: link, error: linkError } = await admin
+      .from("initiative_creators").select("creator_id").eq("initiative_id", initiativeId).eq("creator_id", creatorId).maybeSingle();
+    if (linkError) throw linkError;
+    if (!link) return NOT_FOUND;
+    const { error } = await admin
+      .from("creators")
+      .update({ display_name: displayName, under_18: under18, guardian_consent: guardianConsent, show_publicly: showPublicly })
+      .eq("id", creatorId);
+    if (error) throw error;
+    await logChange(user.id, "creator.consent", "initiative", initiativeId, { creatorId, under18, guardianConsent, showPublicly });
+  } catch (e) {
+    console.error("[panel] zgody twórcy:", e);
+    return SAVE_FAILED;
+  }
+  refresh();
+  return { ok: true, message: "Zapisano zgody twórcy." };
+}
+
 const AssignInput = z.object({ initiativeId: z.uuid(), mentorId: z.uuid() });
 
 /** Przypisanie mentora: zapis w inicjatywie i w wątku, prośba w dzwonku mentora, wpis na osi czasu autora. */

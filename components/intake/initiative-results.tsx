@@ -4,11 +4,12 @@ import { UsersIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { DomainBadge } from "@/components/taxonomy/icons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { initiativeHref } from "@/lib/knowledge/hrefs";
 import { plural } from "@/lib/pl";
 import type { InitiativeCard, InitiativeResponse, SubmissionKind } from "@/lib/schemas";
-import { institutionLabel, stageLabel } from "@/lib/taxonomy";
+import { innovationKindLabel, institutionLabel, sectorLabel, stageLabel } from "@/lib/taxonomy";
 import { org } from "@/lib/brand";
 import { linkClass, MatchRow, StatusCode, SupportSections } from "./result-parts";
 
@@ -36,11 +37,14 @@ export function InitiativeResults({
         <div className="max-w-[68ch] space-y-1">
           <p className="text-lg"><strong>Zrozumieliśmy tak:</strong> {card.title}. {card.summary}</p>
           <p className="text-muted-foreground">
-            {[card.institutionType && institutionLabel(card.institutionType), stageLabel(card.stage), initiative.gmina].filter(Boolean).join(" · ")}
+            {[card.innovationKind && `Innowacja ${innovationKindLabel(card.innovationKind).toLowerCase()}`,
+              card.institutionType && institutionLabel(card.institutionType), stageLabel(card.stage), card.trl != null && `TRL ${card.trl}`,
+              initiative.gmina].filter(Boolean).join(" · ")}
           </p>
         </div>
-        <ul className="flex flex-wrap gap-2" aria-label="Dziedziny">
+        <ul className="flex flex-wrap gap-2" aria-label="Dziedziny i sektory">
           {card.domains.map((d) => <li key={d}><DomainBadge domain={d} /></li>)}
+          {(card.sectors ?? []).filter((s) => s !== "inne").map((s) => <li key={s}><Badge variant="outline">{sectorLabel(s)}</Badge></li>)}
         </ul>
       </div>
 

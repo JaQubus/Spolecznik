@@ -9,14 +9,15 @@ uv run bdl.py               # profile gmin regionu (config/brand.json) z API BDL
 uv run seed_region.py       # gminy → ../supabase/seed/10_municipalities.sql
 uv run knowledge_facts.py   # fakty „… w liczbach” z BDL → out/knowledge/facts.json (wymaga bdl_wskazniki.py --level powiat)
 uv run knowledge_seed.py    # dziedziny, fakty, materiały, rozwiązania ROPS → ../supabase/seed/20_knowledge.sql + ../content/library/
-uv run seed_initiatives.py  # dane demo: inicjatywy, adopcje, wyzwania, mentorzy, programy → ../supabase/seed/30_demo.sql
+uv run seed_initiatives.py  # dane demo: instytucje, inicjatywy z twórcami, adopcje, wyzwania, mentorzy, programy, partnerzy → ../supabase/seed/30_demo.sql
 uv run load.py              # ładuje seed/*.sql do bazy z SUPABASE_DB_URL, w jednej transakcji
 ```
 
-- Lokalnie wystarczy `npx supabase db reset`: stosuje migracje `0001`–`0005` i ładuje `supabase/seed/*.sql` (alfabetycznie). `load.py` robi to samo z seedami na zdalnej bazie (po `supabase db push`).
+- Lokalnie wystarczy `npx supabase db reset`: stosuje migracje `0001`–`0007` i ładuje `supabase/seed/*.sql` (alfabetycznie). `load.py` robi to samo z seedami na zdalnej bazie (po `supabase db push`).
 - Pliki seed są w repo i idempotentne: upsert po kluczu, dane demo (`synthetic = true`) kasowane i wstawiane od nowa. Żaden skrypt z listy nie wywołuje LLM.
-- Słowniki (dziedziny, typy instytucji, etapy, tematy przekrojowe, wymiary i wagi radaru) są w `../config/taxonomy.json`; czyta je `common.py` i `lib/taxonomy.ts`. Klucz spoza słownika w seedzie = błąd od razu (`check_keys`).
-- Dane demo powstają z archetypów w `templates/initiatives.json` (bez nazw prawdziwych instytucji, mentorzy i programy z dopiskiem „(przykład)”). Reguły `places` mówią, w jakich gminach archetyp może się pojawić; ten sam archetyp w kilku gminach to „podobne inicjatywy”.
+- Słowniki (dziedziny, typy instytucji, etapy, tematy przekrojowe, wymiary i wagi radaru, a od 4/10 także typy innowacji, sektory PCI, poziomy TRL i ich etapy, ochrona IP, role twórców, rodzaje partnerów i formy wsparcia) są w `../config/taxonomy.json`; czyta je `common.py` i `lib/taxonomy.ts`. Klucz spoza słownika w seedzie = błąd od razu (`check_keys`).
+- Dane demo powstają z archetypów w `templates/initiatives.json` (bez nazw prawdziwych instytucji, mentorzy i programy z dopiskiem „(przykład)”). Reguły `places` mówią, w jakich gminach archetyp może się pojawić; ten sam archetyp w kilku gminach to „podobne inicjatywy” (`copies`, technologie z uczelni zwykle w jednym miejscu).
+- Model innowacji PCI w seedzie: każdy archetyp ma typ innowacji i sektory PCI, technologiczny też TRL (generator dopasowuje go do etapu kopii) i status IP. Instytucja to typ + gmina z dopiskiem „(przykład)”, bez REGON-u i domeny (żeby nie trafić w prawdziwe). Twórcy to role z opisem, bez imion i kontaktu; podpis jest publiczny tylko za zgodą, a u ucznia także opiekuna (check w `0007`). Partnerzy (`partners` w szablonie) idą też do `search_index` jako `partner`.
 - Formularz `/wniosek` czyta treść z `programs.form_schema.content`. Źródło dla programu demo: `forms/program_demo.json` (wzór fikcyjny, bez skutków prawnych). Kształt sprawdza `lib/call-schema.ts`. Szkic `/wniosek` zostaje tylko w przeglądarce.
 
 ## Zasobnik wiedzy („Biblioteka i wiedza”)
