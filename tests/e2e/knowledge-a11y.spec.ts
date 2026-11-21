@@ -9,6 +9,9 @@ const PAGES = [
   ["karta innowacji", "/biblioteka/innowacja/senior-cuder"],
   ["zakładka Materiały", "/biblioteka?tab=materials"],
   ["zakładka Wyzwania Małopolski", "/biblioteka?tab=challenges"],
+  ["Raport gminy: wybór gminy", "/biblioteka/gmina"],
+  ["Raport gminy: gmina wiejska", "/biblioteka/gmina/1201022"],
+  ["Raport gminy: Kraków", "/biblioteka/gmina/1261011"],
 ] as const;
 
 for (const [name, url] of PAGES) {

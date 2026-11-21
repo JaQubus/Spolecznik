@@ -4,7 +4,7 @@ import { rerank, type Candidate } from "./llm";
 import { anonymize } from "./pii";
 import {
   GAP_THRESHOLD, RELATED_MIN_SIMILARITY, SIMILAR_NEED_MIN_SIMILARITY,
-  type InnovationMatch, type MatchResponse, type NeedCard,
+  type InnovationMatch, type MatchResponse, type NeedCard, type RerankItem,
 } from "./schemas";
 import { keywordSearch, similarNeeds, upsertIndex } from "./search";
 import { newAccessKey } from "./need-access";
@@ -104,6 +104,50 @@ async function lexicalCandidates(originalText: string, keywords: string[]): Prom
 const repeatsProblem = (l: Lexical, wordCount: number) => l.overlap >= VERBATIM_OVERLAP && wordCount >= VERBATIM_MIN_WORDS;
 
 /**
+ * Kandydaci z wyszukiwania po słowach → rerank → siatka bezpieczeństwa. Bez zapisu czegokolwiek w bazie.
+ * original to opis już po anonimizacji.
+ */
+async function rankFromLexical(card: NeedCard, original: string, lexical: Lexical[], gminaProfile?: string): Promise<RerankItem[]> {
+  // Kandydaci do reranku wyłącznie po problemie: najpierw te, których problem mocno pokrywa się z opisem
+  // (np. przepisany z Biblioteki), potem reszta według dopasowania słów i słów kluczowych do problemu.
+  const candidates: Candidate[] = [];
+  const add = (c: Candidate) => {
+    if (candidates.length < CANDIDATES && !candidates.some((x) => x.id === c.id)) candidates.push(c);
+  };
+  lexical.filter((l) => l.overlap >= STRONG_OVERLAP).forEach((l) => add(l.candidate));
+  lexical.forEach((l) => add(l.candidate));
+
+  const ranked = await rerank(card, candidates, gminaProfile, original);
+
+  // Siatka bezpieczeństwa: innowacja, której problem użytkownik powtórzył prawie słowo w słowo, zostaje w wynikach,
+  // nawet gdy model, sugerując się streszczeniem, ocenił ją nisko.
+  const wordCount = contentStems(original).length;
+  for (const l of lexical.filter((x) => repeatsProblem(x, wordCount) && candidates.some((c) => c.id === x.candidate.id))) {
+    const r = ranked.find((x) => x.id === l.candidate.id);
+    if (r && r.fit >= 80) continue;
+    const pinned = {
+      id: l.candidate.id,
+      fit: 85,
+      why: "Twój opis prawie dosłownie powtarza problem, na który odpowiada to rozwiązanie.",
+      adapt: r?.adapt || "Porównaj opis rozwiązania z sytuacją w Twojej gminie i sprawdź, czego potrzeba do wdrożenia.",
+    };
+    if (r) Object.assign(r, pinned);
+    else ranked.push(pinned);
+  }
+  ranked.sort((a, b) => b.fit - a.fit);
+  return ranked;
+}
+
+/**
+ * Dopasowanie innowacji do problemu bez zgłoszenia (Raport gminy, #104): to samo wyszukiwanie i ten sam rerank co
+ * w Dopasuj, ale bez zapisu potrzeby, dopasowań, indeksu i powiadomień.
+ */
+export async function rankInnovations({ card, text, gminaProfile }: { card: NeedCard; text: string; gminaProfile?: string }) {
+  const original = anonymize(text).text;
+  return rankFromLexical(card, original, await lexicalCandidates(original, card.keywords), gminaProfile);
+}
+
+/**
  * Społecznik·Dopasuj (README 5.1, kroki 4–7): wyszukiwanie po lematach → rerank z kontekstem gminy →
  * zapis potrzeby z kodem zgłoszenia → indeksowanie potrzeby, żeby kolejne zgłoszenia ją znalazły.
  */
@@ -122,33 +166,7 @@ export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promis
     lexicalCandidates(original, card.keywords),
   ]);
 
-  // Kandydaci do reranku wyłącznie po problemie: najpierw te, których problem mocno pokrywa się z opisem
-  // (np. przepisany z Biblioteki), potem reszta według dopasowania słów i słów kluczowych do problemu.
-  const candidates: Candidate[] = [];
-  const add = (c: Candidate) => {
-    if (candidates.length < CANDIDATES && !candidates.some((x) => x.id === c.id)) candidates.push(c);
-  };
-  lexical.filter((l) => l.overlap >= STRONG_OVERLAP).forEach((l) => add(l.candidate));
-  lexical.forEach((l) => add(l.candidate));
-
-  const ranked = await rerank(card, candidates, gminaRow ? describeGmina(gminaRow) : undefined, original);
-
-  // Siatka bezpieczeństwa: innowacja, której problem użytkownik powtórzył prawie słowo w słowo, zostaje w wynikach,
-  // nawet gdy model, sugerując się streszczeniem, ocenił ją nisko.
-  const wordCount = contentStems(original).length;
-  for (const l of lexical.filter((x) => repeatsProblem(x, wordCount) && candidates.some((c) => c.id === x.candidate.id))) {
-    const r = ranked.find((x) => x.id === l.candidate.id);
-    if (r && r.fit >= 80) continue;
-    const pinned = {
-      id: l.candidate.id,
-      fit: 85,
-      why: "Twój opis prawie dosłownie powtarza problem, na który odpowiada to rozwiązanie.",
-      adapt: r?.adapt || "Porównaj opis rozwiązania z sytuacją w Twojej gminie i sprawdź, czego potrzeba do wdrożenia.",
-    };
-    if (r) Object.assign(r, pinned);
-    else ranked.push(pinned);
-  }
-  ranked.sort((a, b) => b.fit - a.fit);
+  const ranked = await rankFromLexical(card, original, lexical, gminaRow ? describeGmina(gminaRow) : undefined);
   const isGap = (ranked[0]?.fit ?? 0) < GAP_THRESHOLD;
 
   // Zapis potrzeby z kodem zgłoszenia (ponowienie przy kolizji kodu) i skrótem klucza do rozmowy
@@ -248,7 +266,7 @@ export async function runMatch({ card, text, gmina, teryt }: MatchInput): Promis
   }
 
   return {
-    need: { id: need.id, statusCode: need.status_code, accessKey: access.key, gmina: gminaRow?.nazwa ?? null },
+    need: { id: need.id, statusCode: need.status_code, accessKey: access.key, gmina: gminaRow?.nazwa ?? null, teryt: gminaRow?.teryt ?? null },
     matches,
     isGap,
     similarNeeds: { count: otherGminy.size, gminy: [...otherGminy.values()] },

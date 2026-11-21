@@ -111,6 +111,14 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
         </section>
       )}
 
+      {need.teryt && need.gmina && (
+        <p className="max-w-3xl">
+          <Link href={`/biblioteka/gmina/${need.teryt}`} className={linkClass}>
+            Raport gminy {need.gmina}: obszary do uwagi i sprawdzone rozwiązania
+          </Link>
+        </p>
+      )}
+
       <Button variant="outline" onClick={onReset}>Opisz inny problem</Button>
     </div>
   );

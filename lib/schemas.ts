@@ -94,6 +94,9 @@ export const ClusterLabels = z.object({
 });
 export type ClusterLabels = z.infer<typeof ClusterLabels>;
 
+/** Raport gminy (#104): 2–3 zdania z gotowych liczb. Liczby sprawdza lib/gmina-report/summary.ts → checkSummary. */
+export const GminaSummary = z.object({ summary: z.string().max(700) });
+
 // /api/ask: Zapytaj Bibliotekę (RAG po doc_chunks)
 export const AskRequest = z.object({ question: z.string().min(3).max(1000) });
 export const AskAnswer = z.object({
@@ -347,7 +350,7 @@ export type InnovationMatch = RerankItem & {
 
 export type MatchResponse = {
   /** accessKey: tajny klucz do rozmowy — tylko dla autora (ciasteczko + prywatny link). */
-  need: { id: string; statusCode: string; accessKey: string; gmina: string | null };
+  need: { id: string; statusCode: string; accessKey: string; gmina: string | null; teryt: string | null };
   matches: InnovationMatch[];
   isGap: boolean;
   similarNeeds: { count: number; gminy: string[] };

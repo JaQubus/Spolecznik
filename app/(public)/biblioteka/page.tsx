@@ -70,6 +70,19 @@ export default async function Page(props: PageProps<"/biblioteka">) {
       </div>
       <MapBanner />
 
+      <section aria-labelledby="raport-gminy" className="space-y-4">
+        <h2 id="raport-gminy" className="text-3xl font-bold">Raport gminy</h2>
+        <p className="max-w-2xl text-lg">
+          W czym potrzeby mieszkańców Twojej gminy są większe niż w gminach podobnych i jakie sprawdzone rozwiązania na to odpowiadają.
+          Do druku albo jako PDF.
+        </p>
+        <p>
+          <Link href="/biblioteka/gmina" className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+            Zobacz raport swojej gminy
+          </Link>
+        </p>
+      </section>
+
       <section id="zapytaj" aria-labelledby="zapytaj-tytul" className="scroll-mt-4 space-y-4">
         <h2 id="zapytaj-tytul" className="text-3xl font-bold">Zapytaj Bibliotekę</h2>
         <p className="max-w-2xl text-lg">Zadaj pytanie o sytuację w Małopolsce albo o innowacje społeczne.</p>

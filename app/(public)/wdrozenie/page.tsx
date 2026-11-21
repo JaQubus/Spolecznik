@@ -17,10 +17,13 @@ async function gminaFromNeed(code: string): Promise<GminaValue> {
 export default async function Page(props: PageProps<"/wdrozenie">) {
   const params = await props.searchParams;
   const code = typeof params.potrzeba === "string" ? params.potrzeba.toUpperCase() : "";
+  // ?teryt= z Raportu gminy (#104): gmina wybrana, zanim ktokolwiek opisał problem.
+  const fromReport = GMINA_OPTIONS.find((g) => g.teryt === params.teryt);
 
   const [innovations, gmina] = await Promise.all([
     innovationOptions().catch(() => []),
-    STATUS_CODE.test(code) ? gminaFromNeed(code).catch(() => EMPTY_GMINA) : Promise.resolve(EMPTY_GMINA),
+    fromReport ? Promise.resolve({ text: fromReport.nazwa, teryt: fromReport.teryt })
+      : STATUS_CODE.test(code) ? gminaFromNeed(code).catch(() => EMPTY_GMINA) : Promise.resolve(EMPTY_GMINA),
   ]);
 
   const innovation = pickInnovation(params.innowacja, innovations);
