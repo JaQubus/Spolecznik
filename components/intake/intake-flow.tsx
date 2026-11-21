@@ -5,9 +5,13 @@ import { EMPTY_GMINA, GminaField, type GminaValue } from "@/components/gmina-fie
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import type { GminaOption } from "@/lib/gminy";
+import type { InstitutionOption } from "@/lib/innovations/public-institutions";
+import { INSTITUTION_KEYS, institutionLabel } from "@/lib/taxonomy";
 import type { ChallengeCard, ChallengeResponse, InitiativeCard, InitiativeResponse, IntakeMode } from "@/lib/schemas";
 import { ChallengeResults } from "./challenge-results";
 import { InitiativeResults } from "./initiative-results";
@@ -28,7 +32,7 @@ const COPY: Record<IntakeMode, { label: string; hint: string; example: string; s
   own: {
     label: "Opisz inicjatywę",
     hint: "Co robicie, dla kogo, od kiedy i co już z tego wyszło. Wystarczy kilka zdań.",
-    example: "Opisz inicjatywę w kilku zdaniach, np. „uczniowie technikum uczą seniorów obsługi e-usług w bibliotece”.",
+    example: "Opisz inicjatywę w kilku zdaniach, np. „koło naukowe uczelni zbudowało czujnik zużycia narzędzi, który testują dwie lokalne firmy”.",
     submit: "Wyślij zgłoszenie",
     busy: "Wysyłam…",
     working: "Zapisuję zgłoszenie i szukam podobnych inicjatyw. To może potrwać kilkanaście sekund.",
@@ -37,7 +41,7 @@ const COPY: Record<IntakeMode, { label: string; hint: string; example: string; s
   nomination: {
     label: "Jaką inicjatywę chcesz wskazać?",
     hint: "Gdzie działa, kto ją prowadzi (bez nazwisk), co w niej ciekawego. Nie musisz znać szczegółów.",
-    example: "Napisz kilka zdań o inicjatywie, np. „w gminie Dynów szkoła i dom kultury prowadzą wspólną pracownię robotyki”.",
+    example: "Napisz kilka zdań o inicjatywie, np. „technikum razem z firmą lotniczą prowadzi klasę patronacką z praktykami w zakładzie”.",
     submit: "Wyślij wskazanie",
     busy: "Wysyłam…",
     working: "Zapisuję wskazanie i sprawdzam, czy ktoś już zgłosił tę inicjatywę. To może potrwać kilkanaście sekund.",
@@ -73,12 +77,23 @@ export function IntakeFlow({
   gminy,
   initialText = "",
   initialGmina = EMPTY_GMINA,
-}: { mode: IntakeMode; path: string; gminy: GminaOption[]; initialText?: string; initialGmina?: GminaValue }) {
+  institutions = [],
+}: {
+  mode: IntakeMode;
+  path: string;
+  gminy: GminaOption[];
+  initialText?: string;
+  initialGmina?: GminaValue;
+  /** Podpowiedzi do pola „Nazwa instytucji” (instytucje z bazy Radaru). */
+  institutions?: InstitutionOption[];
+}) {
   const copy = COPY[mode];
   const fromSearch = initialText.trim().length >= 3;
   const [step, setStep] = useState<Step>(fromSearch ? { kind: "reading" } : { kind: "input" });
   const [text, setText] = useState(initialText);
   const [gmina, setGmina] = useState(initialGmina);
+  const [institutionType, setInstitutionType] = useState("");
+  const [institutionName, setInstitutionName] = useState("");
   const [answers, setAnswers] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,11 +126,14 @@ export function IntakeFlow({
   async function finish(card: Card, rawText: string) {
     setStatus(copy.working);
     const where = { gmina: gmina.text || undefined, teryt: gmina.teryt ?? undefined };
+    // Typ wybrany w formularzu wygrywa z tym, co model rozpoznał z opisu.
+    if (institutionType) card = { ...card, institutionType: institutionType as Card["institutionType"] };
     if (mode === "challenge") {
       const result = await post<ChallengeResponse>("/api/challenges", { card, text: rawText, ...where });
       setStep({ kind: "challenge", card: card as ChallengeCard, result });
     } else {
-      const result = await post<InitiativeResponse>("/api/initiatives", { kind: mode, card, text: rawText, ...where });
+      const institution = institutionName.trim() || undefined;
+      const result = await post<InitiativeResponse>("/api/initiatives", { kind: mode, card, text: rawText, ...where, institution });
       setStep({ kind: "initiative", card: card as InitiativeCard, result });
     }
     setStatus("");
@@ -175,6 +193,8 @@ export function IntakeFlow({
     setStep({ kind: "input" });
     setText("");
     setAnswers([]);
+    setInstitutionType("");
+    setInstitutionName("");
     setPiiFound(false);
   }
 
@@ -212,8 +232,58 @@ export function IntakeFlow({
             />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="typ-instytucji">{mode === "challenge" ? "Typ Twojej instytucji" : "Gdzie powstała inicjatywa"}</Label>
+            <FieldHint id="typ-instytucji-pomoc">
+              {mode === "challenge"
+                ? "Nieobowiązkowo. Pomoże znaleźć rozwiązania z podobnych instytucji."
+                : "Typ instytucji. Nieobowiązkowo — jeśli nie wybierzesz, Radar rozpozna go z opisu."}
+            </FieldHint>
+            <NativeSelect
+              id="typ-instytucji"
+              aria-describedby="typ-instytucji-pomoc"
+              value={institutionType}
+              onChange={(e) => setInstitutionType(e.target.value)}
+            >
+              <option value="">Nie wybieram</option>
+              {INSTITUTION_KEYS.map((k) => <option key={k} value={k}>{institutionLabel(k)}</option>)}
+            </NativeSelect>
+          </div>
+          {mode !== "challenge" && (
+            <div className="space-y-2">
+              <Label htmlFor="nazwa-instytucji">Nazwa instytucji</Label>
+              <FieldHint id="nazwa-instytucji-pomoc">
+                Np. nazwa szkoły, uczelni albo urzędu. Nieobowiązkowo. Jeśli instytucja jest w Radarze, wybierz ją z podpowiedzi,
+                a zgłoszenie pojawi się na jej stronie po weryfikacji.
+              </FieldHint>
+              <Input
+                id="nazwa-instytucji"
+                aria-describedby="nazwa-instytucji-pomoc"
+                list={institutions.length > 0 ? "instytucje-podpowiedzi" : undefined}
+                autoComplete="organization"
+                maxLength={200}
+                className="max-w-xl"
+                value={institutionName}
+                onChange={(e) => {
+                  setInstitutionName(e.target.value);
+                  // Wybór z podpowiedzi uzupełnia typ, jeśli nie był wybrany.
+                  const hit = institutions.find((i) => i.name === e.target.value);
+                  if (hit && !institutionType) setInstitutionType(hit.type);
+                }}
+              />
+              {institutions.length > 0 && (
+                <datalist id="instytucje-podpowiedzi">
+                  {institutions.map((i, n) => <option key={`${i.name}-${n}`} value={i.name} label={institutionLabel(i.type)} />)}
+                </datalist>
+              )}
+            </div>
+          )}
+          <div className="space-y-2">
             <Label htmlFor="gmina">Gmina</Label>
-            <FieldHint id="gmina-pomoc">{mode === "challenge" ? "Nieobowiązkowo. Pomoże dopasować rozwiązania do Twojej gminy." : "Gdzie działa inicjatywa. Nieobowiązkowo."}</FieldHint>
+            <FieldHint id="gmina-pomoc">
+              {mode === "challenge"
+                ? "Nieobowiązkowo. Pomoże dopasować rozwiązania i partnerów z okolicy."
+                : "Gdzie działa inicjatywa. Pokażemy ją na mapie i poszukamy partnerów w pobliżu. Nieobowiązkowo."}
+            </FieldHint>
             <div className="max-w-sm">
               <GminaField id="gmina" aria-describedby="gmina-pomoc" options={gminy} value={gmina} onValueChange={setGmina} />
             </div>

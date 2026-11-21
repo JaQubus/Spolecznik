@@ -31,7 +31,7 @@ export default async function Page() {
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Warsztat pomysłu</h1>
         <p className="max-w-2xl text-lg">
-          Masz pomysł na inicjatywę w szkole, na uczelni albo w gminie, ale jeszcze go nie sprawdziliście? Rozpisz go tutaj
+          Masz pomysł na inicjatywę w szkole, na uczelni albo w urzędzie, ale jeszcze go nie sprawdziliście? Rozpisz go tutaj
           z pomocą asystenta. Nie podawaj nazwisk, telefonów ani adresów.
         </p>
       </div>

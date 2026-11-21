@@ -23,6 +23,8 @@ type CreateInput = {
   text: string;
   gmina?: string;
   teryt?: string;
+  /** Nazwa instytucji z formularza; dopasowana do tabeli institutions albo zapisana w raw_text dla zespołu. */
+  institution?: string;
   /** Z warsztatu (/zglos/warsztat): canvas i plakat zapisujemy razem z inicjatywą. */
   canvas?: Record<string, string>;
   poster?: IdeaPoster;
@@ -35,13 +37,21 @@ type CreateInput = {
  * podobne inicjatywy z regionu (potencjalni partnerzy), sprawdzone rozwiązania z Polski (inspiracje), mentorzy
  * i otwarte programy. Inicjatywa jest prywatna, dopóki zespół nie opublikuje jej w Panelu.
  */
-export async function createInitiative({ kind, card, text, gmina, teryt, canvas, poster, authorId }: CreateInput): Promise<InitiativeResponse> {
+export async function createInitiative({ kind, card, text, gmina, teryt, institution, canvas, poster, authorId }: CreateInput): Promise<InitiativeResponse> {
   const supabase = createAdminClient();
   const original = anonymize(text).text;
+  // Błąd wyszukiwania instytucji nie blokuje zgłoszenia — nazwa trafi wtedy do raw_text.
+  const institutionRow = await findInstitution(institution).catch((e) => { console.error("[zgłoszenie] instytucja:", e); return null; });
+  // Typ instytucji z bazy jest pewny; w karcie jest wybór z formularza albo rozpoznanie modelu z opisu.
+  const institutionType = (institutionRow?.institution_type as InitiativeCard["institutionType"] | undefined) ?? card.institutionType;
+  // Nazwa spoza bazy nie przepada: zespół zobaczy ją w Panelu przy treści zgłoszenia (raw_text jest prywatny).
+  const rawText = institution && !institutionRow ? `${text}\n\nInstytucja (z formularza): ${institution}` : text;
 
   // Szukamy, zanim zapiszemy nową inicjatywę — dzięki temu nie znajdzie samej siebie.
   const [gminaRow, similar, lexical, support, sources] = await Promise.all([
-    findGmina(gmina, teryt).then((g) => g ?? findGmina(card.municipality)),
+    findGmina(gmina, teryt)
+      .then((g) => g ?? (institutionRow?.teryt ? findGmina(null, institutionRow.teryt) : null))
+      .then((g) => g ?? findGmina(card.municipality)),
     similarInitiatives(card.keywords, SIMILAR_INITIATIVE_MIN_SIMILARITY),
     lexicalCandidates(original, card.keywords, ["pattern"]),
     relatedSupport(card.keywords),
@@ -64,12 +74,13 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
         submission_kind: kind,
         author_id: authorId ?? null,
         access_hash: access.hash,
-        raw_text: text,
+        raw_text: rawText,
         card,
         title: card.title,
         summary: card.summary,
         domains: card.domains,
-        institution_type: card.institutionType,
+        institution_type: institutionType,
+        institution_id: institutionRow?.id ?? null,
         stage: card.stage,
         cross_topics: card.cross,
         innovation_kind: card.innovationKind,
@@ -120,7 +131,7 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
       lemmas: card.keywords,
       domains: [...card.domains],
       tags: [card.stage, card.innovationKind, ...card.sectors, ...card.cross],
-      institutionType: card.institutionType,
+      institutionType,
       teryt: gminaRow?.teryt ?? null,
     }),
     notify({
@@ -134,7 +145,7 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
   // Wstępne ścieżki i partnerzy z samych reguł (bez oceny radaru, bez modelu) — od razu w wyniku zgłoszenia.
   const pathways = await pathwaysFor({
     innovation_kind: card.innovationKind, stage: card.stage, trl: card.trl, sectors: card.sectors, ip_status: card.ipStatus,
-    institution_type: card.institutionType, domains: card.domains, teryt: gminaRow?.teryt ?? null, card, radar: null,
+    institution_type: institutionType, domains: card.domains, teryt: gminaRow?.teryt ?? null, card, radar: null,
   }).catch((e): PathwaysView | null => { console.error("[zgłoszenie] ścieżki:", e); return null; });
 
   return {
@@ -146,6 +157,22 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
     similarSources: sources,
     pathways,
   };
+}
+
+/**
+ * Instytucja z bazy po nazwie wpisanej w formularzu: bez różnicy wielkości liter, tylko gdy pasuje dokładnie jedna.
+ * Przy dwóch o tej samej nazwie nie zgadujemy — zespół połączy zgłoszenie w Panelu.
+ */
+async function findInstitution(name: string | undefined) {
+  const q = name?.trim();
+  if (!q || q.length < 3) return null;
+  const { data, error } = await createAdminClient()
+    .from("institutions")
+    .select("id, institution_type, teryt")
+    .ilike("name", q.replace(/[\\%_]/g, (c) => `\\${c}`))
+    .limit(2);
+  if (error) throw error;
+  return data?.length === 1 ? (data[0] as { id: string; institution_type: string; teryt: string | null }) : null;
 }
 
 /**

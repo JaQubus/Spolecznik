@@ -6,7 +6,9 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusTimeline, type TimelineStep } from "@/components/ui/status-timeline";
+import { AuthorAssessmentSection } from "@/components/radar/author-assessment";
 import { maskedContactEmail } from "@/lib/author-contact";
+import { authorAssessment, type AuthorAssessment } from "@/lib/initiatives/assessment";
 import { keyMatches, rememberedKey } from "@/lib/initiatives/access";
 import { initiativeTimeline, type InitiativeStatus } from "@/lib/initiatives/status";
 import { initiativeHref } from "@/lib/knowledge/hrefs";
@@ -64,6 +66,7 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
   // Klucz autora z tej przeglądarki: tylko wtedy pokazujemy prywatny link (sam kod da się zgadnąć).
   let key: string | null = null;
   let contact: string | null = null;
+  let assessment: AuthorAssessment | null = null;
   let unavailable = false;
   if (STATUS_CODE.test(code)) {
     try {
@@ -73,7 +76,13 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         const remembered = await rememberedKey(code);
         key = keyMatches(report.accessHash, remembered) ? remembered : null;
         // Adres do powiadomień tylko dla autora (z kluczem) — i zamaskowany.
-        if (key) contact = await maskedContactEmail(code).catch(() => null);
+        if (key) {
+          [contact, assessment] = await Promise.all([
+            maskedContactEmail(code).catch(() => null),
+            // Ocena radaru tylko dla autora: zawiera cytaty z opisu, który bez publikacji jest prywatny.
+            authorAssessment(code, key).catch((e): AuthorAssessment | null => { console.error("[status] ocena radaru:", e); return null; }),
+          ]);
+        }
       }
     } catch (e) {
       console.error("[status]", e);
@@ -133,6 +142,18 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
         <h2 id="przebieg" className="text-2xl font-bold">Co się dzieje ze zgłoszeniem</h2>
         <StatusTimeline steps={steps} />
       </section>
+
+      {key && report.status !== "detected" && (
+        <div className="space-y-3">
+          <AuthorAssessmentSection code={code} accessKey={key} initial={assessment} idPrefix="status-ocena" />
+          <p>
+            <Link href={`/rozmowy?kod=${code}#kontakty`} className="underline decoration-1 underline-offset-4 hover:decoration-2">
+              Ścieżki rozwoju i dopasowani partnerzy
+            </Link>{" "}
+            są w rozmowie z zespołem {org.short}. Tam możesz poprosić o kontakt z partnerem.
+          </p>
+        </div>
+      )}
 
       {report.publicHref && (
         <p className="text-lg">

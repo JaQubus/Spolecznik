@@ -34,16 +34,25 @@ export default function Home() {
         <h2 id="jak-to-dziala" className="text-2xl font-bold">Co się dzieje ze zgłoszeniem</h2>
         <ol className="list-decimal space-y-2 pl-6 text-lg">
           <li>Opisujesz inicjatywę swoimi słowami — tekstem albo głosem. Jeśli czegoś brakuje, dopytamy.</li>
-          <li>Radar ocenia jej potencjał: czy da się ją przenieść, jaki ma wpływ, jak jest dojrzała.</li>
-          <li>Dostajesz kod zgłoszenia, podobne inicjatywy z regionu, sprawdzone rozwiązania z Polski i mentorów.</li>
-          <li>Zespół {org.short} weryfikuje zgłoszenie. Po weryfikacji inicjatywa trafia do bazy, którą widzą inne gminy.</li>
+          <li>
+            Radar porządkuje opis w kartę i ocenia potencjał według jawnych kryteriów: nowość, wpływ, dojrzałość,
+            skalowalność i szanse na komercjalizację lub finansowanie.
+          </li>
+          <li>
+            Dostajesz kod zgłoszenia, ocenę z uzasadnieniem i ścieżkę dalej: wdrożenie, komercjalizację, rozwój, ochronę
+            własności intelektualnej albo upowszechnienie, razem z dopasowanymi partnerami.
+          </li>
+          <li>
+            Zespół {org.short} weryfikuje zgłoszenie. Potem inicjatywa trafia do publicznej bazy innowacji, gdzie mogą ją
+            znaleźć firmy, inwestorzy i inne instytucje, a z partnerem łączymy Cię tylko za zgodą obu stron.
+          </li>
         </ol>
       </section>
 
       <ul className="mt-10 space-y-1">
         <li>
           <Link href="/szukam" className={linkClass}>
-            Szukasz rozwiązania dla swojej szkoły albo gminy? Opisz problem <ArrowRightIcon aria-hidden className="size-5" />
+            Szukasz rozwiązania dla swojej szkoły, uczelni albo urzędu? Opisz problem <ArrowRightIcon aria-hidden className="size-5" />
           </Link>
         </li>
         <li>

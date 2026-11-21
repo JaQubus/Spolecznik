@@ -28,8 +28,8 @@ const DESCRIPTIONS: Partial<Record<InitiativeStatus, string>> = {
   detected: "Radar znalazł ją w publicznych źródłach; czeka na potwierdzenie twórcy",
   in_review: `Zespół ${org.short} czyta zgłoszenie i sprawdza ocenę radaru`,
   featured: "Inicjatywa trafia do bazy i na mapę, inni mogą ją znaleźć",
-  supported: "Mentor albo program pomaga ją rozwinąć",
-  scaling: "Inne gminy i instytucje przenoszą ją do siebie",
+  supported: `Partner, program albo zespół ${org.short} pomaga ją rozwinąć`,
+  scaling: "Wdrażają ją inne instytucje albo rozwija ją firma",
 };
 
 /** Kroki osi czasu jak śledzenie paczki (StatusTimeline.md): Zgłoszona → W analizie → Wyróżniona → Ze wsparciem → Przenoszona dalej. */
