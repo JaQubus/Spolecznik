@@ -57,11 +57,11 @@ class RegionalPublic(unittest.TestCase):
 class Normalize(unittest.TestCase):
     def test_drops_person_fields_and_marks_synthetic(self):
         r = normalize({"source": "uprp", "external_id": "PRZYKLAD-1", "kind": "patent", "title": "Sposób",
-                       "abstract": "Opracował dr Jan Kowalski.", "institution": "Uniwersytet Rzeszowski", "inventors": ["Jan Kowalski"],
+                       "abstract": "Opracował dr Jan Kowalski.", "institution": "Uczelnia techniczna w Rzeszowie", "city": "Rzeszów", "inventors": ["Jan Kowalski"],
                        "license": "x", "synthetic": True, "keywords": [" Kompozyt "]})
         self.assertNotIn("inventors", r)
         self.assertEqual(r["abstract"], "Opracował [osoba].")
-        self.assertEqual(r["institution"], "Uniwersytet Rzeszowski (przykład)")
+        self.assertEqual(r["institution"], "Uczelnia techniczna w Rzeszowie (przykład)")
         self.assertEqual(r["institution_type"], "uczelnia")
         self.assertEqual(r["teryt"], "1863011")
         self.assertEqual(r["keywords"], ["kompozyt"])

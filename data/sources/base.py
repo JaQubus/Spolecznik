@@ -161,7 +161,8 @@ def normalize(raw: dict) -> dict:
         published = published.strftime("%Y-%m-%d")
     elif isinstance(published, str):
         published = published[:10]
-    teryt = raw.get("teryt") or (city_teryt(PUBLIC_UNIVERSITIES[university][0]) if university else None)
+    teryt = (raw.get("teryt") or (city_teryt(raw["city"]) if raw.get("city") else None)
+             or (city_teryt(PUBLIC_UNIVERSITIES[university][0]) if university else None))
     return {
         "source": raw["source"],
         "external_id": str(raw["external_id"]).strip(),
@@ -209,7 +210,11 @@ SYNTHETIC_LICENSE = "Dane przykładowe (syntetyczne) — nie pochodzą ze źród
 
 
 def save_synthetic(source: str, records: list[dict], why: str) -> Path:
-    """Migawka przykładowa dla źródła bez otwartego dostępu: każdy rekord synthetic = true, instytucja z „(przykład)”."""
+    """Migawka przykładowa dla źródła bez otwartego dostępu: każdy rekord synthetic = true, instytucja ogólna z „(przykład)”."""
+    # Zmyślony patent czy publikacja nie może nosić nazwy prawdziwej instytucji, nawet z „(przykład)”.
+    real = [r["institution"] for r in records if known_university(r.get("institution"))]
+    if real:
+        raise ValueError(f"Rekord przykładowy z nazwą prawdziwej instytucji: {real}. Użyj nazwy ogólnej i pola city.")
     rows = [normalize({**r, "source": source, "license": SYNTHETIC_LICENSE, "synthetic": True}) for r in records]
     return save_snapshot(source, rows, real=False, license=SYNTHETIC_LICENSE,
                          note=f"Migawka przykładowa. {why} Identyfikatory zaczynają się od PRZYKLAD-, żeby nie udawały prawdziwych.")

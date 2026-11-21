@@ -85,7 +85,7 @@ describe("migawki źródeł (data/raw/sources)", () => {
   test("migawka zawiera przypadek demo 2: zgłoszenie uczelni z Rzeszowa i podobne rekordy w EPO i PBN", () => {
     const composite = (r: Rec) => r.keywords.includes("kompozyt") && r.keywords.includes("recykling");
     const uprp = records.find((r) => r.source === "uprp" && r.kind === "zgloszenie_patentowe" && composite(r));
-    assert.ok(uprp?.institution?.startsWith("Politechnika Rzeszowska"));
+    assert.ok(uprp?.institution?.startsWith("Uczelnia techniczna w Rzeszowie"));
     assert.ok(records.some((r) => r.source === "epo" && composite(r)));
     assert.ok(records.some((r) => r.source === "pbn" && composite(r)));
   });

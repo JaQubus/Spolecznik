@@ -22,13 +22,13 @@ NS = {"ops": "http://ops.epo.org", "ex": "http://www.epo.org/exchange"}
 APPLICANT_QUERIES = ["politechnika rzeszowska", "uniwersytet rzeszowski", "rzeszow university of technology"]
 
 RECORDS = [
-    dict(external_id="PRZYKLAD-EP-001", kind="zgloszenie_patentowe", institution="Politechnika Rzeszowska", published_on="2026-09-23",
+    dict(external_id="PRZYKLAD-EP-001", kind="zgloszenie_patentowe", institution="Uczelnia techniczna w Rzeszowie", city="Rzeszów", published_on="2026-09-23",
          title="Method of manufacturing load-bearing parts from shredded carbon fibre reinforced composite waste",
          abstract="Production waste of carbon fibre reinforced composite is shredded, the fibres are aligned and re-bonded with a "
                   "thermoplastic resin in a press. The parts, such as aircraft cabin brackets, reach strength close to virgin composite.",
          inventors=["Jan Przykładowy"],
          keywords=["kompozyt", "włókno węglowe", "recykling", "wspornik", "lotnictwo"]),
-    dict(external_id="PRZYKLAD-EP-002", kind="zgloszenie_patentowe", institution="Uniwersytet Rzeszowski", published_on="2026-07-01",
+    dict(external_id="PRZYKLAD-EP-002", kind="zgloszenie_patentowe", institution="Uczelnia przyrodniczo-medyczna w Rzeszowie", city="Rzeszów", published_on="2026-07-01",
          title="Radar-based contactless fall detection system for indoor use",
          abstract="A millimetre-wave radar module detects falls from velocity and height of body reflections without recording images.",
          keywords=["radar", "upadek", "senior", "czujnik"]),
