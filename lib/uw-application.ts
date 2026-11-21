@@ -2,6 +2,7 @@ import { EMAIL, NIP_WEIGHTS, checksumOk, digits, getAt, parseAmount, setAt } fro
 import { formatFact } from "./implementation-plan.ts";
 import { GRANT, type InstitutionType, type PlanDocument } from "./schemas.ts";
 import type { UwContent } from "./uw-content.ts";
+import { org } from "./brand.ts";
 
 // Wniosek o grant do naboru „Usługa Wrażliwa” (#105, /wniosek-o-grant). Części I–VI jak we wzorze ROPS; merytoryczne
 // wypełniamy z planu wdrożenia (/wdrozenie), dane wnioskodawcy i oświadczenia zostają dla użytkownika.
@@ -500,7 +501,7 @@ export function formalChecks(app: GrantApplication, content: UwContent, today: s
     check("Nie przewidujesz opłat od uczestników ani kadry", fees >= 0 && app.oswiadczenia[fees] === true,
       `Potwierdzone w oświadczeniu ${fees + 1}.`, fees >= 0 ? `Potwierdź oświadczenie ${fees + 1}.` : "Brak oświadczenia o opłatach we wzorze."),
     today > content.call.closesAt
-      ? { label: "Termin naboru", status: "sprawdz", detail: `Ten nabór zakończył się ${formatDay(content.call.closesAt)}. Sprawdź na stronie ROPS, czy trwa kolejny.` }
+      ? { label: "Termin naboru", status: "sprawdz", detail: `Ten nabór zakończył się ${formatDay(content.call.closesAt)}. Sprawdź na stronie ${org.short}, czy trwa kolejny.` }
       : { label: "Termin naboru", status: "ok", detail: `Wnioski do ${formatDay(content.call.closesAt)}.` },
   ];
 }

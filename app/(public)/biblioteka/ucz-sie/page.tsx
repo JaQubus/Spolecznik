@@ -4,6 +4,7 @@ import Link from "next/link";
 import { NoDatabase } from "@/components/layout/no-database";
 import { ICON_LINK as linkClass } from "../shared";
 import { createClient, isMissingTable, isSupabaseConfigured } from "@/lib/supabase/server";
+import { org } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Ucz się" };
 
@@ -45,7 +46,7 @@ export default async function Page() {
       <header className="space-y-3">
         <h1 className="text-4xl font-bold">Ucz się</h1>
         <p className="max-w-2xl text-xl">
-          Przewodniki, raporty i narzędzia ROPS o innowacjach społecznych i o problemach, które rozwiązują. Każdy materiał opisaliśmy w kilku zdaniach, żeby łatwiej było wybrać.
+          Przewodniki, raporty i narzędzia {org.short} o innowacjach społecznych i o problemach, które rozwiązują. Każdy materiał opisaliśmy w kilku zdaniach, żeby łatwiej było wybrać.
         </p>
       </header>
 
@@ -65,7 +66,7 @@ export default async function Page() {
               <p className="mt-1">
                 <a href={m.url} className={linkClass}>
                   {m.kind === "pdf" ? <DocumentTextIcon aria-hidden className="size-5" /> : <ArrowTopRightOnSquareIcon aria-hidden className="size-5" />}
-                  {m.kind === "pdf" ? "Otwórz PDF" : "Przejdź na stronę ROPS"}
+                  {m.kind === "pdf" ? "Otwórz PDF" : `Przejdź na stronę ${org.short}`}
                   <span className="sr-only">: {m.title}</span>
                 </a>
               </p>

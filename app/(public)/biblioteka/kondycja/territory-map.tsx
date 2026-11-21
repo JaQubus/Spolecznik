@@ -14,7 +14,7 @@ export type TerritoryItem = {
 export const NO_DATA_FILL = "var(--surface-sunken)";
 
 /**
- * Kartogram gmin albo powiatów jako SVG renderowany na serwerze (granice PRG GUGiK z public/mapa/malopolska.json).
+ * Kartogram gmin albo powiatów jako SVG renderowany na serwerze (granice PRG GUGiK z public/mapa/region.json).
  * Każdy obszar to link do karty terytorium. Powiaty są w kolejności Tab; 183 gmin nie — klawiatura i czytnik
  * wybierają gminę polem „Znajdź gminę” nad mapą, a wartości są też w nazwach linków i w karcie po najechaniu.
  */

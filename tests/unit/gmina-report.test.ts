@@ -4,8 +4,9 @@ import { describe, test } from "node:test";
 import { FOCUS_MIN_SCORE, MIN_COHORT } from "../../lib/gmina-report/config.ts";
 import { buildCohorts, median, profileFor, type ReportData } from "../../lib/gmina-report/score.ts";
 import { allowedNumbers, checkSummary, numbersIn, templateSummary } from "../../lib/gmina-report/summary.ts";
+import { region } from "../../lib/brand.ts";
 
-const map = JSON.parse(readFileSync(new URL("../../public/mapa/malopolska.json", import.meta.url), "utf8"));
+const map = JSON.parse(readFileSync(new URL("../../public/mapa/region.json", import.meta.url), "utf8"));
 const data: ReportData = { gminy: map.layers.gminy, powiaty: map.layers.powiaty };
 const cohorts = buildCohorts(data.gminy.units);
 
@@ -93,7 +94,7 @@ describe("podsumowanie", () => {
   });
 
   test("odrzuca „średnią”, której w danych nie ma", () => {
-    const r = checkSummary(`${p.name}: wynik przewyższa średnią w powiatach Małopolski, co wymaga uwagi w planowaniu działań.`, allowedNumbers(p));
+    const r = checkSummary(`${p.name}: wynik przewyższa średnią w powiatach ${region.genitive}, co wymaga uwagi w planowaniu działań.`, allowedNumbers(p));
     assert.equal(r.ok, false);
   });
 

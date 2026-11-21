@@ -1,6 +1,7 @@
 import type { TimelineStep } from "@/components/ui/status-timeline";
 import { formatDate } from "./pl";
 import { NEED_STATUSES } from "./schemas";
+import { org } from "@/lib/brand";
 
 export type NeedStatus = (typeof NEED_STATUSES)[number];
 
@@ -20,7 +21,7 @@ const MAIN: NeedStatus[] = ["zgloszone", "w_analizie", "ekspert", "odpowiedz"];
 
 /** Co dzieje się na kroku, który jeszcze nie ma daty ani wiadomości od ROPS. */
 const DESCRIPTIONS: Partial<Record<NeedStatus, string>> = {
-  w_analizie: "Pracownik ROPS czyta zgłoszenie",
+  w_analizie: `Pracownik ${org.short} czyta zgłoszenie`,
   ekspert: "Ekspert dostaje zaproszenie do rozmowy",
   odpowiedz: "Odpowiedź czeka w rozmowie",
 };

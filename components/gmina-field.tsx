@@ -5,6 +5,7 @@ import { cn } from "cn";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { Input } from "@/components/ui/input";
 import type { GminaOption } from "@/lib/gminy";
+import { region } from "@/lib/brand";
 
 const MIN_CHARS = 2;
 const MAX_SUGGESTIONS = 8;
@@ -67,7 +68,7 @@ export function GminaField({ id, options, value, onValueChange, className, "aria
   const sameName = useMemo(() => options.filter((o) => nameKey(o.nazwa) === nameKey(value.text)), [options, value.text]);
   const warning = !checked || value.teryt || !value.text.trim() ? null
     : sameName.length > 1 ? `Są ${sameName.length} gminy o nazwie ${sameName[0].nazwa}. Wybierz z podpowiedzi, o którą chodzi.`
-    : sameName.length === 0 ? `Nie znaleźliśmy gminy „${value.text.trim()}” w Małopolsce. Sprawdź pisownię albo wybierz gminę z podpowiedzi.`
+    : sameName.length === 0 ? `Nie znaleźliśmy gminy „${value.text.trim()}” ${region.locative}. Sprawdź pisownię albo wybierz gminę z podpowiedzi.`
     : null;
   const warningId = `${id}-uwaga`;
 

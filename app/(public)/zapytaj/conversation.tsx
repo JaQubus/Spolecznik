@@ -9,13 +9,14 @@ import { FieldError, FieldHint } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ThreadMessage, ThreadWaiting } from "@/lib/thread-types";
+import { org } from "@/lib/brand";
 
 type ThreadView = { threadId: string | null; messages: ThreadMessage[]; waiting: ThreadWaiting };
 
 /** Co mówimy po wysłaniu, zależnie od tego, co zrobił asystent (lib/first-line.ts). */
 const SENT: Record<string, string> = {
-  odpowiedz: "Wysłano. Asystent odpowiedział na podstawie Zasobnika — źródła są pod odpowiedzią. Pracownik ROPS też ją zobaczy.",
-  przekazano: "Wysłano. Pytanie czeka na pracownika ROPS. Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.",
+  odpowiedz: `Wysłano. Asystent odpowiedział na podstawie Zasobnika — źródła są pod odpowiedzią. Pracownik ${org.short} też ją zobaczy.`,
+  przekazano: `Wysłano. Pytanie czeka na pracownika ${org.short}. Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.`,
 };
 const SENT_DEFAULT = "Wysłano. Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.";
 
@@ -99,7 +100,7 @@ export function Conversation({
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Nie udało się przekazać pytania");
       setThread({ threadId: json.threadId, messages: json.messages, waiting: json.waiting });
-      setNotice("Przekazaliśmy pytanie pracownikowi ROPS jako pilne. Odpowie tutaj, w tej rozmowie.");
+      setNotice(`Przekazaliśmy pytanie pracownikowi ${org.short} jako pilne. Odpowie tutaj, w tej rozmowie.`);
     } catch (e) {
       setError(`${e instanceof Error ? e.message : "Coś poszło nie tak"}. Spróbuj ponownie.`);
     } finally {
@@ -111,7 +112,7 @@ export function Conversation({
   const lastReply = thread.messages.findLast((m) => m.role !== "autor");
   const canMarkNotHelpful = lastReply?.role === "ai" && !!lastReply.sources?.length && thread.waiting !== "pilne";
 
-  const recipient = expertName ? `ekspert (${expertName}) i pracownik ROPS` : "pracownik ROPS";
+  const recipient = expertName ? `ekspert (${expertName}) i pracownik ${org.short}` : `pracownik ${org.short}`;
 
   return (
     <div className="space-y-8">
@@ -123,14 +124,14 @@ export function Conversation({
 
       {!closed && canMarkNotHelpful && (
         <div className="max-w-2xl space-y-2">
-          <p>Odpowiedź asystenta nie pomogła? Przekażemy pytanie pracownikowi ROPS jako pilne.</p>
+          <p>Odpowiedź asystenta nie pomogła? Przekażemy pytanie pracownikowi {org.short} jako pilne.</p>
           <Button type="button" variant="outline" disabled={!!busy} onClick={notHelpful}>
             To nie odpowiada na moje pytanie
           </Button>
         </div>
       )}
       {!closed && thread.waiting === "pilne" && (
-        <p className="max-w-2xl font-bold">Twoje pytanie czeka na pracownika ROPS jako pilne.</p>
+        <p className="max-w-2xl font-bold">Twoje pytanie czeka na pracownika {org.short} jako pilne.</p>
       )}
 
       {closed ? (

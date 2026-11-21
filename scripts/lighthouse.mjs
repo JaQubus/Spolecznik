@@ -12,11 +12,12 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { chromium } from "@playwright/test";
+import brand from "../config/brand.json" with { type: "json" };
 
 const LIGHTHOUSE = "lighthouse@13";
 const A11Y_MIN = 95;
 // Ścieżka główna mieszkańca: start → opis problemu → status (kod nieistniejący też jest ekranem) → rozmowa.
-const PAGES = ["/", "/opisz", "/status/SPL-AAAA", "/zapytaj", "/pomysl", "/biblioteka"];
+const PAGES = ["/", "/opisz", `/status/${brand.statusPrefix}-AAAA`, "/zapytaj", "/pomysl", "/biblioteka"];
 const CATEGORIES = ["performance", "accessibility", "best-practices", "seo"];
 
 const args = process.argv.slice(2);

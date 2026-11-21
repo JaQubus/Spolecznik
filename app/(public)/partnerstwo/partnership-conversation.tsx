@@ -9,6 +9,7 @@ import { FieldError, FieldHint } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ThreadMessage } from "@/lib/thread-types";
+import { org } from "@/lib/brand";
 
 /** Rozmowa gmin w partnerstwie. Jak rozmowa o zgłoszeniu: autor wchodzi po kodzie i kluczu, wszystko przez /api/partnerstwa. */
 export function PartnershipConversation({ code, threadId, initial }: { code: string; threadId: string; initial: ThreadMessage[] }) {
@@ -73,7 +74,7 @@ export function PartnershipConversation({ code, threadId, initial }: { code: str
         <div className="space-y-2">
           <Label htmlFor="wiadomosc">Twoja wiadomość</Label>
           <FieldHint id="wiadomosc-pomoc">
-            Przeczytają ją gminy w partnerstwie i pracownik ROPS. Podpiszemy ją nazwą Twojej gminy.
+            Przeczytają ją gminy w partnerstwie i pracownik {org.short}. Podpiszemy ją nazwą Twojej gminy.
             Nie podawaj nazwisk mieszkańców, numerów telefonów ani adresów.
           </FieldHint>
           <FieldError id="wiadomosc-blad">{fieldError}</FieldError>

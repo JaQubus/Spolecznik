@@ -16,6 +16,7 @@ import { GROUP_LABELS } from "@/lib/taxonomy";
 import { todayInPoland } from "@/lib/pl";
 import { callStatus, formatDay, frameworkPlan } from "@/lib/usluga-wrazliwa";
 import { safeDecode } from "../../shared";
+import { org } from "@/lib/brand";
 
 export async function generateMetadata(props: PageProps<"/biblioteka/innowacja/[slug]">): Promise<Metadata> {
   const i = await innovationPage(safeDecode((await props.params).slug));
@@ -48,7 +49,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
         ]} />
         <h1 className="text-4xl font-bold">{i.title}</h1>
         {i.synthetic && (
-          <p className="text-base text-muted-foreground">Przykładowe dane do pokazu, nie prawdziwa innowacja z Biblioteki ROPS.</p>
+          <p className="text-base text-muted-foreground">Przykładowe dane do pokazu, nie prawdziwa innowacja z Biblioteki {org.short}.</p>
         )}
 
         <dl className="grid max-w-[48rem] gap-x-6 gap-y-3 text-lg sm:grid-cols-[auto_1fr]">
@@ -79,7 +80,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
           )}
         </dl>
         {i.dissemination && (
-          <p className="text-lg"><strong>Wybrana przez ROPS do upowszechniania</strong> — przetestowana i polecana do wdrażania w innych miejscach.</p>
+          <p className="text-lg"><strong>Wybrana przez {org.short} do upowszechniania</strong> — przetestowana i polecana do wdrażania w innych miejscach.</p>
         )}
         {i.etrSummary && <EasyText text={i.etrSummary} />}
       </div>
@@ -132,7 +133,7 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
             <li>
               <a href={i.sourceUrl} className={`inline-flex items-start gap-2 ${link}`}>
                 <ArrowTopRightOnSquareIcon aria-hidden className="mt-1 size-5 shrink-0" />
-                Zobacz innowację na stronie ROPS w Krakowie
+                Zobacz innowację na stronie {org.shortWithCity}
               </a>
             </li>
           )}
@@ -157,20 +158,20 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
           <div className="max-w-[48rem] space-y-2 text-lg">
             {call.open ? (
               <p>
-                ROPS w Krakowie wybrał tę innowację do {call.name} naboru „Usługa Wrażliwa”: gmina, ośrodek pomocy społecznej
+                {org.shortWithCity} wybrał tę innowację do {call.name} naboru „Usługa Wrażliwa”: gmina, ośrodek pomocy społecznej
                 albo organizacja może dostać do 600 tys. zł na jej wdrożenie. Wnioski do {formatDay(call.closesAt)}.
                 „Jak to wdrożyć u nas?” przygotuje plan, a z niego szkic wniosku o grant.
               </p>
             ) : (
               <p>
-                ROPS w Krakowie wybrał tę innowację do {call.name} naboru „Usługa Wrażliwa” na wdrożenie usług społecznych.
+                {org.shortWithCity} wybrał tę innowację do {call.name} naboru „Usługa Wrażliwa” na wdrożenie usług społecznych.
                 Ten nabór jest już zamknięty. Ramowy Plan Wdrożenia i „Jak to wdrożyć u nas?” pomogą przygotować usługę
                 przed kolejnym naborem.
               </p>
             )}
             <a href={framework.url} className={`inline-flex items-start gap-2 ${link}`}>
               <ArrowDownTrayIcon aria-hidden className="mt-1 size-5 shrink-0" />
-              Pobierz Ramowy Plan Wdrożenia tej innowacji (PDF, rops.krakow.pl)
+              Pobierz Ramowy Plan Wdrożenia tej innowacji (PDF, {org.domain})
             </a>
           </div>
         )}

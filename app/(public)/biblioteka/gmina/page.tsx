@@ -4,10 +4,11 @@ import { Breadcrumbs } from "@/components/knowledge/breadcrumbs";
 import { REPORT_UNITS } from "@/lib/gmina-report";
 import { LINK as linkClass } from "../shared";
 import { GminaPicker } from "./gmina-picker";
+import { region } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Raport gminy · Biblioteka i wiedza",
-  description: "Dane każdej gminy Małopolski zestawione z gminami podobnymi i sprawdzone rozwiązania z Biblioteki Innowacji Społecznych.",
+  description: `Dane każdej gminy ${region.genitive} zestawione z gminami podobnymi i sprawdzone rozwiązania z Biblioteki Innowacji Społecznych.`,
 };
 
 /** Wybór gminy do raportu. Lista wszystkich gmin pod wyszukiwarką działa też bez JavaScriptu. */

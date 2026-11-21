@@ -14,6 +14,7 @@ import random
 from datetime import date, datetime, timedelta, timezone
 
 from common import OUT, ROOT, read_json, write_json
+from region import STATUS_PREFIX
 
 SEED = 42
 NEED_COUNT = 200
@@ -196,7 +197,7 @@ TEST_FEEDBACK = [
 
 def status_code(rng: random.Random, used: set[str]) -> str:
     while True:
-        code = "SPL-" + "".join(rng.choice(ALPHABET) for _ in range(4))
+        code = f"{STATUS_PREFIX}-" + "".join(rng.choice(ALPHABET) for _ in range(4))
         if code not in used:
             used.add(code)
             return code

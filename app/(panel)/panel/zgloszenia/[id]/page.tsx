@@ -23,8 +23,9 @@ import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
 import { assignExpert, removePersonalData, updateNeedStatus } from "../../actions";
 import { PartnershipSection } from "../../partnership-section";
 import { ThreadSection } from "../../thread-section";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata = { title: "Zgłoszenie · Panel ROPS" };
+export const metadata = { title: panelTitle("Zgłoszenie") };
 
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 

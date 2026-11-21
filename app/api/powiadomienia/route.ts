@@ -4,13 +4,14 @@ import { currentExpert } from "@/lib/expert";
 import type { NotificationsResponse } from "@/lib/notification-types";
 import { channelsFor, listNotifications, notificationsEnabled } from "@/lib/notifications";
 import { rateLimit } from "@/lib/rate-limit";
+import { brand } from "@/lib/brand";
 
 /**
  * „Widziane do” zapisujemy w ciasteczku, nie w wierszu powiadomienia: powiadomienia do całej roli admin to jeden
  * wiersz dla wszystkich adminów, więc jedno pole „przeczytane” oznaczałoby je każdemu (dlatego migracja 0017 usuwa
  * nieużywane read_at). Wartość to „kto|czas”, żeby po zmianie konta w tej samej przeglądarce nie przenosić cudzego stanu.
  */
-const SEEN_COOKIE = "spolecznik-powiadomienia";
+const SEEN_COOKIE = brand.cookies.notificationsSeen;
 const viewerKey = (v: Viewer) => v.id ?? `test-${v.role}`;
 // Czas dokładnie tak, jak zwraca go Postgres (z mikrosekundami): Date by je obciął i to samo powiadomienie
 // liczyłoby się dalej jako nowe.

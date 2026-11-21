@@ -17,6 +17,7 @@ import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TEST_STATUS_LABELS } from "@/lib/test-status";
 import { ensureThread, expertName, needThread, nudge, postNeedMessage, setReportStatus, threadPayload } from "@/lib/threads";
+import { org } from "@/lib/brand";
 
 export type ActionResult = { ok: boolean; message: string } | null;
 
@@ -55,7 +56,7 @@ async function setStatus(
   }
   // Autor bez konta dowie się z e-maila, jeśli go podał (#65).
   await emailAuthor("potrzeba", needId, from === patch.status
-    ? "ROPS dodał wiadomość do zgłoszenia"
+    ? `${org.short} dodał wiadomość do zgłoszenia`
     : `Zgłoszenie ma nowy status: ${NEED_STATUS_LABELS[patch.status]}`);
 }
 

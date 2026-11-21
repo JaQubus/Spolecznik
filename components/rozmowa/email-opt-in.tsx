@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FieldError, FieldHint } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { org } from "@/lib/brand";
 
 /**
  * Nieobowiązkowy e-mail do powiadomień o zgłoszeniu (#65): po wysłaniu, obok prywatnego linku, bo dopiero
@@ -61,7 +62,7 @@ export function EmailOptIn({ code, accessKey, current = null, id = "email-powiad
       <Label htmlFor={id}>{saved ? "Zmień e-mail do powiadomień" : "Twój e-mail (nieobowiązkowy)"}</Label>
       <FieldHint id={`${id}-pomoc`}>
         {saved && <>Powiadomienia idą teraz na: <strong>{saved}</strong>. </>}
-        Napiszemy, gdy ROPS albo ekspert odpowie lub zmieni się status. Użyjemy adresu tylko do tego zgłoszenia,
+        Napiszemy, gdy {org.short} albo ekspert odpowie lub zmieni się status. Użyjemy adresu tylko do tego zgłoszenia,
         a w mailu nie będzie jego treści. Zmienisz go albo usuniesz w każdej chwili tutaj, na stronie statusu
         zgłoszenia albo po otwarciu prywatnego linku.
       </FieldHint>

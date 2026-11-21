@@ -10,8 +10,9 @@ import { canUseHybridSearch } from "@/lib/knowledge/indexing";
 import { MATERIAL_KIND_LABELS } from "@/lib/knowledge/labels";
 import { AREA_LABELS, GROUP_LABELS } from "@/lib/taxonomy";
 import { reindexAll } from "./actions";
+import { panelTitle } from "@/lib/brand";
 
-export const metadata: Metadata = { title: "Zarządzaj wiedzą · Panel ROPS", robots: { index: false } };
+export const metadata: Metadata = { title: panelTitle("Zarządzaj wiedzą"), robots: { index: false } };
 
 const TABS = [
   { key: "innowacja", label: "Innowacje", add: "Dodaj innowację" },

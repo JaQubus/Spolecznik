@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { brand } from "@/lib/brand";
 
 // Szablon tytułu z layoutu nie obejmuje not-found, więc tytuł jest pełny.
 const LINKS = [
@@ -12,7 +13,7 @@ const LINKS = [
 export default function NotFound() {
   return (
     <section className="max-w-2xl space-y-6">
-      <title>Nie ma takiej strony · Społecznik</title>
+      <title>{`Nie ma takiej strony · ${brand.name}`}</title>
       <h1 className="text-3xl font-bold">Nie ma takiej strony</h1>
       <p className="text-lg">
         Adres mógł się zmienić albo zawierać literówkę. Sprawdź go jeszcze raz albo zacznij od strony głównej.

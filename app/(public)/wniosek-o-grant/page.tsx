@@ -9,6 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { UW_CONTENT, formatDay } from "@/lib/usluga-wrazliwa";
 import { GrantForm } from "./grant-form";
+import { org } from "@/lib/brand";
 
 export const metadata = { title: "Wniosek o grant „Usługa Wrażliwa”" };
 
@@ -42,9 +43,9 @@ export default async function Page(props: PageProps<"/wniosek-o-grant">) {
       <div className="space-y-4 print:hidden">
         <h1 className="text-3xl font-bold">Wniosek o grant „Usługa Wrażliwa”</h1>
         <p className="max-w-2xl text-lg">
-          Szkic wniosku do naboru Regionalnego Ośrodka Polityki Społecznej w Krakowie na wdrożenie usługi społecznej opartej
+          Szkic wniosku do naboru {org.nameGenitive} na wdrożenie usługi społecznej opartej
           na innowacji: grant do 600 tys. zł, bez wkładu własnego. Wniosek składa się przez{" "}
-          <a href={content.call.formUrl} className={link}>formularz elektroniczny ROPS</a>. Tutaj przygotujesz jego treść.
+          <a href={content.call.formUrl} className={link}>formularz elektroniczny {org.short}</a>. Tutaj przygotujesz jego treść.
         </p>
         {loaded ? (
           <Alert tone="success" title="Wypełniliśmy wniosek z Twojego planu wdrożenia">
@@ -67,7 +68,7 @@ export default async function Page(props: PageProps<"/wniosek-o-grant">) {
           <Alert title={`Nabór zakończył się ${formatDay(content.call.closesAt)}`}>
             <p>
               Teraz nie da się złożyć tego wniosku. Szkic możesz przygotować na kolejny nabór „Usługi Wrażliwej”: sprawdź na{" "}
-              <a href={content.call.url} className={link}>stronie ROPS</a>, czy został ogłoszony, i porównaj listę innowacji.
+              <a href={content.call.url} className={link}>stronie {org.short}</a>, czy został ogłoszony, i porównaj listę innowacji.
             </p>
           </Alert>
         )}
@@ -75,7 +76,7 @@ export default async function Page(props: PageProps<"/wniosek-o-grant">) {
           <Alert title="Tej innowacji nie ma w obecnym naborze">
             <p>
               „{loaded.plan.innovation.title}” nie jest na liście innowacji tego naboru. Opis z planu zostaje, ale w kroku 1 wybierz
-              innowację z listy albo sprawdź na <a href={content.call.url} className={link}>stronie naboru</a>, czy ROPS ogłosił kolejny.
+              innowację z listy albo sprawdź na <a href={content.call.url} className={link}>stronie naboru</a>, czy {org.short} ogłosił kolejny.
             </p>
           </Alert>
         )}

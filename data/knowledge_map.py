@@ -1,7 +1,7 @@
-"""Mapa Małopolski dla Zasobnika: prawdziwe granice gmin i powiatów + dane, które już mamy.
+"""Mapa regionu dla Zasobnika: prawdziwe granice gmin i powiatów + dane, które już mamy.
 
 Granice: Państwowy Rejestr Granic (GUGiK), usługa WFS AdministrativeBoundaries, układ EPSG:2180.
-Pobieramy 183 gminy województwa (TERYT 12*), upraszczamy je mapshaperem z zachowaniem topologii
+Pobieramy gminy województwa (TERYT z prefiksem z config/brand.json), upraszczamy je mapshaperem z zachowaniem topologii
 (wspólne granice sąsiadów zostają wspólne, bez szpar), a powiaty i obrys województwa powstają
 przez scalenie gmin — więc granice warstw pokrywają się co do punktu.
 
@@ -11,8 +11,8 @@ Dane:
 - powiaty: Internetowy Obserwator Statystyk Społecznych ROPS (../dane/powiaty, 2024) — wszystkie wskaźniki.
 Opisy i kategorie wskaźników: map_indicators.py.
 
-Wynik: ../public/mapa/malopolska.json — ścieżki SVG gotowe do narysowania (viewBox w metrach
-przeskalowanych do 1000 px szerokości) i wartości wskaźników. Strona Kondycji Małopolski czyta go na serwerze
+Wynik: ../public/mapa/region.json — ścieżki SVG gotowe do narysowania (viewBox w metrach
+przeskalowanych do 1000 px szerokości) i wartości wskaźników. Strona Kondycji regionu czyta go na serwerze
 (kondycja-view.tsx) i rysuje mapę jako SVG.
 
 Wymaga mapshapera: npx mapshaper (albo ścieżka w zmiennej MAPSHAPER).
@@ -29,17 +29,19 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from common import ROOT, write_json
+from region import EXPECTED_GMINY, MAP_LABELS, TERYT_PREFIX
 from map_indicators import GMINA_INDICATORS, POWIAT_INDICATORS, POWIAT_SKIPPED, check
 from scrape_knowledge import fetch
 
 WFS = "https://mapy.geoportal.gov.pl/wss/service/PZGIK/PRG/WFS/AdministrativeBoundaries"
+# Gminy i powiaty województwa: kod TERYT zaczyna się od kodu województwa (config/brand.json).
 FILTER = ('<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:PropertyIsLike wildCard="*" singleChar="?" escapeChar="!">'
-          "<fes:ValueReference>JPT_KOD_JE</fes:ValueReference><fes:Literal>12*</fes:Literal></fes:PropertyIsLike></fes:Filter>")
+          f"<fes:ValueReference>JPT_KOD_JE</fes:ValueReference><fes:Literal>{TERYT_PREFIX}*</fes:Literal></fes:PropertyIsLike></fes:Filter>")
 NS = {"gml": "http://www.opengis.net/gml/3.2", "ms": "http://mapserver.gis.umn.edu/mapserver"}
-DEST = ROOT.parent / "public" / "mapa" / "malopolska.json"
+DEST = ROOT.parent / "public" / "mapa" / "region.json"
 WIDTH = 1000  # szerokość viewBox
-# Podpisy na mapie dla orientacji (TERYT gminy → nazwa): największe miasta i Zakopane na południu.
-LABELS = {"1261011": "Kraków", "1263011": "Tarnów", "1262011": "Nowy Sącz", "1217011": "Zakopane"}
+# Podpisy na mapie dla orientacji (TERYT gminy → nazwa): config/brand.json, region.mapLabels.
+LABELS = MAP_LABELS
 
 PRG_SOURCE = {"title": "Państwowy Rejestr Granic (GUGiK)", "url": "https://www.geoportal.gov.pl/pl/dane/panstwowy-rejestr-granic-prg/"}
 BDL_SOURCE = {"title": "GUS, Bank Danych Lokalnych", "url": "https://bdl.stat.gov.pl/"}
@@ -217,7 +219,7 @@ def main() -> None:
     gml_powiaty = download("A02_Granice_powiatow")
     names = powiat_names(gml_powiaty)
     fc = gminy_geojson(gml_gminy)
-    if len(fc["features"]) < 180:
+    if len(fc["features"]) < EXPECTED_GMINY - 3:
         sys.exit(f"Za mało gmin z PRG: {len(fc['features'])}")
 
     with tempfile.TemporaryDirectory() as tmp:

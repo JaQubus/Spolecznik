@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate, formatNumber, plural } from "@/lib/pl";
 import type { InnovationMatch, MatchResponse, NeedCard } from "@/lib/schemas";
 import { AreaBadge } from "@/components/knowledge/icons";
+import { org, region } from "@/lib/brand";
 
 function fitLabel(fit: number): string {
   if (fit >= 80) return "Bardzo dobrze pasuje";
@@ -49,7 +50,7 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
           <Alert title="To ważna informacja">
             <p>
               W bibliotece nie ma jeszcze rozwiązania, które dobrze pasuje do tego problemu.
-              Zapisaliśmy go na mapie potrzeb Małopolski — dzięki temu ROPS wie, gdzie szukać nowych pomysłów.
+              Zapisaliśmy go na mapie potrzeb {region.genitive} — dzięki temu {org.short} wie, gdzie szukać nowych pomysłów.
             </p>
             <p>Masz pomysł, jak to rozwiązać? Pomożemy go opisać.</p>
           </Alert>
@@ -69,7 +70,7 @@ export function MatchResults({ card, result, onReset }: { card: NeedCard; result
           </h2>
           <p>{similarNeeds.gminy.slice(0, 6).join(", ")}{similarNeeds.gminy.length > 6 ? " i inne" : ""}.</p>
           <p className="text-muted-foreground">
-            Razem łatwiej znaleźć rozwiązanie i pieniądze na nie. Zaprosimy te gminy do wspólnej rozmowy z ROPS —
+            Razem łatwiej znaleźć rozwiązanie i pieniądze na nie. Zaprosimy te gminy do wspólnej rozmowy z {org.short} —
             dołączą, jeśli się zgodzą.
           </p>
           <Button asChild variant="outline">

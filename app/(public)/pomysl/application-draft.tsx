@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { formatDate } from "@/lib/pl";
 import type { ApplicationDraft as Draft } from "@/lib/schemas";
+import { brand } from "@/lib/brand";
 
 export type ActiveCall = { id: string; title: string; closesAt: string | null };
 
@@ -47,7 +48,7 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
     return (
       <div data-print-root className="space-y-8">
         <div className="space-y-2">
-          <PrintNote dated>Szkic wniosku · Społecznik</PrintNote>
+          <PrintNote dated>Szkic wniosku · {brand.name}</PrintNote>
           <h2 ref={heading} tabIndex={-1} className="text-2xl font-bold outline-none">Szkic wniosku{call ? `: ${call.title}` : ""}</h2>
           <p className="text-muted-foreground">To szkic do poprawienia. Miejsca oznaczone „DO UZUPEŁNIENIA” wymagają Twoich danych.</p>
         </div>
@@ -80,7 +81,7 @@ export function ApplicationDraft({ ideaId, calls }: { ideaId: string; calls: Act
           </section>
         )}
         <PrintNote>
-          Szkic przygotowany w Społeczniku z fiszki pomysłu. Miejsca oznaczone „DO UZUPEŁNIENIA” wymagają Twoich danych.
+          Szkic przygotowany w {brand.nameLocative} z fiszki pomysłu. Miejsca oznaczone „DO UZUPEŁNIENIA” wymagają Twoich danych.
         </PrintNote>
         <Button type="button" variant="outline" onClick={() => window.print()} className="print:hidden">
           <PrinterIcon aria-hidden className="size-4" /> Wydrukuj albo zapisz jako PDF

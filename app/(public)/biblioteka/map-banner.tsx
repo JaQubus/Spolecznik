@@ -1,5 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { region } from "@/lib/brand";
 
 /**
  * Wejście do Kondycji Małopolski: przyciemniona mapa gmin w tle i jeden biały przycisk.
@@ -20,7 +21,7 @@ export function MapBanner() {
       />
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-[#15181c] from-25% via-[#15181c]/75 to-[#15181c]/10 max-md:via-[#15181c]/85" />
       <div className="max-w-xl space-y-4 px-6 py-10 md:px-12 md:py-16">
-        <h2 id="kondycja" className="text-3xl font-bold">Kondycja Małopolski</h2>
+        <h2 id="kondycja" className="text-3xl font-bold">Kondycja {region.genitive}</h2>
         <p className="text-lg text-white/90">
           Liczby o mieszkańcach każdej gminy i każdego powiatu: ludność, praca, pomoc społeczna, szkoły i usługi. Zobacz, jak wypada Twoja okolica.
         </p>

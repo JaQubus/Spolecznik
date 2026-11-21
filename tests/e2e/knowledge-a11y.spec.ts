@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { region } from "../../lib/brand";
 import { axe, headingLevels, horizontalOverflow } from "./a11y";
 
 // Kryterium akceptacji modułu II: axe bez błędów na kluczowych ekranach Zasobnika (WCAG 2.1 A i AA).
@@ -8,10 +9,10 @@ const PAGES = [
   ["strona obszaru", "/biblioteka/obszar/seniorzy"],
   ["karta innowacji", "/biblioteka/innowacja/senior-cuder"],
   ["zakładka Materiały", "/biblioteka?tab=materials"],
-  ["zakładka Wyzwania Małopolski", "/biblioteka?tab=challenges"],
+  [`zakładka Wyzwania ${region.genitive}`, "/biblioteka?tab=challenges"],
   ["Raport gminy: wybór gminy", "/biblioteka/gmina"],
-  ["Raport gminy: gmina wiejska", "/biblioteka/gmina/1201022"],
-  ["Raport gminy: Kraków", "/biblioteka/gmina/1261011"],
+  ["Raport gminy: gmina wiejska", `/biblioteka/gmina/${region.municipalityExamples.rural}`],
+  [`Raport gminy: ${region.cityCountyExample.name}`, `/biblioteka/gmina/${region.municipalityExamples.city}`],
 ] as const;
 
 for (const [name, url] of PAGES) {

@@ -5,6 +5,7 @@ import { forbidden, redirect } from "next/navigation";
 import { cache } from "react";
 import { createAdminClient } from "./supabase/admin";
 import { createClient, isSupabaseConfigured } from "./supabase/server";
+import { brand } from "@/lib/brand";
 
 /** id i email są tylko przy sesji Supabase; konto testowe ich nie ma. */
 export type Viewer = { id: string | null; email: string | null; role: string; label: string; via: "test" | "supabase" };
@@ -17,9 +18,9 @@ export function safeNext(next: string | null | undefined, fallback = "/panel"): 
 // ── Logowanie testowe ───────────────────────────────────────
 // Wybór roli jednym przyciskiem na /logowanie. Ciasteczko jest podpisane (HMAC), a rolę i tak sprawdza
 // serwer przy każdym żądaniu. Lokalnie działa zawsze; na serwerze tylko z TEST_LOGIN=1 i własnym TEST_LOGIN_SECRET.
-export const TEST_COOKIE = "spolecznik-test";
+export const TEST_COOKIE = brand.cookies.testRole;
 // Ekspert testowy działa jako jeden z ekspertów w bazie (TEST_EXPERT_ID albo pierwszy alfabetycznie) — lib/expert.ts.
-export const TEST_ROLES = { admin: "Administrator ROPS", ekspert: "Ekspert", mieszkaniec: "Mieszkaniec" } as const;
+export const TEST_ROLES = { admin: `Administrator ${brand.org.short}`, ekspert: "Ekspert", mieszkaniec: "Mieszkaniec" } as const;
 export type TestRole = keyof typeof TEST_ROLES;
 
 const testSecret = (): string | null =>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { STATUS_CODE } from "./brand.ts";
 
 // Oś 1: obszary Mapy Wyzwań Społecznych
 export const MWS_AREAS = [
@@ -128,8 +129,8 @@ export const Fiszka = z.object({
 });
 export type Fiszka = z.infer<typeof Fiszka>;
 
-/** Kod zgłoszenia z lib/status-code.ts (bez 0, 1, I, O). */
-export const STATUS_CODE = /^SPL-[2-9A-HJ-NP-Z]{4}$/;
+/** Kod zgłoszenia z lib/status-code.ts (bez 0, 1, I, O); prefiks z config/brand.json. */
+export { STATUS_CODE };
 
 // /api/ideas: zgłoszenie pomysłu z Pracowni
 export const IdeaRequest = z.object({
