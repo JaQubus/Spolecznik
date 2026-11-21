@@ -99,7 +99,7 @@ describe("planToText", () => {
     const doc: PlanDocument = {
       id: null,
       createdAt: "2026-10-04T10:00:00Z",
-      source: { kind: "initiative", id: "i1", title: "Robotyka w małych szkołach", href: "/inicjatywy/robotyka" },
+      source: { kind: "initiative", id: "i1", title: "Robotyka w małych szkołach", href: "/innowacje/robotyka" },
       gmina: { teryt: g.teryt, nazwa: g.name, label: `${g.name} (gmina, powiat ${g.county})` },
       input: { institutionType: "szkola_podstawowa", budget: "do_20" },
       plan: checkPlan(raw, { facts, partners: [], budget: "do_20" }),

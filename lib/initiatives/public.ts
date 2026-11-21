@@ -21,6 +21,7 @@ export type PublicInitiative = {
   trl: number | null;
   ip_status: string | null;
   institution_name: string | null;
+  institution_slug: string | null;
   teryt: string | null;
   county_teryt: string | null;
   municipality: string | null;
@@ -36,10 +37,12 @@ export type PublicInitiative = {
   created_at: string;
 };
 
-const LIST = "id, slug, title, summary, domains, institution_type, stage, cross_topics, innovation_kind, sectors, trl, ip_status, institution_name, teryt, county_teryt, municipality, county, signal, status, nominations_count, adoptions_count, avg_rating, synthetic, created_at";
+const LIST = "id, slug, title, summary, domains, institution_type, stage, cross_topics, innovation_kind, sectors, trl, ip_status, institution_name, institution_slug, teryt, county_teryt, municipality, county, signal, status, nominations_count, adoptions_count, avg_rating, synthetic, created_at";
 
 export type InitiativeFilter = {
   domain?: DomainKey; institution?: InstitutionKey; stage?: StageKey; kind?: InnovationKindKey; sector?: SectorKey; county?: string; q?: string;
+  /** TRL co najmniej (innowacje bez TRL odpadają) i najniższy sygnał 0–100. */
+  trlMin?: number; signalMin?: number;
 };
 
 export const publicInitiativesAvailable = publicClientConfigured;
@@ -57,6 +60,8 @@ export async function listPublicInitiatives(f: InitiativeFilter = {}, limit = 50
   if (f.kind) query = query.eq("innovation_kind", f.kind);
   if (f.sector) query = query.contains("sectors", [f.sector]);
   if (f.county) query = query.eq("county_teryt", f.county);
+  if (f.trlMin != null) query = query.gte("trl", f.trlMin);
+  if (f.signalMin != null) query = query.gte("signal", f.signalMin);
   const { data, error } = await query;
   if (error) throw error;
   return ((data ?? []) as unknown as PublicInitiative[]).map((r) => ({ ...r, avg_rating: r.avg_rating == null ? null : Number(r.avg_rating) }));

@@ -27,7 +27,7 @@ export const ADOPTION_COLUMNS =
 
 /** Tytuł i link źródła adopcji: inicjatywa z regionu albo rozwiązanie z Polski. */
 export function adoptionSource(r: Pick<AdoptionRow, "initiatives" | "patterns">): { title: string; href: string | null } {
-  if (r.initiatives) return { title: r.initiatives.title, href: r.initiatives.slug ? `/inicjatywy/${r.initiatives.slug}` : null };
+  if (r.initiatives) return { title: r.initiatives.title, href: r.initiatives.slug ? `/innowacje/${r.initiatives.slug}` : null };
   if (r.patterns) return { title: r.patterns.title, href: r.patterns.slug ? `/rozwiazania/${r.patterns.slug}` : null };
   return { title: "Pozycja usunięta", href: null };
 }

@@ -27,7 +27,7 @@ async function loadSource(kind: "initiative" | "pattern", id: string): Promise<S
     const card = (data.card ?? {}) as { problem?: string; solution?: string; effects?: string | null; beneficiaries?: string | null };
     return {
       title: data.title as string,
-      href: data.slug ? initiativeHref(data.slug as string) : "/inicjatywy",
+      href: data.slug ? initiativeHref(data.slug as string) : "/innowacje",
       lemmas: lemmasOr(data.title as string),
       text: [
         `Tytuł: ${data.title}`, `Streszczenie: ${data.summary}`,

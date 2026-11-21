@@ -74,9 +74,9 @@ describe("mapowanie wierszy", () => {
   });
 
   test("link prowadzi do strony inicjatywy", () => {
-    assert.equal(toSummary(ROW, "https://r.example").url, "https://r.example/inicjatywy/robotyka");
-    assert.equal(toSummary({ ...ROW, slug: null }, "https://r.example").url, `https://r.example/inicjatywy/${ROW.id}`);
-    assert.equal(toSummary({ ...ROW, slug: "dom/ogród" }, "https://r.example").url, "https://r.example/inicjatywy/dom%2Fogr%C3%B3d");
+    assert.equal(toSummary(ROW, "https://r.example").url, "https://r.example/innowacje/robotyka");
+    assert.equal(toSummary({ ...ROW, slug: null }, "https://r.example").url, `https://r.example/innowacje/${ROW.id}`);
+    assert.equal(toSummary({ ...ROW, slug: "dom/ogród" }, "https://r.example").url, "https://r.example/innowacje/dom%2Fogr%C3%B3d");
   });
 
   test(`teryt przyjmuje tylko powiat z ${region.genitive}`, () => {
