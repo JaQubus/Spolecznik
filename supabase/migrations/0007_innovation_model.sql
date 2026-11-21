@@ -23,7 +23,6 @@ create index institutions_teryt on institutions (teryt);
 -- ris (ręczne inteligentne specjalizacje) zastępują sektory PCI ze słownika; widok public_initiatives
 -- zależy od tej kolumny, więc tworzymy go od nowa niżej.
 drop view public_initiatives;
-alter table initiatives drop column ris;
 
 alter table initiatives
   add column innovation_kind text,                       -- klucz innovationKinds
@@ -33,6 +32,15 @@ alter table initiatives
   add column institution_id  uuid references institutions on delete set null,
   -- TRL opisuje gotowość technologii — dla innowacji organizacyjnej czy edukacyjnej nie ma sensu.
   add constraint initiatives_trl_only_technological check (trl is null or innovation_kind = 'technologiczna');
+
+-- Istniejące wiersze: sektory z dawnych ris, które są kluczami słownika (resztę zastępuje „inne”), typ innowacji
+-- z karty (intake sprzed 0007 go nie ustawiał, więc domyślnie „spoleczna” — bez TRL, tak jak wymaga check).
+update initiatives set
+  sectors = coalesce(
+    nullif(array(select r from unnest(ris) r where r in ('lotnictwo_kosmos', 'motoryzacja', 'jakosc_zycia', 'ict')), '{}'),
+    array['inne']),
+  innovation_kind = coalesce(card->>'innovationKind', 'spoleczna');
+alter table initiatives drop column ris;
 
 create index initiatives_sectors on initiatives using gin (sectors);
 create index initiatives_institution on initiatives (institution_id);
@@ -100,7 +108,8 @@ alter table creators            enable row level security;
 alter table initiative_creators enable row level security;
 alter table partners            enable row level security;
 
-create policy "publiczny odczyt" on institutions for select using (true);
+-- Tabela ma REGON i domenę służbową, więc publicznie tylko widok public_institutions (niżej); sama tabela dla admina.
+create policy "admin" on institutions for select using (is_admin());
 create policy "publiczny odczyt aktywnych" on partners for select using (active or is_admin());
 -- Twórcy tylko dla admina i samego twórcy; publicznie przez widok public_initiative_creators.
 create policy "twórca lub admin" on creators for select using (profile_id = auth.uid() or is_admin());
@@ -123,6 +132,11 @@ where i.published and i.duplicate_of is null and i.status <> 'archived';
 
 grant select on public_initiatives to anon, authenticated;
 
+create view public_institutions as
+select id, slug, name, institution_type, teryt, synthetic from institutions;
+
+grant select on public_institutions to anon, authenticated;
+
 -- Twórcy opublikowanych inicjatyw, którzy zgodzili się na pokazanie (osoba niepełnoletnia: także opiekun).
 -- Bez podpisu pokazujemy samą rolę („Uczeń”), więc zespół widać, nawet gdy nikt nie chce być wymieniony z nazwy.
 create view public_initiative_creators as
@@ -134,6 +148,23 @@ join initiatives i on i.id = ic.initiative_id
 where i.published and i.duplicate_of is null and i.status <> 'archived';
 
 grant select on public_initiative_creators to anon, authenticated;
+
+-- ── Zapis twórców w jednej transakcji ───────────────────────
+-- Wołane z serwera (service_role) przy zgłoszeniu: twórcy i powiązania powstają razem albo wcale.
+create function add_initiative_creators(p_initiative uuid, p_roles text[]) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  new_id uuid;
+  i int;
+begin
+  for i in 1 .. coalesce(array_length(p_roles, 1), 0) loop
+    -- Uczeń domyślnie liczy się jako osoba poniżej 18 lat — Panel zmienia to po potwierdzeniu.
+    insert into creators (role, under_18) values (p_roles[i], p_roles[i] = 'uczen') returning id into new_id;
+    insert into initiative_creators (initiative_id, creator_id, sort) values (p_initiative, new_id, i - 1);
+  end loop;
+end $$;
+revoke execute on function add_initiative_creators(uuid, text[]) from public, anon, authenticated;
+grant execute on function add_initiative_creators(uuid, text[]) to service_role;
 
 -- ── Webhooki: partnerzy filtrują po typie innowacji i sektorze ──
 create or replace function initiatives_webhook() returns trigger

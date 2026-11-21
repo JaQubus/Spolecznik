@@ -6,6 +6,8 @@ import { DomainBadge } from "@/components/taxonomy/icons";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { FieldHint } from "@/components/ui/field";
+import { CheckboxField } from "@/components/ui/checkbox-field";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +28,7 @@ import {
 } from "@/lib/taxonomy";
 import { initiativeThread } from "@/lib/threads";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
-import { assignMentor, removePersonalData, setPublished, updateInitiativeStatus } from "../../actions";
+import { assignMentor, removePersonalData, setCreatorConsent, setPublished, updateInitiativeStatus } from "../../actions";
 import { PartnershipSection } from "../../partnership-section";
 import { ThreadSection } from "../../thread-section";
 import { panelTitle } from "@/lib/brand";
@@ -134,10 +136,22 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
         ) : (
           <ul className="max-w-[68ch] divide-y border-y">
             {creators.map((c, n) => (
-              <li key={n} className="py-3">
-                <span className="font-bold">{creatorRoleLabel(c.role)}</span>
-                {c.display_name && <> · {c.display_name}</>}
-                <span className="block text-muted-foreground">{creatorConsent(c)}</span>
+              <li key={c.id} className="space-y-3 py-3">
+                <p>
+                  <span className="font-bold">{creatorRoleLabel(c.role)}</span>
+                  {c.display_name && <> · {c.display_name}</>}
+                  <span className="block text-muted-foreground">{creatorConsent(c)}</span>
+                </p>
+                <ActionForm action={setCreatorConsent} className="space-y-2">
+                  <input type="hidden" name="initiativeId" value={row.id} />
+                  <input type="hidden" name="creatorId" value={c.id} />
+                  <Label htmlFor={`creator-name-${n}`}>Podpis (nieobowiązkowy)</Label>
+                  <Input id={`creator-name-${n}`} name="displayName" defaultValue={c.display_name ?? ""} maxLength={120} className="max-w-xl" />
+                  <CheckboxField name="under18" defaultChecked={c.under_18} label="Osoba poniżej 18 lat" />
+                  <CheckboxField name="guardianConsent" defaultChecked={c.guardian_consent} label="Jest zgoda opiekuna" />
+                  <CheckboxField name="showPublicly" defaultChecked={c.show_publicly} label="Pokaż podpis publicznie" />
+                  <SubmitButton variant="outline" size="sm" aria-label={`Zapisz zgody: ${creatorRoleLabel(c.role)}`}>Zapisz zgody</SubmitButton>
+                </ActionForm>
               </li>
             ))}
           </ul>

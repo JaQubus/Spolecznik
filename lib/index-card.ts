@@ -43,7 +43,7 @@ async function loadSource(kind: CardKind, refId: string): Promise<Source | null>
     case "initiative": {
       const { data, error } = await supabase
         .from("initiatives")
-        .select("card, teryt, status, duplicate_of")
+        .select("card, teryt, status, duplicate_of, innovation_kind, sectors")
         .eq("id", refId)
         .maybeSingle();
       if (error) throw error;
@@ -56,7 +56,7 @@ async function loadSource(kind: CardKind, refId: string): Promise<Source | null>
         teryt: data.teryt,
         active: data.status !== "archived" && !data.duplicate_of,
         institutionType: card.institutionType,
-        tags: [card.stage, ...card.cross],
+        tags: [card.stage, ...(data.innovation_kind ? [data.innovation_kind] : []), ...(data.sectors ?? []), ...card.cross],
         lemmas: card.keywords,
         domains: [...card.domains],
       };
@@ -75,6 +75,15 @@ async function loadSource(kind: CardKind, refId: string): Promise<Source | null>
       if (error) throw error;
       if (!data) return null;
       return { title: data.title, body: join(data.title, data.description), teryt: null, active: data.active, domains: data.domains?.length ? data.domains : undefined };
+    }
+    case "partner": {
+      const { data, error } = await supabase.from("partners").select("name, description, kind, sectors, domains, active").eq("id", refId).maybeSingle();
+      if (error) throw error;
+      if (!data) return null;
+      return {
+        title: data.name, body: join(data.name, data.description), teryt: null, active: data.active,
+        tags: [data.kind, ...(data.sectors ?? [])], domains: data.domains?.length ? data.domains : undefined,
+      };
     }
     default:
       return null; // challenge indeksuje lib/challenge-search.ts przy zapisie; domain i material — lib/knowledge/indexing.ts

@@ -36,10 +36,10 @@ export const InitiativeCard = z.object({
   cross: z.array(z.enum(CROSS_KEYS)).max(3),
   // Model innowacji pod PCI (config/taxonomy.json, 0007_innovation_model.sql)
   innovationKind: z.enum(INNOVATION_KIND_KEYS),
-  sectors: z.array(z.enum(SECTOR_KEYS)).min(1).max(2), // sektory PCI; „inne”, gdy żaden nie pasuje
+  sectors: z.array(z.enum(SECTOR_KEYS)), // sektory PCI (max 2, „inne”, gdy żaden nie pasuje) — porządkuje normalizeCard
   trl: z.number().int().min(TRL_MIN).max(TRL_MAX).nullable(), // tylko technologiczna; null, gdy opis nie pozwala ocenić
   ipStatus: z.enum(IP_STATUS_KEYS).nullable(), // null, gdy opis nic nie mówi o ochronie
-  creatorRoles: z.array(z.enum(CREATOR_ROLE_KEYS)).max(3), // kto to tworzy (role, bez imion)
+  creatorRoles: z.array(z.enum(CREATOR_ROLE_KEYS)), // kto to tworzy (role, bez imion; max 3 — normalizeCard)
   municipality: z.string().nullable(), // nazwa → TERYT po stronie serwera
   keywords,
   clarity: z.number().min(0).max(1),
@@ -47,15 +47,21 @@ export const InitiativeCard = z.object({
 });
 export type InitiativeCard = z.infer<typeof InitiativeCard>;
 
+export const MAX_SECTORS = 2;
+export const MAX_CREATOR_ROLES = 3;
+
 /**
- * Spójność karty, której nie wyrazi sam schemat: TRL tylko dla innowacji technologicznej (jak check w 0007),
- * a „inne” tylko wtedy, gdy nie pasuje żaden sektor PCI.
+ * Spójność karty, której nie wyrazi sam schemat (a odpowiedź LLM nie powinna przez nią odpadać): limity sektorów i ról
+ * obcinamy zamiast odrzucać, TRL zostaje tylko przy innowacji technologicznej (jak check w 0007), a „inne” tylko wtedy,
+ * gdy nie pasuje żaden sektor PCI. Wołamy raz, tam gdzie karta wchodzi do systemu: po LLM (intakeInitiative)
+ * i po żądaniu klienta (/api/initiatives).
  */
 export function normalizeCard(card: InitiativeCard): InitiativeCard {
   const pci = card.sectors.filter((s) => s !== "inne");
   return {
     ...card,
-    sectors: pci.length ? pci : ["inne"],
+    sectors: pci.length ? [...new Set(pci)].slice(0, MAX_SECTORS) : ["inne"],
+    creatorRoles: [...new Set(card.creatorRoles)].slice(0, MAX_CREATOR_ROLES),
     trl: card.innovationKind === "technologiczna" ? card.trl : null,
   };
 }
