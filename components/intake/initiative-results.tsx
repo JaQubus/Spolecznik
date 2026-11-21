@@ -4,6 +4,7 @@ import { UsersIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { DomainBadge } from "@/components/taxonomy/icons";
+import { SimilarSources } from "@/components/sources/similar-sources";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { initiativeHref } from "@/lib/knowledge/hrefs";
@@ -24,6 +25,7 @@ export function InitiativeResults({
   // Po pojawieniu się wyników przenosimy fokus na nagłówek — czytnik ekranu od razu go odczyta.
   useEffect(() => heading.current?.focus(), []);
   const { initiative, similar, similarGminy, patterns, mentors, programs } = result;
+  const similarSources = result.similarSources ?? [];
 
   return (
     <div className="space-y-12">
@@ -49,6 +51,11 @@ export function InitiativeResults({
       </div>
 
       <StatusCode code={initiative.statusCode} accessKey={initiative.accessKey} />
+
+      <SimilarSources
+        items={similarSources}
+        intro="Radar znalazł w patentach, publikacjach i projektach coś bardzo podobnego. Sprawdź, czym się różnicie — to pomoże uniknąć dublowania prac, a autorzy mogą zostać partnerami."
+      />
 
       {(similar.length > 0 || similarGminy.count > 0) && (
         <section aria-labelledby="podobne" className="max-w-3xl space-y-3">

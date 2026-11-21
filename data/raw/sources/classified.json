@@ -1,0 +1,674 @@
+{
+ "epo:PRZYKLAD-EP-001": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Producenci komponentów lotniczych i innych sektorów wykorzystujących kompozyty",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [],
+   "domains": [
+    "gospodarka",
+    "srodowisko"
+   ],
+   "effects": "Osiągnięto wytrzymałość części zbliżoną do kompozytów pierwotnych, np. wsporników kabiny samolotu.",
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": "zgloszenie",
+   "keywords": [
+    "kompozyt",
+    "włókno węglowe",
+    "odpad",
+    "recykling",
+    "produkcja części",
+    "technologia termoplastowa",
+    "przemysł lotniczy",
+    "wytrzymałość",
+    "shredding",
+    "press"
+   ],
+   "problem": "Duża ilość odpadów z kompozytów wzmocnionych włóknem węglowym generuje koszty i zanieczyszczenie środowiska.",
+   "sectors": [
+    "ict",
+    "jakosc_zycia"
+   ],
+   "solution": "Shredder, wyrównanie włókien i ich ponowne połączenie z termoplastyczną żywicą w prasowaniu, tworząc części o wysokiej wytrzymałości.",
+   "stage": "pomysl",
+   "summary": "Procedura przetwarzania zmielonych odpadów kompozytowych z włóknem węglowym w części o wytrzymałości zbliżonej do nowych materiałów, przydatna dla producentów lotniczych i innych branż.",
+   "title": "Metoda produkcji części z odpadów kompozytowych",
+   "trl": 4
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Zgłoszenie opisuje konkretną metodę produkcji części nośnych z odpadów kompozytowych, co może być wdrożone przez przemysł."
+ },
+ "epo:PRZYKLAD-EP-002": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Osoby starsze, placówki opiekuńcze, służby ratunkowe",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [
+    "seniorzy",
+    "wykluczenie_cyfrowe"
+   ],
+   "domains": [
+    "zdrowie",
+    "cyfryzacja"
+   ],
+   "effects": null,
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": "zgloszenie",
+   "keywords": [
+    "radar",
+    "wykrywanie_upadków",
+    "bezkontaktowy",
+    "milimetrowy_fala",
+    "zdrowie",
+    "monitorowanie"
+   ],
+   "problem": "Upadki osób starszych są częstą przyczyną urazów i wymagają szybkiej reakcji, a tradycyjne kamery naruszają prywatność.",
+   "sectors": [
+    "ict",
+    "jakosc_zycia"
+   ],
+   "solution": "Radar analizuje prędkość i wysokość odbić ciała, wykrywając upadek bez nagrywania obrazu.",
+   "stage": "pomysl",
+   "summary": "System wykorzystuje moduł radarowy milimetrowy do bezkontaktowego wykrywania upadków w pomieszczeniach, przydatny w domach opieki i placówkach medycznych.",
+   "title": "Radarowy system wykrywania upadków",
+   "trl": 3
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Zgłoszenie opisuje konkretny system radarowy do wykrywania upadków, który może być wdrożony w opiece nad osobami starszymi lub w innych miejscach użyteczności publicznej."
+ },
+ "interreg:PLSK.01.01-IP.01-0002/23": {
+  "candidate": false,
+  "card": null,
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Projekt dotyczy modernizacji infrastruktury drogowej i zabezpieczeń przeciwosuwiskowych, co jest inwestycją techniczną bez konkretnego, przenoszalnego rozwiązania jako produktu lub usługi."
+ },
+ "interreg:PLSK.01.01-IP.01-0009/23": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Mieszkańcy i samorządy gmin pogranicza polsko‑słowackiego",
+   "creatorRoles": [
+    "urzednik"
+   ],
+   "cross": [
+    "obszary_wiejskie",
+    "wspolpraca"
+   ],
+   "domains": [
+    "srodowisko",
+    "edukacja"
+   ],
+   "effects": "Zbudowano infrastrukturę zabezpieczającą osuwisko w Svidničke, ogród deszczowy, zielony parking i łąki kwietne w Jaśle; przeprowadzono warsztaty, seminarium, szkolenia, wyprodukowano film, wydano poradnik i zorganizowano konferencję.",
+   "innovationKind": "organizacyjna",
+   "institutionType": "powiat",
+   "ipStatus": null,
+   "keywords": [
+    "zielona infrastruktura",
+    "niebieska infrastruktura",
+    "stabilizacja osuwisk",
+    "zmiany klimatu",
+    "edukacja",
+    "warsztaty",
+    "partnerstwo transgraniczne",
+    "rodzime gatunki",
+    "ogrod deszczowy",
+    "zielony parking"
+   ],
+   "problem": "Ekstremalne zjawiska klimatyczne i osuwiska zagrażają bezpieczeństwu i infrastrukturze małych społeczności przygranicznych.",
+   "sectors": [
+    "jakosc_zycia"
+   ],
+   "solution": "Wdrożenie zielonej i niebieskiej infrastruktury z użyciem rodzimych roślin oraz budowa zabezpieczeń osuwisk, połączone z warsztatami, szkoleniami i materiałami edukacyjnymi dla mieszkańców.",
+   "stage": "pilotaz",
+   "summary": "Budowa zielonych i niebieskich rozwiązań (ogród deszczowy, zielony parking, łąki kwietne, stabilizacja stoków) oraz program edukacyjny zwiększają odporność mieszkańców i samorządów pogranicza PL‑SK na ekstremalne zjawiska pogodowe.",
+   "title": "Zielona i niebieska infrastruktura na pograniczu",
+   "trl": null
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Projekt dostarcza konkretne rozwiązania infrastrukturalne i edukacyjne zwiększające odporność społeczności pogranicza na zmiany klimatu, które mogą być przeniesione i wdrożone w innych regionach."
+ },
+ "interreg:PLSK.01.01-IP.01-0009/24": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Władze lokalne, Ochotnicze Straże Pożarne, mieszkańcy obszaru transgranicznego.",
+   "creatorRoles": [
+    "urzednik"
+   ],
+   "cross": [
+    "pogranicze",
+    "obszary_wiejskie"
+   ],
+   "domains": [
+    "srodowisko",
+    "administracja"
+   ],
+   "effects": "Opracowanie standardów, wymiana doświadczeń, podniesienie kompetencji OSP, edukacja społeczności lokalnych.",
+   "innovationKind": "organizacyjna",
+   "institutionType": "gmina",
+   "ipStatus": null,
+   "keywords": [
+    "standardy",
+    "monitorowanie",
+    "ostrzeżenie",
+    "reagowanie",
+    "klęski żywiołowe",
+    "transgraniczne",
+    "OSP",
+    "edukacja",
+    "adaptacja",
+    "zmiany klimatyczne"
+   ],
+   "problem": "Brak jednolitych procedur, niska wiedza i umiejętności służb oraz mieszkańców w reagowaniu na rosnącą liczbę klęsk żywiołowych.",
+   "sectors": [
+    "jakosc_zycia"
+   ],
+   "solution": "Opracowanie i wdrożenie transgranicznych standardów monitorowania, ostrzegania i reagowania oraz programów edukacyjnych i szkoleniowych dla OSP i społeczności lokalnych.",
+   "stage": "pilotaz",
+   "summary": "Zestaw standardów i szkoleń dla władz lokalnych oraz Ochotniczych Straży Pożarnych, zwiększający gotowość i współpracę przy zagrożeniach naturalnych na obszarze polsko‑słowackim; pomoże innym jednostkom samorządowym i społecznościom.",
+   "title": "Transgraniczne standardy monitorowania i reagowania na klęski żywiołowe",
+   "trl": null
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Projekt opracowuje i wdraża nowe transgraniczne standardy oraz programy szkoleniowe, które mogą być przeniesione i zastosowane w innych regionach."
+ },
+ "ncbr:PRZYKLAD-NCBR-001": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Małe i średnie przedsiębiorstwa produkcyjne, zwłaszcza w sektorze motoryzacyjnym.",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [
+    "wspolpraca"
+   ],
+   "domains": [
+    "gospodarka"
+   ],
+   "effects": "Model opracowany i przetestowany w trzech zakładach branży motoryzacyjnej.",
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": null,
+   "keywords": [
+    "predykcyjny",
+    "utrzymanie",
+    "ruchu",
+    "czujnik",
+    "drgania",
+    "model",
+    "zużycie",
+    "łożyska",
+    "motoryzacja",
+    "maszyny"
+   ],
+   "problem": "Małe zakłady nie mają dostępu do kosztownych systemów monitoringu, co prowadzi do nieplanowanych przestojów i wysokich kosztów napraw.",
+   "sectors": [
+    "motoryzacja",
+    "ict"
+   ],
+   "solution": "AI‑model analizujący drgania z taniego czujnika, prognozujący zużycie łożysk i umożliwiający planowe działania serwisowe.",
+   "stage": "pilotaz",
+   "summary": "Model przewidujący zużycie łożysk na podstawie danych z taniego czujnika drgań, pomocny dla małych firm motoryzacyjnych.",
+   "title": "Predykcyjne utrzymanie ruchu dla małych zakładów",
+   "trl": 7
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Projekt opracowuje konkretny model i metodę predykcyjnego utrzymania ruchu, testowaną w rzeczywistych zakładach, co może być wdrożone przez inne małe przedsiębiorstwa."
+ },
+ "ncbr:PRZYKLAD-NCBR-002": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Firmy lotnicze, operatorzy dronów inspekcyjnych, podmioty zajmujące się recyklingiem odpadów",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [],
+   "domains": [
+    "gospodarka",
+    "srodowisko"
+   ],
+   "effects": null,
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": null,
+   "keywords": [
+    "ramy",
+    "dron",
+    "kompozyt",
+    "recykling",
+    "włókno węglowe",
+    "inspekcja",
+    "lotnictwo",
+    "technologia",
+    "zrównoważony rozwój",
+    "materiał"
+   ],
+   "problem": "Wysokie koszty i duży wpływ środowiskowy tradycyjnych materiałów konstrukcyjnych dronów.",
+   "sectors": [
+    "lotnictwo_kosmos"
+   ],
+   "solution": "Wykorzystanie odzyskanych włókien węglowych do produkcji ram, co obniża koszty i emisję CO2.",
+   "stage": "pomysl",
+   "summary": "Projekt tworzy lekkie, wytrzymałe ramy dronów inspekcyjnych z kompozytów pochodzących z odpadów włókna węglowego, co może służyć firmom lotniczym i operatorom dronów.",
+   "title": "Lekkie ramy dronów z recyklingu",
+   "trl": 3
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Projekt opracowuje konkretny produkt – lekkie ramy dronów z recyklingu – który może być wdrożony przez podmioty zewnętrzne."
+ },
+ "ncbr:PRZYKLAD-NCBR-003": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": null,
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [
+    "obszary_wiejskie",
+    "wykluczenie_cyfrowe"
+   ],
+   "domains": [
+    "zdrowie",
+    "cyfryzacja"
+   ],
+   "effects": null,
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": null,
+   "keywords": [
+    "telerehabilitacja",
+    "udar",
+    "czujnik ruchu",
+    "zdalny nadzór",
+    "rehabilitacja domowa",
+    "platforma cyfrowa",
+    "zdrowie publiczne",
+    "obszary wiejskie"
+   ],
+   "problem": "Pacjenci po udarze z obszarów wiejskich mają ograniczony dostęp do regularnej rehabilitacji.",
+   "sectors": [
+    "jakosc_zycia",
+    "ict"
+   ],
+   "solution": "Aplikacja mobilna z czujnikiem ruchu umożliwia monitorowanie ćwiczeń i zdalny kontakt z fizjoterapeutą.",
+   "stage": "pomysl",
+   "summary": "System łączy domowe ćwiczenia, czujnik ruchu i zdalny nadzór fizjoterapeuty, pomagając pacjentom z małych miejscowości.",
+   "title": "Platforma telerehabilitacji po udarze",
+   "trl": null
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Projekt opisuje konkretną platformę telerehabilitacji z czujnikiem i zdalnym nadzorem, przeznaczoną dla pacjentów poza placówkami, co może być wdrożone w innych regionach."
+ },
+ "pbn:PRZYKLAD-PBN-001": {
+  "candidate": false,
+  "card": null,
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Badanie właściwości materiału nie przedstawia gotowego rozwiązania ani usługi dla odbiorcy zewnętrznego."
+ },
+ "pbn:PRZYKLAD-PBN-002": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Pacjenci po udarze, placówki rehabilitacyjne, fizjoterapeuci.",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [
+    "seniorzy"
+   ],
+   "domains": [
+    "zdrowie",
+    "nauka"
+   ],
+   "effects": "Uczestnicy gry ćwiczyli czterokrotnie częściej niż przy tradycyjnej karcie ćwiczeń.",
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": null,
+   "keywords": [
+    "gra",
+    "czujnik_ruchu",
+    "rehabilitacja",
+    "udar",
+    "terapia",
+    "sensor",
+    "motion",
+    "stroke",
+    "exercise",
+    "pilot"
+   ],
+   "problem": "Pacjenci po udarze często nie wykonują zaleconych ćwiczeń w wystarczającej ilości, co opóźnia powrót do sprawności.",
+   "sectors": [
+    "ict",
+    "jakosc_zycia"
+   ],
+   "solution": "Gra wykorzystuje czujnik ruchu do monitorowania i motywowania pacjentów do regularnych ćwiczeń kończyn górnych, zwiększając ich zaangażowanie.",
+   "stage": "pilotaz",
+   "summary": "Interaktywna gra komputerowa z czujnikiem ruchu zwiększająca częstotliwość ćwiczeń u pacjentów po udarze, przeznaczona dla ośrodków rehabilitacyjnych.",
+   "title": "Gra rehabilitacyjna z czujnikiem ruchu",
+   "trl": 5
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Opracowano gry komputerowej z czujnikiem ruchu, przetestowaną w pilotażowym badaniu klinicznym, co może być wdrożone w rehabilitacji poza uczelnią."
+ },
+ "pbn:PRZYKLAD-PBN-003": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Gminy, mieszkańcy obszarów wiejskich, samorządy lokalne",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [
+    "obszary_wiejskie",
+    "wspolpraca"
+   ],
+   "domains": [
+    "srodowisko",
+    "gospodarka",
+    "cyfryzacja"
+   ],
+   "effects": null,
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": null,
+   "keywords": [
+    "czujnik",
+    "pył zawieszony",
+    "monitoring jakości powietrza",
+    "kalibracja",
+    "gmina",
+    "koszt",
+    "sieć sensorowa",
+    "referencyjna stacja"
+   ],
+   "problem": "Małe gminy nie mają środków na drogie stacje pomiarowe, co utrudnia monitorowanie jakości powietrza.",
+   "sectors": [
+    "jakosc_zycia",
+    "ict"
+   ],
+   "solution": "Zastosowanie sieci 24 tanich czujników oraz opracowanie metody kalibracji względem stacji referencyjnej.",
+   "stage": "pilotaz",
+   "summary": "Propozycja użycia tanich czujników pyłu zawieszonego w monitoringu jakości powietrza oraz procedury ich kalibracji, przydatna dla małych gmin.",
+   "title": "Tanie czujniki pyłu i metoda kalibracji",
+   "trl": 4
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Publikacja opisuje praktyczną metodę wdrożenia tanich czujników pyłu i ich kalibracji, co może być użyte przez inne gminy."
+ },
+ "pbn:PRZYKLAD-PBN-004": {
+  "candidate": false,
+  "card": null,
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "To czysto teoretyczne badanie matematyczne bez praktycznego rozwiązania dla odbiorcy zewnętrznego."
+ },
+ "uprp:PRZYKLAD-UPRP-001": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Producenci komponentów lotniczych, branża lotnicza, podmioty zajmujące się recyklingiem materiałów kompozytowych.",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [],
+   "domains": [
+    "srodowisko",
+    "gospodarka"
+   ],
+   "effects": "Otrzymane elementy, np. wsporniki kabiny statku powietrznego, wykazują wytrzymałość porównywalną do elementów z nowego kompozytu przy niższym koszcie materiału.",
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": "zgloszenie",
+   "keywords": [
+    "recykling",
+    "kompozyt",
+    "włókno węglowy",
+    "odpad",
+    "element nośny",
+    "termoplast",
+    "lotnictwo",
+    "produkcja",
+    "metoda",
+    "materiał"
+   ],
+   "problem": "Wysoki koszt i duża ilość odpadów powstających przy produkcji komponentów z włókna węglowego.",
+   "sectors": [
+    "inne"
+   ],
+   "solution": "Rozdrabnianie odpadów, ukierunkowanie włókien i ponowne połączenie ich żywicą termoplastyczną w prasie, co daje elementy o wytrzymałości zbliżonej do nowych kompozytów.",
+   "stage": "pomysl",
+   "summary": "Metoda umożliwia wytwarzanie części nośnych z rozdrobnionych odpadów kompozytu węglowego, co obniża koszty i redukuje odpady w przemyśle lotniczym.",
+   "title": "Recyklingowy sposób wytwarzania elementów nośnych",
+   "trl": 3
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Zgłoszenie opisuje konkretną metodę produkcji elementów nośnych z odpadów kompozytowych, którą mogą wykorzystać producenci poza uczelnią."
+ },
+ "uprp:PRZYKLAD-UPRP-002": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Osoby starsze i ich opiekunowie",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [
+    "seniorzy",
+    "wykluczenie_cyfrowe"
+   ],
+   "domains": [
+    "zdrowie",
+    "cyfryzacja"
+   ],
+   "effects": "Układ radarowy do bezkontaktowego wykrywania upadku osoby w pomieszczeniu",
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": "zgloszenie",
+   "keywords": [
+    "radar",
+    "detekcja upadku",
+    "bezkontaktowy monitoring",
+    "osoby starsze",
+    "bezpieczeństwo",
+    "technologia milimetrowa",
+    "algorytm rozpoznawania",
+    "opieka domowa",
+    "system monitoringu",
+    "patent"
+   ],
+   "problem": "Brak nieinwazyjnych i prywatności‑szanujących metod monitorowania upadków osób starszych w domach.",
+   "sectors": [
+    "jakosc_zycia",
+    "ict"
+   ],
+   "solution": "System radarowy analizuje zmiany prędkości i wysokości odbić, wykrywając upadek bez rejestrowania obrazu.",
+   "stage": "pomysl",
+   "summary": "Urządzenie wykorzystuje radar milimetrowy i algorytm rozpoznawania upadku, chroniąc osoby starsze w ich mieszkaniach przed skutkami upadków.",
+   "title": "Radarowy system wykrywania upadku dla seniorów",
+   "trl": 3
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Konkretne rozwiązanie techniczne (radarowy system wykrywania upadku) przeznaczone dla osób starszych, które może być wdrożone poza uczelnią."
+ },
+ "uprp:PRZYKLAD-UPRP-003": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Producenci żywności, producenci opakowań, konsumenci, środowisko naturalne",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [],
+   "domains": [
+    "gospodarka",
+    "srodowisko"
+   ],
+   "effects": "Produkt rozkłada się w warunkach kompostowania przemysłowego, zmniejszając ilość odpadów plastikowych.",
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": "patent",
+   "keywords": [
+    "biodegradowalny",
+    "opakowanie",
+    "łuska gryki",
+    "spoiwo skrobiowe",
+    "kompostowanie",
+    "zrównoważony rozwój",
+    "materiał biopolimerowy",
+    "opakowania spożywcze",
+    "innowacja ekologiczna",
+    "przemysł opakowaniowy"
+   ],
+   "problem": "Tradycyjne opakowania plastikowe są niebiodegradowalne i zanieczyszczają środowisko.",
+   "sectors": [
+    "jakosc_zycia"
+   ],
+   "solution": "Wykorzystanie odpadów rolniczych (łuski gryki) i biopolimerów do produkcji opakowań, które ulegają biodegradacji w warunkach kompostowania.",
+   "stage": "pomysl",
+   "summary": "Kształtka wykonana z rozdrobnionych łusek gryki i spoiwa skrobiowego, przeznaczona do pakowania żywności i rozkładająca się w kompostach przemysłowych; przydatna producentom żywności i opakowań.",
+   "title": "Biodegradowalna kształtka opakowaniowa z łusek gryki",
+   "trl": 3
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Patent opisuje konkretny produkt opakowaniowy, który może być wdrożony przez przemysł spożywczy lub opakowaniowy."
+ },
+ "uprp:PRZYKLAD-UPRP-004": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Przewoźnicy komunikacji miejskiej",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [
+    "wspolpraca"
+   ],
+   "domains": [
+    "gospodarka",
+    "srodowisko"
+   ],
+   "effects": null,
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": "zgloszenie",
+   "keywords": [
+    "bateria",
+    "autobus",
+    "szacowanie",
+    "pojemność",
+    "ładowanie",
+    "stan zdrowia",
+    "czujniki",
+    "transport",
+    "energia",
+    "metoda"
+   ],
+   "problem": "Trzeba monitorować stan baterii autobusowych bez kosztownych i dodatkowych czujników.",
+   "sectors": [
+    "ict"
+   ],
+   "solution": "Analiza przebiegów napięcia i prądu z ładowarki pozwala oszacować pojemność i zdrowie baterii.",
+   "stage": "pomysl",
+   "summary": "Metoda szacowania pojemności i stanu zdrowia baterii trakcyjnej autobusu na podstawie danych z ładowarki, przydatna dla przewoźników komunikacji miejskiej.",
+   "title": "Estymacja pojemności baterii autobusu",
+   "trl": 3
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Metoda umożliwia przewoźnikom monitorowanie stanu baterii autobusów bez dodatkowych czujników, co jest konkretnym rozwiązaniem technologicznym przeznaczonym dla odbiorców zewnętrznych."
+ },
+ "uprp:PRZYKLAD-UPRP-005": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Operatorzy bezzałogowych statków powietrznych, producenci dronów, służby ratunkowe",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [],
+   "domains": [
+    "mobilnosc",
+    "gospodarka"
+   ],
+   "effects": "Powłoka zawiera nanocząstki krzemionki w matrycy fluoropolimerowej i opóźnia narastanie lodu na łopatach wirnika drona.",
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": "zgloszenie",
+   "keywords": [
+    "powłoka",
+    "hydrofobowa",
+    "oblodzenie",
+    "dron",
+    "nanocząstki",
+    "krzemionka",
+    "fluoropolimer",
+    "lotnictwo",
+    "ochrona",
+    "UAV"
+   ],
+   "problem": "Oblodzenie łopat wirnika drona ogranicza ich wydajność i może prowadzić do awarii w warunkach zimowych.",
+   "sectors": [
+    "lotnictwo_kosmos",
+    "ict"
+   ],
+   "solution": "Powłoka zawiera nanocząstki krzemionki w matrycy fluoropolimerowej, opóźniając narastanie lodu na łopatach.",
+   "stage": "pomysl",
+   "summary": "Nanocząstkowa powłoka fluoropolimerowa zapobiega tworzeniu się lodu na łopatach wirnika drona, zwiększając bezpieczeństwo lotu.",
+   "title": "Hydrofobowa powłoka przeciwoblodzeniowa dla dronów",
+   "trl": 3
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Zgłoszenie opisuje konkretną powłokę hydrofobową z nanocząstkami, którą mogą wykorzystać producenci dronów i inne podmioty operujące bezzałogowymi statkami powietrznymi."
+ },
+ "uprp:PRZYKLAD-UPRP-006": {
+  "candidate": true,
+  "card": {
+   "beneficiaries": "Laboratoria badawcze, uczelnie, jednostki przemysłowe prowadzące testy materiałowe",
+   "creatorRoles": [
+    "naukowiec"
+   ],
+   "cross": [],
+   "domains": [
+    "nauka",
+    "gospodarka"
+   ],
+   "effects": "Umożliwia łatwiejsze i szybsze przygotowanie próbek do testów wytrzymałościowych w laboratoriach.",
+   "innovationKind": "technologiczna",
+   "institutionType": "uczelnia",
+   "ipStatus": "patent",
+   "keywords": [
+    "uchwyt",
+    "mocowanie",
+    "próbka",
+    "maszyna wytrzymałościowa",
+    "wymienne szczęki",
+    "laboratorium",
+    "test materiałowy"
+   ],
+   "problem": "Trudność i czasochłonność montażu próbek o różnych wymiarach w maszynach wytrzymałościowych.",
+   "sectors": [
+    "inne"
+   ],
+   "solution": "Uchwyt z wymiennymi szczękami pozwala na szybkie dopasowanie do różnych grubości próbek i stabilne ich zamocowanie.",
+   "stage": "pomysl",
+   "summary": "Urządzenie z wymiennymi szczękami umożliwia szybkie i precyzyjne mocowanie płaskich próbek o różnej grubości w maszynach wytrzymałościowych, co usprawnia prace badawcze w laboratoriach.",
+   "title": "Uchwyt do mocowania próbek w maszynie wytrzymałościowej",
+   "trl": 3
+  },
+  "classifiedAt": "2026-11-21",
+  "model": "openai/gpt-oss-120b",
+  "reason": "Patent opisuje konkretny produkt – wymienny uchwyt do mocowania próbek w maszynie wytrzymałościowej, który może być wdrożony w laboratoriach poza autorem."
+ }
+}

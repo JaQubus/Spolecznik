@@ -6,6 +6,7 @@ import { org } from "@/lib/brand";
 export type { InitiativeStatus };
 
 export const STATUS_LABELS: Record<InitiativeStatus, string> = {
+  detected: "Wykryta w źródłach",
   submitted: "Zgłoszona",
   in_review: "W analizie",
   featured: "Wyróżniona",
@@ -24,6 +25,7 @@ const MAIN: InitiativeStatus[] = ["submitted", "in_review", "featured", "support
 
 /** Co dzieje się na kroku, który jeszcze nie ma daty ani wiadomości od organizatora. */
 const DESCRIPTIONS: Partial<Record<InitiativeStatus, string>> = {
+  detected: "Radar znalazł ją w publicznych źródłach; czeka na potwierdzenie twórcy",
   in_review: `Zespół ${org.short} czyta zgłoszenie i sprawdza ocenę radaru`,
   featured: "Inicjatywa trafia do bazy i na mapę, inni mogą ją znaleźć",
   supported: "Mentor albo program pomaga ją rozwinąć",
@@ -40,8 +42,10 @@ export function initiativeTimeline(createdAt: string, status: InitiativeStatus, 
   };
 
   // Zamknięcie wychodzi poza główną ścieżkę: pokazujemy kroki, które były, i zamknięcie.
+  // Wykryta w źródłach: krok przed zgłoszeniem, dopóki twórca jej nie przejmie.
   const path: InitiativeStatus[] =
-    status === "archived" ? [...MAIN.filter((s) => s === "submitted" || last(s)), "archived"] : MAIN;
+    status === "archived" ? [...MAIN.filter((s) => s === "submitted" || last(s)), "archived"]
+    : status === "detected" ? ["detected", ...MAIN] : MAIN;
   const current = path.indexOf(status);
 
   return path.map((s, i) => ({

@@ -13,6 +13,7 @@ import { institutionLabel, signalLevel } from "@/lib/taxonomy";
 import type { ThreadWaiting } from "@/lib/thread-types";
 import { WaitingBadge, waitingOrEmpty } from "./waiting";
 import { panelTitle } from "@/lib/brand";
+import { submissionLabel } from "@/lib/panel/initiatives";
 
 export const metadata = { title: panelTitle() };
 
@@ -20,6 +21,8 @@ const PAGE_SIZE = 25;
 
 const FILTERS: { key: string; label: string; statuses: InitiativeStatus[] | null; waiting?: true }[] = [
   { key: "nowe", label: "Do przejrzenia", statuses: ["submitted"] },
+  // Kandydaci z publicznych źródeł (7/10): czekają na przejęcie przez twórcę albo weryfikację.
+  { key: "wykryte", label: "Wykryte w źródłach", statuses: ["detected"] },
   // Rozmowy, w których asystent przekazał pytanie albo jego odpowiedź nie pomogła.
   { key: "czeka", label: "Czekają na człowieka", statuses: null, waiting: true },
   { key: "w_analizie", label: "W analizie", statuses: ["in_review"] },
@@ -129,7 +132,7 @@ function InitiativeItem({ row: n, triage, waiting }: { row: InitiativeRow; triag
       <p className="max-w-[68ch]">{n.summary}</p>
       <p className="text-base text-muted-foreground">
         <span className="font-mono tracking-wider">{n.status_code}</span>
-        {" · "}{n.submission_kind === "nomination" ? "wskazanie" : "zgłoszenie"}
+        {" · "}{submissionLabel(n.submission_kind)}
         {" · "}{n.municipalities ? `${n.municipalities.name}, powiat ${n.municipalities.county}` : "gmina nieznana"}
         {n.institution_type && ` · ${institutionLabel(n.institution_type)}`}
         {" · "}{formatDate(n.created_at)}

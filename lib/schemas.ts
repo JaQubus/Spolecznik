@@ -7,15 +7,18 @@ import {
 import { RADAR_KEYS } from "./taxonomy.ts";
 
 /** Rodzaje kart we wspólnym indeksie wyszukiwania (search_index.kind, 0001_core.sql). */
-export const CARD_KINDS = ["initiative", "pattern", "challenge", "mentor", "program", "domain", "material", "partner"] as const;
+export const CARD_KINDS = ["initiative", "pattern", "challenge", "mentor", "program", "domain", "material", "partner", "source_record"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
-/** Statusy inicjatywy (initiatives.status). Publiczna jest dopiero po weryfikacji w Panelu (initiatives.published). */
-export const INITIATIVE_STATUSES = ["submitted", "in_review", "featured", "supported", "scaling", "archived"] as const;
+/**
+ * Statusy inicjatywy (initiatives.status). Publiczna jest dopiero po weryfikacji w Panelu (initiatives.published).
+ * detected: kandydat wykryty w źródłach (0008), czeka na przejęcie przez twórcę albo weryfikację zespołu.
+ */
+export const INITIATIVE_STATUSES = ["detected", "submitted", "in_review", "featured", "supported", "scaling", "archived"] as const;
 export type InitiativeStatus = (typeof INITIATIVE_STATUSES)[number];
 
-/** own: autor zgłasza swoją inicjatywę · nomination: ktoś wskazuje cudzą, którą zauważył. */
-export const SUBMISSION_KINDS = ["own", "nomination"] as const;
+/** own: autor zgłasza swoją inicjatywę · nomination: ktoś wskazuje cudzą · detected: Radar znalazł ją w źródłach. */
+export const SUBMISSION_KINDS = ["own", "nomination", "detected"] as const;
 export type SubmissionKind = (typeof SUBMISSION_KINDS)[number];
 
 /** Statusy adopcji („Wypróbowaliśmy u nas”). Zgłaszający podaje „planowany” albo „zakonczony”, resztę ustawia Panel. */
@@ -102,7 +105,7 @@ export const IntakeRequest = z.discriminatedUnion("mode", [
 
 /** /api/initiatives: zapis zgłoszenia albo wskazania po intake. */
 export const InitiativeRequest = z.object({
-  kind: z.enum(SUBMISSION_KINDS),
+  kind: z.enum(SUBMISSION_KINDS).extract(["own", "nomination"]), // detected tworzy tylko klasyfikator (lib/sources.ts)
   card: InitiativeCard,
   text: z.string().min(3).max(10000), // oryginalny opis (+ odpowiedzi na dopytanie) — tylko do initiatives.raw_text
   gmina: z.string().max(100).optional(), // to, co użytkownik wpisał w pole „Gmina”
@@ -380,6 +383,8 @@ export type InitiativeResponse = SubmitResponseBase & {
   patterns: Match[];
   mentors: MentorHit[];
   programs: ProgramHit[];
+  /** „Podobne rozwiązanie już istnieje”: patenty, publikacje i projekty ze źródeł (sprawdzanie dublowania, 7/10). */
+  similarSources: SimilarSource[];
 };
 
 export type ChallengeResponse = {
@@ -402,6 +407,58 @@ export const RELATED_MIN_SIMILARITY = 0.25;
 export const SIMILAR_INITIATIVE_MIN_SIMILARITY = 0.4;
 /** Od tego podobieństwa asystent warsztatu mówi „podobne już istnieje”. */
 export const NOVELTY_MIN_SIMILARITY = 0.5;
+
+// ── Automatyczne wykrywanie (Radar 7/10): rekordy ze źródeł i klasyfikator (0008_source_records.sql) ──
+export const SOURCES = ["uprp", "epo", "pbn", "ncbr", "interreg"] as const;
+export type SourceKey = (typeof SOURCES)[number];
+export const SOURCE_LABELS: Record<SourceKey, string> = {
+  uprp: "Urząd Patentowy RP", epo: "Europejski Urząd Patentowy", pbn: "Polska Bibliografia Naukowa", ncbr: "NCBR", interreg: "Interreg",
+};
+export const SOURCE_RECORD_KINDS = ["zgloszenie_patentowe", "patent", "publikacja", "projekt"] as const;
+export type SourceRecordKind = (typeof SOURCE_RECORD_KINDS)[number];
+export const SOURCE_RECORD_KIND_LABELS: Record<SourceRecordKind, string> = {
+  zgloszenie_patentowe: "zgłoszenie patentowe", patent: "patent", publikacja: "publikacja", projekt: "projekt",
+};
+
+/** Karta wykrytej inicjatywy: jak InitiativeCard, bez pól, które ustala serwer albo dopowiada twórca. */
+export const DetectedCard = InitiativeCard.omit({ municipality: true, clarity: true, followUps: true });
+export type DetectedCard = z.infer<typeof DetectedCard>;
+
+/** Wynik klasyfikatora dla rekordu źródłowego (source_records.classification). card = null, gdy to nie kandydat. */
+export const SourceClassification = z.object({
+  candidate: z.boolean(), // czy z rekordu może wyjść innowacja do wdrożenia, transferu albo komercjalizacji
+  reason: z.string().max(400), // jedno zdanie: dlaczego tak albo nie
+  card: DetectedCard.nullable(),
+});
+export type SourceClassification = z.infer<typeof SourceClassification>;
+
+/** Status ochrony wynika z rodzaju rekordu, nie z oceny modelu. */
+export const IP_FROM_RECORD: Partial<Record<SourceRecordKind, "zgloszenie" | "patent">> = { zgloszenie_patentowe: "zgloszenie", patent: "patent" };
+
+export type SimilarSource = {
+  id: string;
+  source: SourceKey;
+  kind: SourceRecordKind;
+  title: string;
+  institution: string | null;
+  url: string | null;
+  publishedOn: string | null;
+  similarity: number;
+};
+
+/** Od tej zgodności słów kluczowych rekord źródłowy uznajemy za „podobne rozwiązanie już istnieje”. */
+export const SIMILAR_SOURCE_MIN_SIMILARITY = 0.4;
+
+/** „Przejmij zgłoszenie”: twórca albo instytucja potwierdza i uzupełnia kartę wykrytej inicjatywy. */
+export const ClaimRequest = z.object({
+  code: z.string().trim().toUpperCase().regex(STATUS_CODE),
+  card: DetectedCard.pick({
+    title: true, summary: true, problem: true, solution: true, effects: true, beneficiaries: true, stage: true,
+    innovationKind: true, sectors: true, trl: true, ipStatus: true, creatorRoles: true,
+  }),
+  confirm: z.literal(true, "Potwierdź, że reprezentujesz twórców albo instytucję"),
+});
+export type ClaimRequest = z.infer<typeof ClaimRequest>;
 
 // ── Ocena radaru (5/10): odpowiedź modelu przed regułami z lib/radar/score.ts ──
 export const RadarModelDimension = z.object({

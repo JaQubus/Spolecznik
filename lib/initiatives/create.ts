@@ -10,6 +10,7 @@ import {
   type IdeaPoster, type InitiativeCard, type InitiativeResponse, type SimilarInitiative, type SubmissionKind,
 } from "../schemas";
 import { similarInitiatives, upsertIndex } from "../search";
+import { similarSources } from "../sources";
 import { assessInitiative } from "../radar";
 import { newStatusCode } from "../status-code";
 import { createAdminClient } from "../supabase/admin";
@@ -39,11 +40,13 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
   const original = anonymize(text).text;
 
   // Szukamy, zanim zapiszemy nową inicjatywę — dzięki temu nie znajdzie samej siebie.
-  const [gminaRow, similar, lexical, support] = await Promise.all([
+  const [gminaRow, similar, lexical, support, sources] = await Promise.all([
     findGmina(gmina, teryt).then((g) => g ?? findGmina(card.municipality)),
     similarInitiatives(card.keywords, SIMILAR_INITIATIVE_MIN_SIMILARITY),
     lexicalCandidates(original, card.keywords, ["pattern"]),
     relatedSupport(card.keywords),
+    // Sprawdzanie dublowania (7/10): patenty, publikacje i projekty ze źródeł. Błąd nie blokuje zgłoszenia.
+    similarSources(card.keywords).catch((e) => { console.error("[zgłoszenie] podobne w źródłach:", e); return []; }),
   ]);
   const query = { summary: `${card.problem} ${card.summary}`, keywords: card.keywords };
   const ranked = await rankCandidates(query, lexical, original, gminaRow ? describeGmina(gminaRow) : undefined);
@@ -134,6 +137,7 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
     similarGminy: otherGminy(similar, gminaRow?.teryt ?? null),
     patterns: await matchDetails(ranked.filter((m) => m.fit >= GAP_THRESHOLD), kindOf, matchIds),
     ...support,
+    similarSources: sources,
   };
 }
 

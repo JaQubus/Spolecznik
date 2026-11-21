@@ -16,7 +16,7 @@ import { requireAdmin, viewerClient } from "@/lib/auth";
 import { statusLabel, STATUS_LABELS } from "@/lib/initiatives/status";
 import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
 import {
-  DUPLICATE_MIN, effectiveSignal, INITIATIVE_COLUMNS, initiativeCreators, initiativeHistory, initiativeNeighbours,
+  DUPLICATE_MIN, effectiveSignal, INITIATIVE_COLUMNS, initiativeCreators, initiativeHistory, initiativeNeighbours, submissionLabel,
   type AuditRow, type CreatorRow, type InitiativeRow,
 } from "@/lib/panel/initiatives";
 import { panelPartnerships, type PanelPartnership } from "@/lib/partnerships";
@@ -28,6 +28,10 @@ import {
   creatorRoleLabel, crossLabel, innovationKindLabel, institutionLabel, ipStatusLabel, sectorLabel, signalLevel, stageLabel, trlLabel,
 } from "@/lib/taxonomy";
 import { initiativeThread } from "@/lib/threads";
+import { SimilarSources } from "@/components/sources/similar-sources";
+import { SOURCE_LABELS, SOURCE_RECORD_KIND_LABELS, type SimilarSource } from "@/lib/schemas";
+import { similarSources, sourceRecordOf, type SourceRecordRow } from "@/lib/sources";
+import { issueClaimLink } from "../../zrodla/actions";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
 import { assignMentor, overrideSignal, reassessRadar, removePersonalData, setCreatorConsent, setPublished, updateInitiativeStatus } from "../../actions";
 import { readAssessment } from "@/lib/radar/score";
@@ -63,6 +67,10 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
     panelPartnerships(id).catch((e) => { console.error("[panel] partnerstwa:", e); return [] as PanelPartnership[]; }),
     initiativeCreators(id).catch((e) => { console.error("[panel] twórcy:", e); return [] as CreatorRow[]; }),
   ]);
+  // Wykryta w źródłach (7/10): rekord źródłowy i podobne rekordy z innych źródeł (sprawdzanie dublowania).
+  const sourceRecord = await sourceRecordOf(id).catch((e) => { console.error("[panel] źródło:", e); return null as SourceRecordRow | null; });
+  const sameInSources = await similarSources(row.card.keywords ?? [], sourceRecord?.id)
+    .catch((e) => { console.error("[panel] podobne w źródłach:", e); return [] as SimilarSource[]; });
   if (matches.error) throw matches.error;
 
   const duplicateHits = neighbours.filter((n) => n.similarity >= DUPLICATE_MIN);
@@ -93,7 +101,7 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
         <h1 className="text-3xl font-bold">{row.title}</h1>
         <p className="text-muted-foreground">
           <span className="font-mono tracking-wider">{row.status_code}</span>
-          {" · "}{row.submission_kind === "nomination" ? "wskazanie" : "zgłoszenie autora"}
+          {" · "}{submissionLabel(row.submission_kind, true)}
           {" · "}{row.municipalities ? `${row.municipalities.name}, powiat ${row.municipalities.county}` : "gmina nieznana"}
           {" · "}{formatDate(row.created_at)}
           {" · "}<strong className="text-foreground">{statusLabel(row.status)}</strong>
@@ -130,6 +138,31 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
         <TagList label="Tematy przekrojowe" items={card.cross.map(crossLabel)} />
         <TagList label="Słowa kluczowe" items={card.keywords} />
       </section>
+
+      {sourceRecord && (
+        <section aria-labelledby="zrodlo" className="space-y-3">
+          <h2 id="zrodlo" className="text-2xl font-bold">Skąd ją znamy</h2>
+          <dl className="grid max-w-[68ch] gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
+            <dt className="font-bold">Źródło</dt>
+            <dd>{SOURCE_LABELS[sourceRecord.source]}, {SOURCE_RECORD_KIND_LABELS[sourceRecord.kind]}{sourceRecord.synthetic && " (dane przykładowe)"}</dd>
+            <dt className="font-bold">Rekord</dt>
+            <dd>{sourceRecord.url ? <a href={sourceRecord.url} target="_blank" rel="noopener noreferrer" className={linkClass}>{sourceRecord.title}<span className="sr-only"> (otwiera się w nowej karcie)</span></a> : sourceRecord.title}</dd>
+            {sourceRecord.institution && (<><dt className="font-bold">Instytucja</dt><dd>{sourceRecord.institution}</dd></>)}
+            <dt className="font-bold">Licencja danych</dt><dd>{sourceRecord.license}</dd>
+            {sourceRecord.classification?.reason && (<><dt className="font-bold">Dlaczego kandydatka</dt><dd>{sourceRecord.classification.reason}</dd></>)}
+          </dl>
+          {row.status === "detected" && (
+            <ActionForm action={issueClaimLink} className="max-w-[68ch] space-y-3">
+              <input type="hidden" name="initiativeId" value={row.id} />
+              <FieldHint>Wyślij link twórcy albo instytucji (np. centrum transferu technologii uczelni). Po potwierdzeniu karty zgłoszenie trafi do „Do przejrzenia”.</FieldHint>
+              <SubmitButton variant="outline" pendingText="Tworzenie linku…">Utwórz link do przejęcia</SubmitButton>
+            </ActionForm>
+          )}
+        </section>
+      )}
+
+      <SimilarSources items={sameInSources} headingId="podobne-zrodla-panel"
+        intro="Rekordy z patentów, publikacji i projektów, które dzielą słowa kluczowe z tą inicjatywą. Sprawdź, czy to nie to samo rozwiązanie." />
 
       <section aria-labelledby="ocena" className="space-y-4">
         <h2 id="ocena" className="text-2xl font-bold">Ocena radaru</h2>

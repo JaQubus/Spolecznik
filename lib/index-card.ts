@@ -86,7 +86,7 @@ async function loadSource(kind: CardKind, refId: string): Promise<Source | null>
       };
     }
     default:
-      return null; // challenge indeksuje lib/challenge-search.ts przy zapisie; domain i material — lib/knowledge/indexing.ts
+      return null; // challenge indeksuje lib/challenge-search.ts przy zapisie; domain i material — lib/knowledge/indexing.ts; source_record — seed 40_sources.sql i lib/sources.ts
   }
 }
 

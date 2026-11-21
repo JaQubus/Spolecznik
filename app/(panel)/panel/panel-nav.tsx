@@ -8,6 +8,7 @@ import { cn } from "cn";
 
 const LINKS = [
   { href: "/panel", label: "Radar" },
+  { href: "/panel/zrodla", label: "Źródła" },
   { href: "/panel/programy", label: "Programy" },
   { href: "/panel/adopcje", label: "Adopcje" },
   { href: "/panel/przeniesienia", label: "Przeniesienia" },

@@ -112,10 +112,15 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
     <section className="space-y-10">
       <div className="space-y-3">
         <h1 className="text-3xl font-bold">
-          {report.submissionKind === "nomination" ? "Twoje wskazanie" : "Twoje zgłoszenie"}{" "}
+          {report.submissionKind === "nomination" ? "Twoje wskazanie" : report.status === "detected" ? "Wykryte zgłoszenie" : "Twoje zgłoszenie"}{" "}
           <span className="font-mono tracking-wider whitespace-nowrap">{code}</span>
         </h1>
         <p className="max-w-[68ch] text-lg"><strong>{report.title}.</strong> {report.summary}</p>
+        {(await props.searchParams).przejeto === "1" && key && (
+          <Alert tone="success" title="Dziękujemy, zgłoszenie jest Wasze">
+            <p>Karta trafiła do zespołu. Ten sam prywatny link prowadzi teraz do statusu i rozmowy z zespołem.</p>
+          </Alert>
+        )}
         {(report.gmina || report.domains.length > 0) && (
           <ul className="flex flex-wrap gap-2" aria-label="Gmina i dziedziny">
             {report.gmina && <li><Badge>Gmina {report.gmina}</Badge></li>}
