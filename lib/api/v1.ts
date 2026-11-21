@@ -44,6 +44,8 @@ export async function listPublicInitiatives(q: InitiativesQuery, origin: string)
   if (q.dziedzina) query = query.contains("domains", [q.dziedzina]);
   if (q.instytucja) query = query.eq("institution_type", q.instytucja);
   if (q.etap) query = query.eq("stage", q.etap);
+  if (q.typ) query = query.eq("innovation_kind", q.typ);
+  if (q.sektor) query = query.contains("sectors", [q.sektor]);
   if (q.teryt) query = query.eq("county_teryt", q.teryt);
   const { data, error, count } = await query;
   if (error) throw error;

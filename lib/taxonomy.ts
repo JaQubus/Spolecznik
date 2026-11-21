@@ -17,12 +17,28 @@ export const CROSS_KEYS = [
   "obszary_wiejskie", "depopulacja", "mlodzi", "seniorzy", "wykluczenie_cyfrowe", "wspolpraca", "pogranicze",
 ] as const;
 export const RADAR_KEYS = ["przenaszalnosc", "wplyw", "dojrzalosc", "nowosc", "latwosc"] as const;
+export const INNOVATION_KIND_KEYS = ["technologiczna", "organizacyjna", "edukacyjna", "spoleczna", "procesowa"] as const;
+/** Sektory PCI (inteligentne specjalizacje regionu); „inne”, gdy żaden nie pasuje. */
+export const SECTOR_KEYS = ["lotnictwo_kosmos", "motoryzacja", "jakosc_zycia", "ict", "inne"] as const;
+export const IP_STATUS_KEYS = ["brak", "zgloszenie", "patent", "wzor", "open"] as const;
+export const CREATOR_ROLE_KEYS = ["uczen", "student", "nauczyciel", "naukowiec", "urzednik"] as const;
+export const PARTNER_KIND_KEYS = ["firma", "fundusz", "ctt", "pci", "jst"] as const;
+export const PARTNER_SUPPORT_KEYS = ["licencja", "inwestycja", "pilotaz", "zakup", "mentoring"] as const;
+/** Skala gotowości technologicznej. Tylko dla innowacji technologicznych. */
+export const TRL_MIN = 1;
+export const TRL_MAX = 9;
 
 export type DomainKey = (typeof DOMAIN_KEYS)[number];
 export type InstitutionKey = (typeof INSTITUTION_KEYS)[number];
 export type StageKey = (typeof STAGE_KEYS)[number];
 export type CrossKey = (typeof CROSS_KEYS)[number];
 export type RadarKey = (typeof RADAR_KEYS)[number];
+export type InnovationKindKey = (typeof INNOVATION_KIND_KEYS)[number];
+export type SectorKey = (typeof SECTOR_KEYS)[number];
+export type IpStatusKey = (typeof IP_STATUS_KEYS)[number];
+export type CreatorRoleKey = (typeof CREATOR_ROLE_KEYS)[number];
+export type PartnerKindKey = (typeof PARTNER_KIND_KEYS)[number];
+export type PartnerSupportKey = (typeof PARTNER_SUPPORT_KEYS)[number];
 
 export type TaxonomyEntry = { label: string; slug: string; description: string };
 export type RadarDimension = { label: string; short: string; question: string; anchors: Record<string, string> };
@@ -32,6 +48,14 @@ export const DOMAINS = data.domains as Record<DomainKey, TaxonomyEntry>;
 export const INSTITUTION_TYPES = data.institutionTypes as Record<InstitutionKey, TaxonomyEntry>;
 export const STAGES = data.stages as Record<StageKey, TaxonomyEntry>;
 export const CROSS = data.cross as Record<CrossKey, TaxonomyEntry>;
+export const INNOVATION_KINDS = data.innovationKinds as Record<InnovationKindKey, TaxonomyEntry>;
+export const SECTORS = data.sectors as Record<SectorKey, TaxonomyEntry>;
+export const IP_STATUSES = data.ipStatuses as Record<IpStatusKey, TaxonomyEntry>;
+export const CREATOR_ROLES = data.creatorRoles as Record<CreatorRoleKey, TaxonomyEntry>;
+export const PARTNER_KINDS = data.partnerKinds as Record<PartnerKindKey, TaxonomyEntry>;
+export const PARTNER_SUPPORT = data.partnerSupport as Record<PartnerSupportKey, TaxonomyEntry>;
+/** Opisy poziomów TRL, klucz to liczba 1–9 jako tekst. */
+export const TRL_LEVELS = data.trl as Record<string, TaxonomyEntry>;
 
 export const RADAR = data.radar as {
   dimensions: Record<RadarKey, RadarDimension>;
@@ -55,6 +79,22 @@ export const domainLabel = (k: string) => DOMAINS[k as DomainKey]?.label ?? k;
 export const institutionLabel = (k: string) => INSTITUTION_TYPES[k as InstitutionKey]?.label ?? k;
 export const stageLabel = (k: string) => STAGES[k as StageKey]?.label ?? k;
 export const crossLabel = (k: string) => CROSS[k as CrossKey]?.label ?? k;
+export const innovationKindLabel = (k: string) => INNOVATION_KINDS[k as InnovationKindKey]?.label ?? k;
+export const sectorLabel = (k: string) => SECTORS[k as SectorKey]?.label ?? k;
+export const ipStatusLabel = (k: string) => IP_STATUSES[k as IpStatusKey]?.label ?? k;
+export const creatorRoleLabel = (k: string) => CREATOR_ROLES[k as CreatorRoleKey]?.label ?? k;
+export const partnerKindLabel = (k: string) => PARTNER_KINDS[k as PartnerKindKey]?.label ?? k;
+export const partnerSupportLabel = (k: string) => PARTNER_SUPPORT[k as PartnerSupportKey]?.label ?? k;
+const TRL_STAGE = data.trlStage as unknown as Record<"pomysl" | "pilotaz" | "dziala", [number, number]>;
+/** Etap, który odpowiada poziomowi TRL (config/taxonomy.json → trlStage). */
+export function stageForTrl(trl: number): StageKey {
+  const ranges = Object.entries(TRL_STAGE).filter(([, v]) => Array.isArray(v)) as [StageKey, [number, number]][]; // bez „_opis”
+  const hit = ranges.find(([, [from, to]]) => trl >= from && trl <= to);
+  return hit?.[0] ?? (trl > TRL_MAX ? "dziala" : "pomysl");
+}
+
+/** „TRL 4: model sprawdzony w laboratorium”. */
+export const trlLabel = (n: number) => (TRL_LEVELS[String(n)] ? `${TRL_LEVELS[String(n)].label}: ${TRL_LEVELS[String(n)].description}` : `TRL ${n}`);
 
 /** Kategorie Biblioteki Innowacji Społecznych (patterns.category) — tylko do podpisu źródła rozwiązania. */
 export const PATTERN_CATEGORY_LABELS: Record<string, string> = {

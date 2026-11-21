@@ -5,7 +5,7 @@ import { notify } from "../notifications";
 import { anonymize } from "../pii";
 import { slugify } from "../pl";
 import {
-  GAP_THRESHOLD, SIMILAR_INITIATIVE_MIN_SIMILARITY,
+  GAP_THRESHOLD, SIMILAR_INITIATIVE_MIN_SIMILARITY, normalizeCard,
   type IdeaPoster, type InitiativeCard, type InitiativeResponse, type SimilarInitiative, type SubmissionKind,
 } from "../schemas";
 import { similarInitiatives, upsertIndex } from "../search";
@@ -31,8 +31,10 @@ type CreateInput = {
  * podobne inicjatywy z regionu (potencjalni partnerzy), sprawdzone rozwiązania z Polski (inspiracje), mentorzy
  * i otwarte programy. Inicjatywa jest prywatna, dopóki zespół nie opublikuje jej w Panelu.
  */
-export async function createInitiative({ kind, card, text, gmina, teryt, canvas, poster, authorId }: CreateInput): Promise<InitiativeResponse> {
+export async function createInitiative({ kind, card: input, text, gmina, teryt, canvas, poster, authorId }: CreateInput): Promise<InitiativeResponse> {
   const supabase = createAdminClient();
+  // Karta przychodzi od klienta: TRL przy innowacji nietechnologicznej odrzuciłby check w bazie (0007).
+  const card = normalizeCard(input);
   const original = anonymize(text).text;
 
   // Szukamy, zanim zapiszemy nową inicjatywę — dzięki temu nie znajdzie samej siebie.
@@ -66,6 +68,10 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
         institution_type: card.institutionType,
         stage: card.stage,
         cross_topics: card.cross,
+        innovation_kind: card.innovationKind,
+        sectors: card.sectors,
+        trl: card.trl,
+        ip_status: card.ipStatus,
         teryt: gminaRow?.teryt ?? null,
         nominations_count: kind === "nomination" ? 1 : 0,
         ...(canvas ? { canvas } : {}),
@@ -92,6 +98,7 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
 
   // Indeks i powiadomienie nie mogą zablokować wyniku dla autora.
   const sideEffects = await Promise.allSettled([
+    saveCreators(initiative.id, card.creatorRoles),
     upsertIndex({
       kind: "initiative",
       refId: initiative.id,
@@ -118,6 +125,24 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
     patterns: await matchDetails(ranked.filter((m) => m.fit >= GAP_THRESHOLD), kindOf, matchIds),
     ...support,
   };
+}
+
+/**
+ * Twórcy z ról w karcie: bez imion i bez kontaktu, niewidoczni publicznie, dopóki sami (albo opiekun) się nie zgodzą.
+ * Uczeń domyślnie liczy się jako osoba poniżej 18 lat — Panel zmienia to po potwierdzeniu.
+ */
+async function saveCreators(initiativeId: string, roles: InitiativeCard["creatorRoles"]) {
+  if (roles.length === 0) return;
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("creators")
+    .insert(roles.map((role) => ({ role, under_18: role === "uczen" })))
+    .select("id");
+  if (error) throw error;
+  const { error: linkError } = await supabase
+    .from("initiative_creators")
+    .insert((data ?? []).map((c, sort) => ({ initiative_id: initiativeId, creator_id: c.id, sort })));
+  if (linkError) throw linkError;
 }
 
 /** Opublikowane z tytułem i linkiem; nieopublikowane tylko z gminą — treść cudzych zgłoszeń jest prywatna. */

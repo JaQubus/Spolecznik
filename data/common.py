@@ -29,6 +29,18 @@ INSTITUTION_TYPES: dict[str, dict] = TAXONOMY["institutionTypes"]
 STAGES: dict[str, dict] = TAXONOMY["stages"]
 CROSS: dict[str, dict] = TAXONOMY["cross"]
 RADAR: dict = TAXONOMY["radar"]
+INNOVATION_KINDS: dict[str, dict] = TAXONOMY["innovationKinds"]
+SECTORS: dict[str, dict] = TAXONOMY["sectors"]
+IP_STATUSES: dict[str, dict] = TAXONOMY["ipStatuses"]
+CREATOR_ROLES: dict[str, dict] = TAXONOMY["creatorRoles"]
+PARTNER_KINDS: dict[str, dict] = TAXONOMY["partnerKinds"]
+PARTNER_SUPPORT: dict[str, dict] = TAXONOMY["partnerSupport"]
+TRL_STAGE: dict[str, list[int]] = {k: v for k, v in TAXONOMY["trlStage"].items() if isinstance(v, list)}
+
+
+def stage_for_trl(trl: int) -> str:
+    """Etap dla poziomu TRL — jak stageForTrl w lib/taxonomy.ts."""
+    return next((s for s, (lo, hi) in TRL_STAGE.items() if lo <= trl <= hi), "dziala" if trl > 9 else "pomysl")
 
 
 def taxonomy_prompt() -> str:
@@ -39,6 +51,9 @@ def taxonomy_prompt() -> str:
         f"Typy instytucji (institutionType): {fmt(INSTITUTION_TYPES)}",
         f"Etapy (stage): {fmt(STAGES)}",
         f"Tematy przekrojowe (cross): {fmt(CROSS)}",
+        f"Typy innowacji (innovationKind): {fmt(INNOVATION_KINDS)}",
+        f"Sektory PCI (sectors): {fmt(SECTORS)}",
+        f"Ochrona własności intelektualnej (ipStatus): {fmt(IP_STATUSES)}",
     ])
 
 

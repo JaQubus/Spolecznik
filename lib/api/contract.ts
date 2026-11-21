@@ -1,7 +1,7 @@
 // Kontrakt publicznego API v1: jedno źródło dla tras app/api/v1, specyfikacji OpenAPI i /api-docs.
 // Bez "server-only" i z rozszerzeniami .ts w importach, żeby test jednostkowy (node --test) czytał go wprost.
 import { z } from "zod";
-import { DOMAIN_KEYS, INSTITUTION_KEYS, STAGE_KEYS, CROSS_KEYS } from "../taxonomy.ts";
+import { DOMAIN_KEYS, INSTITUTION_KEYS, STAGE_KEYS, CROSS_KEYS, INNOVATION_KIND_KEYS, SECTOR_KEYS, IP_STATUS_KEYS } from "../taxonomy.ts";
 import { brand, region, COUNTY_TERYT } from "../brand.ts";
 
 const tags = (values: readonly string[]) => `Wartości: ${values.join(", ")}.`;
@@ -23,6 +23,14 @@ export const InitiativesQuery = z.object({
     .enum(STAGE_KEYS, `Podaj jeden z etapów: ${STAGE_KEYS.join(", ")}`)
     .optional()
     .meta({ description: "Etap inicjatywy." }),
+  typ: z
+    .enum(INNOVATION_KIND_KEYS, `Podaj jeden z typów innowacji: ${INNOVATION_KIND_KEYS.join(", ")}`)
+    .optional()
+    .meta({ description: "Typ innowacji." }),
+  sektor: z
+    .enum(SECTOR_KEYS, `Podaj jeden z sektorów: ${SECTOR_KEYS.join(", ")}`)
+    .optional()
+    .meta({ description: "Sektor PCI, któremu innowacja może służyć." }),
   teryt: z
     .string()
     .regex(COUNTY_TERYT, `Podaj kod TERYT powiatu z ${region.genitive}: 4 cyfry, np. ${region.countyExample.teryt}`)
@@ -56,6 +64,11 @@ export const InitiativeSummary = z
     institutionType: z.string().nullable().meta({ description: `Typ instytucji. ${tags(INSTITUTION_KEYS)}` }),
     stage: z.string().nullable().meta({ description: `Etap. ${tags(STAGE_KEYS)}` }),
     crossTopics: z.array(z.string()).meta({ description: `Tematy przekrojowe. ${tags(CROSS_KEYS)}` }),
+    innovationKind: z.string().nullable().meta({ description: `Typ innowacji. ${tags(INNOVATION_KIND_KEYS)}` }),
+    sectors: z.array(z.string()).meta({ description: `Sektory PCI. ${tags(SECTOR_KEYS)}` }),
+    trl: z.int().min(1).max(9).nullable().meta({ description: "Poziom gotowości technologicznej 1–9; tylko innowacje technologiczne." }),
+    ipStatus: z.string().nullable().meta({ description: `Ochrona własności intelektualnej. ${tags(IP_STATUS_KEYS)}` }),
+    institution: z.string().nullable().meta({ description: "Instytucja, w której powstała innowacja (jeśli jest w rejestrze)." }),
     countyTeryt: z.string().nullable().meta({ description: "Kod TERYT powiatu (4 cyfry).", examples: [region.countyExample.teryt] }),
     county: z.string().nullable().meta({ examples: [region.countyExample.name] }),
     municipality: z.string().nullable().meta({ description: "Gmina, w której działa inicjatywa.", examples: [region.municipalityExample.name] }),
@@ -105,6 +118,9 @@ export const InitiativeCreatedEvent = z
       domains: z.array(z.string()),
       institutionType: z.string().nullable(),
       stage: z.string().nullable(),
+      innovationKind: z.string().nullable(),
+      sectors: z.array(z.string()),
+      trl: z.int().nullable(),
       countyTeryt: z.string().nullable(),
       synthetic: z.boolean(),
     }),
@@ -121,6 +137,9 @@ export const InitiativeFeaturedEvent = z
       domains: z.array(z.string()),
       institutionType: z.string().nullable(),
       stage: z.string().nullable(),
+      innovationKind: z.string().nullable(),
+      sectors: z.array(z.string()),
+      trl: z.int().nullable(),
       countyTeryt: z.string().nullable(),
       signal: z.int().nullable(),
       synthetic: z.boolean(),
@@ -145,7 +164,8 @@ export const ProgramChangedEvent = z
 
 // ── Wiersze widoku public_initiatives → odpowiedzi (tylko kolumny z listy, nigdy select("*")) ──
 export const SUMMARY_COLUMNS =
-  "id, slug, title, summary, domains, institution_type, stage, cross_topics, county_teryt, county, municipality, signal, status, " +
+  "id, slug, title, summary, domains, institution_type, stage, cross_topics, innovation_kind, sectors, trl, ip_status, institution_name, " +
+  "county_teryt, county, municipality, signal, status, " +
   "nominations_count, adoptions_count, avg_rating, synthetic, created_at, updated_at";
 export const DETAIL_COLUMNS = `${SUMMARY_COLUMNS}, card`;
 
@@ -158,6 +178,11 @@ export type InitiativeRow = {
   institution_type: string | null;
   stage: string | null;
   cross_topics: string[] | null;
+  innovation_kind: string | null;
+  sectors: string[] | null;
+  trl: number | null;
+  ip_status: string | null;
+  institution_name: string | null;
   county_teryt: string | null;
   county: string | null;
   municipality: string | null;
@@ -191,6 +216,11 @@ export function toSummary(row: InitiativeRow, origin: string): InitiativeSummary
     institutionType: row.institution_type,
     stage: row.stage,
     crossTopics: row.cross_topics ?? [],
+    innovationKind: row.innovation_kind,
+    sectors: row.sectors ?? [],
+    trl: row.trl,
+    ipStatus: row.ip_status,
+    institution: row.institution_name,
     countyTeryt: row.county_teryt,
     county: row.county,
     municipality: row.municipality,

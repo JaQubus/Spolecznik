@@ -13,14 +13,17 @@ import { requireAdmin, viewerClient } from "@/lib/auth";
 import { statusLabel, STATUS_LABELS } from "@/lib/initiatives/status";
 import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
 import {
-  DUPLICATE_MIN, effectiveSignal, INITIATIVE_COLUMNS, initiativeHistory, initiativeNeighbours, type AuditRow, type InitiativeRow,
+  DUPLICATE_MIN, effectiveSignal, INITIATIVE_COLUMNS, initiativeCreators, initiativeHistory, initiativeNeighbours,
+  type AuditRow, type CreatorRow, type InitiativeRow,
 } from "@/lib/panel/initiatives";
 import { panelPartnerships, type PanelPartnership } from "@/lib/partnerships";
 import { anonymize } from "@/lib/pii";
 import { formatDate } from "@/lib/pl";
 import { INITIATIVE_STATUSES } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { crossLabel, institutionLabel, signalLevel, stageLabel } from "@/lib/taxonomy";
+import {
+  creatorRoleLabel, crossLabel, innovationKindLabel, institutionLabel, ipStatusLabel, sectorLabel, signalLevel, stageLabel, trlLabel,
+} from "@/lib/taxonomy";
 import { initiativeThread } from "@/lib/threads";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
 import { assignMentor, removePersonalData, setPublished, updateInitiativeStatus } from "../../actions";
@@ -44,7 +47,7 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
   const row = data as unknown as InitiativeRow;
 
   const admin = createAdminClient();
-  const [history, mentors, neighbours, matches, assigned, thread, partnerships] = await Promise.all([
+  const [history, mentors, neighbours, matches, assigned, thread, partnerships, creators] = await Promise.all([
     initiativeHistory(id),
     initiativeNeighbours(row, "mentor", 3),
     initiativeNeighbours(row, "initiative", 5),
@@ -54,6 +57,7 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
       : Promise.resolve({ data: null, error: null }),
     initiativeThread({ id }).catch((e) => { console.error("[panel] rozmowa:", e); return null; }),
     panelPartnerships(id).catch((e) => { console.error("[panel] partnerstwa:", e); return [] as PanelPartnership[]; }),
+    initiativeCreators(id).catch((e) => { console.error("[panel] twórcy:", e); return [] as CreatorRow[]; }),
   ]);
   if (matches.error) throw matches.error;
 
@@ -109,12 +113,35 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
           {card.effects && (<><dt className="font-bold">Efekty</dt><dd>{card.effects}</dd></>)}
           {card.beneficiaries && (<><dt className="font-bold">Dla kogo</dt><dd>{card.beneficiaries}</dd></>)}
           <dt className="font-bold">Etap</dt><dd>{stageLabel(card.stage)}</dd>
-          {card.institutionType && (<><dt className="font-bold">Instytucja</dt><dd>{institutionLabel(card.institutionType)}</dd></>)}
+          {row.innovation_kind && (<><dt className="font-bold">Typ innowacji</dt><dd>{innovationKindLabel(row.innovation_kind)}</dd></>)}
+          {row.sectors.length > 0 && (<><dt className="font-bold">Sektory PCI</dt><dd>{row.sectors.map(sectorLabel).join(", ")}</dd></>)}
+          {row.trl != null && (<><dt className="font-bold">Gotowość technologii</dt><dd>{trlLabel(row.trl)}</dd></>)}
+          {row.ip_status && (<><dt className="font-bold">Ochrona IP</dt><dd>{ipStatusLabel(row.ip_status)}</dd></>)}
+          {card.institutionType && (<><dt className="font-bold">Typ instytucji</dt><dd>{institutionLabel(card.institutionType)}</dd></>)}
+          {row.institutions && (<><dt className="font-bold">Instytucja</dt><dd>{row.institutions.name}</dd></>)}
           <dt className="font-bold">Jasność opisu</dt><dd>{Math.round(card.clarity * 100)} na 100</dd>
         </dl>
         <ul className="flex flex-wrap gap-2" aria-label="Dziedziny">{card.domains.map((d) => <li key={d}><DomainBadge domain={d} /></li>)}</ul>
         <TagList label="Tematy przekrojowe" items={card.cross.map(crossLabel)} />
         <TagList label="Słowa kluczowe" items={card.keywords} />
+      </section>
+
+      <section aria-labelledby="tworcy" className="space-y-3">
+        <h2 id="tworcy" className="text-2xl font-bold">Twórcy</h2>
+        <FieldHint>Bez danych kontaktowych: z twórcami rozmawiasz w wątku inicjatywy. Podpis jest publiczny tylko za zgodą, a u osoby poniżej 18 lat także za zgodą opiekuna.</FieldHint>
+        {creators.length === 0 ? (
+          <p className="text-muted-foreground">Opis nie mówi, kto to tworzy.</p>
+        ) : (
+          <ul className="max-w-[68ch] divide-y border-y">
+            {creators.map((c, n) => (
+              <li key={n} className="py-3">
+                <span className="font-bold">{creatorRoleLabel(c.role)}</span>
+                {c.display_name && <> · {c.display_name}</>}
+                <span className="block text-muted-foreground">{creatorConsent(c)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section aria-labelledby="tresc" className="space-y-3">
@@ -307,4 +334,12 @@ function describeChange(h: AuditRow): string {
     case "initiative.assign_mentor": return `Przypisano mentora${note}`;
     default: return d.to ? `Status: ${statusLabel(String(d.to))}${note}` : h.action;
   }
+}
+
+/** Stan zgód twórcy jednym zdaniem — to samo liczy widok public_initiative_creators (0007). */
+function creatorConsent(c: CreatorRow): string {
+  const minor = c.under_18 ? "Poniżej 18 lat. " : "";
+  if (!c.show_publicly) return `${minor}Bez zgody na pokazanie: publicznie widać tylko rolę.`;
+  if (c.under_18 && !c.guardian_consent) return `${minor}Brak zgody opiekuna: publicznie widać tylko rolę.`;
+  return `${minor}Zgoda na pokazanie podpisu.`;
 }

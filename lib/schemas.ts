@@ -1,9 +1,12 @@
 import { z } from "zod";
 import { STATUS_CODE } from "./brand.ts";
-import { CROSS_KEYS, DOMAIN_KEYS, INSTITUTION_KEYS, STAGE_KEYS } from "./taxonomy.ts";
+import {
+  CREATOR_ROLE_KEYS, CROSS_KEYS, DOMAIN_KEYS, INNOVATION_KIND_KEYS, INSTITUTION_KEYS, IP_STATUS_KEYS, SECTOR_KEYS, STAGE_KEYS,
+  TRL_MAX, TRL_MIN,
+} from "./taxonomy.ts";
 
 /** Rodzaje kart we wspólnym indeksie wyszukiwania (search_index.kind, 0001_core.sql). */
-export const CARD_KINDS = ["initiative", "pattern", "challenge", "mentor", "program", "domain", "material"] as const;
+export const CARD_KINDS = ["initiative", "pattern", "challenge", "mentor", "program", "domain", "material", "partner"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
 /** Statusy inicjatywy (initiatives.status). Publiczna jest dopiero po weryfikacji w Panelu (initiatives.published). */
@@ -31,12 +34,31 @@ export const InitiativeCard = z.object({
   institutionType: z.enum(INSTITUTION_KEYS).nullable(),
   stage: z.enum(STAGE_KEYS),
   cross: z.array(z.enum(CROSS_KEYS)).max(3),
+  // Model innowacji pod PCI (config/taxonomy.json, 0007_innovation_model.sql)
+  innovationKind: z.enum(INNOVATION_KIND_KEYS),
+  sectors: z.array(z.enum(SECTOR_KEYS)).min(1).max(2), // sektory PCI; „inne”, gdy żaden nie pasuje
+  trl: z.number().int().min(TRL_MIN).max(TRL_MAX).nullable(), // tylko technologiczna; null, gdy opis nie pozwala ocenić
+  ipStatus: z.enum(IP_STATUS_KEYS).nullable(), // null, gdy opis nic nie mówi o ochronie
+  creatorRoles: z.array(z.enum(CREATOR_ROLE_KEYS)).max(3), // kto to tworzy (role, bez imion)
   municipality: z.string().nullable(), // nazwa → TERYT po stronie serwera
   keywords,
   clarity: z.number().min(0).max(1),
   followUps: z.array(z.string()).max(2), // pytania doprecyzowujące, gdy opisu nie wystarcza do oceny
 });
 export type InitiativeCard = z.infer<typeof InitiativeCard>;
+
+/**
+ * Spójność karty, której nie wyrazi sam schemat: TRL tylko dla innowacji technologicznej (jak check w 0007),
+ * a „inne” tylko wtedy, gdy nie pasuje żaden sektor PCI.
+ */
+export function normalizeCard(card: InitiativeCard): InitiativeCard {
+  const pci = card.sectors.filter((s) => s !== "inne");
+  return {
+    ...card,
+    sectors: pci.length ? pci : ["inne"],
+    trl: card.innovationKind === "technologiczna" ? card.trl : null,
+  };
+}
 
 /** „Szukam rozwiązania”: instytucja opisuje problem (challenges.card). */
 export const ChallengeCard = z.object({

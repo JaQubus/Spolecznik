@@ -9,6 +9,10 @@ Ocena radaru: baza z archetypu, szum ±1 i te same zabezpieczenia co lib/radar/s
 config/taxonomy.json → radar). Bez nazw prawdziwych instytucji: tylko typ instytucji i gmina.
 Nie wywołuje żadnego API. Stałe ziarno i slugi → ten sam wynik przy każdym uruchomieniu.
 
+Model innowacji PCI (Radar 4/10): każda inicjatywa ma typ innowacji, sektory PCI, a technologiczna też TRL zgodny
+z etapem kopii i status ochrony IP. Inicjatywy należą do syntetycznych instytucji (typ + gmina, bez nazw własnych),
+twórcy to role bez imion i kontaktu, a partnerzy (firmy, fundusze, CTT, PCI, samorządy) idą z templates → partners.
+
 Wejście: out/gminy.json (bdl.py), templates/initiatives.json, forms/program_demo.json.
 Wynik: ../supabase/seed/30_demo.sql (supabase db reset / load.py) i out/demo.json (tryb bez bazy: Panel → Trendy).
 
@@ -20,8 +24,9 @@ import uuid
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta, timezone
 
-from common import (CROSS, DOMAINS, INSTITUTION_TYPES, OUT, RADAR, ROOT, SEED, STAGES, Jsonb, check_keys, index_row,
-                    read_json, upsert, write_json)
+from common import (CREATOR_ROLES, CROSS, DOMAINS, INNOVATION_KINDS, INSTITUTION_TYPES, IP_STATUSES, OUT, PARTNER_KINDS,
+                    PARTNER_SUPPORT, RADAR, ROOT, SECTORS, SEED, STAGES, TRL_STAGE, Jsonb, check_keys, index_row, read_json,
+                    lit, upsert, write_json)
 from region import STATUS_PREFIX
 
 RNG_SEED = 2026
@@ -128,7 +133,7 @@ def created_at(rng: random.Random, days_back: int, after: date | None = None) ->
 
 def candidates(place: str, gminy: list[dict]) -> list[dict]:
     by_name = {g["nazwa"]: g for g in gminy if g["typ"] == "miejska"}
-    if place in ("city", "university"):
+    if isinstance(PLACES.get(place), dict) and place != "_opis":
         return [g for name, w in PLACES[place].items() for g in [by_name[name]] * w]
     if place == "rural":
         return [g for g in gminy if g["typ"] == "wiejska"]
@@ -147,6 +152,31 @@ def weight(g: dict, cross: list[str]) -> float:
     if "depopulacja" in cross:
         w *= 2.5 if (g["zmiana_ludnosci_10l"] or 0) < -3 else 0.5
     return w
+
+
+def gmina_by_name(name: str, gminy: list[dict]) -> dict:
+    """Siedziba partnera: przy dwóch gminach o tej samej nazwie (miejska i wiejska) bierzemy miejską."""
+    hits = sorted((g for g in gminy if g["nazwa"] == name), key=lambda g: g["typ"] != "miejska")
+    if not hits:
+        sys.exit(f"Nieznana gmina partnera: {name}")
+    return hits[0]
+
+
+def trl_for(base: int, stage: str) -> int:
+    """TRL kopii w przedziale jej etapu (config/taxonomy.json → trlStage); przeniesiona = co najmniej „działa”."""
+    lo, hi = TRL_STAGE["dziala" if stage == "przeniesiona" else stage]
+    return min(max(base, lo), hi)
+
+
+def institution_for(a: dict, g: dict, institutions: dict[str, dict]) -> dict:
+    """Instytucja = typ (albo institution_label) + gmina. Ta sama para w kilku archetypach to ta sama instytucja."""
+    label = a.get("institution_label") or INSTITUTION_NAME[a["institution_type"]]
+    name = f"{label}, {g['nazwa']} (przykład)" if a["institution_type"] != "uczelnia" else f"{label} publiczna, {g['nazwa']} (przykład)"
+    slug = slugify(f"{label}-{g['nazwa']}-{g['teryt']}")
+    if slug not in institutions:
+        institutions[slug] = {"id": uid("institution", slug), "slug": slug, "name": name,
+                              "institution_type": a["institution_type"], "teryt": g["teryt"]}
+    return institutions[slug]
 
 
 # ── Ocena radaru (te same zasady co lib/radar/score.ts) ──
@@ -183,15 +213,26 @@ def vary_numbers(rng: random.Random, text: str) -> str:
     return re.sub(r"(?<![\d,.])\d+(?![\d,.])", scale, text)
 
 
-def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]) -> tuple[list[dict], list[dict]]:
-    initiatives, adoptions = [], []
+def check_archetype(a: dict) -> None:
+    check_keys("domains", a["domains"], DOMAINS)
+    check_keys("cross", a["cross"], CROSS)
+    check_keys("institutionType", a["institution_type"], INSTITUTION_TYPES)
+    check_keys("stages", a["stages"], STAGES)
+    check_keys("innovationKind", a["innovation_kind"], INNOVATION_KINDS)
+    check_keys("sectors", a["sectors"], SECTORS)
+    check_keys("creatorRoles", [c["role"] for c in a["creators"]], CREATOR_ROLES)
+    if a.get("ip_status"):
+        check_keys("ipStatus", a["ip_status"], IP_STATUSES)
+    if (a["innovation_kind"] == "technologiczna") != ("trl" in a):
+        sys.exit(f"{a['key']}: TRL ma tylko i zawsze innowacja technologiczna")
+
+
+def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]):
+    initiatives, adoptions, creators, institutions = [], [], [], {}
     for a in TEMPLATES["archetypes"]:
-        check_keys("domains", a["domains"], DOMAINS)
-        check_keys("cross", a["cross"], CROSS)
-        check_keys("institutionType", a["institution_type"], INSTITUTION_TYPES)
-        check_keys("stages", a["stages"], STAGES)
+        check_archetype(a)
         pool = candidates(a["place"], gminy)
-        n = rng.randint(*COPIES)
+        n = rng.randint(*a.get("copies", COPIES))
         places: list[dict] = []
         while len(places) < min(n, len(set(g["teryt"] for g in pool))):
             g = rng.choices(pool, weights=[weight(x, a["cross"]) for x in pool])[0]
@@ -211,6 +252,8 @@ def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]) -> t
                        else vary_numbers(rng, a["effects"]))
             when = created_at(rng, 330, after=date.fromisoformat(source["created_at"][:10]) if source else None)
             slug = f"{a['key']}-{slugify(g['nazwa'])}"
+            trl = trl_for(a["trl"], stage) if "trl" in a else None
+            institution = institution_for(a, g, institutions)
             row = {
                 "id": uid("initiative", slug),
                 "slug": slug,
@@ -223,6 +266,11 @@ def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]) -> t
                 "institution_type": a["institution_type"],
                 "stage": stage,
                 "cross_topics": a["cross"],
+                "innovation_kind": a["innovation_kind"],
+                "sectors": a["sectors"],
+                "trl": trl,
+                "ip_status": a.get("ip_status"),
+                "institution_id": institution["id"],
                 "teryt": g["teryt"],
                 "municipality": g["nazwa"],
                 "card": {
@@ -236,6 +284,11 @@ def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]) -> t
                     "institutionType": a["institution_type"],
                     "stage": stage,
                     "cross": a["cross"],
+                    "innovationKind": a["innovation_kind"],
+                    "sectors": a["sectors"],
+                    "trl": trl,
+                    "ipStatus": a.get("ip_status"),
+                    "creatorRoles": list(dict.fromkeys(c["role"] for c in a["creators"])),
                     "municipality": g["nazwa"],
                     "keywords": a["keywords"],
                     "clarity": round(rng.uniform(0.7, 0.95), 2),
@@ -258,6 +311,17 @@ def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]) -> t
                 "created_at": when,
             }
             initiatives.append(row)
+            # Twórcy: rola i opis bez imion. Podpis publiczny tylko za zgodą (u ucznia także opiekuna).
+            for sort, c in enumerate(a["creators"]):
+                minor = c["role"] == "uczen"
+                guardian = minor and rng.random() < 0.5
+                creators.append({
+                    "id": uid("creator", slug, str(sort)), "initiative_id": row["id"], "sort": sort, "role": c["role"],
+                    "display_name": f"{c['label'][0].upper()}{c['label'][1:]} (przykład)", "under_18": minor,
+                    # Jak check creators_minor_needs_guardian (0007): bez zgody opiekuna podpis ucznia zostaje prywatny.
+                    "guardian_consent": guardian, "show_publicly": rng.random() < 0.6 and (not minor or guardian),
+                    "institution_id": institution["id"],
+                })
             if i == 0:
                 source = row
             elif source and stage in ("dziala", "przeniesiona", "pilotaz") and rng.random() < 0.4:
@@ -274,7 +338,7 @@ def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]) -> t
                     "improve": fb[1] if done else None,
                     "created_at": when,
                 })
-    return initiatives, adoptions
+    return initiatives, adoptions, creators, list(institutions.values())
 
 
 def make_challenges(rng: random.Random, gminy: list[dict]) -> list[dict]:
@@ -323,14 +387,32 @@ def make_programs() -> list[dict]:
     return out
 
 
-def sql(initiatives, adoptions, challenges, mentors, programs) -> str:
+def make_partners(gminy: list[dict]) -> list[dict]:
+    out = []
+    for p in TEMPLATES["partners"]:
+        check_keys("partnerKind", p["kind"], PARTNER_KINDS)
+        check_keys("sectors", p["sectors"], SECTORS)
+        check_keys("domains", p["domains"], DOMAINS)
+        check_keys("partnerSupport", p["support"], PARTNER_SUPPORT)
+        check_keys("stages", p["stages"], STAGES)
+        g = gmina_by_name(p["place"], gminy)
+        out.append({"id": uid("partner", p["slug"]), **{k: v for k, v in p.items() if k != "place"},
+                    "teryt": g["teryt"], "municipality": g["nazwa"]})
+    return out
+
+
+def sql(initiatives, adoptions, challenges, mentors, programs, institutions, creators, partners) -> str:
     lines = [
         "-- Wygenerowane przez data/seed_initiatives.py — nie edytuj ręcznie. DANE SYNTETYCZNE (synthetic = true).",
         "-- Najpierw usuwamy poprzednie dane demo, więc plik można ładować wielokrotnie (load.py).",
         "delete from search_index where ref_id in (select id from initiatives where synthetic union all select id from challenges where synthetic"
-        " union all select id from mentors where synthetic union all select id from programs where synthetic);",
+        " union all select id from mentors where synthetic union all select id from programs where synthetic"
+        " union all select id from partners where synthetic);",
         "delete from adoptions where synthetic;",
+        "delete from creators where synthetic;",
         "delete from initiatives where synthetic;",
+        "delete from institutions where synthetic;",
+        "delete from partners where synthetic;",
         "delete from challenges where synthetic;",
         "delete from mentors where synthetic;",
         "delete from programs where synthetic;",
@@ -348,12 +430,22 @@ def sql(initiatives, adoptions, challenges, mentors, programs) -> str:
         lines.append(index_row("program", p["id"], p["title"], p["description"],
                                [w for c in p["criteria"] for w in c["name"].lower().split() if len(w) > 4],
                                domains=p["domains"], active=p["active"]))
+    for inst in institutions:
+        lines.append(upsert("institutions", "id", {**inst, "synthetic": True}))
+    for p in partners:
+        lines.append(upsert("partners", "id", {
+            "id": p["id"], "slug": p["slug"], "name": p["name"], "kind": p["kind"], "description": p["description"],
+            "sectors": p["sectors"], "domains": p["domains"], "support": p["support"], "trl_min": p["trl_min"],
+            "trl_max": p["trl_max"], "stages": p["stages"], "teryt": p["teryt"], "active": True, "synthetic": True}))
+        lines.append(index_row("partner", p["id"], p["name"], p["description"], p["keywords"], domains=p["domains"],
+                               tags=[p["kind"], *p["sectors"], *p["support"]], teryt=p["teryt"]))
     for i in initiatives:
         lines.append(upsert("initiatives", "id", {
             "id": i["id"], "status_code": i["status_code"], "slug": i["slug"], "submission_kind": i["submission_kind"],
             "card": Jsonb(i["card"]), "title": i["title"], "summary": i["summary"], "domains": i["domains"],
             "institution_type": i["institution_type"], "stage": i["stage"], "cross_topics": i["cross_topics"],
-            "teryt": i["teryt"], "radar": Jsonb(i["radar"]), "signal": i["signal"], "status": i["status"],
+            "innovation_kind": i["innovation_kind"], "sectors": i["sectors"], "trl": i["trl"], "ip_status": i["ip_status"],
+            "institution_id": i["institution_id"], "teryt": i["teryt"], "radar": Jsonb(i["radar"]), "signal": i["signal"], "status": i["status"],
             "published": i["published"], "nominations_count": i["nominations_count"], "synthetic": True,
             "created_at": i["created_at"], "updated_at": i["created_at"]}))
         c = i["card"]
@@ -366,6 +458,13 @@ def sql(initiatives, adoptions, challenges, mentors, programs) -> str:
             "best_fit": c["best_fit"], "is_gap": c["is_gap"], "synthetic": True, "created_at": c["created_at"]}))
         lines.append(index_row("challenge", c["id"], c["card"]["summary"][:80], c["card"]["summary"], c["card"]["keywords"],
                                domains=c["card"]["domains"], institution_type=c["institution_type"], teryt=c["teryt"]))
+    for c in creators:
+        lines.append(upsert("creators", "id", {
+            "id": c["id"], "role": c["role"], "display_name": c["display_name"], "under_18": c["under_18"],
+            "guardian_consent": c["guardian_consent"], "show_publicly": c["show_publicly"],
+            "institution_id": c["institution_id"], "synthetic": True}))
+        lines.append(f"insert into initiative_creators (initiative_id, creator_id, sort) values ({lit(c['initiative_id'])}, "
+                     f"{lit(c['id'])}, {c['sort']}) on conflict do nothing;")
     # Adopcje po inicjatywach: trigger adoptions_refresh_stats liczy adoptions_count i avg_rating.
     for a in adoptions:
         lines.append(upsert("adoptions", "id", {**a, "synthetic": True}))
@@ -376,17 +475,19 @@ def main() -> None:
     rng = random.Random(RNG_SEED)
     gminy = read_json(OUT / "gminy.json")
     used: set[str] = set()
-    initiatives, adoptions = make_initiatives(rng, gminy, used)
+    initiatives, adoptions, creators, institutions = make_initiatives(rng, gminy, used)
     challenges = make_challenges(rng, gminy)
-    mentors, programs = make_mentors(), make_programs()
+    mentors, programs, partners = make_mentors(), make_programs(), make_partners(gminy)
 
     if len({i["slug"] for i in initiatives}) != len(initiatives):
         sys.exit("Powtórzony slug inicjatywy")
     SEED.mkdir(parents=True, exist_ok=True)
-    (SEED / "30_demo.sql").write_text(sql(initiatives, adoptions, challenges, mentors, programs), encoding="utf-8")
+    (SEED / "30_demo.sql").write_text(
+        sql(initiatives, adoptions, challenges, mentors, programs, institutions, creators, partners), encoding="utf-8")
     write_json(OUT / "demo.json", {
         "_note": "DANE SYNTETYCZNE — wygenerowane przez data/seed_initiatives.py, nie dotyczą prawdziwych instytucji.",
         "initiatives": initiatives, "adoptions": adoptions, "challenges": challenges, "mentors": mentors, "programs": programs,
+        "institutions": institutions, "creators": creators, "partners": partners,
     })
 
     levels = Counter(next(lv["key"] for lv in RADAR["levels"] if i["signal"] >= lv["min"]) for i in initiatives)
@@ -397,6 +498,9 @@ def main() -> None:
           f"{len(adoptions)} adopcji, {len(challenges)} wyzwań ({sum(c['is_gap'] for c in challenges)} bez rozwiązania), "
           f"{len(mentors)} mentorów, {len(programs)} programy")
     print("Sygnał:", dict(levels), "| etapy:", dict(Counter(i["stage"] for i in initiatives)))
+    print("Typy:", dict(Counter(i["innovation_kind"] for i in initiatives)),
+          f"| z TRL: {sum(i['trl'] is not None for i in initiatives)} | instytucje: {len(institutions)}, twórcy: {len(creators)}, "
+          f"partnerzy: {len(partners)}")
     print(f"Powiaty z inicjatywami: {len(counties)}; gminy: {len({i['teryt'] for i in initiatives})}")
 
 

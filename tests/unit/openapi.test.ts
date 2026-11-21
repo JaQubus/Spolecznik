@@ -25,7 +25,8 @@ function propertyNames(node: unknown, out = new Set<string>()): Set<string> {
 const ROW: InitiativeDetailRow = {
   id: "5b0c8f2e-1d3a-4c6b-9e7f-2a1b3c4d5e6f", slug: "robotyka", title: "Robotyka w małych szkołach",
   summary: "Jedna szkoła wozi zestawy robotów do sąsiednich.", domains: ["edukacja"], institution_type: "szkola_podstawowa",
-  stage: "dziala", cross_topics: ["obszary_wiejskie"], county_teryt: region.countyExample.teryt, county: region.countyExample.name,
+  stage: "dziala", cross_topics: ["obszary_wiejskie"], innovation_kind: "edukacyjna", sectors: ["ict"], trl: null, ip_status: "open",
+  institution_name: null, county_teryt: region.countyExample.teryt, county: region.countyExample.name,
   municipality: region.municipalityExample.name, signal: 72, status: "featured", nominations_count: 2, adoptions_count: 3,
   avg_rating: "4.333", synthetic: true, created_at: "2026-10-04T10:00:00+00:00", updated_at: "2026-10-05T10:00:00+00:00",
   card: { problem: "Małe szkoły nie stać na sprzęt.", solution: "Wspólny zestaw.", effects: null, beneficiaries: "uczniowie" },

@@ -48,7 +48,8 @@ async function loadSource(kind: CardKind, refId: string): Promise<Source | null>
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      const card = InitiativeCard.parse(data.card);
+      // Tylko pola indeksu: karty sprzed nowych pól (0007) też przechodzą.
+      const card = InitiativeCard.pick({ title: true, problem: true, solution: true, institutionType: true, stage: true, cross: true, keywords: true, domains: true }).parse(data.card);
       return {
         title: card.title,
         body: `${card.problem} ${card.solution}`, // już zanonimizowane w intake

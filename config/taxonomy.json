@@ -37,6 +37,60 @@
     "wspolpraca": { "label": "Współpraca międzysektorowa", "slug": "wspolpraca", "description": "samorząd, szkoła, uczelnia, biznes i organizacje razem" },
     "pogranicze": { "label": "Pogranicze", "slug": "pogranicze", "description": "współpraca przygraniczna i sąsiedzi zza granicy" }
   },
+  "innovationKinds": {
+    "technologiczna": { "label": "Technologiczna", "slug": "technologiczna", "description": "nowy produkt, urządzenie, materiał, oprogramowanie albo metoda techniczna" },
+    "organizacyjna": { "label": "Organizacyjna", "slug": "organizacyjna", "description": "nowy sposób zarządzania, współpracy instytucji albo podziału zadań" },
+    "edukacyjna": { "label": "Edukacyjna", "slug": "edukacyjna", "description": "nowa metoda nauczania, program zajęć albo forma kształcenia" },
+    "spoleczna": { "label": "Społeczna", "slug": "spoleczna", "description": "nowa usługa albo forma wsparcia dla mieszkańców i grup w trudnej sytuacji" },
+    "procesowa": { "label": "Procesowa", "slug": "procesowa", "description": "usprawnienie procedury, obsługi albo e-usługa w urzędzie czy instytucji" }
+  },
+  "sectors": {
+    "lotnictwo_kosmos": { "label": "Lotnictwo i kosmos", "slug": "lotnictwo-kosmos", "description": "lotnictwo, drony, technologie kosmiczne, Dolina Lotnicza" },
+    "motoryzacja": { "label": "Motoryzacja", "slug": "motoryzacja", "description": "pojazdy, napędy, elektromobilność, części i diagnostyka" },
+    "jakosc_zycia": { "label": "Jakość życia", "slug": "jakosc-zycia", "description": "zdrowie, opieka, żywność, środowisko, dostępność, usługi dla mieszkańców" },
+    "ict": { "label": "ICT", "slug": "ict", "description": "oprogramowanie, dane, sztuczna inteligencja, sieci, automatyka" },
+    "inne": { "label": "Inny sektor", "slug": "inny", "description": "pozostałe branże, gdy żaden z sektorów PCI nie pasuje" }
+  },
+  "trl": {
+    "1": { "label": "TRL 1", "slug": "trl-1", "description": "zaobserwowano podstawowe zasady działania" },
+    "2": { "label": "TRL 2", "slug": "trl-2", "description": "opisano koncepcję technologii i jej zastosowanie" },
+    "3": { "label": "TRL 3", "slug": "trl-3", "description": "potwierdzono koncepcję doświadczalnie (eksperyment, obliczenia)" },
+    "4": { "label": "TRL 4", "slug": "trl-4", "description": "model sprawdzony w laboratorium" },
+    "5": { "label": "TRL 5", "slug": "trl-5", "description": "model sprawdzony w warunkach zbliżonych do rzeczywistych" },
+    "6": { "label": "TRL 6", "slug": "trl-6", "description": "prototyp przetestowany w warunkach zbliżonych do rzeczywistych" },
+    "7": { "label": "TRL 7", "slug": "trl-7", "description": "prototyp przetestowany w rzeczywistych warunkach pracy" },
+    "8": { "label": "TRL 8", "slug": "trl-8", "description": "gotowy system, zakończone testy i kwalifikacja" },
+    "9": { "label": "TRL 9", "slug": "trl-9", "description": "system sprawdzony w rzeczywistym, regularnym użyciu" }
+  },
+  "trlStage": { "_opis": "Etap, który odpowiada przedziałowi TRL (od, do). Przeniesiona = działa też w innym miejscu, niezależnie od TRL.", "pomysl": [1, 3], "pilotaz": [4, 6], "dziala": [7, 9] },
+  "ipStatuses": {
+    "brak": { "label": "Bez ochrony", "slug": "bez-ochrony", "description": "nic nie zgłoszono, wyniki nie są też otwarte" },
+    "zgloszenie": { "label": "Zgłoszenie patentowe", "slug": "zgloszenie", "description": "zgłoszenie do Urzędu Patentowego RP albo EPO czeka na decyzję" },
+    "patent": { "label": "Patent", "slug": "patent", "description": "udzielony patent" },
+    "wzor": { "label": "Wzór użytkowy lub przemysłowy", "slug": "wzor", "description": "zarejestrowany albo zgłoszony wzór" },
+    "open": { "label": "Otwarta licencja", "slug": "otwarta-licencja", "description": "udostępnione otwarcie: open source, otwarte dane, wolna licencja materiałów" }
+  },
+  "creatorRoles": {
+    "uczen": { "label": "Uczeń", "slug": "uczen", "description": "uczeń szkoły podstawowej albo ponadpodstawowej" },
+    "student": { "label": "Student", "slug": "student", "description": "student, doktorant, członek koła naukowego" },
+    "nauczyciel": { "label": "Nauczyciel", "slug": "nauczyciel", "description": "nauczyciel, pedagog, dyrektor szkoły" },
+    "naukowiec": { "label": "Naukowiec", "slug": "naukowiec", "description": "pracownik naukowy albo badawczy uczelni lub instytutu" },
+    "urzednik": { "label": "Pracownik instytucji", "slug": "urzednik", "description": "pracownik urzędu, ośrodka, szpitala, biblioteki i innych instytucji publicznych" }
+  },
+  "partnerKinds": {
+    "firma": { "label": "Firma", "slug": "firma", "description": "przedsiębiorstwo, które może wdrożyć, kupić albo licencjonować rozwiązanie" },
+    "fundusz": { "label": "Inwestor lub fundusz", "slug": "fundusz", "description": "anioł biznesu, fundusz VC, fundusz publiczny" },
+    "ctt": { "label": "Centrum transferu technologii", "slug": "ctt", "description": "CTT uczelni, spółka celowa, broker innowacji" },
+    "pci": { "label": "Akcelerator lub laboratorium PCI", "slug": "pci", "description": "programy akceleracyjne i laboratoria Podkarpackiego Centrum Innowacji" },
+    "jst": { "label": "Samorząd jako odbiorca", "slug": "jst", "description": "gmina, powiat lub województwo, które może wdrożyć rozwiązanie u siebie" }
+  },
+  "partnerSupport": {
+    "licencja": { "label": "Licencja", "slug": "licencja", "description": "kupuje albo bierze licencję na technologię" },
+    "inwestycja": { "label": "Inwestycja", "slug": "inwestycja", "description": "finansuje rozwój w zamian za udziały albo grant" },
+    "pilotaz": { "label": "Pilotaż", "slug": "pilotaz", "description": "udostępnia miejsce i ludzi do pierwszego wdrożenia" },
+    "zakup": { "label": "Zakup", "slug": "zakup", "description": "kupuje gotowe rozwiązanie albo usługę" },
+    "mentoring": { "label": "Mentoring i laboratorium", "slug": "mentoring", "description": "doradza, udostępnia laboratorium, sprzęt do prototypowania albo program akceleracyjny" }
+  },
   "radar": {
     "dimensions": {
       "przenaszalnosc": {
