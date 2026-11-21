@@ -16,7 +16,6 @@ const PUBLIC = [
   ["Wypróbowaliśmy u nas", "/wyprobuj"],
   ["Rozmowy", "/rozmowy"],
   ["Inicjatywy", "/inicjatywy"],
-  ["wniosek", "/wniosek"],
   [`Kondycja ${region.genitive}`, "/mapa/kondycja"],
   ["Ucz się", "/wiedza/ucz-sie"],
   ["logowanie", "/logowanie"],

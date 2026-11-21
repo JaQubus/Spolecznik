@@ -413,8 +413,8 @@ def make_programs() -> list[dict]:
         out.append({
             "id": uid("program", p["title"]), **p,
             "criteria": [{"name": c, "max": 25} for c in p["criteria"]],
-            # Formularz /wniosek tylko dla otwartego programu; pozostałe mają same pola generatora.
-            "form_schema": form if p["active"] else {"fields": form["fields"]},
+            # Same pola generatora szkicu (/api/apply); formularza z danymi wnioskodawcy już nie ma.
+            "form_schema": {"fields": form["fields"]},
             "opens_at": "2026-10-01" if p["active"] else ["2026-03-01", "2026-04-15"][n % 2],
             "closes_at": "2027-01-31" if p["active"] else ["2026-05-31", "2026-06-30"][n % 2],
         })

@@ -252,7 +252,7 @@ html.a11y-contrast {
 [data-domain="partycypacja"] { --domain: var(--domain-partycypacja); --domain-soft: var(--domain-partycypacja-soft); }
 html.a11y-contrast [data-domain] { --domain: var(--ink); --domain-soft: var(--surface); }
 
-/* Wypełniony wniosek (/wniosek): układ jak we wzorze, czytelny na ekranie i na wydruku. */
+/* Dokument do wydruku (plan przeniesienia, components/transfer/plan-document.tsx): czytelny na ekranie i na wydruku. */
 @layer components {
   .doc { font-size: 1rem; line-height: 1.6; }
   .doc h3 { font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; }
