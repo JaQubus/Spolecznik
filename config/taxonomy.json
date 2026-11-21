@@ -92,41 +92,51 @@
     "mentoring": { "label": "Mentoring i laboratorium", "slug": "mentoring", "description": "doradza, udostępnia laboratorium, sprzęt do prototypowania albo program akceleracyjny" }
   },
   "radar": {
+    "_opis": "Metodologia oceny (strona /metodologia czyta ten blok). Model ocenia wymiary 0–5 z cytatem z karty, potem kod stosuje reguły; sygnał = suma wag × ocena / 5 × 100, wagi zależą od typu innowacji.",
+    "methodologyVersion": 2,
     "dimensions": {
-      "przenaszalnosc": {
-        "label": "Przenaszalność",
-        "short": "Przenoszenie",
-        "question": "Czy da się to powtórzyć w innej gminie albo instytucji?",
-        "anchors": { "0": "działa tylko dzięki wyjątkowym warunkom tego miejsca", "3": "da się powtórzyć po dostosowaniu", "5": "gotowy przepis, już powtórzony gdzie indziej" }
-      },
-      "wplyw": {
-        "label": "Wpływ",
-        "short": "Wpływ",
-        "question": "Jak dużą i ważną zmianę daje odbiorcom?",
-        "anchors": { "0": "zmiana kosmetyczna", "3": "wyraźna zmiana dla jednej grupy", "5": "duża zmiana dla wielu osób albo ważnego problemu regionu" }
-      },
-      "dojrzalosc": {
-        "label": "Dojrzałość",
-        "short": "Dojrzałość",
-        "question": "Czy jest sprawdzone w praktyce i są na to dowody?",
-        "anchors": { "0": "sam pomysł", "3": "pilotaż z pierwszymi wynikami", "5": "działa od dawna, wyniki zmierzone" }
-      },
       "nowosc": {
         "label": "Nowość",
         "short": "Nowość",
         "question": "Czy to coś nowego w regionie i w Polsce?",
         "anchors": { "0": "powszechnie znane i stosowane", "3": "znane w Polsce, nowe w regionie", "5": "nie znamy podobnego rozwiązania" }
       },
-      "latwosc": {
-        "label": "Łatwość wdrożenia",
-        "short": "Łatwość",
-        "question": "Ile kosztuje i jak trudno to uruchomić?",
-        "anchors": { "0": "wymaga dużych pieniędzy, ludzi i zmian prawa", "3": "wymaga budżetu i osoby do koordynacji", "5": "tanie, wystarczą obecne zasoby" }
+      "wplyw": {
+        "label": "Wpływ społeczny lub gospodarczy",
+        "short": "Wpływ",
+        "question": "Jak dużą i ważną zmianę daje ludziom, instytucjom albo gospodarce regionu?",
+        "anchors": { "0": "zmiana kosmetyczna", "3": "wyraźna zmiana dla jednej grupy albo branży", "5": "duża zmiana dla wielu osób albo ważnego problemu czy branży regionu" }
+      },
+      "dojrzalosc": {
+        "label": "Dojrzałość",
+        "short": "Dojrzałość",
+        "question": "Na ile jest sprawdzone w praktyce (etap, a dla technologii poziom TRL) i czy są na to dowody?",
+        "anchors": { "0": "sam pomysł", "3": "pilotaż albo prototyp z pierwszymi wynikami", "5": "działa od dawna, wyniki zmierzone" }
+      },
+      "skalowalnosc": {
+        "label": "Skalowalność i przenaszalność",
+        "short": "Skalowalność",
+        "question": "Czy da się to powtórzyć w innej instytucji albo rozwinąć na większą skalę?",
+        "anchors": { "0": "działa tylko dzięki wyjątkowym warunkom tego miejsca", "3": "da się powtórzyć po dostosowaniu", "5": "gotowy przepis albo produkt, już powtórzony gdzie indziej" }
+      },
+      "komercjalizacja": {
+        "label": "Potencjał komercjalizacji lub finansowania",
+        "short": "Finansowanie",
+        "question": "Czy ktoś zapłaci za to rozwiązanie, kupi licencję, zainwestuje albo sfinansuje dalszy rozwój?",
+        "anchors": { "0": "nie widać odbiorcy ani źródła pieniędzy", "3": "jest grupa odbiorców albo program finansowania, który pasuje", "5": "jest zainteresowany klient, licencjobiorca albo inwestor, a wynik jest chroniony lub gotowy do sprzedaży" }
       }
     },
-    "weights": { "przenaszalnosc": 0.3, "wplyw": 0.25, "dojrzalosc": 0.2, "nowosc": 0.15, "latwosc": 0.1 },
+    "weights": {
+      "technologiczna": { "nowosc": 0.25, "wplyw": 0.2, "dojrzalosc": 0.15, "skalowalnosc": 0.15, "komercjalizacja": 0.25 },
+      "organizacyjna": { "nowosc": 0.15, "wplyw": 0.25, "dojrzalosc": 0.2, "skalowalnosc": 0.3, "komercjalizacja": 0.1 },
+      "edukacyjna": { "nowosc": 0.15, "wplyw": 0.3, "dojrzalosc": 0.2, "skalowalnosc": 0.25, "komercjalizacja": 0.1 },
+      "spoleczna": { "nowosc": 0.15, "wplyw": 0.35, "dojrzalosc": 0.2, "skalowalnosc": 0.2, "komercjalizacja": 0.1 },
+      "procesowa": { "nowosc": 0.1, "wplyw": 0.25, "dojrzalosc": 0.2, "skalowalnosc": 0.3, "komercjalizacja": 0.15 },
+      "domyslne": { "nowosc": 0.2, "wplyw": 0.2, "dojrzalosc": 0.2, "skalowalnosc": 0.2, "komercjalizacja": 0.2 }
+    },
     "maturityCap": { "pomysl": 1, "pilotaz": 3, "dziala": 5, "przeniesiona": 5 },
-    "transferredMinPortability": 3,
+    "trlMaturityCap": { "1": 0, "2": 1, "3": 1, "4": 2, "5": 3, "6": 3, "7": 4, "8": 5, "9": 5 },
+    "transferredMinScalability": 3,
     "noDataMax": 2,
     "levels": [
       { "min": 70, "key": "silny", "label": "silny sygnał" },

@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import { GroqBusyError } from "./groq";
 import { hashKey, keyMatches, newAccessKey } from "./initiatives/access";
 import { classifySource } from "./llm";
@@ -9,6 +10,7 @@ import {
   type ClaimRequest, type InitiativeCard, type SimilarSource, type SourceClassification, type SourceKey, type SourceRecordKind,
 } from "./schemas";
 import { keywordSearch, upsertIndex } from "./search";
+import { assessInitiative } from "./radar";
 import { pickDuplicate } from "./source-records";
 import { newStatusCode } from "./status-code";
 import { createAdminClient } from "./supabase/admin";
@@ -242,6 +244,13 @@ export async function claimInitiative(input: ClaimRequest, key: string): Promise
     notify({ role: "admin", kind: "nowa_inicjatywa", payload: { initiativeId: view.id, statusCode: view.code, title: card.title, submissionKind: "detected" } }),
   ]);
   for (const r of sideEffects) if (r.status === "rejected") console.error("[przejęcie] efekt uboczny:", r.reason);
+  // Karta uzupełniona przez twórcę (np. TRL) = pierwsza ocena radaru, jak po zwykłym zgłoszeniu (lib/initiatives/create.ts).
+  const assess = () => assessInitiative(view.id).then(() => undefined, (e) => console.error("[przejęcie] ocena radaru:", e));
+  try {
+    after(assess);
+  } catch {
+    void assess();
+  }
   return { code: view.code };
 }
 

@@ -14,7 +14,9 @@ import { notify } from "@/lib/notifications";
 import { logChange } from "@/lib/panel/initiatives";
 import { postPartnershipMessage } from "@/lib/partnerships";
 import { anonymize } from "@/lib/pii";
-import { ADOPTION_STATUSES, INITIATIVE_STATUSES } from "@/lib/schemas";
+import { GroqBusyError } from "@/lib/groq";
+import { assessInitiative } from "@/lib/radar";
+import { ADOPTION_STATUSES, INITIATIVE_STATUSES, SignalOverrideInput } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureThread, initiativeThread, nudge, postStaffMessage } from "@/lib/threads";
@@ -117,6 +119,64 @@ export async function setPublished(_prev: ActionResult, formData: FormData): Pro
   }
   refresh();
   return { ok: true, message: published ? "Opublikowano. Inicjatywa jest w publicznej bazie." : "Ukryto inicjatywę z publicznej bazy." };
+}
+
+const RadarInput = z.object({ initiativeId: z.uuid() });
+
+/** „Oceń ponownie”: nowa ocena modelu z regułami (lib/radar). Ręczna korekta sygnału zostaje. */
+export async function reassessRadar(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = RadarInput.safeParse({ initiativeId: formData.get("initiativeId") });
+  if (!parsed.success) return NOT_FOUND;
+  const id = parsed.data.initiativeId;
+  let signal: number;
+  try {
+    const before = await createAdminClient().from("initiatives").select("signal").eq("id", id).maybeSingle();
+    if (before.error) throw before.error;
+    if (!before.data) return NOT_FOUND;
+    signal = (await assessInitiative(id)).signal;
+    await logChange(user.id, "initiative.radar", "initiative", id, { from: before.data.signal, to: signal });
+  } catch (e) {
+    if (e instanceof GroqBusyError) return { ok: false, message: "AI jest teraz zajęte. Spróbuj ponownie za minutę." };
+    console.error("[panel] ocena radaru:", e);
+    return { ok: false, message: "Nie udało się ocenić. Spróbuj ponownie." };
+  }
+  refresh();
+  return { ok: true, message: `Nowa ocena: sygnał ${signal}/100.` };
+}
+
+/** Ręczna korekta sygnału zawsze z powodem — powód trafia do audit_log, pusty sygnał usuwa korektę. */
+export async function overrideSignal(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = SignalOverrideInput.safeParse({
+    initiativeId: formData.get("initiativeId"),
+    signal: String(formData.get("signal") ?? "").trim(),
+    reason: formData.get("reason") ?? "",
+  });
+  if (!parsed.success) {
+    const field = parsed.error.issues[0]?.path[0];
+    if (field === "reason") return { ok: false, message: "Wpisz powód korekty (co najmniej 10 znaków)." };
+    if (field === "signal") return { ok: false, message: "Sygnał to liczba od 0 do 100. Zostaw puste, żeby usunąć korektę." };
+    return NOT_FOUND;
+  }
+  const { initiativeId: id, signal, reason } = parsed.data;
+  const override = signal === "" ? null : signal;
+  try {
+    const supabase = createAdminClient();
+    const before = await supabase.from("initiatives").select("signal, signal_override").eq("id", id).maybeSingle();
+    if (before.error) throw before.error;
+    if (!before.data) return NOT_FOUND;
+    const { error } = await supabase.from("initiatives").update({ signal_override: override, updated_at: new Date().toISOString() }).eq("id", id);
+    if (error) throw error;
+    await logChange(user.id, "initiative.signal_override", "initiative", id, {
+      from: before.data.signal_override, to: override, radar: before.data.signal, reason: anonymize(reason).text,
+    });
+  } catch (e) {
+    console.error("[panel] korekta sygnału:", e);
+    return SAVE_FAILED;
+  }
+  refresh();
+  return { ok: true, message: override == null ? "Usunięto korektę. Liczy się ocena radaru." : `Zapisano korektę: sygnał ${override}/100.` };
 }
 
 const CreatorConsentInput = z.object({
