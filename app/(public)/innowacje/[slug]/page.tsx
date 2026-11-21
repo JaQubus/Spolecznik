@@ -17,18 +17,18 @@ import {
 import { readAssessment } from "@/lib/radar/score";
 import { safeDecode } from "../../wiedza/shared";
 
-async function load(props: PageProps<"/inicjatywy/[slug]">) {
+async function load(props: PageProps<"/innowacje/[slug]">) {
   if (!publicInitiativesAvailable()) return null;
   return getPublicInitiative(safeDecode((await props.params).slug));
 }
 
-export async function generateMetadata(props: PageProps<"/inicjatywy/[slug]">): Promise<Metadata> {
+export async function generateMetadata(props: PageProps<"/innowacje/[slug]">): Promise<Metadata> {
   const i = await load(props);
-  return i ? { title: `${i.title} · Inicjatywy`, description: i.summary } : {};
+  return i ? { title: `${i.title} · Innowacje`, description: i.summary } : {};
 }
 
 /** Opublikowana inicjatywa: historia w krokach problem → rozwiązanie → efekty → jak przenieść. */
-export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
+export default async function Page(props: PageProps<"/innowacje/[slug]">) {
   const i = await load(props);
   if (!i) notFound();
   const param = `inicjatywa=${encodeURIComponent(i.slug ?? i.id)}`;
@@ -44,7 +44,7 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
   return (
     <article className="space-y-14">
       <div className="space-y-6">
-        <Breadcrumbs items={[{ href: "/inicjatywy", label: "Inicjatywy" }, { label: i.title }]} />
+        <Breadcrumbs items={[{ href: "/innowacje", label: "Innowacje" }, { label: i.title }]} />
         <h1 className="text-4xl font-bold">{i.title}</h1>
         <p className="max-w-2xl text-xl">{i.summary}</p>
         <p className="flex flex-wrap gap-2">
@@ -56,7 +56,16 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
         )}
         <dl className="grid max-w-[48rem] gap-x-6 gap-y-3 text-lg sm:grid-cols-[auto_1fr]">
           {i.municipality && (<><dt className="font-bold">Gdzie</dt><dd>gmina {i.municipality}{i.county && `, powiat ${i.county.replace(/^m\. /, "")}`}</dd></>)}
-          {(i.institution_name || i.institution_type) && (<><dt className="font-bold">Kto prowadzi</dt><dd>{i.institution_name ?? institutionLabel(i.institution_type!)}</dd></>)}
+          {(i.institution_name || i.institution_type) && (
+            <>
+              <dt className="font-bold">Kto prowadzi</dt>
+              <dd>
+                {i.institution_slug && i.institution_name
+                  ? <Link href={`/instytucje/${encodeURIComponent(i.institution_slug)}`} className="underline decoration-1 underline-offset-4 hover:decoration-2">{i.institution_name}</Link>
+                  : i.institution_name ?? institutionLabel(i.institution_type!)}
+              </dd>
+            </>
+          )}
           {creators.length > 0 && (
             <><dt className="font-bold">Twórcy</dt><dd>{creatorNames(creators)}</dd></>
           )}
@@ -114,6 +123,7 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg"><Link href={`/przenies?${param}`}>Przenieś do siebie</Link></Button>
           <Button asChild size="lg" variant="outline"><Link href={`/wyprobuj?${param}`}>Wypróbowaliśmy u nas</Link></Button>
+          <Button asChild size="lg" variant="outline"><Link href="/szukam-innowacji">Chcę ją wdrożyć lub sfinansować</Link></Button>
         </div>
       </section>
     </article>

@@ -11,9 +11,11 @@ import { FieldHint } from "@/components/ui/field";
 import { CheckboxField } from "@/components/ui/checkbox-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { requireAdmin, viewerClient } from "@/lib/auth";
+import { viewerClient } from "@/lib/auth";
+import { requireStaff } from "@/lib/panel/access";
 import { statusLabel, STATUS_LABELS } from "@/lib/initiatives/status";
 import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
 import {
@@ -37,6 +39,8 @@ import { SOURCE_LABELS, SOURCE_RECORD_KIND_LABELS, type SimilarSource } from "@/
 import { similarSources, sourceRecordOf, type SourceRecordRow } from "@/lib/sources";
 import { issueClaimLink } from "../../zrodla/actions";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
+import { assignPartner, mergeDuplicate, unmergeDuplicate } from "../../radar-actions";
+import { KeeperView } from "./keeper-view";
 import { assignMentor, overrideSignal, reassessRadar, removePersonalData, setCreatorConsent, setPublished, updateInitiativeStatus } from "../../actions";
 import { readAssessment } from "@/lib/radar/score";
 import { PartnershipSection } from "../../partnership-section";
@@ -49,15 +53,18 @@ export const metadata = { title: panelTitle("Inicjatywa") };
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 
 export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
-  const viewer = await requireAdmin();
   const { id } = await props.params;
+  const { viewer, scope } = await requireStaff(`/panel/inicjatywy/${id}`);
   if (!z.uuid().safeParse(id).success) notFound();
 
   const supabase = await viewerClient(viewer);
-  const { data, error } = await supabase.from("initiatives").select(INITIATIVE_COLUMNS).eq("id", id).maybeSingle();
+  // Opiekun instytucji: RLS (0010) i filtr w zapytaniu — cudza innowacja jest dla niego „nie znaleziona”.
+  const base = supabase.from("initiatives").select(INITIATIVE_COLUMNS);
+  const { data, error } = await (scope.kind === "all" ? base : base.eq("institution_id", scope.institutionId)).eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) notFound();
   const row = data as unknown as InitiativeRow;
+  if (scope.kind === "institution") return <KeeperView row={row} />;
 
   const admin = createAdminClient();
   const [history, mentors, neighbours, matches, assigned, thread, partnerships, creators] = await Promise.all([
@@ -85,6 +92,17 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
     admin.from("initiatives").select("funnel_stage").eq("id", id).maybeSingle()
       .then(({ data: f, error: fe }) => { if (fe) throw fe; return (f?.funnel_stage as string | null) ?? null; })
       .then((v) => v, (e) => { console.error("[panel] lejek:", e); return null; }),
+  ]);
+
+  // Scalanie i partner (9/10). Baza sprzed 0010 nie ma assigned_partner: sekcja partnera znika, scalanie działa (kolumna z 0001).
+  const [mergedInto, mergedHere, partnerList, assignedPartner] = await Promise.all([
+    row.duplicate_of
+      ? admin.from("initiatives").select("id, status_code, title").eq("id", row.duplicate_of).maybeSingle().then((r) => r.data as { id: string; status_code: string; title: string } | null)
+      : Promise.resolve(null),
+    admin.from("initiatives").select("id, status_code, title").eq("duplicate_of", row.id).then((r) => (r.data ?? []) as { id: string; status_code: string; title: string }[]),
+    admin.from("partners").select("id, name, kind").eq("active", true).order("name").limit(300).then((r) => (r.data ?? []) as { id: string; name: string; kind: string }[]),
+    admin.from("initiatives").select("assigned_partner").eq("id", row.id).maybeSingle()
+      .then((r) => (r.error ? undefined : ((r.data?.assigned_partner as string | null) ?? null))),
   ]);
 
   const duplicateHits = neighbours.filter((n) => n.similarity >= DUPLICATE_MIN);
@@ -131,6 +149,19 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
           <p><Link href={initiativeHref(row.slug)} className={`font-bold ${linkClass}`}>Zobacz stronę publiczną</Link></p>
         )}
       </div>
+
+      {mergedInto && (
+        <Alert tone="warning" title="To zgłoszenie jest scalone z inną inicjatywą">
+          <p>
+            Duplikat: <Link href={`/panel/inicjatywy/${mergedInto.id}`} className={`font-bold ${linkClass}`}>{mergedInto.title}</Link>{" "}
+            (<span className="font-mono tracking-wider">{mergedInto.status_code}</span>). Nie ma go na listach ani w publicznej bazie.
+          </p>
+          <ActionForm action={unmergeDuplicate} className="pt-2">
+            <input type="hidden" name="initiativeId" value={row.id} />
+            <SubmitButton variant="outline" size="sm" pendingText="Cofanie…">Cofnij scalenie</SubmitButton>
+          </ActionForm>
+        </Alert>
+      )}
 
       <section aria-labelledby="karta" className="space-y-3">
         <h2 id="karta" className="text-2xl font-bold">Jak zrozumiała to AI</h2>
@@ -417,25 +448,74 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
         </ActionForm>
       </section>
 
-      {duplicateHits.length > 0 && (
-        <section aria-labelledby="duplikaty" className="space-y-3">
-          <h2 id="duplikaty" className="text-2xl font-bold">Możliwe duplikaty</h2>
-          <ul className="border-t">
-            {duplicateHits.map((d) => {
-              const dup = duplicateById.get(d.ref_id);
-              return (
-                <li key={d.ref_id} className="grid gap-1 border-b py-4">
-                  <p><Link href={`/panel/inicjatywy/${d.ref_id}`} className={`font-bold ${linkClass}`}>{d.title}</Link></p>
-                  <p className="text-base text-muted-foreground">
-                    {dup && <><span className="font-mono tracking-wider">{dup.status_code}</span>{" · "}</>}
-                    {dup?.municipalities?.name ?? "gmina nieznana"}
-                    {dup && ` · ${statusLabel(dup.status)}`}
-                    {` · zgodność słów kluczowych ${Math.round(d.similarity * 100)} na 100`}
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
+      <section aria-labelledby="duplikaty" className="space-y-3">
+        <h2 id="duplikaty" className="text-2xl font-bold">Duplikaty</h2>
+        {duplicateHits.length === 0 && <p className="text-muted-foreground">Słowa kluczowe nie wskazują żadnego możliwego duplikatu.</p>}
+        <ul className="border-t">
+          {duplicateHits.map((d) => {
+            const dup = duplicateById.get(d.ref_id);
+            return (
+              <li key={d.ref_id} className="grid gap-2 border-b py-4">
+                <p><Link href={`/panel/inicjatywy/${d.ref_id}`} className={`font-bold ${linkClass}`}>{d.title}</Link></p>
+                <p className="text-base text-muted-foreground">
+                  {dup && <><span className="font-mono tracking-wider">{dup.status_code}</span>{" · "}</>}
+                  {dup?.municipalities?.name ?? "gmina nieznana"}
+                  {dup && ` · ${statusLabel(dup.status)}`}
+                  {` · zgodność słów kluczowych ${Math.round(d.similarity * 100)} na 100`}
+                </p>
+                {!row.duplicate_of && (
+                  <ActionForm action={mergeDuplicate}>
+                    <input type="hidden" name="initiativeId" value={row.id} />
+                    <input type="hidden" name="targetId" value={d.ref_id} />
+                    <SubmitButton variant="outline" size="sm" pendingText="Scalanie…" aria-label={`Scal to zgłoszenie z: ${d.title}`}>Scal z tą inicjatywą</SubmitButton>
+                  </ActionForm>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        {mergedHere.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold">Scalone z tą inicjatywą</h3>
+            <ul className="list-disc pl-6">
+              {mergedHere.map((m) => (
+                <li key={m.id}><Link href={`/panel/inicjatywy/${m.id}`} className={linkClass}>{m.title}</Link> <span className="font-mono tracking-wider text-muted-foreground">{m.status_code}</span></li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {!row.duplicate_of && mergedHere.length === 0 && (
+          <ActionForm action={mergeDuplicate} className="max-w-xl space-y-3 border-t pt-4">
+            <input type="hidden" name="initiativeId" value={row.id} />
+            <h3 className="text-lg font-bold">Scal z inną inicjatywą</h3>
+            <div className="space-y-2">
+              <Label htmlFor="merge-code">Kod inicjatywy, którą to zgłoszenie dubluje</Label>
+              <FieldHint id="merge-code-pomoc">
+                To zgłoszenie zniknie z list i z publicznej bazy, a jego autor dostanie wiadomość. Scalenie można cofnąć w filtrze „Scalone duplikaty”.
+              </FieldHint>
+              <Input id="merge-code" name="targetCode" placeholder="np. RAD-4K7Q" maxLength={12} autoComplete="off" aria-describedby="merge-code-pomoc" className="max-w-56 font-mono tracking-wider" />
+            </div>
+            <SubmitButton variant="outline">Scal duplikat</SubmitButton>
+          </ActionForm>
+        )}
+      </section>
+
+      {assignedPartner !== undefined && (
+        <section aria-labelledby="partner" className="space-y-3">
+          <h2 id="partner" className="text-2xl font-bold">Partner</h2>
+          <FieldHint>
+            Partner, któremu kierujesz tę innowację. Przypisanie przesuwa lejek na „skierowana”, ale nie otwiera kontaktu:
+            ten wymaga zgody obu stron (sekcja „Prośby o kontakt z partnerami”).
+          </FieldHint>
+          <ActionForm action={assignPartner} className="max-w-xl space-y-3">
+            <input type="hidden" name="initiativeId" value={row.id} />
+            <Label htmlFor="assign-partner">Przypisany partner</Label>
+            <NativeSelect id="assign-partner" name="partnerId" defaultValue={assignedPartner ?? ""}>
+              <option value="">Nie przypisano</option>
+              {partnerList.map((p) => <option key={p.id} value={p.id}>{p.name} ({partnerKindLabel(p.kind)})</option>)}
+            </NativeSelect>
+            <SubmitButton variant="outline">Zapisz partnera</SubmitButton>
+          </ActionForm>
         </section>
       )}
 
@@ -520,6 +600,10 @@ function describeChange(h: AuditRow): string {
     case "initiative.contact_partner_consent": return `Partner zgodził się na kontakt${d.partner ? `: ${d.partner}` : ""}`;
     case "initiative.contact_declined": return `Partner odmówił kontaktu${d.partner ? `: ${d.partner}` : ""}`;
     case "initiative.contact_connected": return `Połączono z partnerem${d.partner ? `: ${d.partner}` : ""} — obie strony się zgodziły`;
+    case "initiative.merge": return `Scalono jako duplikat${note}`;
+    case "initiative.unmerge": return "Cofnięto scalenie duplikatu";
+    case "initiative.assign_partner": return `Partner przy innowacji${note}`;
+    case "initiative.funnel": return `Lejek: ${d.to ? funnelLabel(String(d.to)) : "zmiana"}${note}`;
     case "initiative.signal_override":
       return `${d.to == null ? "Usunięto korektę sygnału" : `Korekta sygnału: ${d.to}/100`}${d.reason ? ` — „${d.reason}”` : ""}`;
     default: return d.to ? `Status: ${statusLabel(String(d.to))}${note}` : h.action;

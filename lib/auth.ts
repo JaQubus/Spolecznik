@@ -8,7 +8,11 @@ import { createClient, isSupabaseConfigured } from "./supabase/server";
 import { brand } from "@/lib/brand";
 
 /** id i email są tylko przy sesji Supabase; konto testowe ich nie ma. */
-export type Viewer = { id: string | null; email: string | null; role: string; label: string; via: "test" | "supabase" };
+export type Viewer = {
+  id: string | null; email: string | null; role: string; label: string; via: "test" | "supabase";
+  /** Instytucja opiekuna (profiles.institution_id, 0010); konto testowe ma ją ustalaną w lib/panel/access.ts. */
+  institutionId: string | null;
+};
 
 /** Ścieżka powrotu po logowaniu — tylko lokalna, żeby link nie przekierował na obcą stronę. */
 export function safeNext(next: string | null | undefined, fallback = "/panel"): string {
@@ -20,7 +24,8 @@ export function safeNext(next: string | null | undefined, fallback = "/panel"): 
 // serwer przy każdym żądaniu. Lokalnie działa zawsze; na serwerze tylko z TEST_LOGIN=1 i własnym TEST_LOGIN_SECRET.
 export const TEST_COOKIE = brand.cookies.testRole;
 // Mentor testowy działa jako jeden z mentorów w bazie (TEST_MENTOR_ID albo pierwszy alfabetycznie) — lib/mentors.ts.
-export const TEST_ROLES = { admin: `Administrator ${brand.org.short}`, mentor: "Mentor", author: "Autor" } as const;
+// Opiekun instytucji testowy dostaje TEST_INSTITUTION_ID albo pierwszą alfabetycznie instytucję (lib/panel/access.ts).
+export const TEST_ROLES = { admin: `Administrator ${brand.org.short}`, institution: "Opiekun instytucji", mentor: "Mentor", author: "Autor" } as const;
 export type TestRole = keyof typeof TEST_ROLES;
 
 const testSecret = (): string | null =>
@@ -47,20 +52,25 @@ function verifyTestCookie(raw: string | undefined): TestRole | null {
 /** Kto ogląda stronę: konto testowe albo sesja Supabase z rolą z tabeli profiles (RLS: własny profil). */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
   const testRole = verifyTestCookie((await cookies()).get(TEST_COOKIE)?.value);
-  if (testRole) return { id: null, email: null, role: testRole, label: `${TEST_ROLES[testRole]} (konto testowe)`, via: "test" };
+  if (testRole) return { id: null, email: null, role: testRole, label: `${TEST_ROLES[testRole]} (konto testowe)`, via: "test", institutionId: null };
 
   if (!isSupabaseConfigured()) return null;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
-    const { data: profile } = await supabase.from("profiles").select("role, display_name").eq("id", user.id).maybeSingle();
+    let { data: profile } = await supabase.from("profiles").select("role, display_name, institution_id").eq("id", user.id).maybeSingle();
+    if (!profile) {
+      // Baza sprzed migracji 0010 nie ma kolumny institution_id: rola admina ma działać także wtedy.
+      profile = (await supabase.from("profiles").select("role, display_name").eq("id", user.id).maybeSingle()).data as typeof profile;
+    }
     return {
       id: user.id,
       email: user.email ?? null,
       role: profile?.role ?? "author",
       label: profile?.display_name ?? user.email ?? "Użytkownik",
       via: "supabase",
+      institutionId: (profile as { institution_id?: string | null } | null)?.institution_id ?? null,
     };
   } catch {
     return null;

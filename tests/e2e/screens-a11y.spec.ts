@@ -15,7 +15,9 @@ const PUBLIC = [
   ["Przenieś do siebie", "/przenies"],
   ["Wypróbowaliśmy u nas", "/wyprobuj"],
   ["Rozmowy", "/rozmowy"],
-  ["Inicjatywy", "/inicjatywy"],
+  ["Innowacje", "/innowacje"],
+  ["Instytucje", "/instytucje"],
+  ["Szukam innowacji", "/szukam-innowacji"],
   [`Kondycja ${region.genitive}`, "/mapa/kondycja"],
   ["Ucz się", "/wiedza/ucz-sie"],
   ["logowanie", "/logowanie"],
@@ -24,6 +26,10 @@ const PUBLIC = [
 
 const PANEL = [
   ["Panel: radar", "/panel"],
+  ["Panel: lejek", "/panel/lejek"],
+  ["Panel: wskaźniki", "/panel/wskazniki"],
+  ["Panel: partnerzy", "/panel/partnerzy"],
+  ["Panel: instytucje", "/panel/instytucje"],
   ["Panel: programy", "/panel/programy"],
   ["Panel: adopcje", "/panel/adopcje"],
   ["Panel: przeniesienia", "/panel/przeniesienia"],

@@ -204,7 +204,7 @@ export type InitiativeDetailRow = InitiativeRow & {
 
 /** Strona inicjatywy, jak initiativeHref w lib/knowledge/hrefs.ts (własna kopia: test czyta plik bez aliasu @/). */
 export function initiativePath(row: Pick<InitiativeRow, "id" | "slug">): string {
-  return `/inicjatywy/${encodeURIComponent(row.slug ?? row.id)}`;
+  return `/innowacje/${encodeURIComponent(row.slug ?? row.id)}`;
 }
 
 export function toSummary(row: InitiativeRow, origin: string): InitiativeSummary {
