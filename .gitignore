@@ -45,6 +45,9 @@ next-env.d.ts
 data/.venv/
 data/raw/*
 !data/raw/.gitkeep
+# Migawki źródeł Radaru (data/sources/) idą do repo — z nich powstaje seed 40_sources.sql. Surowe pobrania nie.
+!data/raw/sources/
+data/raw/sources/download/
 __pycache__/
 
 # Baza wiedzy: lokalne zmiany z panelu w trybie bez bazy

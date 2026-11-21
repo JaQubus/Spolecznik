@@ -1,0 +1,69 @@
+{
+ "source": "ncbr",
+ "real": false,
+ "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+ "note": "Migawka przykładowa. Wyszukiwarka NCBR nie ma publicznego API ani eksportu. Identyfikatory zaczynają się od PRZYKLAD-, żeby nie udawały prawdziwych.",
+ "fetched_at": "2026-11-21",
+ "records": [
+  {
+   "source": "ncbr",
+   "external_id": "PRZYKLAD-NCBR-001",
+   "kind": "projekt",
+   "title": "Predykcyjne utrzymanie ruchu maszyn w małych zakładach z użyciem taniego czujnika drgań",
+   "abstract": "Projekt rozwija model przewidujący zużycie łożysk na podstawie drgań i testuje go w trzech zakładach branży motoryzacyjnej.",
+   "institution": "Politechnika Rzeszowska (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1863011",
+   "published_on": "2025-03-01",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "utrzymanie ruchu",
+    "czujnik drgań",
+    "awaria",
+    "sztuczna inteligencja"
+   ],
+   "synthetic": true
+  },
+  {
+   "source": "ncbr",
+   "external_id": "PRZYKLAD-NCBR-002",
+   "kind": "projekt",
+   "title": "Lekkie ramy dronów inspekcyjnych z kompozytów z odzysku",
+   "abstract": "Projekt łączy recykling odpadów włókna węglowego z produkcji lotniczej z projektowaniem ram dronów inspekcyjnych.",
+   "institution": "Politechnika Rzeszowska (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1863011",
+   "published_on": "2026-04-01",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "dron",
+    "kompozyt",
+    "recykling",
+    "włókno węglowe"
+   ],
+   "synthetic": true
+  },
+  {
+   "source": "ncbr",
+   "external_id": "PRZYKLAD-NCBR-003",
+   "kind": "projekt",
+   "title": "Platforma telerehabilitacji dla pacjentów po udarze z mniejszych miejscowości",
+   "abstract": "Platforma łączy domowe ćwiczenia z czujnikiem ruchu i zdalny nadzór fizjoterapeuty poradni powiatowej.",
+   "institution": "Uniwersytet Rzeszowski (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1863011",
+   "published_on": "2025-10-01",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "telerehabilitacja",
+    "udar",
+    "fizjoterapia",
+    "telemedycyna"
+   ],
+   "synthetic": true
+  }
+ ]
+}

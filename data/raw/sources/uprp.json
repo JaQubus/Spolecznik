@@ -1,0 +1,132 @@
+{
+ "source": "uprp",
+ "real": false,
+ "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+ "note": "Migawka przykładowa. e-Wyszukiwarka UPRP nie ma publicznego API i blokuje automatyczne zapytania. Identyfikatory zaczynają się od PRZYKLAD-, żeby nie udawały prawdziwych.",
+ "fetched_at": "2026-11-21",
+ "records": [
+  {
+   "source": "uprp",
+   "external_id": "PRZYKLAD-UPRP-001",
+   "kind": "zgloszenie_patentowe",
+   "title": "Sposób wytwarzania elementów nośnych z rozdrobnionych odpadów kompozytu zbrojonego włóknem węglowym",
+   "abstract": "Sposób polega na rozdrobnieniu odpadów poprodukcyjnych kompozytu z włóknem węglowym, ukierunkowaniu włókien i ponownym spojeniu żywicą termoplastyczną w prasie. Otrzymane elementy, np. wsporniki wyposażenia kabiny statku powietrznego, mają wytrzymałość zbliżoną do elementów z nowego kompozytu przy niższym koszcie materiału. Zgłoszenie opracował zespół pod kierunkiem [osoba].",
+   "institution": "Politechnika Rzeszowska (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1863011",
+   "published_on": "2026-06-15",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "kompozyt",
+    "włókno węglowe",
+    "recykling",
+    "wspornik",
+    "lotnictwo",
+    "odpad produkcyjny"
+   ],
+   "synthetic": true
+  },
+  {
+   "source": "uprp",
+   "external_id": "PRZYKLAD-UPRP-002",
+   "kind": "zgloszenie_patentowe",
+   "title": "Układ radarowy do bezkontaktowego wykrywania upadku osoby w pomieszczeniu",
+   "abstract": "Układ zawiera moduł radaru fal milimetrowych i procesor rozpoznający upadek na podstawie zmian prędkości i wysokości odbić od ciała. Nie rejestruje obrazu, dzięki czemu nadaje się do mieszkań osób starszych.",
+   "institution": "Uniwersytet Rzeszowski (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1863011",
+   "published_on": "2026-03-02",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "radar",
+    "upadek",
+    "senior",
+    "czujnik",
+    "teleopieka"
+   ],
+   "synthetic": true
+  },
+  {
+   "source": "uprp",
+   "external_id": "PRZYKLAD-UPRP-003",
+   "kind": "patent",
+   "title": "Biodegradowalna kształtka opakowaniowa z łusek gryki i sposób jej wytwarzania",
+   "abstract": "Kształtka z rozdrobnionych łusek gryki spojonych spoiwem skrobiowym modyfikowanym, przeznaczona do pakowania żywności. Rozkłada się w warunkach kompostowania przemysłowego.",
+   "institution": "Państwowa Akademia Nauk Stosowanych w Krośnie (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1861011",
+   "published_on": "2025-11-20",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "opakowanie",
+    "łuska gryki",
+    "biodegradowalne",
+    "żywność"
+   ],
+   "synthetic": true
+  },
+  {
+   "source": "uprp",
+   "external_id": "PRZYKLAD-UPRP-004",
+   "kind": "zgloszenie_patentowe",
+   "title": "Sposób szacowania pojemności baterii trakcyjnej autobusu na podstawie danych z procesu ładowania",
+   "abstract": "Sposób wykorzystuje przebiegi napięcia i prądu zapisywane przez ładowarkę do estymacji stanu zdrowia baterii bez dodatkowych czujników. Przeznaczony dla przewoźników komunikacji miejskiej.",
+   "institution": "Politechnika Rzeszowska (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1863011",
+   "published_on": "2026-01-12",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "bateria",
+    "autobus elektryczny",
+    "diagnostyka",
+    "ładowanie"
+   ],
+   "synthetic": true
+  },
+  {
+   "source": "uprp",
+   "external_id": "PRZYKLAD-UPRP-005",
+   "kind": "zgloszenie_patentowe",
+   "title": "Powłoka hydrofobowa ograniczająca oblodzenie łopat wirnika bezzałogowego statku powietrznego",
+   "abstract": "Powłoka zawiera nanocząstki krzemionki w matrycy fluoropolimerowej i opóźnia narastanie lodu na łopatach wirnika drona.",
+   "institution": "Państwowa Akademia Nauk Stosowanych w Przemyślu (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1862011",
+   "published_on": "2026-08-30",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "dron",
+    "oblodzenie",
+    "powłoka",
+    "wirnik"
+   ],
+   "synthetic": true
+  },
+  {
+   "source": "uprp",
+   "external_id": "PRZYKLAD-UPRP-006",
+   "kind": "patent",
+   "title": "Uchwyt do mocowania płaskich próbek w maszynie wytrzymałościowej",
+   "abstract": "Uchwyt z wymiennymi szczękami ułatwia mocowanie próbek o różnej grubości w laboratoryjnej maszynie wytrzymałościowej.",
+   "institution": "Politechnika Rzeszowska (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1863011",
+   "published_on": "2025-05-07",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "uchwyt",
+    "próbka",
+    "maszyna wytrzymałościowa",
+    "laboratorium"
+   ],
+   "synthetic": true
+  }
+ ]
+}

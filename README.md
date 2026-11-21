@@ -428,6 +428,10 @@ sequenceDiagram
 
 ---
 
+### Automatyczne wykrywanie: Radar skanuje (7/10)
+
+Importery w `data/sources/` zbierają rekordy instytucji publicznych regionu z publicznych źródeł (projekty Interreg — prawdziwe dane; UPRP, EPO, PBN, NCBR — na razie migawki przykładowe, bo źródła wymagają klucza albo blokują automatyczne zapytania). Klasyfikator (Groq) ocenia, czy za rekordem stoi innowacja, i zakłada wykrytą inicjatywę — prywatną, dopóki twórca jej nie przejmie linkiem z Panelu (`/przejmij/KOD/klucz`) albo zespół jej nie zweryfikuje. Każde zgłoszenie jest sprawdzane pod kątem dublowania z rekordami źródeł („Podobne rozwiązanie już istnieje”). Źródła, licencje, usuwanie nazwisk i ograniczenia: `data/README.md` → „Źródła Radaru”.
+
 ## 9. Dostępność (WCAG 2.1 AA): checklista
 
 - Semantyczny HTML i landmarki, `lang="pl"`, link „Przejdź do treści”, widoczny focus, cała ścieżka główna obsługiwana klawiaturą.

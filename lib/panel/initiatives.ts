@@ -1,6 +1,6 @@
 import "server-only";
 import type { InitiativeStatus, StatusEvent } from "../initiatives/status";
-import type { InitiativeCard } from "../schemas";
+import type { InitiativeCard, SubmissionKind } from "../schemas";
 import { keywordSearch, similarInitiatives } from "../search";
 import { createAdminClient } from "../supabase/admin";
 
@@ -8,7 +8,7 @@ export type InitiativeRow = {
   id: string;
   status_code: string;
   slug: string | null;
-  submission_kind: "own" | "nomination";
+  submission_kind: SubmissionKind;
   card: InitiativeCard;
   title: string;
   summary: string;
@@ -55,6 +55,13 @@ export async function initiativeCreators(initiativeId: string): Promise<CreatorR
     .order("sort");
   if (error) throw error;
   return (data ?? []).flatMap((r) => (r.creators ? [r.creators as unknown as CreatorRow] : []));
+}
+
+/** Skąd jest zgłoszenie — podpis w Panelu. */
+export function submissionLabel(kind: SubmissionKind, long = false): string {
+  if (kind === "nomination") return "wskazanie";
+  if (kind === "detected") return "wykryta w źródłach";
+  return long ? "zgłoszenie autora" : "zgłoszenie";
 }
 
 /** Sygnał do sortowania i pokazania: ręczna korekta z Panelu ma pierwszeństwo przed oceną radaru. */

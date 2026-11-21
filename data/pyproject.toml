@@ -12,4 +12,5 @@ dependencies = [
   "scikit-learn",
   "psycopg[binary]",
   "python-dotenv",
+  "openpyxl>=3.1.5",
 ]

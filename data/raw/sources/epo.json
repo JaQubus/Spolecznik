@@ -1,0 +1,50 @@
+{
+ "source": "epo",
+ "real": false,
+ "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+ "note": "Migawka przykładowa. EPO OPS wymaga klucza OAuth (EPO_OPS_KEY, EPO_OPS_SECRET); bez niego 403. Identyfikatory zaczynają się od PRZYKLAD-, żeby nie udawały prawdziwych.",
+ "fetched_at": "2026-11-21",
+ "records": [
+  {
+   "source": "epo",
+   "external_id": "PRZYKLAD-EP-001",
+   "kind": "zgloszenie_patentowe",
+   "title": "Method of manufacturing load-bearing parts from shredded carbon fibre reinforced composite waste",
+   "abstract": "Production waste of carbon fibre reinforced composite is shredded, the fibres are aligned and re-bonded with a thermoplastic resin in a press. The parts, such as aircraft cabin brackets, reach strength close to virgin composite.",
+   "institution": "Politechnika Rzeszowska (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1863011",
+   "published_on": "2026-09-23",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "kompozyt",
+    "włókno węglowe",
+    "recykling",
+    "wspornik",
+    "lotnictwo"
+   ],
+   "synthetic": true
+  },
+  {
+   "source": "epo",
+   "external_id": "PRZYKLAD-EP-002",
+   "kind": "zgloszenie_patentowe",
+   "title": "Radar-based contactless fall detection system for indoor use",
+   "abstract": "A millimetre-wave radar module detects falls from velocity and height of body reflections without recording images.",
+   "institution": "Uniwersytet Rzeszowski (przykład)",
+   "institution_type": "uczelnia",
+   "teryt": "1863011",
+   "published_on": "2026-07-01",
+   "url": null,
+   "license": "Dane przykładowe (syntetyczne) — nie pochodzą ze źródła, służą do demonstracji.",
+   "keywords": [
+    "radar",
+    "upadek",
+    "senior",
+    "czujnik"
+   ],
+   "synthetic": true
+  }
+ ]
+}

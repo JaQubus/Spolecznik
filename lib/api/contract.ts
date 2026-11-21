@@ -114,7 +114,9 @@ export const InitiativeCreatedEvent = z
     data: z.object({
       id: z.uuid(),
       createdAt: z.iso.datetime({ offset: true }),
-      submissionKind: z.enum(["own", "nomination"]).meta({ description: "own: zgłoszenie autora, nomination: wskazanie cudzej inicjatywy." }),
+      submissionKind: z.enum(["own", "nomination", "detected"]).meta({
+        description: "own: zgłoszenie autora, nomination: wskazanie cudzej inicjatywy, detected: wykryta w źródłach i przejęta przez twórcę.",
+      }),
       domains: z.array(z.string()),
       institutionType: z.string().nullable(),
       stage: z.string().nullable(),
