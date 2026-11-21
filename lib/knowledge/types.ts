@@ -1,18 +1,18 @@
-import type { GROUPS, MWS_AREAS } from "@/lib/schemas";
+import type { DomainKey } from "@/lib/taxonomy";
 
-export type AreaKey = (typeof MWS_AREAS)[number];
-export type GroupKey = (typeof GROUPS)[number];
+export type { DomainKey };
 
 export const INNOVATION_TYPES = ["przedmiot", "metoda", "usluga", "technologia"] as const;
 export type InnovationType = (typeof INNOVATION_TYPES)[number];
 
-export const MATERIAL_KINDS = ["raport", "poradnik", "film", "kanwa", "publikacja"] as const;
+export const MATERIAL_KINDS = ["raport", "poradnik", "film", "kanwa", "publikacja", "strona"] as const;
 export type MaterialKind = (typeof MATERIAL_KINDS)[number];
 
 export type Source = { title: string; url: string; note?: string };
 
-export type Area = {
-  key: AreaKey;
+/** Strona dziedziny (/wiedza/dziedzina/[slug]): opis, wyzwania regionu, polecane materiały. */
+export type Domain = {
+  key: DomainKey;
   slug: string;
   name: string;
   icon: string;
@@ -21,14 +21,13 @@ export type Area = {
   challenges: string[];
   challengesSource: Source | null;
   reading: string[];
-  personaKeys: string[];
   sort: number;
   published: boolean;
 };
 
 export type Fact = {
   id: string;
-  area: AreaKey;
+  domain: DomainKey;
   value: number | null;
   unit: string | null;
   displayValue: string;
@@ -48,6 +47,7 @@ export type Fact = {
 
 export type Material = {
   id: string;
+  slug: string;
   kind: MaterialKind;
   title: string;
   description: string | null;
@@ -55,7 +55,8 @@ export type Material = {
   format: string | null;
   sizeBytes: number | null;
   language: string;
-  areas: AreaKey[];
+  publisher: string | null;
+  domains: DomainKey[];
   year: number | null;
   signLanguage?: boolean;
   captions?: boolean;
@@ -71,23 +72,25 @@ export type Video = {
   captions: boolean;
 };
 
-export type Innovation = {
+/** Sprawdzone rozwiązanie z Polski (Biblioteka Innowacji Społecznych w Krakowie) — tabela patterns. */
+export type Pattern = {
   id: string;
   slug: string;
   title: string;
-  groups: GroupKey[];
-  areas: AreaKey[];
-  /** Obszary i typ przypisane regułami — admin może je poprawić. */
-  areasAuto: boolean;
+  category: string | null;
+  domains: DomainKey[];
+  crossTopics: string[];
+  /** Typy instytucji, które mogą przenieść rozwiązanie do siebie. */
+  institutionTypes: string[];
+  /** Dziedziny i typ przypisane regułami — admin może je poprawić. */
+  domainsAuto: boolean;
   innovationType: InnovationType | null;
-  typeAuto: boolean;
   problem: string | null;
   solution: string | null;
   evidence: string | null;
   whoCanUse: string | null;
-  /** Z karty PDF (pipeline dopasowań); w Zasobniku zwykle puste. */
-  howToUse?: string | null;
-  components?: string | null;
+  howToUse: string | null;
+  components: string | null;
   beneficiaries: string | null;
   etrSummary: string | null;
   video: Video | null;
@@ -95,34 +98,22 @@ export type Innovation = {
   materialsZip: { url: string; sizeBytes: number | null; linkOk: boolean } | null;
   licenseUrl: string | null;
   sourceUrl: string | null;
+  sourceName: string | null;
   dissemination: boolean;
   published: boolean;
   synthetic: boolean;
-  /** Liczone triggerem z tabeli tests (Próba); brak w trybie plików. */
-  testsCount?: number;
-  avgRating?: number | null;
+  /** Liczone triggerem z tabeli adoptions; w trybie plików 0. */
+  adoptionsCount: number;
+  avgRating: number | null;
 };
 
-export type Persona = {
-  key: string;
-  name: string;
-  age: number | null;
-  area: AreaKey;
-  about: string[];
-  needs: string[];
-  query: string;
-  innovationSlugs: string[];
-  gap: string | null;
-};
-
-export type InnovationFilter = {
-  area?: AreaKey;
-  group?: GroupKey;
+export type PatternFilter = {
+  domain?: DomainKey;
   types?: InnovationType[];
   hasVideo?: boolean;
 };
 
-export type MaterialFilter = { kind?: MaterialKind; area?: AreaKey };
+export type MaterialFilter = { kind?: MaterialKind; domain?: DomainKey };
 
 /** Opcje odczytu: `all` = także nieopublikowane (tylko panel admina). */
 export type ReadOptions = { all?: boolean };

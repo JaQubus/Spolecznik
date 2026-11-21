@@ -1,5 +1,5 @@
-// Grupowanie podobnych potrzeb po słowach kluczowych z karty (formy podstawowe z LLM), bez embeddingów —
-// Groq ich nie ma (migracja 0005). Czysta funkcja bez importów serwerowych, żeby dało się ją testować.
+// Grupowanie podobnych inicjatyw po słowach kluczowych z karty (formy podstawowe z LLM), bez embeddingów —
+// Groq ich nie ma (0002_search.sql). Czysta funkcja bez importów serwerowych, żeby dało się ją testować.
 
 export type ClusterInput = { id: string; teryt: string | null; keywords: string[] };
 
@@ -13,7 +13,7 @@ export type KeywordCluster = {
   gminy: number;
 };
 
-/** Ile ważonych słów dwie karty muszą mieć wspólnych (0–1), żeby trafić do jednej grupy. Dostrojone na 200 potrzebach syntetycznych. */
+/** Ile ważonych słów dwie karty muszą mieć wspólnych (0–1), żeby trafić do jednej grupy. Dostrojone na danych syntetycznych. */
 export const CLUSTER_MIN_SIMILARITY = 0.3;
 /** Mniejsze grupy to raczej przypadek niż trend. */
 export const CLUSTER_MIN_SIZE = 3;
@@ -29,12 +29,12 @@ const norm = (k: string) => k.trim().toLowerCase();
  * sąsiadów, którzy są podobni także do reszty grupy, i tak dalej. Grupa to „środek” i jego bezpośredni
  * sąsiedzi, więc nie rozlewa się łańcuchem A–B–C na niepowiązane tematy. Wynik jest deterministyczny.
  */
-export function clusterNeeds(needs: ClusterInput[], minSimilarity = CLUSTER_MIN_SIMILARITY, minSize = CLUSTER_MIN_SIZE): KeywordCluster[] {
-  const sets = needs.map((n) => new Set(n.keywords.map(norm).filter(Boolean)));
+export function clusterCards(cards: ClusterInput[], minSimilarity = CLUSTER_MIN_SIMILARITY, minSize = CLUSTER_MIN_SIZE): KeywordCluster[] {
+  const sets = cards.map((n) => new Set(n.keywords.map(norm).filter(Boolean)));
   const df = new Map<string, number>();
   for (const s of sets) for (const k of s) df.set(k, (df.get(k) ?? 0) + 1);
   // 1 + N/df: częste słowo waży mniej, ale nie zero — przy kilku zgłoszeniach wspólne słowa są we wszystkich.
-  const idf = new Map([...df].map(([k, v]) => [k, Math.log(1 + needs.length / v)]));
+  const idf = new Map([...df].map(([k, v]) => [k, Math.log(1 + cards.length / v)]));
 
   // Odwrócony indeks: porównujemy tylko pary z co najmniej jednym wspólnym słowem.
   const byWord = new Map<string, number[]>();
@@ -60,7 +60,7 @@ export function clusterNeeds(needs: ClusterInput[], minSimilarity = CLUSTER_MIN_
     return out;
   });
 
-  const free = new Set(needs.map((_, i) => i));
+  const free = new Set(cards.map((_, i) => i));
   const tried = new Set<number>();
   const clusters: KeywordCluster[] = [];
   for (;;) {
@@ -90,8 +90,8 @@ export function clusterNeeds(needs: ClusterInput[], minSimilarity = CLUSTER_MIN_
     clusters.push({
       signature: top.slice(0, SIGNATURE_WORDS).sort((a, b) => a.localeCompare(b, "pl")).join("|"),
       keywords: top.slice(0, 5),
-      ids: members.map((m) => needs[m].id),
-      gminy: new Set(members.map((m) => needs[m].teryt).filter(Boolean)).size,
+      ids: members.map((m) => cards[m].id),
+      gminy: new Set(members.map((m) => cards[m].teryt).filter(Boolean)).size,
     });
   }
   return clusters;

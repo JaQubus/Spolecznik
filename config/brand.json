@@ -1,29 +1,27 @@
 {
-  "name": "Społecznik",
-  "nameGenitive": "Społecznika",
-  "nameLocative": "Społeczniku",
-  "tagline": "Łączymy potrzeby Małopolski z rozwiązaniami, które już działają.",
-  "hub": "Małopolski Hub Innowacji Społecznych",
-  "hubGenitive": "Małopolskiego Hubu Innowacji Społecznych",
+  "name": "Radar Innowacji",
+  "nameGenitive": "Radaru Innowacji",
+  "nameLocative": "Radarze Innowacji",
+  "tagline": "Dostrzegamy lokalne inicjatywy, które mogą zmienić więcej.",
+  "campaign": "kampania Podkarpackiego Centrum Innowacji",
   "org": {
-    "short": "ROPS",
-    "signature": "ROPS Kraków",
-    "name": "Regionalny Ośrodek Polityki Społecznej w Krakowie",
-    "nameGenitive": "Regionalnego Ośrodka Polityki Społecznej w Krakowie",
-    "shortWithCity": "ROPS w Krakowie",
-    "contactName": "Dział Innowacji Społecznych ROPS w Krakowie",
-    "url": "https://rops.krakow.pl",
-    "domain": "rops.krakow.pl"
+    "short": "PCI",
+    "signature": "Zespół PCI",
+    "name": "Podkarpackie Centrum Innowacji",
+    "nameGenitive": "Podkarpackiego Centrum Innowacji",
+    "shortWithCity": "PCI w Rzeszowie",
+    "contactName": "Zespół Radaru Innowacji, Podkarpackie Centrum Innowacji",
+    "url": "https://pcinn.org",
+    "domain": "pcinn.org"
   },
-  "statusPrefix": "SPL",
-  "statusExample": "SPL-4K7Q",
+  "statusPrefix": "RAD",
+  "statusExample": "RAD-4K7Q",
   "cookies": {
-    "testRole": "spolecznik-test",
-    "notificationsSeen": "spolecznik-powiadomienia",
-    "reports": "spl_zgloszenia"
+    "testRole": "radar-test",
+    "notificationsSeen": "radar-powiadomienia",
+    "reports": "radar_zgloszenia"
   },
-  "webhookHeaderPrefix": "X-Spolecznik",
-  "emailFrom": "Społecznik <onboarding@resend.dev>",
+  "emailFrom": "Radar Innowacji <onboarding@resend.dev>",
   "region": {
     "name": "Podkarpacie",
     "genitive": "Podkarpacia",

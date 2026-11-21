@@ -19,8 +19,8 @@ export function safeNext(next: string | null | undefined, fallback = "/panel"): 
 // Wybór roli jednym przyciskiem na /logowanie. Ciasteczko jest podpisane (HMAC), a rolę i tak sprawdza
 // serwer przy każdym żądaniu. Lokalnie działa zawsze; na serwerze tylko z TEST_LOGIN=1 i własnym TEST_LOGIN_SECRET.
 export const TEST_COOKIE = brand.cookies.testRole;
-// Ekspert testowy działa jako jeden z ekspertów w bazie (TEST_EXPERT_ID albo pierwszy alfabetycznie) — lib/expert.ts.
-export const TEST_ROLES = { admin: `Administrator ${brand.org.short}`, ekspert: "Ekspert", mieszkaniec: "Mieszkaniec" } as const;
+// Mentor testowy działa jako jeden z mentorów w bazie (TEST_MENTOR_ID albo pierwszy alfabetycznie) — lib/mentors.ts.
+export const TEST_ROLES = { admin: `Administrator ${brand.org.short}`, mentor: "Mentor", author: "Autor" } as const;
 export type TestRole = keyof typeof TEST_ROLES;
 
 const testSecret = (): string | null =>
@@ -58,7 +58,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     return {
       id: user.id,
       email: user.email ?? null,
-      role: profile?.role ?? "mieszkaniec",
+      role: profile?.role ?? "author",
       label: profile?.display_name ?? user.email ?? "Użytkownik",
       via: "supabase",
     };
@@ -70,7 +70,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 export const isAdmin = async () => (await getViewer())?.role === "admin";
 
 /**
- * Wpuszcza tylko admina ROPS: niezalogowany → logowanie, zalogowany bez roli admina → 403.
+ * Wpuszcza tylko admina zespołu: niezalogowany → logowanie, zalogowany bez roli admina → 403.
  * Wołaj w każdej stronie, akcji serwerowej i route handlerze Panelu: proxy.ts sprawdza wyłącznie zalogowanie,
  * a akcje serwerowe są publicznymi endpointami. Ukrycie linku w UI nie jest zabezpieczeniem.
  */

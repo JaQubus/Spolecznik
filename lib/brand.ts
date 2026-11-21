@@ -5,13 +5,13 @@ import data from "../config/brand.json" with { type: "json" };
 export const brand = data;
 export const { org, region } = data;
 
-/** Kod zgłoszenia, np. SPL-4K7Q: prefiks i cztery znaki bez 0, 1, I, O (lib/status-code.ts). */
+/** Kod zgłoszenia, np. RAD-4K7Q: prefiks i cztery znaki bez 0, 1, I, O (lib/status-code.ts). */
 export const STATUS_CODE = new RegExp(`^${data.statusPrefix}-[2-9A-HJ-NP-Z]{4}$`);
 
 /** Kod TERYT powiatu z regionu: 4 cyfry zaczynające się od kodu województwa. */
 export const COUNTY_TERYT = new RegExp(`^${data.region.terytPrefix}\\d{2}$`);
 
-/** Tytuł strony Panelu: „Nabory · Panel ROPS”. */
+/** Tytuł strony Panelu: „Programy · Panel PCI”. */
 export function panelTitle(page?: string): string {
   return page ? `${page} · Panel ${data.org.short}` : `Panel ${data.org.short}`;
 }

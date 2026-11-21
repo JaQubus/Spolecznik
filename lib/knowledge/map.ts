@@ -1,6 +1,6 @@
 // Mapa regionu: typy pliku public/mapa/region.json (generuje data/knowledge_map.py) i podział na klasy.
 import { formatNumber } from "@/lib/pl";
-import type { AreaKey } from "./types";
+import type { DomainKey } from "./types";
 
 export type MapIndicator = {
   key: string;
@@ -8,7 +8,7 @@ export type MapIndicator = {
   unit: string;
   decimals: number;
   scale: "sequential" | "diverging";
-  area: AreaKey | null;
+  domain: DomainKey | null;
   category: string;
   question: string;
   source: { title: string; url: string; year: number };

@@ -1,19 +1,18 @@
 import "server-only";
-import { innovationHref } from "@/components/knowledge/tiles";
 import { viewerClient, type Viewer } from "./auth";
-import { NEED_STATUS_LABELS, type NeedStatus } from "./need-status";
-import { ADMIN_CHANNEL, expertChannel, expertRole, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
+import { adoptionStatusLabel } from "./adoption-status";
+import { statusLabel } from "./initiatives/status";
+import { ADMIN_CHANNEL, mentorChannel, mentorRole, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
 import { createAdminClient } from "./supabase/admin";
-import { testStatusLabel } from "./test-status";
 import { org } from "@/lib/brand";
 
-/** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin'). */
+/** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin' albo 'mentor:<id>'). */
 export type NewNotification =
   | { user_id: string; role?: never; kind: string; payload: Record<string, unknown> }
-  | { role: "admin" | ReturnType<typeof expertRole>; user_id?: never; kind: string; payload: Record<string, unknown> };
+  | { role: "admin" | ReturnType<typeof mentorRole>; user_id?: never; kind: string; payload: Record<string, unknown> };
 
 const channelOf = (n: NewNotification) =>
-  n.role === "admin" ? ADMIN_CHANNEL : n.role ? expertChannel(n.role.slice("ekspert:".length)) : userChannel(n.user_id!);
+  n.role === "admin" ? ADMIN_CHANNEL : n.role ? mentorChannel(n.role.slice("mentor:".length)) : userChannel(n.user_id!);
 
 /** Dzwonek działa tylko z bazą: bez niej nie ma kont ani tabeli notifications. */
 export const notificationsEnabled = () =>
@@ -21,7 +20,7 @@ export const notificationsEnabled = () =>
 
 /**
  * Zapis powiadomień i sygnał na kanale odbiorcy, żeby otwarty dzwonek od razu pobrał nową listę
- * (jak w rozmowach: Broadcast bez treści, dane i tak idą przez /api/powiadomienia).
+ * (jak w rozmowach: Broadcast bez treści, dane i tak idą przez /api/notifications).
  * Rzuca przy błędzie zapisu — wywołujący decyduje, czy to tylko zalogować. Błąd sygnału tylko logujemy.
  */
 export async function notify(rows: NewNotification | NewNotification[]): Promise<void> {
@@ -47,23 +46,22 @@ export async function notify(rows: NewNotification | NewNotification[]): Promise
   );
 }
 
-/** Kanały, których słucha dzwonek tej osoby. */
-/** `expertId` — ekspert bez konta Supabase (konto testowe): jego powiadomienia idą po kluczu roli, nie po user_id. */
-export function channelsFor(viewer: Viewer, expertId?: string | null): string[] {
+/** Kanały, których słucha dzwonek tej osoby. `mentorId` — mentor bez konta Supabase (konto testowe). */
+export function channelsFor(viewer: Viewer, mentorId?: string | null): string[] {
   return [
     ...(viewer.role === "admin" ? [ADMIN_CHANNEL] : []),
     ...(viewer.id ? [userChannel(viewer.id)] : []),
-    ...(expertId ? [expertChannel(expertId)] : []),
+    ...(mentorId ? [mentorChannel(mentorId)] : []),
   ];
 }
 
 /** Filtr PostgREST: powiadomienia tej osoby i jej roli — to samo co polityka RLS „własne powiadomienia”. */
-function audienceFilter(viewer: Viewer, expertId?: string | null): string | null {
+function audienceFilter(viewer: Viewer, mentorId?: string | null): string | null {
   const parts = [
     ...(viewer.role === "admin" ? ["role.eq.admin"] : []),
     ...(viewer.id ? [`user_id.eq.${viewer.id}`] : []),
     // Dwukropek jest zarezerwowany w filtrze or() PostgREST — wartość w cudzysłowie.
-    ...(expertId ? [`role.eq."${expertRole(expertId)}"`] : []),
+    ...(mentorId ? [`role.eq."${mentorRole(mentorId)}"`] : []),
   ];
   return parts.length ? parts.join(",") : null;
 }
@@ -73,92 +71,83 @@ type Row = { id: string; kind: string; payload: Record<string, unknown>; created
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
 const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
 
-/** Co zrobił asystent „Zapytaj ROPS” z wiadomością autora (payload.ai, lib/threads.ts). Brak — starsze powiadomienia. */
+/** Co zrobił asystent z wiadomością autora (payload.ai, lib/threads.ts). */
 const ASSISTANT_NOTE: Record<string, string> = {
-  odpowiedz: ". Asystent odpowiedział z Zasobnika",
+  odpowiedz: ". Asystent odpowiedział z bazy wiedzy",
   przekazano: ". Asystent przekazał pytanie — czeka na człowieka",
   bez_pytania: ". To nie pytanie, asystent nie odpowiadał",
 };
 
 /** Treść prostym językiem i link — dla każdego rodzaju zapisywanego w aplikacji. */
-function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "text" | "href"> {
+function describe(r: Row): Pick<NotificationItem, "text" | "href"> {
   const p = r.payload;
-  const needId = str(p.needId);
-  const ideaId = str(p.ideaId);
-  const code = str(p.statusCode) ?? str(p.code) ?? (needId ? codes.get(needId) ?? null : null);
+  const initiativeId = str(p.initiativeId);
+  const code = str(p.statusCode) ?? str(p.code);
   const forAdmin = r.role === "admin";
-  // Karta w Panelu: zgłoszenie albo pomysł (rozmowy o pomysłach mają ideaId zamiast needId).
-  const panelCard = needId ? `/panel/zgloszenia/${needId}` : ideaId ? `/panel/pomysly/${ideaId}` : null;
+  const panelCard = initiativeId ? `/panel/inicjatywy/${initiativeId}` : null;
   switch (r.kind) {
-    case "nowa_potrzeba":
+    case "nowa_inicjatywa":
       return {
-        text: `Nowe zgłoszenie${code ? ` ${code}` : ""}${str(p.summary) ? `: ${short(str(p.summary)!)}` : ""}${p.isGap ? " (brak gotowego rozwiązania)" : ""}`,
+        text: `${p.submissionKind === "nomination" ? "Nowe wskazanie" : "Nowe zgłoszenie"}${code ? ` ${code}` : ""}${str(p.title) ? `: ${short(str(p.title)!)}` : ""}`,
         href: panelCard ?? "/panel",
       };
-    case "nowy_pomysl":
-      return { text: `Nowy pomysł${code ? ` ${code}` : ""}${str(p.title) ? `: ${short(str(p.title)!)}` : ""}`, href: panelCard ?? "/panel/pomysly" };
+    case "wyzwanie_bez_rozwiazania":
+      return { text: `Instytucja szuka rozwiązania, którego nie ma w bazie${str(p.summary) ? `: ${short(str(p.summary)!)}` : ""}`, href: "/panel/mapa" };
     case "nowa_wiadomosc":
       return forAdmin
         ? {
-            text: `${ideaId ? "Autor pomysłu" : "Zgłaszający"} napisał w sprawie ${code ?? (ideaId ? "pomysłu" : "zgłoszenia")}${ASSISTANT_NOTE[str(p.ai) ?? ""] ?? ""}`,
+            text: `Autor napisał w sprawie ${code ?? "inicjatywy"}${ASSISTANT_NOTE[str(p.ai) ?? ""] ?? ""}`,
             href: panelCard ? `${panelCard}#rozmowa` : "/panel",
           }
-        // Strona statusu, nie /zapytaj: rozmowa wymaga klucza z przeglądarki, z której wysłano zgłoszenie,
+        // Strona statusu, nie /rozmowy: rozmowa wymaga klucza z przeglądarki, z której wysłano zgłoszenie,
         // a status działa na każdym urządzeniu po samym kodzie i ma link do rozmowy.
         : { text: `Nowa odpowiedź w sprawie ${code ?? "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
     case "pilne_pytanie":
       return {
-        text: `Pilne: odpowiedź asystenta nie pomogła w sprawie ${code ?? (ideaId ? "pomysłu" : "zgłoszenia")}. Czeka na człowieka`,
+        text: `Pilne: odpowiedź asystenta nie pomogła w sprawie ${code ?? "inicjatywy"}. Czeka na człowieka`,
         href: panelCard ? `${panelCard}#rozmowa` : "/panel",
       };
-    case "zmiana_statusu": {
-      const label = NEED_STATUS_LABELS[p.status as NeedStatus];
-      return { text: `${code ? `Zgłoszenie ${code}` : "Twoje zgłoszenie"} ma nowy status${label ? `: ${label}` : ""}`, href: code ? `/status/${code}` : null };
-    }
-    case "nowy_test": {
+    case "zmiana_statusu":
+      return {
+        text: `${code ? `Zgłoszenie ${code}` : "Twoje zgłoszenie"} ma nowy status: ${statusLabel(String(p.status))}`,
+        href: code ? `/status/${code}` : null,
+      };
+    case "nowa_adopcja": {
       const what = str(p.title) ? ` „${short(str(p.title)!)}”` : "";
       const where = str(p.gmina) ? ` (${str(p.gmina)})` : "";
       return {
         text: p.status === "zakonczony"
-          ? `Nowa ocena testu${what}${where}${typeof p.rating === "number" ? `: ${p.rating} na 5` : ""}`
-          : `Nowe zgłoszenie testu${what}${where}`,
-        href: str(p.innovationId) ? `/panel/testy?innowacja=${str(p.innovationId)}` : "/panel/testy",
+          ? `Nowa ocena przeniesienia${what}${where}${typeof p.rating === "number" ? `: ${p.rating} na 5` : ""}`
+          : `Ktoś przenosi do siebie${what}${where}`,
+        href: "/panel/adopcje",
       };
     }
-    case "zmiana_statusu_testu":
+    case "zmiana_statusu_adopcji":
       return {
-        text: `Twój test${str(p.title) ? ` „${short(str(p.title)!)}”` : ""} ma nowy status: ${testStatusLabel(String(p.status))}`,
-        href: str(p.slug) ? innovationHref(str(p.slug)!) : null,
+        text: `Wasze przeniesienie${str(p.title) ? ` „${short(str(p.title)!)}”` : ""} ma nowy status: ${adoptionStatusLabel(String(p.status))}`,
+        href: str(p.href),
       };
     case "wiadomosc":
       return { text: `${org.short} dodał wiadomość do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
-    case "nowa_innowacja":
-      return {
-        text: `W Bibliotece jest nowe rozwiązanie, które może pasować do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}${str(p.title) ? `: „${short(str(p.title)!)}”` : ""}`,
-        href: str(p.slug) ? innovationHref(str(p.slug)!) : "/biblioteka",
-      };
-    case "prosba_eksperta":
-      return {
-        text: `${org.short} prosi Cię o pomoc przy ${p.kind === "pomysl" ? "pomyśle" : "zgłoszeniu"}${code ? ` ${code}` : ""}`,
-        href: code ? `/ekspert/${code}` : "/ekspert",
-      };
-    // Partnerstwa: autor trafia na stronę statusu (jak przy nowa_wiadomosc: /partnerstwo wymaga klucza z przeglądarki,
-    // z której wysłano zgłoszenie, a status działa wszędzie i ma link do partnerstwa). Admin do Panelu zgłoszenia, które zaprasza.
+    case "prosba_mentora":
+      return { text: `${org.short} prosi Cię o pomoc przy inicjatywie${code ? ` ${code}` : ""}`, href: code ? `/mentor/${code}` : "/mentor" };
+    // Partnerstwa: autor trafia na stronę statusu (/partnerstwo wymaga klucza z przeglądarki, z której wysłano
+    // zgłoszenie, a status działa wszędzie i ma link do partnerstwa). Admin do Panelu inicjatywy, która zaprasza.
     case "partnerstwo_zaproszenie":
-      return { text: `${str(p.gmina) ?? "Inna gmina"} chce porozmawiać o podobnym problemie`, href: code ? `/status/${code}` : null };
+      return { text: `${str(p.gmina) ?? "Inna gmina"} chce porozmawiać o podobnej inicjatywie`, href: code ? `/status/${code}` : null };
     case "partnerstwo_nowe":
       return {
-        text: `${str(p.gmina) ?? "Gmina"} zaprasza inne gminy do partnerstwa${typeof p.invited === "number" ? ` (zaproszenia: ${p.invited})` : ""}`,
-        href: needId ? `/panel/zgloszenia/${needId}#partnerstwo` : "/panel",
+        text: `${str(p.gmina) ?? "Autor"} zaprasza autorów podobnych inicjatyw do partnerstwa${typeof p.invited === "number" ? ` (zaproszenia: ${p.invited})` : ""}`,
+        href: panelCard ? `${panelCard}#partnerstwo` : "/panel",
       };
     case "partnerstwo_dolaczenie":
-      return { text: `${str(p.gmina) ?? "Gmina"} dołączyła do partnerstwa`, href: needId ? `/panel/zgloszenia/${needId}#partnerstwo` : "/panel" };
+      return { text: `${str(p.gmina) ?? "Autor"} dołączył do partnerstwa`, href: panelCard ? `${panelCard}#partnerstwo` : "/panel" };
     case "partnerstwo_wiadomosc":
       return forAdmin
-        ? { text: `${str(p.gmina) ?? "Gmina"} napisała w partnerstwie`, href: needId ? `/panel/zgloszenia/${needId}#partnerstwo` : "/panel" }
-        : { text: "Nowa wiadomość w partnerstwie gmin", href: code ? `/status/${code}` : null };
-    case "nowy_nabor":
-      return { text: `Ruszył nabór${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Możesz złożyć wniosek.`, href: "/wniosek" };
+        ? { text: `${str(p.gmina) ?? "Autor"} napisał w partnerstwie`, href: panelCard ? `${panelCard}#partnerstwo` : "/panel" }
+        : { text: "Nowa wiadomość w partnerstwie", href: code ? `/status/${code}` : null };
+    case "nowy_program":
+      return { text: `Ruszył program${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Możesz złożyć wniosek.`, href: "/wniosek" };
     default:
       return { text: "Nowe powiadomienie", href: null };
   }
@@ -168,8 +157,8 @@ function describe(r: Row, codes: Map<string, string>): Pick<NotificationItem, "t
  * Ostatnie powiadomienia tej osoby i liczba nowych. `seenAt` to czas najnowszego powiadomienia, które ta osoba
  * już widziała (zapisany przy otwarciu dzwonka) — czas z bazy, więc różnica zegarów serwerów nic nie gubi.
  */
-export async function listNotifications(viewer: Viewer, seenAt: string | null, limit = 20, expertId?: string | null) {
-  const filter = audienceFilter(viewer, expertId);
+export async function listNotifications(viewer: Viewer, seenAt: string | null, limit = 20, mentorId?: string | null) {
+  const filter = audienceFilter(viewer, mentorId);
   if (!filter) return { items: [] as NotificationItem[], unread: 0 };
   // Konto Supabase czyta własną sesją, więc granicę pilnuje też RLS („własne powiadomienia”), a filtr wyżej jest
   // drugą warstwą. Konta testowe nie mają sesji (działają tylko lokalnie albo z TEST_LOGIN=1) — dla nich service role.
@@ -184,20 +173,12 @@ export async function listNotifications(viewer: Viewer, seenAt: string | null, l
   if (count.error) throw count.error;
   const rows = (list.data ?? []) as Row[];
 
-  // Starsze powiadomienia o statusie mają tylko needId — kod zgłoszenia dociągamy jednym zapytaniem.
-  const missing = [...new Set(rows.filter((r) => !str(r.payload.statusCode) && !str(r.payload.code)).map((r) => str(r.payload.needId)).filter(Boolean))] as string[];
-  const codes = new Map<string, string>();
-  if (missing.length) {
-    const { data } = await supabase.from("needs").select("id, status_code").in("id", missing);
-    for (const n of data ?? []) codes.set(n.id as string, n.status_code as string);
-  }
-
   return {
     items: rows.map((r) => ({
       id: r.id,
       createdAt: r.created_at,
       unread: !seenAt || Date.parse(r.created_at) > Date.parse(seenAt),
-      ...describe(r, codes),
+      ...describe(r),
     })),
     unread: count.count ?? 0,
   };

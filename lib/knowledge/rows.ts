@@ -1,12 +1,12 @@
 // Mapowanie wierszy (snake_case z JSON-a i z Postgresa) na typy aplikacji i z powrotem.
-// Pliki content/knowledge/*.json i tabele z migracji 0005 mają te same nazwy kolumn,
-// z dwoma wyjątkami: fakt ma `area` w JSON-ie i `area_key` w bazie, innowacja `groups` / `target_groups`.
-import type { Area, AreaKey, Fact, GroupKey, Innovation, InnovationType, Material, MaterialKind, Persona } from "./types";
+// Pliki content/library/*.json (data/knowledge_seed.py) i tabele z 0001_core.sql mają te same nazwy kolumn,
+// z jednym wyjątkiem: fakt ma `domain` w JSON-ie i `domain_key` w bazie.
+import type { Domain, DomainKey, Fact, InnovationType, Material, MaterialKind, Pattern } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- surowe wiersze z JSON-a i Supabase
 type Row = Record<string, any>;
 
-export const areaFromRow = (r: Row): Area => ({
+export const domainFromRow = (r: Row): Domain => ({
   key: r.key,
   slug: r.slug,
   name: r.name,
@@ -16,20 +16,18 @@ export const areaFromRow = (r: Row): Area => ({
   challenges: r.challenges ?? [],
   challengesSource: r.challenges_source ?? null,
   reading: r.reading ?? [],
-  personaKeys: r.persona_keys ?? [],
   sort: r.sort ?? 0,
   published: r.published ?? true,
 });
 
-export const areaToRow = (a: Area): Row => ({
-  key: a.key, slug: a.slug, name: a.name, icon: a.icon, lead: a.lead, definition: a.definition,
-  challenges: a.challenges, challenges_source: a.challengesSource, reading: a.reading,
-  persona_keys: a.personaKeys, sort: a.sort, published: a.published,
+export const domainToRow = (d: Domain): Row => ({
+  key: d.key, slug: d.slug, name: d.name, icon: d.icon, lead: d.lead, definition: d.definition,
+  challenges: d.challenges, challenges_source: d.challengesSource, reading: d.reading, sort: d.sort, published: d.published,
 });
 
 export const factFromRow = (r: Row): Fact => ({
   id: r.id,
-  area: (r.area_key ?? r.area) as AreaKey,
+  domain: (r.domain_key ?? r.domain) as DomainKey,
   value: r.value == null ? null : Number(r.value),
   unit: r.unit ?? null,
   displayValue: r.display_value,
@@ -46,8 +44,8 @@ export const factFromRow = (r: Row): Fact => ({
   published: r.published ?? true,
 });
 
-export const factToRow = (f: Fact, column: "area" | "area_key"): Row => ({
-  id: f.id, [column]: f.area, value: f.value, unit: f.unit, display_value: f.displayValue, sentence: f.sentence,
+export const factToRow = (f: Fact, column: "domain" | "domain_key"): Row => ({
+  id: f.id, [column]: f.domain, value: f.value, unit: f.unit, display_value: f.displayValue, sentence: f.sentence,
   data_year: f.dataYear, source_title: f.sourceTitle, source_publisher: f.sourcePublisher, source_url: f.sourceUrl,
   source_year: f.sourceYear, source_page: f.sourcePage, quote: f.quote, is_example: f.isExample,
   sort: f.sort, published: f.published,
@@ -55,6 +53,7 @@ export const factToRow = (f: Fact, column: "area" | "area_key"): Row => ({
 
 export const materialFromRow = (r: Row): Material => ({
   id: r.id,
+  slug: r.slug ?? r.id,
   kind: r.kind as MaterialKind,
   title: r.title,
   description: r.description ?? null,
@@ -62,7 +61,8 @@ export const materialFromRow = (r: Row): Material => ({
   format: r.format ?? null,
   sizeBytes: r.size_bytes == null ? null : Number(r.size_bytes),
   language: r.language ?? "pl",
-  areas: r.areas ?? [],
+  publisher: r.publisher ?? null,
+  domains: r.domains ?? [],
   year: r.year ?? null,
   signLanguage: r.sign_language ?? undefined,
   captions: r.captions ?? undefined,
@@ -71,15 +71,16 @@ export const materialFromRow = (r: Row): Material => ({
 });
 
 export const materialToRow = (m: Material): Row => ({
-  id: m.id, kind: m.kind, title: m.title, description: m.description, url: m.url, format: m.format,
-  size_bytes: m.sizeBytes, language: m.language, areas: m.areas, year: m.year, sort: m.sort, published: m.published,
+  id: m.id, slug: m.slug, kind: m.kind, title: m.title, description: m.description, url: m.url, format: m.format,
+  size_bytes: m.sizeBytes, language: m.language, publisher: m.publisher, domains: m.domains, year: m.year,
+  sort: m.sort, published: m.published,
 });
 
 /**
- * Innowacje pipeline'u dopasowań mają film jako zwykły adres (video_url), a karta Zasobnika czyta obiekt
- * `video`. YouTube zamieniamy na ten obiekt; innych serwisów karta nie osadza.
+ * Część rozwiązań ma film jako zwykły adres (video_url), a karta czyta obiekt `video`. YouTube zamieniamy
+ * na ten obiekt; innych serwisów karta nie osadza.
  */
-function videoFromUrl(url: unknown, title: unknown): Innovation["video"] {
+function videoFromUrl(url: unknown, title: unknown): Pattern["video"] {
   if (typeof url !== "string") return null;
   let u: URL;
   try { u = new URL(url); } catch { return null; }
@@ -92,15 +93,16 @@ function videoFromUrl(url: unknown, title: unknown): Innovation["video"] {
   return { youtubeId: id, title: typeof title === "string" ? title : "", thumbnailUrl: null, signLanguage: false, captions: false };
 }
 
-export const innovationFromRow = (r: Row): Innovation => ({
+export const patternFromRow = (r: Row): Pattern => ({
   id: r.id,
-  slug: r.slug,
+  slug: r.slug ?? r.id,
   title: r.title,
-  groups: (r.groups ?? r.target_groups ?? []) as GroupKey[],
-  areas: r.areas ?? [],
-  areasAuto: !!r.areas_auto,
+  category: r.category ?? null,
+  domains: r.domains ?? [],
+  crossTopics: r.cross_topics ?? [],
+  institutionTypes: r.institution_types ?? [],
+  domainsAuto: !!r.domains_auto,
   innovationType: (r.innovation_type ?? null) as InnovationType | null,
-  typeAuto: !!r.type_auto,
   problem: r.problem ?? null,
   solution: r.solution ?? null,
   evidence: r.evidence ?? null,
@@ -124,36 +126,25 @@ export const innovationFromRow = (r: Row): Innovation => ({
     : null,
   licenseUrl: r.license_url ?? null,
   sourceUrl: r.source_url ?? null,
+  sourceName: r.source_name ?? null,
   dissemination: !!r.dissemination,
   published: r.published ?? true,
   synthetic: !!r.synthetic,
-  testsCount: Number(r.tests_count ?? 0),
+  adoptionsCount: Number(r.adoptions_count ?? 0),
   avgRating: r.avg_rating == null ? null : Number(r.avg_rating),
 });
 
-export const innovationToRow = (i: Innovation, groupsColumn: "groups" | "target_groups"): Row => ({
-  id: i.id, slug: i.slug, title: i.title, [groupsColumn]: i.groups, areas: i.areas, areas_auto: i.areasAuto,
-  innovation_type: i.innovationType, type_auto: i.typeAuto, problem: i.problem, solution: i.solution,
-  evidence: i.evidence, who_can_use: i.whoCanUse, how_to_use: i.howToUse ?? null, components: i.components ?? null,
-  beneficiaries: i.beneficiaries, etr_summary: i.etrSummary,
-  video: i.video && {
-    youtube_id: i.video.youtubeId, title: i.video.title, thumbnail_url: i.video.thumbnailUrl,
-    sign_language: i.video.signLanguage, captions: i.video.captions,
+export const patternToRow = (p: Pattern): Row => ({
+  id: p.id, slug: p.slug, title: p.title, category: p.category, domains: p.domains, cross_topics: p.crossTopics,
+  institution_types: p.institutionTypes, domains_auto: p.domainsAuto, innovation_type: p.innovationType,
+  problem: p.problem, solution: p.solution, evidence: p.evidence, who_can_use: p.whoCanUse, how_to_use: p.howToUse,
+  components: p.components, beneficiaries: p.beneficiaries, etr_summary: p.etrSummary,
+  video: p.video && {
+    youtube_id: p.video.youtubeId, title: p.video.title, thumbnail_url: p.video.thumbnailUrl,
+    sign_language: p.video.signLanguage, captions: p.video.captions,
   },
-  pdf_url: i.pdfUrl,
-  materials_zip: i.materialsZip && { url: i.materialsZip.url, size_bytes: i.materialsZip.sizeBytes, link_ok: i.materialsZip.linkOk },
-  license_url: i.licenseUrl, source_url: i.sourceUrl, dissemination: i.dissemination,
-  published: i.published, synthetic: i.synthetic,
-});
-
-export const personaFromRow = (r: Row): Persona => ({
-  key: r.key,
-  name: r.name,
-  age: r.age ?? null,
-  area: r.area,
-  about: r.about ?? [],
-  needs: r.needs ?? [],
-  query: r.query,
-  innovationSlugs: r.innovation_slugs ?? [],
-  gap: r.gap ?? null,
+  pdf_url: p.pdfUrl,
+  materials_zip: p.materialsZip && { url: p.materialsZip.url, size_bytes: p.materialsZip.sizeBytes, link_ok: p.materialsZip.linkOk },
+  license_url: p.licenseUrl, source_url: p.sourceUrl, source_name: p.sourceName, dissemination: p.dissemination,
+  published: p.published, synthetic: p.synthetic,
 });

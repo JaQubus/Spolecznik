@@ -30,7 +30,7 @@ const DeclarationSet = z.object({
 /**
  * Treść wzoru wniosku dla /wniosek: pytania, oświadczenia i klauzule RODO danego naboru.
  * Struktura formularza (kroki, dane wnioskodawcy, tabela planu) jest w kodzie, tekst jest tutaj,
- * więc nowy nabór albo poprawka w oświadczeniu to zmiana `calls.form_schema`, nie wdrożenie.
+ * więc nowy nabór albo poprawka w oświadczeniu to zmiana `programs.form_schema`, nie wdrożenie.
  */
 export const CallFormContent = z.object({
   attachment: text,
@@ -53,18 +53,18 @@ export const CallFormContent = z.object({
 export type CallFormContent = z.infer<typeof CallFormContent>;
 
 export const CallFormSchema = z.object({
-  /** Pola dla generatora szkicu z fiszki (/api/apply). */
+  /** Pola dla generatora szkicu wniosku z karty inicjatywy (/api/apply). */
   fields: z.array(CallFormField).min(1),
   /** Treść formularza /wniosek. Bez niej nabór nie ma formularza do wypełnienia. */
   content: CallFormContent.optional(),
 });
 export type CallFormSchema = z.infer<typeof CallFormSchema>;
 
-/** Pola IWS 2.0 dla generatora, gdy nabór nie ma `fields` albo są błędne (parseCallFields). */
+/** Pola domyślne dla generatora, gdy program nie ma `fields` albo są błędne (parseCallFields). */
 export const FALLBACK_CALL_FORM: CallFormSchema = {
   fields: [
-    { key: "1_tytul", label: "Tytuł innowacji", type: "text" },
-    { key: "3_opis_innowacji", label: "Opis innowacji", type: "textarea" },
+    { key: "1_tytul", label: "Tytuł inicjatywy", type: "text" },
+    { key: "3_opis_inicjatywy", label: "Opis inicjatywy", type: "textarea" },
     { key: "4_innowacyjnosc", label: "Na czym polega innowacyjność?", type: "textarea" },
     { key: "5_diagnoza_problemu", label: "Diagnoza problemu", type: "textarea" },
     { key: "6_odbiorcy", label: "Odbiorcy", type: "textarea" },

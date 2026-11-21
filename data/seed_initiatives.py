@@ -10,7 +10,7 @@ config/taxonomy.json → radar). Bez nazw prawdziwych instytucji: tylko typ inst
 Nie wywołuje żadnego API. Stałe ziarno i slugi → ten sam wynik przy każdym uruchomieniu.
 
 Wejście: out/gminy.json (bdl.py), templates/initiatives.json, forms/program_demo.json.
-Wynik: ../supabase/seed/30_demo.sql (supabase db reset / load.py) i out/demo.json (podgląd).
+Wynik: ../supabase/seed/30_demo.sql (supabase db reset / load.py) i out/demo.json (tryb bez bazy: Panel → Trendy).
 
     cd data && uv run seed_initiatives.py"""
 import random

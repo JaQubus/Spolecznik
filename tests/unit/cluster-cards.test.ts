@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, test } from "node:test";
-import { clusterNeeds, keywordOverlap, type ClusterInput } from "../../lib/knowledge/cluster-needs.ts";
+import { clusterCards, keywordOverlap, type ClusterInput } from "../../lib/knowledge/cluster-cards.ts";
 
 const need = (id: string, keywords: string[], teryt: string | null = null): ClusterInput => ({ id, teryt, keywords });
 
-describe("clusterNeeds", () => {
+describe("clusterCards", () => {
   test("łączy zgłoszenia z dwoma wspólnymi rzadkimi słowami, pomija samotne", () => {
-    const groups = clusterNeeds([
+    const groups = clusterCards([
       need("a", ["udar", "rehabilitacja", "senior"], "1"),
       need("b", ["Udar", "rehabilitacja", "opieka domowa"], "2"),
       need("c", ["udar", "rehabilitacja", "wieś"], "2"),
@@ -21,7 +21,7 @@ describe("clusterNeeds", () => {
   });
 
   test("jedno wspólne słowo nie wystarcza", () => {
-    const groups = clusterNeeds([
+    const groups = clusterCards([
       need("a", ["senior", "samotność", "wieś"]),
       need("b", ["senior", "oszustwo", "telefon"]),
       need("c", ["senior", "udar", "rehabilitacja"]),
@@ -30,7 +30,7 @@ describe("clusterNeeds", () => {
   });
 
   test("nie łączy łańcuchem A–B–C, gdy A i C nie mają nic wspólnego", () => {
-    const groups = clusterNeeds([
+    const groups = clusterCards([
       need("a1", ["depresja", "kryzys", "psycholog"]),
       need("a2", ["depresja", "kryzys", "psycholog"]),
       need("ab", ["depresja", "kryzys", "transport", "autobus"]),
@@ -49,15 +49,15 @@ describe("clusterNeeds", () => {
       need("b", ["udar", "rehabilitacja", "opieka domowa"]),
       need("c", ["udar", "rehabilitacja", "wieś"]),
     ];
-    assert.equal(clusterNeeds(needs)[0].signature, clusterNeeds(needs.toReversed())[0].signature);
+    assert.equal(clusterCards(needs)[0].signature, clusterCards(needs.toReversed())[0].signature);
   });
 
-  test("dane syntetyczne: kilkanaście grup, każde zgłoszenie najwyżej w jednej", () => {
-    const { needs } = JSON.parse(readFileSync("data/out/synthetic.json", "utf8")) as {
-      needs: { status_code: string; teryt: string | null; card: { keywords: string[] } }[];
+  test("dane demonstracyjne: kilkanaście grup, każda inicjatywa najwyżej w jednej", () => {
+    const { initiatives } = JSON.parse(readFileSync("data/out/demo.json", "utf8")) as {
+      initiatives: { id: string; teryt: string | null; card: { keywords: string[] } }[];
     };
-    const groups = clusterNeeds(needs.map((n) => need(n.status_code, n.card.keywords, n.teryt)));
-    assert.ok(groups.length >= 8 && groups.length <= 30, `${groups.length} grup`);
+    const groups = clusterCards(initiatives.map((n) => need(n.id, n.card.keywords, n.teryt)));
+    assert.ok(groups.length >= 5 && groups.length <= 45, `${groups.length} grup`);
     const ids = groups.flatMap((g) => g.ids);
     assert.equal(new Set(ids).size, ids.length);
     assert.equal(new Set(groups.map((g) => g.signature)).size, groups.length);

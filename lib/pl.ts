@@ -20,3 +20,11 @@ export function formatNumber(n: number, fractionDigits = 1): string {
 export function todayInPoland(): string {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Warsaw" }).format(new Date());
 }
+
+const PL_ASCII: Record<string, string> = { ą: "a", ć: "c", ę: "e", ł: "l", ń: "n", ó: "o", ś: "s", ź: "z", ż: "z" };
+
+/** „Pracownia robotyki dla szkół” → „pracownia-robotyki-dla-szkol” (adresy stron, jak slugify w data/). */
+export function slugify(text: string, max = 60): string {
+  const ascii = text.toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_ASCII[c]).normalize("NFKD").replace(/[̀-ͯ]/g, "");
+  return ascii.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, max).replace(/-+$/, "");
+}

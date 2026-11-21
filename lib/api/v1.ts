@@ -1,15 +1,10 @@
 import "server-only";
-import gminyJson from "@/data/out/gminy.json";
 import { rateLimit } from "@/lib/rate-limit";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createPublicClient, publicClientConfigured } from "@/lib/supabase/public";
 import {
-  API_LIMIT_PER_MINUTE, DETAIL_COLUMNS, SUMMARY_COLUMNS, summarizeTests, toInnovation, toSummary,
-  type Innovation, type InnovationDetailRow, type InnovationList, type InnovationRow, type InnovationsQuery,
+  API_LIMIT_PER_MINUTE, DETAIL_COLUMNS, SUMMARY_COLUMNS, toInitiative, toSummary,
+  type Initiative, type InitiativeDetailRow, type InitiativeList, type InitiativeRow, type InitiativesQuery,
 } from "./contract";
-
-/** Kod TERYT powiatu (4 cyfry) → nazwa, np. 1201 → „bocheński”. */
-const POWIATY = new Map(gminyJson.map((g) => [g.teryt.slice(0, 4), g.powiat]));
 
 const CORS = { "Access-Control-Allow-Origin": "*" };
 const CACHE = "public, s-maxage=300, stale-while-revalidate=3600";
@@ -31,60 +26,40 @@ export function guard(request: Request): Response | null {
 
 /** Po sprawdzeniu parametrów: bez bazy (np. praca nad samym UI) nie ma czego zwrócić. */
 export function noDatabase(): Response | null {
-  const configured = publicClientConfigured() && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-  return configured ? null : apiError(503, "API wymaga bazy danych, a ta instancja jej nie ma");
+  return publicClientConfigured() ? null : apiError(503, "API wymaga bazy danych, a ta instancja jej nie ma");
 }
 
 /**
- * Testy czytamy kluczem service_role: od 0022_tests_private wiersze nie są publiczne. Bierzemy tylko teryt i status,
- * a na zewnątrz wychodzi sam powiat (summarizeTests) — bez gminy, organizacji, osoby i treści ocen.
+ * Kluczem anon i wyłącznie z widoku public_initiatives: tylko opublikowane inicjatywy, bez danych kontaktowych,
+ * surowego tekstu i pól roboczych karty (0004_rls.sql). Tabela initiatives nie ma polityki dla anon.
  */
-const testsTable = () => createAdminClient().from("tests");
-
-/** Id innowacji z testami w powiecie (pierwsze 4 cyfry kodu gminy). */
-async function testedInnovationIds(powiat: string): Promise<string[]> {
-  const { data, error } = await testsTable().select("innovation_id").like("teryt", `${powiat}%`);
-  if (error) throw error;
-  return [...new Set((data ?? []).map((t) => t.innovation_id as string))];
-}
-
-export async function listPublicInnovations(q: InnovationsQuery, origin: string): Promise<InnovationList> {
-  const supabase = createPublicClient();
-  let query = supabase
-    .from("innovations")
+export async function listPublicInitiatives(q: InitiativesQuery, origin: string): Promise<InitiativeList> {
+  let query = createPublicClient()
+    .from("public_initiatives")
     .select(SUMMARY_COLUMNS, { count: "exact" })
-    .eq("published", true) // RLS i tak to wymusza dla anon; tu na wypadek zmiany polityki
+    .order("signal", { ascending: false, nullsFirst: false })
     .order("title")
     .order("id")
     .range(q.offset, q.offset + q.limit - 1);
-  if (q.obszar) query = query.contains("areas", [q.obszar]);
-  if (q.grupa) query = query.contains("target_groups", [q.grupa]);
-  if (q.teryt) {
-    const ids = await testedInnovationIds(q.teryt);
-    if (!ids.length) return { items: [], total: 0, limit: q.limit, offset: q.offset };
-    query = query.in("id", ids);
-  }
+  if (q.dziedzina) query = query.contains("domains", [q.dziedzina]);
+  if (q.instytucja) query = query.eq("institution_type", q.instytucja);
+  if (q.etap) query = query.eq("stage", q.etap);
+  if (q.teryt) query = query.eq("county_teryt", q.teryt);
   const { data, error, count } = await query;
   if (error) throw error;
-  const rows = (data ?? []) as unknown as InnovationRow[];
+  const rows = (data ?? []) as unknown as InitiativeRow[];
   return { items: rows.map((r) => toSummary(r, origin)), total: count ?? rows.length, limit: q.limit, offset: q.offset };
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Po slugu, a dla innowacji bez sluga po id — jak getInnovation w lib/innovations.ts. */
-export async function getPublicInnovation(slugOrId: string, origin: string): Promise<Innovation | null> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("innovations")
+/** Po slugu, a dla inicjatywy bez sluga po id. */
+export async function getPublicInitiative(slugOrId: string, origin: string): Promise<Initiative | null> {
+  const { data, error } = await createPublicClient()
+    .from("public_initiatives")
     .select(DETAIL_COLUMNS)
-    .eq("published", true)
     .eq(UUID.test(slugOrId) ? "id" : "slug", slugOrId)
     .maybeSingle();
   if (error) throw error;
-  if (!data) return null;
-  const row = data as unknown as InnovationDetailRow;
-  const tests = await testsTable().select("teryt, status").eq("innovation_id", row.id);
-  if (tests.error) throw tests.error;
-  return toInnovation(row, summarizeTests(tests.data ?? [], POWIATY), origin);
+  return data ? toInitiative(data as unknown as InitiativeDetailRow, origin) : null;
 }

@@ -47,7 +47,7 @@ data/raw/*
 !data/raw/.gitkeep
 __pycache__/
 
-# Zasobnik wiedzy: lokalne zmiany z panelu w trybie bez bazy
+# Baza wiedzy: lokalne zmiany z panelu w trybie bez bazy
 /.data/
 /test-results/
 /playwright-report/
@@ -55,5 +55,3 @@ __pycache__/
 # Worktree agentów Claude Code (pełne kopie repo) — nigdy do commita
 /.claude/worktrees/
 
-# Podgląd danych demo (data/seed_initiatives.py) — w repo są tylko pliki supabase/seed/*.sql
-data/out/demo.json
