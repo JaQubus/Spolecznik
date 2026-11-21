@@ -89,7 +89,7 @@ export default async function Page(props: PageProps<"/innowacje/[slug]">) {
         <StorySteps story={{
           problem: i.card.problem ?? null, beneficiaries: i.card.beneficiaries ?? null, solution: i.card.solution ?? null,
           evidence: i.card.effects ?? null, howToUse: null,
-          whoCanUse: i.institution_type ? `${institutionLabel(i.institution_type)} w innej gminie. Skorzystaj z „Przenieś do siebie”, żeby dostać plan dopasowany do Twojej gminy.` : null,
+          whoCanUse: i.institution_type ? `${institutionLabel(i.institution_type)} w innym miejscu regionu albo kraju. Skorzystaj z „Przenieś do siebie”, żeby dostać plan dopasowany do Twojej instytucji.` : null,
           adoptionsCount: i.adoptions_count, avgRating: i.avg_rating, sourceParam: param,
         }} />
       </section>

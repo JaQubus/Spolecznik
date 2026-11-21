@@ -111,6 +111,8 @@ export const InitiativeRequest = z.object({
   text: z.string().min(3).max(10000), // oryginalny opis (+ odpowiedzi na dopytanie) — tylko do initiatives.raw_text
   gmina: z.string().max(100).optional(), // to, co użytkownik wpisał w pole „Gmina”
   teryt: teryt.optional(),
+  // Pole „Nazwa instytucji”: łączymy z instytucją z bazy, gdy nazwa pasuje do dokładnie jednej.
+  institution: z.string().trim().max(200).optional(),
 });
 
 /** /api/challenges: „Szukam rozwiązania” po intake. */

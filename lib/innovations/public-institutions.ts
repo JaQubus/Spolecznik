@@ -52,3 +52,15 @@ export async function listInstitutionInnovations(institutionId: string): Promise
   if (res.error) throw res.error;
   return ((res.data ?? []) as unknown as Partial<InstitutionInnovationRow>[]).map((r) => ({ funnel_stage: null, ...r })) as InstitutionInnovationRow[];
 }
+
+/** Podpowiedzi do pola „Nazwa instytucji” w formularzach zgłoszenia. Bez bazy albo przy błędzie: pusta lista, pole działa dalej. */
+export type InstitutionOption = { name: string; type: string };
+
+export async function institutionOptions(): Promise<InstitutionOption[]> {
+  try {
+    return (await listPublicInstitutions()).map((i) => ({ name: i.name, type: i.institution_type }));
+  } catch (e) {
+    console.error("[instytucje] podpowiedzi:", e);
+    return [];
+  }
+}

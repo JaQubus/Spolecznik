@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IntakeFlow } from "@/components/intake/intake-flow";
 import { GMINA_OPTIONS } from "@/lib/gminy";
+import { institutionOptions } from "@/lib/innovations/public-institutions";
 
 export const metadata: Metadata = { title: "Zgłoś inicjatywę" };
 
@@ -10,6 +11,7 @@ export default async function Page(props: PageProps<"/zglos">) {
   // ?opis=…&gmina=…&teryt=… przychodzą z wyszukiwarki na stronie startowej.
   const params = await props.searchParams;
   const teryt = first(params.teryt);
+  const institutions = await institutionOptions();
   return (
     <section className="space-y-6">
       <h1 className="text-3xl font-bold">Zgłoś inicjatywę</h1>
@@ -20,6 +22,7 @@ export default async function Page(props: PageProps<"/zglos">) {
         mode="own"
         path="/zglos"
         gminy={GMINA_OPTIONS}
+        institutions={institutions}
         initialText={first(params.opis)}
         initialGmina={{ text: first(params.gmina), teryt: /^\d{7}$/.test(teryt) ? teryt : null }}
       />

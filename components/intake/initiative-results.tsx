@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { DomainBadge } from "@/components/taxonomy/icons";
 import { ContactButton } from "@/components/pathways/contact-button";
 import { PathwaysSection } from "@/components/pathways/pathways-section";
+import { AuthorAssessmentSection } from "@/components/radar/author-assessment";
 import { SimilarSources } from "@/components/sources/similar-sources";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,9 +18,9 @@ import { org } from "@/lib/brand";
 import { linkClass, MatchRow, StatusCode, SupportSections } from "./result-parts";
 
 /**
- * Po zgłoszeniu albo wskazaniu: jak zrozumieliśmy inicjatywę, kod RAD, wstępne ścieżki rozwoju i dopasowani partnerzy
- * (z reguł, przed oceną radaru), podobne inicjatywy z regionu, sprawdzone rozwiązania z Polski, mentorzy i programy.
- * Ocena radaru i uzasadnienie ścieżek od AI dochodzą w kolejnym kroku — twórca zobaczy je w rozmowie.
+ * Po zgłoszeniu albo wskazaniu: jak zrozumieliśmy inicjatywę, kod RAD, ocena radaru, ścieżki rozwoju i dopasowani partnerzy,
+ * podobne inicjatywy z regionu, sprawdzone rozwiązania z Polski, mentorzy i programy. Ocena radaru i uzasadnienie ścieżek
+ * liczą się w tle — AuthorAssessmentSection dopytuje o nie i podmienia wstępne ścieżki (z reguł) na przeliczone z oceną.
  */
 export function InitiativeResults({
   kind, card, result, onReset,
@@ -55,24 +56,31 @@ export function InitiativeResults({
 
       <StatusCode code={initiative.statusCode} accessKey={initiative.accessKey} />
 
-      {result.pathways && (
-        <PathwaysSection
-          view={result.pathways}
-          audience="author"
-          size="result"
-          idPrefix="wynik-sciezki"
-          contactNote={
-            <p>
-              {kind === "nomination"
-                ? `Kontakt z partnerem zestawiamy tylko za zgodą twórców. Zespół ${org.short} zapyta ich, gdy zweryfikuje wskazanie.`
-                : `„Poproś o kontakt” to Twoja zgoda. Zespół ${org.short} zapyta partnera, a gdy też się zgodzi, przedstawi was sobie w rozmowie.`}
-            </p>
-          }
-          partnerAction={kind === "nomination" ? undefined : (m) => (
-            <ContactButton code={initiative.statusCode} partnerId={m.partner.id} partnerName={m.partner.name} pathway={m.pathway} />
-          )}
-        />
-      )}
+      {/* Ocena radaru liczy się w tle; do czasu jej nadejścia ścieżki są wstępne, z samych reguł. */}
+      <AuthorAssessmentSection
+        code={initiative.statusCode}
+        accessKey={initiative.accessKey}
+        initialPathways={result.pathways ?? null}
+        idPrefix="wynik-ocena"
+        renderPathways={(view) => (
+          <PathwaysSection
+            view={view}
+            audience="author"
+            size="result"
+            idPrefix="wynik-sciezki"
+            contactNote={
+              <p>
+                {kind === "nomination"
+                  ? `Kontakt z partnerem zestawiamy tylko za zgodą twórców. Zespół ${org.short} zapyta ich, gdy zweryfikuje wskazanie.`
+                  : `„Poproś o kontakt” to Twoja zgoda. Zespół ${org.short} zapyta partnera, a gdy też się zgodzi, przedstawi was sobie w rozmowie.`}
+              </p>
+            }
+            partnerAction={kind === "nomination" ? undefined : (m) => (
+              <ContactButton code={initiative.statusCode} partnerId={m.partner.id} partnerName={m.partner.name} pathway={m.pathway} />
+            )}
+          />
+        )}
+      />
 
       <SimilarSources
         items={similarSources}
@@ -83,10 +91,14 @@ export function InitiativeResults({
         <section aria-labelledby="podobne" className="max-w-3xl space-y-3">
           <h2 id="podobne" className="flex items-center gap-2 text-xl font-bold">
             <UsersIcon aria-hidden className="size-6 shrink-0" />
-            {similarGminy.count > 0
-              ? `W ${similarGminy.count} ${plural(similarGminy.count, "innej gminie działa", "innych gminach działa", "innych gminach działa")} coś podobnego`
-              : "Podobne inicjatywy w regionie"}
+            Podobne inicjatywy w regionie
           </h2>
+          {similarGminy.count > 0 && (
+            <p className="text-lg">
+              Coś podobnego działa jeszcze w {similarGminy.count} {plural(similarGminy.count, "innym miejscu", "innych miejscach", "innych miejscach")} regionu.
+              Warto się porównać, zanim zaczniecie powtarzać tę samą pracę.
+            </p>
+          )}
           {similar.length > 0 && (
             <ul className="list-disc space-y-1 pl-6">
               {similar.map((s) => (
@@ -98,7 +110,7 @@ export function InitiativeResults({
             </ul>
           )}
           <p className="text-muted-foreground">
-            Autorzy podobnych inicjatyw mogą się wymienić doświadczeniem albo przenosić inicjatywę razem. Zaprosimy ich
+            Autorzy podobnych inicjatyw mogą się wymienić doświadczeniem albo rozwijać i wdrażać rozwiązanie razem. Zaprosimy ich
             do wspólnej rozmowy — dołączą, jeśli się zgodzą.
           </p>
           <Button asChild variant="outline">

@@ -194,7 +194,7 @@ export function IdeaWorkshop({
         <h2 id="plakat" className="text-2xl font-bold">Plakat pomysłu</h2>
         <p className="max-w-2xl">
           Asystent narysuje ze szkicu plakat: jak działa pomysł, co daje i czego potrzeba. Przyda się, gdy pokażesz pomysł
-          w szkole, gminie albo w programie wsparcia. Plakat nie jest obowiązkowy — jeśli go pokażesz, wyślemy go razem z pomysłem.
+          w szkole, na uczelni, w urzędzie albo w programie wsparcia. Plakat nie jest obowiązkowy — jeśli go pokażesz, wyślemy go razem z pomysłem.
         </p>
         <PosterSection sketch={sketch} canvas={canvas} state={poster} onChange={setPoster} onMissingTitle={missingTitle} />
       </section>
