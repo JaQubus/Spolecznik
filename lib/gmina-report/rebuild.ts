@@ -13,7 +13,7 @@ import type { GminaProfile } from "./score";
 import { allowedNumbers, checkSentence, checkSummary, cohortProfile, numbersIn, summaryFacts, templateSummary } from "./summary";
 import { matchVersion, summaryVersion } from "./version";
 
-/** Tabel z migracji 0026_gmina_reports.sql nie ma w bazie. */
+/** Tabel z migracji 0006_gmina_reports.sql nie ma w bazie. */
 export class MissingMigrationError extends Error {}
 
 export type RebuildResult = {
@@ -59,7 +59,7 @@ export async function rebuildStep(budgetMs = 45_000): Promise<RebuildResult> {
     supabase.from("gmina_reports").select("teryt, data_version"),
   ]);
   for (const r of [existingMatches, existingSummaries]) {
-    if (isMissingTable(r.error)) throw new MissingMigrationError("Brak migracji 0026_gmina_reports.sql");
+    if (isMissingTable(r.error)) throw new MissingMigrationError("Brak migracji 0006_gmina_reports.sql");
     if (r.error) throw r.error;
   }
   const matchDone = new Map((existingMatches.data ?? []).map((m) => [`${m.area}|${m.cohort}`, m.data_version as string]));

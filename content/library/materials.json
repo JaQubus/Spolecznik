@@ -1,0 +1,146 @@
+[
+  {
+    "kind": "kanwa",
+    "title": "Kanwa Innowacji Społecznych INNO AGH (Social Canvas)",
+    "slug": "kanwa-innowacji-spolecznych-inno-agh-social-canvas",
+    "description": "Trzy plansze do pracy nad pomysłem: problem, odbiorcy, rozwiązanie, koszty i partnerzy. Wydrukuj i wypełnij w zespole.",
+    "domains": [],
+    "language": "pl",
+    "sort": 0,
+    "year": 2026,
+    "url": "https://rops.krakow.pl/mpliki/IS/Moj_folder/INNO_AGH_-_SOCIAL_CANVAS.pdf",
+    "format": "PDF",
+    "size_bytes": 7694251,
+    "publisher": "AGH w Krakowie",
+    "id": "233f8d64-21d5-5691-a6aa-d0ca01853c41"
+  },
+  {
+    "kind": "poradnik",
+    "title": "Przewodnik po innowacjach społecznych",
+    "slug": "przewodnik-po-innowacjach-spolecznych",
+    "description": "Jak urząd albo instytucja może wspierać nowe pomysły: od pierwszego opisu do testu i upowszechnienia.",
+    "domains": [
+      "administracja",
+      "partycypacja"
+    ],
+    "language": "pl",
+    "sort": 1,
+    "year": 2019,
+    "url": "https://rops.krakow.pl/mpliki/IS/ikony_PUBLIKACJE/InnMalopolska_przewodnik_po_innowacjach.pdf",
+    "format": "PDF",
+    "size_bytes": 1931812,
+    "publisher": "ROPS w Krakowie",
+    "id": "09a8b6ec-8484-5710-8a28-d066a3daec3c"
+  },
+  {
+    "kind": "poradnik",
+    "title": "Guide to social innovations",
+    "slug": "guide-to-social-innovations",
+    "description": "Angielska wersja przewodnika po innowacjach społecznych.",
+    "domains": [],
+    "language": "en",
+    "sort": 2,
+    "year": 2019,
+    "url": "https://rops.krakow.pl/mpliki/IS/PUBLIKACJE_INKUBATOROW/InnMalopolska_Guide_to_social_innovations_MIIS_ENG.pdf",
+    "format": "PDF",
+    "size_bytes": 1663273,
+    "publisher": "ROPS w Krakowie",
+    "id": "af7ec686-8fa5-5125-9a69-db79f9d67e6b"
+  },
+  {
+    "kind": "publikacja",
+    "title": "Połącz kropki, czyli o sile innowacji społecznych w obszarze włączenia społecznego",
+    "slug": "polacz-kropki-czyli-o-sile-innowacji-spolecznych-w-obszarze-",
+    "description": "Historie innowacji: kto je wymyślił, jak je testowano i co z tego wyszło. Przykłady, jak sprawdzić pomysł w praktyce.",
+    "domains": [
+      "uslugi_spoleczne"
+    ],
+    "language": "pl",
+    "sort": 3,
+    "year": 2023,
+    "url": "https://rops.krakow.pl/mpliki/IS/PUBLIKACJE_INKUBATOROW/Pocz_kropki_Publikacja_IWS.pdf",
+    "format": "PDF",
+    "size_bytes": 1844113,
+    "publisher": "ROPS w Krakowie",
+    "id": "fde65435-b3e6-59ca-8892-bc65cb7a0843"
+  },
+  {
+    "kind": "publikacja",
+    "title": "Innowacje społeczne dla dostępności",
+    "slug": "innowacje-spoleczne-dla-dostepnosci",
+    "description": "Rozwiązania dla osób z niepełnosprawnością i seniorów, przetestowane w instytucjach.",
+    "domains": [
+      "uslugi_spoleczne",
+      "mobilnosc"
+    ],
+    "language": "pl",
+    "sort": 4,
+    "year": 2022,
+    "url": "https://rops.krakow.pl/mpliki/IS/ikony_PUBLIKACJE/Innowacje_spoleczne_dla_dostepnosci.pdf",
+    "format": "PDF",
+    "size_bytes": 1990622,
+    "publisher": "ROPS w Krakowie",
+    "id": "59d54556-bfcd-595a-bce2-b7977793883b"
+  },
+  {
+    "kind": "film",
+    "title": "Merkury — ćwiczenia z automatów w mieście",
+    "slug": "merkury-cwiczenia-z-automatow-w-miescie",
+    "description": "Strona, na której seniorzy ćwiczą obsługę biletomatu, bankomatu i paczkomatu.",
+    "domains": [
+      "cyfryzacja"
+    ],
+    "language": "pl",
+    "sort": 5,
+    "year": null,
+    "url": "https://www.youtube.com/watch?v=BK6a8fjELR0",
+    "format": "film",
+    "size_bytes": null,
+    "publisher": "ROPS w Krakowie",
+    "sign_language": true,
+    "captions": false,
+    "pattern_slug": "merkury",
+    "id": "331a797a-0926-590d-823e-acee4eb46642"
+  },
+  {
+    "kind": "film",
+    "title": "Hear IT — nauka programowania w polskim języku migowym",
+    "slug": "hear-it-nauka-programowania-w-polskim-jezyku-migowym",
+    "description": "Platforma, na której osoby głuche uczą się zawodów w branży IT.",
+    "domains": [
+      "cyfryzacja",
+      "gospodarka"
+    ],
+    "language": "pl",
+    "sort": 6,
+    "year": null,
+    "url": "https://www.youtube.com/watch?v=uDLOSoCb3E8",
+    "format": "film",
+    "size_bytes": null,
+    "publisher": "ROPS w Krakowie",
+    "sign_language": true,
+    "captions": false,
+    "pattern_slug": "hear-it",
+    "id": "1580c01a-faeb-5f2e-9188-d64614312cd8"
+  },
+  {
+    "kind": "film",
+    "title": "Senior CUDER — gra dla seniorów",
+    "slug": "senior-cuder-gra-dla-seniorow",
+    "description": "Krótki film o grze, która pomaga seniorom rozmawiać i nawiązywać znajomości.",
+    "domains": [
+      "uslugi_spoleczne"
+    ],
+    "language": "pl",
+    "sort": 7,
+    "year": null,
+    "url": "https://www.youtube.com/watch?v=o5TP10ZStNA",
+    "format": "film",
+    "size_bytes": null,
+    "publisher": "ROPS w Krakowie",
+    "sign_language": false,
+    "captions": true,
+    "pattern_slug": "senior-cuder",
+    "id": "f54b0e77-3411-5249-8576-0f85ac8870c5"
+  }
+]

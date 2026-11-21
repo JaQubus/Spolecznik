@@ -1,0 +1,178 @@
+[
+  {
+    "key": "edukacja",
+    "slug": "edukacja",
+    "name": "Edukacja",
+    "icon": "AcademicCapIcon",
+    "lead": "Szkoły i przedszkola, które uczą nowocześnie i blisko domu.",
+    "definition": "Edukacja to nie tylko lekcje. To także zajęcia po szkole, współpraca z rodzicami i firmami oraz nauka umiejętności, które przydadzą się w pracy za kilkanaście lat.",
+    "challenges": [
+      "Równy dostęp do dobrych zajęć dla uczniów z małych szkół.",
+      "Nauczyciele, którzy umieją uczyć z nowymi narzędziami.",
+      "Kształcenie zawodowe dopasowane do firm z regionu.",
+      "Wsparcie dla uczniów w kryzysie i dla ich rodzin."
+    ],
+    "reading": [],
+    "sort": 0
+  },
+  {
+    "key": "nauka",
+    "slug": "nauka",
+    "name": "Nauka i transfer wiedzy",
+    "icon": "BeakerIcon",
+    "lead": "Uczelnie, które pracują razem z gminami, szkołami i firmami.",
+    "definition": "Transfer wiedzy to przenoszenie wyników badań i umiejętności z uczelni tam, gdzie mogą pomóc: do urzędów, szkół i firm. Często zaczyna się od wspólnego projektu studentów i samorządu.",
+    "challenges": [
+      "Więcej wspólnych projektów uczelni i samorządów.",
+      "Badania, które odpowiadają na pytania gmin.",
+      "Studenci, którzy po studiach zostają w regionie.",
+      "Proste zasady współpracy uczelni z instytucjami."
+    ],
+    "reading": [],
+    "sort": 1
+  },
+  {
+    "key": "cyfryzacja",
+    "slug": "cyfryzacja",
+    "name": "Cyfryzacja",
+    "icon": "ComputerDesktopIcon",
+    "lead": "Narzędzia cyfrowe, które ułatwiają życie mieszkańcom i pracę urzędom.",
+    "definition": "Cyfryzacja to usługi przez internet, dane, z których korzysta urząd, i umiejętności cyfrowe mieszkańców. Dobra cyfryzacja nie zostawia nikogo z tyłu, także osób, które nie korzystają z internetu.",
+    "challenges": [
+      "Sprawy urzędowe do załatwienia przez internet.",
+      "Nauka korzystania z telefonu i komputera dla osób starszych.",
+      "Wykorzystanie danych do lepszych decyzji w gminie.",
+      "Bezpieczeństwo w sieci w szkołach i urzędach."
+    ],
+    "reading": [],
+    "sort": 2
+  },
+  {
+    "key": "administracja",
+    "slug": "administracja",
+    "name": "Sprawna administracja",
+    "icon": "BuildingLibraryIcon",
+    "lead": "Urzędy i instytucje, które działają sprawnie i po ludzku.",
+    "definition": "Sprawna administracja to krótsze kolejki, zrozumiałe pisma i decyzje oparte na danych. To także współpraca gmin, które razem mogą zrobić więcej niż osobno.",
+    "challenges": [
+      "Proste pisma i formularze.",
+      "Wspólne usługi kilku małych gmin.",
+      "Obsługa mieszkańców, którzy nie mówią dobrze po polsku.",
+      "Lepsze planowanie w gminach, w których ubywa mieszkańców."
+    ],
+    "reading": [],
+    "sort": 3
+  },
+  {
+    "key": "srodowisko",
+    "slug": "srodowisko",
+    "name": "Środowisko i energia",
+    "icon": "SunIcon",
+    "lead": "Czysta energia, woda i zieleń w gminach.",
+    "definition": "Środowisko i energia to tańszy i czystszy prąd, oszczędzanie wody, mniej odpadów i przygotowanie gmin na susze, ulewy i upały.",
+    "challenges": [
+      "Niższe rachunki za energię w budynkach publicznych.",
+      "Zatrzymywanie wody deszczowej.",
+      "Mniej odpadów i lepsza segregacja.",
+      "Ochrona przyrody, z której żyje turystyka."
+    ],
+    "reading": [],
+    "sort": 4
+  },
+  {
+    "key": "zdrowie",
+    "slug": "zdrowie",
+    "name": "Zdrowie",
+    "icon": "HeartIcon",
+    "lead": "Profilaktyka i opieka blisko domu, także dla zdrowia psychicznego.",
+    "definition": "Zdrowie to szybki dostęp do lekarza, badania profilaktyczne, ruch i wsparcie psychologiczne. W małych miejscowościach liczy się, żeby pomoc przyszła do mieszkańca, a nie odwrotnie.",
+    "challenges": [
+      "Szybsza pomoc psychologiczna dla dzieci i młodzieży.",
+      "Badania profilaktyczne w małych miejscowościach.",
+      "Opieka w domu dla osób starszych i chorych.",
+      "Więcej ruchu w każdym wieku."
+    ],
+    "reading": [],
+    "sort": 5
+  },
+  {
+    "key": "uslugi_spoleczne",
+    "slug": "uslugi-spoleczne",
+    "name": "Usługi społeczne",
+    "icon": "UsersIcon",
+    "lead": "Pomoc dla seniorów, rodzin i osób z niepełnosprawnością.",
+    "definition": "Usługi społeczne to pomoc w codziennym życiu: opieka nad seniorami, wsparcie rodzin, asystencja osób z niepełnosprawnością. Najlepiej działają blisko domu i we współpracy z sąsiadami.",
+    "challenges": [
+      "Mniej samotności wśród osób starszych.",
+      "Opieka wytchnieniowa dla rodzin, które opiekują się bliskimi.",
+      "Samodzielne życie osób z niepełnosprawnością.",
+      "Wsparcie dla młodych, którzy opuszczają pieczę zastępczą."
+    ],
+    "reading": [],
+    "sort": 6
+  },
+  {
+    "key": "mobilnosc",
+    "slug": "mobilnosc",
+    "name": "Mobilność i transport",
+    "icon": "TruckIcon",
+    "lead": "Dojazd do szkoły, pracy i lekarza bez własnego samochodu.",
+    "definition": "Mobilność to możliwość dojechania tam, gdzie trzeba: autobusem, busem na telefon, rowerem albo pieszo. Na wsi brak transportu odcina od pracy, szkoły i usług.",
+    "challenges": [
+      "Transport w gminach, w których autobus jeździ rzadko.",
+      "Bezpieczna droga do szkoły.",
+      "Przystanki i chodniki dostępne dla wszystkich.",
+      "Połączenia między gminami i z miastami."
+    ],
+    "reading": [],
+    "sort": 7
+  },
+  {
+    "key": "kultura",
+    "slug": "kultura",
+    "name": "Kultura i dziedzictwo",
+    "icon": "BookOpenIcon",
+    "lead": "Domy kultury, biblioteki i muzea jako miejsca spotkań.",
+    "definition": "Kultura to nie tylko wydarzenia. Biblioteka czy dom kultury bywa jedynym miejscem spotkań we wsi. Dziedzictwo regionu może też przyciągać turystów i dawać pracę.",
+    "challenges": [
+      "Biblioteki i domy kultury, do których chętnie przychodzi młodzież.",
+      "Ochrona i pokazywanie dziedzictwa regionu.",
+      "Kultura dostępna dla osób z niepełnosprawnością.",
+      "Turystyka, która zostawia pieniądze w gminie."
+    ],
+    "reading": [],
+    "sort": 8
+  },
+  {
+    "key": "gospodarka",
+    "slug": "gospodarka",
+    "name": "Gospodarka i praca",
+    "icon": "BriefcaseIcon",
+    "lead": "Praca, przedsiębiorczość i lokalna gospodarka.",
+    "definition": "Gospodarka to miejsca pracy, nowe firmy i dochody mieszkańców. Instytucje publiczne mogą pomóc: uczyć przedsiębiorczości, łączyć szkoły z firmami i wspierać lokalnych producentów.",
+    "challenges": [
+      "Praca dla młodych, żeby nie musieli wyjeżdżać.",
+      "Sprzedaż lokalnych produktów bez pośredników.",
+      "Nauka przedsiębiorczości w szkołach.",
+      "Powrót do pracy rodziców i osób starszych."
+    ],
+    "reading": [],
+    "sort": 9
+  },
+  {
+    "key": "partycypacja",
+    "slug": "partycypacja",
+    "name": "Partycypacja",
+    "icon": "ChatBubbleLeftRightIcon",
+    "lead": "Mieszkańcy, którzy współdecydują o swojej okolicy.",
+    "definition": "Partycypacja to udział mieszkańców w decyzjach: konsultacje, budżety obywatelskie, rady młodzieżowe, wolontariat. Gdy ludzie mają wpływ, chętniej dbają o wspólne sprawy.",
+    "challenges": [
+      "Konsultacje, w których biorą udział nie tylko ci sami ludzie.",
+      "Młodzi z realnym wpływem na decyzje.",
+      "Wolontariat w małych miejscowościach.",
+      "Współpraca urzędów z organizacjami i sołectwami."
+    ],
+    "reading": [],
+    "sort": 10
+  }
+]

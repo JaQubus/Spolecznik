@@ -1,0 +1,156 @@
+{
+  "_opis": "Wzór wniosku do programu demonstracyjnego „Skaluj lokalnie (przykład)”. To NIE jest dokument PCI: treść napisaliśmy na potrzeby demo, żeby pokazać generator szkicu (/api/apply) i formularz /wniosek. Zmiana treści = edycja tego pliku i ponowne uruchomienie seed_initiatives.py albo edycja programs.form_schema w bazie.",
+  "fields": [
+    { "key": "1_tytul", "label": "Nazwa inicjatywy", "type": "text" },
+    { "key": "2_opis", "label": "Na czym polega inicjatywa?", "type": "textarea" },
+    { "key": "3_skad", "label": "Skąd ją przenosicie i kto jest partnerem?", "type": "textarea" },
+    { "key": "4_problem", "label": "Jaki problem rozwiązuje w Waszej gminie lub instytucji?", "type": "textarea" },
+    { "key": "5_odbiorcy", "label": "Kto skorzysta i ile osób?", "type": "textarea" },
+    { "key": "6_dostosowanie", "label": "Co zmienicie, żeby zadziałało u Was?", "type": "textarea" },
+    { "key": "7_efekty", "label": "Po czym poznacie, że się udało?", "type": "textarea" },
+    { "key": "8_plan", "label": "Plan działania i budżet", "type": "table" },
+    { "key": "9_kwota", "label": "Wnioskowana kwota (zł)", "type": "number" },
+    { "key": "10_zespol", "label": "Zespół", "type": "textarea" }
+  ],
+  "content": {
+    "attachment": "Wzór demonstracyjny",
+    "intro": "Przykładowy wniosek do programu „Skaluj lokalnie”. Program i formularz są fikcyjne: pokazują, jak gmina, szkoła albo instytucja może przenieść do siebie inicjatywę, która działa już w innym miejscu regionu.",
+    "sections": [
+      {
+        "key": "opis",
+        "n": 2,
+        "title": "Opis inicjatywy",
+        "tip": "Opisz prostymi słowami, co to jest i jak działa.",
+        "questions": [
+          "Na czym polega inicjatywa?",
+          "Kto ją prowadzi i dla kogo?",
+          "Jak można ją opisać w dwóch zdaniach?"
+        ]
+      },
+      {
+        "key": "skad",
+        "n": 3,
+        "title": "Źródło i partner",
+        "tip": "Napisz, gdzie inicjatywa już działa i kto pomoże Wam ją uruchomić.",
+        "questions": [
+          "W jakiej gminie lub instytucji działa dziś ta inicjatywa?",
+          "Jak długo działa i jakie ma wyniki?",
+          "Jak autor inicjatywy będzie Was wspierał?"
+        ]
+      },
+      {
+        "key": "problem",
+        "n": 4,
+        "title": "Problem u Was",
+        "tip": "Podaj liczby i źródła, np. dane GUS dla Twojej gminy z Banku Danych Lokalnych.",
+        "questions": [
+          "Jaki problem chcecie rozwiązać?",
+          "Skąd wiecie, że ten problem istnieje? Podaj źródła.",
+          "Czego już próbowaliście?"
+        ]
+      },
+      {
+        "key": "odbiorcy",
+        "n": 5,
+        "title": "Odbiorcy",
+        "tip": "Napisz, kto skorzysta, ilu jest tych osób i jak do nich dotrzecie.",
+        "questions": [
+          "Kto skorzysta z inicjatywy?",
+          "Ile osób planujecie objąć w pierwszym roku?",
+          "Jak dotrzecie do odbiorców?"
+        ]
+      },
+      {
+        "key": "dostosowanie",
+        "n": 6,
+        "title": "Dostosowanie",
+        "tip": "Nic nie przenosi się jeden do jednego. Napisz, co zmienicie.",
+        "questions": [
+          "Czym Wasza gmina lub instytucja różni się od miejsca, w którym inicjatywa powstała?",
+          "Co w związku z tym zmienicie?",
+          "Jakie widzicie ryzyka?"
+        ]
+      },
+      {
+        "key": "efekty",
+        "n": 7,
+        "title": "Efekty",
+        "tip": "Wybierz dwa albo trzy mierniki, które da się sprawdzić.",
+        "questions": [
+          "Co się zmieni po roku?",
+          "Jak to zmierzycie?",
+          "Co zrobicie, żeby inicjatywa działała po zakończeniu finansowania?"
+        ]
+      }
+    ],
+    "plan": {
+      "intro": "Opisz w kilku krokach, co, kiedy i jakim kosztem zrobicie, żeby uruchomić i sprawdzić inicjatywę u siebie.",
+      "preparation": {
+        "title": "Przygotowanie",
+        "limit": "najwyżej 3 miesiące",
+        "questions": "Co musicie przygotować przed startem? Kogo zaangażować? Co kupić? W jakim terminie?",
+        "example": "np. wizyta u autora inicjatywy, zakup sprzętu, szkolenie zespołu",
+        "termExample": "np. styczeń–marzec 2027"
+      },
+      "testing": {
+        "title": "Uruchomienie i sprawdzenie",
+        "limit": "najwyżej 9 miesięcy",
+        "questions": "Jak będzie przebiegać pierwszy rok działania? Ile osób weźmie udział? Jak zbierzecie opinie i wyniki?",
+        "example": "np. zajęcia z mieszkańcami, spotkania podsumowujące, ankieta wśród uczestników",
+        "termExample": "np. kwiecień–grudzień 2027"
+      },
+      "amount": {
+        "title": "Wnioskowana kwota",
+        "questions": "Jaka jest łączna wnioskowana kwota? Sprawdź, czy zgadza się z kosztami w planie działania."
+      }
+    },
+    "team": {
+      "n": 10,
+      "title": "Zespół",
+      "tip": "Wymień osoby i instytucje i napisz, co już robiły.",
+      "questions": [
+        "Kto odpowiada za realizację?",
+        "Jakie doświadczenie ma zespół i partner, od którego przenosicie inicjatywę?"
+      ]
+    },
+    "declarations": {
+      "A": {
+        "title": "A. Oświadczenia osoby składającej wniosek (wzór demonstracyjny)",
+        "lead": "Wzór demonstracyjny, bez skutków prawnych. W prawdziwym naborze treść oświadczeń podaje organizator.",
+        "items": [
+          "dane we wniosku są prawdziwe,",
+          "znam zasady programu,",
+          "mam zgodę instytucji, którą reprezentuję, na złożenie wniosku."
+        ],
+        "summary": [
+          "Piszesz prawdę.",
+          "Znasz zasady programu.",
+          "Twoja instytucja wie o wniosku."
+        ]
+      },
+      "B": {
+        "title": "B. Oświadczenia instytucji (wzór demonstracyjny)",
+        "lead": "Wzór demonstracyjny, bez skutków prawnych. W prawdziwym naborze treść oświadczeń podaje organizator.",
+        "items": [
+          "instytucja jest jednostką publiczną z regionu,",
+          "osoba podpisująca wniosek może reprezentować instytucję,",
+          "instytucja nie otrzymała innego finansowania na te same działania."
+        ],
+        "summary": [
+          "Instytucja jest z regionu.",
+          "Wniosek podpisuje osoba, która może to zrobić.",
+          "Na te same działania nie bierzecie pieniędzy dwa razy."
+        ]
+      }
+    },
+    "rodo": [
+      {
+        "title": "Dane osobowe (wzór demonstracyjny)",
+        "paragraphs": [
+          "To przykładowa klauzula. W demo nie zbieramy danych osobowych z formularza: szkic zostaje w Twojej przeglądarce.",
+          "W prawdziwym naborze klauzulę informacyjną podaje administrator danych, czyli organizator programu."
+        ]
+      }
+    ]
+  }
+}

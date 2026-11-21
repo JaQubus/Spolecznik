@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     return Response.json(await rebuildStep(BUDGET_MS));
   } catch (e) {
     if (e instanceof MissingMigrationError) {
-      return Response.json({ error: "W bazie nie ma tabel raportów. Uruchom migrację supabase/migrations/0026_gmina_reports.sql." }, { status: 503 });
+      return Response.json({ error: "W bazie nie ma tabel raportów. Uruchom migrację supabase/migrations/0006_gmina_reports.sql." }, { status: 503 });
     }
     console.error("[raporty-gmin]", e);
     return Response.json({ error: "Nie udało się przeliczyć raportów. Szczegóły są w logach serwera." }, { status: 500 });

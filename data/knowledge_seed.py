@@ -1,24 +1,29 @@
-"""Dane startowe Zasobnika wiedzy dla aplikacji: content/knowledge/*.json + supabase/seed_knowledge.sql.
+"""Zasobnik wiedzy Radaru: dziedziny, fakty, materiały i sprawdzone rozwiązania z Polski.
 
-Wejście: out/knowledge/ (scrape_knowledge.py, knowledge_facts.py, knowledge_personas.py).
-Treści obszarów (definicja, zdanie na kafel, wyzwania) są napisane ręcznie prostym językiem na podstawie
-Mapy Wyzwań Społecznych — dane w mapie są ogólnopolskie, co pokazujemy w UI.
+Wynik: ../supabase/seed/20_knowledge.sql (supabase db reset / load.py) i ../content/library/*.json
+(tryb bez bazy: aplikacja czyta te same dane z plików).
 
-Czego NIE ma na stronach ROPS, a uzupełniamy automatycznie (i oznaczamy w danych `*_auto = true`):
-- obszary Mapy Wyzwań dla innowacji (Biblioteka podaje tylko kategorię „dla kogo”) — reguły na słowach,
-- typ innowacji (przedmiot / metoda pracy / usługa / technologia) — reguły na słowach.
-Admin poprawia oba pola w panelu „Zarządzaj wiedzą”. Przy indeksowaniu z kluczami API tagi liczy Haiku.
+Wejście:
+- out/knowledge/innovations.json (scrape_library.py) — 115 innowacji z Biblioteki Innowacji Społecznych ROPS
+  w Krakowie (CC BY 4.0, źródło przy każdej pozycji). W Radarze to „sprawdzone rozwiązania z Polski” (patterns).
+- out/knowledge/facts.json (knowledge_facts.py) — fakty o regionie policzone z BDL.
+- out/knowledge/publications.json (scrape_knowledge.py) — rozmiary plików publikacji.
+
+Czego nie ma na stronach ROPS, a uzupełniamy regułami (i oznaczamy `domains_auto = true`, admin poprawia w Panelu):
+dziedziny i typy instytucji, które mogą przenieść rozwiązanie, typ innowacji, słowa kluczowe do wyszukiwania.
+Lepsze słowa kluczowe (z LLM) daje przycisk „Przelicz indeks” w Panelu.
 
     cd data && uv run knowledge_seed.py"""
 import json
 import re
+import sys
 import uuid
+from collections import Counter
 
-from common import OUT, ROOT, write_json
+from common import CROSS, DOMAINS, INSTITUTION_TYPES, OUT, ROOT, SEED, Jsonb, check_keys, index_row, upsert, write_json
 
 SRC = OUT / "knowledge"
-DEST = ROOT.parent / "content" / "knowledge"
-SQL = ROOT.parent / "supabase" / "seed_knowledge.sql"
+DEST = ROOT.parent / "content" / "library"
 NS = uuid.UUID("6f1c2a52-3c1e-4c1b-9a0e-5a0a1b7d2e01")  # stałe UUID-y → idempotentny seed
 
 
@@ -26,106 +31,153 @@ def uid(*parts: str) -> str:
     return str(uuid.uuid5(NS, "|".join(parts)))
 
 
-MAP_SOURCE = {
-    "title": "Mapa Wyzwań Społecznych",
-    "url": "https://rops.krakow.pl/mpliki/IS/IWS_20/za._nr_2._Mapa_Wyzwa_Spoecznych.pdf",
-    "note": "Dane w Mapie Wyzwań są ogólnopolskie, nie dotyczą tylko Małopolski.",
+def slugify(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", s.lower().translate(str.maketrans("ąćęłńóśźż", "acelnoszz"))).strip("-")
+
+
+# ── Dziedziny: tekst prostym językiem, napisany ręcznie. Bez liczb — liczby są w faktach z BDL. ──
+DOMAIN_TEXT = {
+    "edukacja": dict(
+        icon="AcademicCapIcon", lead="Szkoły i przedszkola, które uczą nowocześnie i blisko domu.",
+        definition="Edukacja to nie tylko lekcje. To także zajęcia po szkole, współpraca z rodzicami i firmami "
+                   "oraz nauka umiejętności, które przydadzą się w pracy za kilkanaście lat.",
+        challenges=["Równy dostęp do dobrych zajęć dla uczniów z małych szkół.",
+                    "Nauczyciele, którzy umieją uczyć z nowymi narzędziami.",
+                    "Kształcenie zawodowe dopasowane do firm z regionu.",
+                    "Wsparcie dla uczniów w kryzysie i dla ich rodzin."]),
+    "nauka": dict(
+        icon="BeakerIcon", lead="Uczelnie, które pracują razem z gminami, szkołami i firmami.",
+        definition="Transfer wiedzy to przenoszenie wyników badań i umiejętności z uczelni tam, gdzie mogą pomóc: "
+                   "do urzędów, szkół i firm. Często zaczyna się od wspólnego projektu studentów i samorządu.",
+        challenges=["Więcej wspólnych projektów uczelni i samorządów.",
+                    "Badania, które odpowiadają na pytania gmin.",
+                    "Studenci, którzy po studiach zostają w regionie.",
+                    "Proste zasady współpracy uczelni z instytucjami."]),
+    "cyfryzacja": dict(
+        icon="ComputerDesktopIcon", lead="Narzędzia cyfrowe, które ułatwiają życie mieszkańcom i pracę urzędom.",
+        definition="Cyfryzacja to usługi przez internet, dane, z których korzysta urząd, i umiejętności cyfrowe mieszkańców. "
+                   "Dobra cyfryzacja nie zostawia nikogo z tyłu, także osób, które nie korzystają z internetu.",
+        challenges=["Sprawy urzędowe do załatwienia przez internet.",
+                    "Nauka korzystania z telefonu i komputera dla osób starszych.",
+                    "Wykorzystanie danych do lepszych decyzji w gminie.",
+                    "Bezpieczeństwo w sieci w szkołach i urzędach."]),
+    "administracja": dict(
+        icon="BuildingLibraryIcon", lead="Urzędy i instytucje, które działają sprawnie i po ludzku.",
+        definition="Sprawna administracja to krótsze kolejki, zrozumiałe pisma i decyzje oparte na danych. "
+                   "To także współpraca gmin, które razem mogą zrobić więcej niż osobno.",
+        challenges=["Proste pisma i formularze.",
+                    "Wspólne usługi kilku małych gmin.",
+                    "Obsługa mieszkańców, którzy nie mówią dobrze po polsku.",
+                    "Lepsze planowanie w gminach, w których ubywa mieszkańców."]),
+    "srodowisko": dict(
+        icon="SunIcon", lead="Czysta energia, woda i zieleń w gminach.",
+        definition="Środowisko i energia to tańszy i czystszy prąd, oszczędzanie wody, mniej odpadów i przygotowanie "
+                   "gmin na susze, ulewy i upały.",
+        challenges=["Niższe rachunki za energię w budynkach publicznych.",
+                    "Zatrzymywanie wody deszczowej.",
+                    "Mniej odpadów i lepsza segregacja.",
+                    "Ochrona przyrody, z której żyje turystyka."]),
+    "zdrowie": dict(
+        icon="HeartIcon", lead="Profilaktyka i opieka blisko domu, także dla zdrowia psychicznego.",
+        definition="Zdrowie to szybki dostęp do lekarza, badania profilaktyczne, ruch i wsparcie psychologiczne. "
+                   "W małych miejscowościach liczy się, żeby pomoc przyszła do mieszkańca, a nie odwrotnie.",
+        challenges=["Szybsza pomoc psychologiczna dla dzieci i młodzieży.",
+                    "Badania profilaktyczne w małych miejscowościach.",
+                    "Opieka w domu dla osób starszych i chorych.",
+                    "Więcej ruchu w każdym wieku."]),
+    "uslugi_spoleczne": dict(
+        icon="UsersIcon", lead="Pomoc dla seniorów, rodzin i osób z niepełnosprawnością.",
+        definition="Usługi społeczne to pomoc w codziennym życiu: opieka nad seniorami, wsparcie rodzin, "
+                   "asystencja osób z niepełnosprawnością. Najlepiej działają blisko domu i we współpracy z sąsiadami.",
+        challenges=["Mniej samotności wśród osób starszych.",
+                    "Opieka wytchnieniowa dla rodzin, które opiekują się bliskimi.",
+                    "Samodzielne życie osób z niepełnosprawnością.",
+                    "Wsparcie dla młodych, którzy opuszczają pieczę zastępczą."]),
+    "mobilnosc": dict(
+        icon="TruckIcon", lead="Dojazd do szkoły, pracy i lekarza bez własnego samochodu.",
+        definition="Mobilność to możliwość dojechania tam, gdzie trzeba: autobusem, busem na telefon, rowerem albo pieszo. "
+                   "Na wsi brak transportu odcina od pracy, szkoły i usług.",
+        challenges=["Transport w gminach, w których autobus jeździ rzadko.",
+                    "Bezpieczna droga do szkoły.",
+                    "Przystanki i chodniki dostępne dla wszystkich.",
+                    "Połączenia między gminami i z miastami."]),
+    "kultura": dict(
+        icon="BookOpenIcon", lead="Domy kultury, biblioteki i muzea jako miejsca spotkań.",
+        definition="Kultura to nie tylko wydarzenia. Biblioteka czy dom kultury bywa jedynym miejscem spotkań we wsi. "
+                   "Dziedzictwo regionu może też przyciągać turystów i dawać pracę.",
+        challenges=["Biblioteki i domy kultury, do których chętnie przychodzi młodzież.",
+                    "Ochrona i pokazywanie dziedzictwa regionu.",
+                    "Kultura dostępna dla osób z niepełnosprawnością.",
+                    "Turystyka, która zostawia pieniądze w gminie."]),
+    "gospodarka": dict(
+        icon="BriefcaseIcon", lead="Praca, przedsiębiorczość i lokalna gospodarka.",
+        definition="Gospodarka to miejsca pracy, nowe firmy i dochody mieszkańców. Instytucje publiczne mogą pomóc: "
+                   "uczyć przedsiębiorczości, łączyć szkoły z firmami i wspierać lokalnych producentów.",
+        challenges=["Praca dla młodych, żeby nie musieli wyjeżdżać.",
+                    "Sprzedaż lokalnych produktów bez pośredników.",
+                    "Nauka przedsiębiorczości w szkołach.",
+                    "Powrót do pracy rodziców i osób starszych."]),
+    "partycypacja": dict(
+        icon="ChatBubbleLeftRightIcon", lead="Mieszkańcy, którzy współdecydują o swojej okolicy.",
+        definition="Partycypacja to udział mieszkańców w decyzjach: konsultacje, budżety obywatelskie, rady młodzieżowe, "
+                   "wolontariat. Gdy ludzie mają wpływ, chętniej dbają o wspólne sprawy.",
+        challenges=["Konsultacje, w których biorą udział nie tylko ci sami ludzie.",
+                    "Młodzi z realnym wpływem na decyzje.",
+                    "Wolontariat w małych miejscowościach.",
+                    "Współpraca urzędów z organizacjami i sołectwami."]),
 }
 
-# ── Obszary: tekst prostym językiem (ręcznie, na podstawie Mapy Wyzwań) ──
-AREAS = [
-    dict(key="seniorzy", name="Seniorzy", icon="HeartIcon",
-         lead="Samotność, zdrowie i pomoc w domu dla osób starszych.",
-         definition="Ludzi starszych przybywa. Wielu z nich mieszka samotnie i potrzebuje pomocy w codziennym życiu. "
-                    "Chodzi o to, żeby senior mógł żyć bezpiecznie, samodzielnie i wśród ludzi.",
-         challenges=["Więcej opieki w domu, także w małych gminach.",
-                     "Mniej samotności: miejsca i zajęcia, w których seniorzy spotykają się z innymi.",
-                     "Nauka obsługi telefonu, komputera i urządzeń w mieście.",
-                     "Bezpieczne branie leków i suplementów.",
-                     "Mieszkania i przestrzeń bez barier dla osób starszych."]),
-    dict(key="niepelnosprawnosc", name="Niepełnosprawność", icon="HandRaisedIcon",
-         lead="Praca, nauka i samodzielne życie bez barier.",
-         definition="Niepełnosprawność to trwała trudność w funkcjonowaniu ciała lub umysłu. Można się z nią urodzić "
-                    "albo pojawia się po chorobie lub wypadku. Osoby z niepełnosprawnością potrzebują dostępu do pracy, "
-                    "nauki, informacji i przestrzeni bez barier.",
-         challenges=["Łatwiejszy dostęp do pracy.",
-                     "Nauka, która daje samodzielność w dorosłym życiu.",
-                     "Wsparcie w budowaniu przyjaźni i relacji.",
-                     "Przestrzeń, transport i informacje dostępne dla wszystkich.",
-                     "Mieszkania przystosowane do potrzeb."]),
-    dict(key="rodzina_piecza", name="Rodzina i piecza zastępcza", icon="UsersIcon",
-         lead="Wsparcie rodzin i dom dla dzieci, które nie mogą mieszkać z rodzicami.",
-         definition="Niektóre rodziny mają trudności z opieką nad dziećmi. Wtedy pomagają im asystenci i specjaliści. "
-                    "Gdy dziecko nie może mieszkać z rodzicami, trafia do rodziny zastępczej albo placówki.",
-         challenges=["Więcej rodzin zastępczych.",
-                     "Rodzeństwo powinno zostać razem.",
-                     "Krótszy pobyt dziecka w pieczy zastępczej.",
-                     "Lepsza współpraca między powiatami.",
-                     "Jednakowe zasady adopcji w całym kraju."]),
-    dict(key="zdrowie_psychiczne", name="Zdrowie psychiczne", icon="LifebuoyIcon",
-         lead="Pomoc w kryzysie, stresie i depresji — dla dzieci i dorosłych.",
-         definition="Zdrowie psychiczne to dobre samopoczucie, radzenie sobie ze stresem i dobre relacje z ludźmi. "
-                    "Coraz więcej dzieci i dorosłych potrzebuje pomocy. Wiele osób nie szuka jej, bo się wstydzi.",
-         challenges=["Wiedza o zdrowiu psychicznym dla dzieci, młodzieży i seniorów.",
-                     "Pomoc rodzicom w rozpoznawaniu sygnałów, że dziecko ma problem.",
-                     "Pomoc blisko domu zamiast w szpitalu.",
-                     "Mniej wstydu i uprzedzeń wobec osób w kryzysie."]),
-    dict(key="zdrowie", name="Zdrowie", icon="PlusCircleIcon",
-         lead="Dostęp do lekarza, rehabilitacji i opieki długoterminowej.",
-         definition="Zdrowie to nie tylko leczenie, ale też zapobieganie chorobom i zdrowy styl życia. "
-                    "Ważne jest, żeby każdy miał podobny dostęp do lekarzy i rehabilitacji.",
-         challenges=["Wiedza o zdrowym stylu życia i zapobieganiu chorobom.",
-                     "Równy dostęp do dobrej opieki medycznej.",
-                     "Więcej opieki długoterminowej dla starzejących się mieszkańców.",
-                     "Dbanie o zdrowie dzieci i młodzieży."]),
-    dict(key="ubostwo", name="Ubóstwo", icon="BanknotesIcon",
-         lead="Gdy brakuje pieniędzy na jedzenie, ogrzewanie i rachunki.",
-         definition="Ubóstwo to sytuacja, w której nie starcza pieniędzy na podstawowe potrzeby: jedzenie, mieszkanie, "
-                    "ogrzewanie. Dotyka dzieci, seniorów, osób z niepełnosprawnością, a nawet osób, które pracują.",
-         challenges=["Żłobki i przedszkola, które dają dzieciom równy start.",
-                     "Praca i wsparcie dla osób bezrobotnych.",
-                     "Pomoc dla seniorów i osób z niepełnosprawnością z niskimi dochodami.",
-                     "Pieniądze na ogrzewanie domu.",
-                     "Nikt nie powinien być głodny."]),
-    dict(key="bezdomnosc", name="Bezdomność", icon="HomeIcon",
-         lead="Dach nad głową i droga z ulicy do własnego mieszkania.",
-         definition="Osoba w kryzysie bezdomności nie ma swojego miejsca do życia. Przyczyn jest zwykle kilka naraz, "
-                    "na przykład utrata pracy, długi, choroba albo uzależnienie. Coraz częściej dotyczy to młodych ludzi.",
-         challenges=["Pomoc dla młodych osób bez domu, także niepełnoletnich.",
-                     "Wsparcie dla osób, które opuszczają domy dziecka.",
-                     "Noclegownie i schroniska przygotowane na potrzeby młodych.",
-                     "Pomoc w odbudowaniu relacji z bliskimi."]),
-    dict(key="cudzoziemcy", name="Integracja cudzoziemców", icon="LanguageIcon",
-         lead="Nauka języka, praca i szkoła dla osób z innych krajów.",
-         definition="Do Małopolski przyjeżdżają ludzie z innych krajów, na przykład z Ukrainy. Potrzebują mieszkania, pracy, "
-                    "szkoły dla dzieci i pomocy po polsku i w swoim języku.",
-         challenges=["Równy dostęp do usług, także dla osób, które nie mówią po polsku.",
-                     "Tłumacz i asystent kulturowy w urzędach i szkołach.",
-                     "Pomoc w szukaniu pracy i uznaniu kwalifikacji.",
-                     "Wsparcie dla dzieci w szkole.",
-                     "Mniej uprzedzeń wobec cudzoziemców."]),
-]
-
-
-# ── Obszary dla innowacji: kategoria „dla kogo” → obszar bazowy + słowa w opisie ──
-GROUP_AREA = {
-    "seniorzy": "seniorzy", "dzieci_mlodziez_rodzina": "rodzina_piecza", "ograniczona_mobilnosc": "niepelnosprawnosc",
-    "niepelnosprawnosc_sensoryczna": "niepelnosprawnosc", "zdrowie_medycyna": "zdrowie", "rynek_pracy": "ubostwo",
-    "cudzoziemcy": "cudzoziemcy", "bezdomnosc": "bezdomnosc", "niepelnosprawnosc_intelektualna": "niepelnosprawnosc",
+# ── Sprawdzone rozwiązania (ROPS): kategoria „dla kogo” → dziedziny i tematy przekrojowe ──
+GROUP_DOMAINS = {
+    "seniorzy": ["uslugi_spoleczne"], "dzieci_mlodziez_rodzina": ["uslugi_spoleczne", "edukacja"],
+    "niepelnosprawnosc_sensoryczna": ["uslugi_spoleczne"], "ograniczona_mobilnosc": ["uslugi_spoleczne", "mobilnosc"],
+    "niepelnosprawnosc_intelektualna": ["uslugi_spoleczne"], "zdrowie_medycyna": ["zdrowie"],
+    "cudzoziemcy": ["uslugi_spoleczne"], "rynek_pracy": ["gospodarka"], "bezdomnosc": ["uslugi_spoleczne"],
 }
-AREA_WORDS = {
-    "seniorzy": r"senior|osób starsz|osoby starsz|osobom starsz|podeszłym wieku|demencj|otępien",
-    "zdrowie_psychiczne": r"psychi|depres|emocj|stres|lęk|samobój|kryzys",
-    "zdrowie": r"rehabilit|chorob|zdrowi|lecz|pacjent|medycz|fizjoterap",
-    "ubostwo": r"ubóstw|ubog|bezrobo|niskich dochod|wykluczeni|zatrudnieni|rynku pracy",
-    "rodzina_piecza": r"rodzin|dzieci|dziecka|młodzież|piecz|adopc",
-    "niepelnosprawnosc": r"niepełnospraw|niewidom|niesłysz|głuch|wózk|niedowid|spastycz",
-    "cudzoziemcy": r"cudzozie|uchodź|ukrai|migrant|afgań|czecze",
-    "bezdomnosc": r"bezdom",
+GROUP_CROSS = {"seniorzy": ["seniorzy"], "dzieci_mlodziez_rodzina": ["mlodzi"]}
+DOMAIN_WORDS = {
+    "cyfryzacja": r"aplikacj|platform|internet|online|cyfrow|e-learning|smartfon|\bvr\b",
+    "zdrowie": r"rehabilit|chorob|zdrowi|lecz|pacjent|medycz|fizjoterap|psychi|depres",
+    "edukacja": r"szkoł|uczni|nauczyc|edukac|przedszkol",
+    "kultura": r"kultur|muze|teatr|bibliotek|sztuk",
+    "mobilnosc": r"transport|dojazd|przestrze|nawigacj",
+    "gospodarka": r"zatrudni|rynku pracy|pracodaw|zawod|bezrobo",
+    "partycypacja": r"wolontari|sąsiedz|społecznoś",
+}
+INSTITUTION_WORDS = {  # „Kto może skorzystać” → kto może przenieść rozwiązanie do siebie
+    "szkola_podstawowa": r"szkoł|przedszkol",
+    "szkola_ponadpodstawowa": r"szkoł|liceum|techni",
+    "uczelnia": r"uczelni|uniwersyte|student",
+    "gmina": r"gmin|samorząd|urzęd",
+    "powiat": r"powiat|pcpr",
+    "kultura": r"bibliotek|dom[yu]? kultury|muze|ośrod\w* kultury",
+    "pomoc_zdrowie": r"pomocy społecznej|\bops\b|\bdps\b|\bcus\b|placów|szpital|przychodn|terapii zajęciow|środowiskow",
+    "inna": r"urzęd\w* pracy",
 }
 
-# ── Typ innowacji: słowa w nazwie i opisie rozwiązania ──
-TYPE_WORDS = {
+# Słowa kluczowe w formie podstawowej (jak lematy z LLM w lib/search.ts) — wykrywane po rdzeniach.
+LEMMAS = {
+    "senior": r"senior|osób starsz|osoby starsz|osobom starsz|podeszłym wieku", "demencja": r"demencj|otępien",
+    "samotność": r"samotn|izolacj", "opiekun": r"opiekun", "opieka": r"opiek",
+    "niepełnosprawność": r"niepełnospraw", "osoba niewidoma": r"niewidom|niedowid", "osoba głucha": r"niesłysz|głuch",
+    "język migowy": r"migow|\bpjm\b", "wózek": r"wózk|wózek", "dostępność": r"dostępn|barier",
+    "niepełnosprawność intelektualna": r"intelektualn", "autyzm": r"autyz|spektrum",
+    "dziecko": r"dzieci|dziecka|dziecko", "młodzież": r"młodzież|nastolat", "rodzina": r"rodzin", "rodzic": r"rodzic",
+    "piecza zastępcza": r"piecz", "szkoła": r"szkoł", "uczeń": r"uczni|uczeń", "nauczyciel": r"nauczyc",
+    "zdrowie psychiczne": r"psychi|emocj|depres|lęk", "rehabilitacja": r"rehabilit|fizjoterap|uspraw",
+    "choroba": r"chorob", "pacjent": r"pacjent", "szpital": r"szpital", "profilaktyka": r"profilakty",
+    "cudzoziemiec": r"cudzozie|migrant|uchodź", "integracja": r"integrac", "język polski": r"języka polskiego|język polski",
+    "bezdomność": r"bezdom", "mieszkanie": r"mieszka[nń]", "ubóstwo": r"ubóstw|ubog",
+    "praca": r"\bprac[ayę]\b|zatrudni", "rynek pracy": r"rynku pracy|rynek pracy", "aktywizacja zawodowa": r"aktywizac",
+    "aplikacja": r"aplikacj", "platforma internetowa": r"platform", "kompetencje cyfrowe": r"cyfrow|komputer|smartfon",
+    "gra": r"\bgra\b|\bgry\b|\bgier\b|planszow", "warsztat": r"warsztat", "szkolenie": r"szkoleni",
+    "wolontariat": r"wolontari", "sąsiad": r"sąsiad", "transport": r"transport|dojazd|dowóz",
+    "kultura": r"kultur", "sport": r"sport|aktywnoś\w* fizyczn", "terapia": r"terapi",
+    "komunikacja": r"komunikac", "bezpieczeństwo": r"bezpiecz", "przemoc": r"przemoc", "uzależnienie": r"uzależni",
+    "pamięć": r"pamię", "edukacja": r"edukac", "usługa społeczna": r"usług\w* społeczn",
+}
+
+INNOVATION_TYPES = {  # typ innowacji: słowa w nazwie i opisie rozwiązania
     "technologia": r"aplikacj|platform|internet|online|cyfrow|\bvr\b|\bar\b|druk 3d|symulator|e-learning|elektroniczn|czujnik|ibeacon|nawigacj",
     "przedmiot": r"\bgra\b|gry |zestaw|tablic|kredk|wózek|wózk|mat[ay]? |obuwie|zabawk|puzzle|peleryn|odzież|łazienk|urządzeni|plansz|kart[ay]? |opowiada|kask|organizer|naszywk|naklejk",
     "metoda": r"model|metod|program|scenariusz|warsztat|szkoleni|trening|terapi|przewodnik|poradnik",
@@ -133,8 +185,7 @@ TYPE_WORDS = {
 }
 TYPE_ORDER = ["przedmiot", "technologia", "usluga", "metoda"]
 
-# ── „Łatwy tekst” napisany ręcznie dla innowacji ze ścieżki demo (bez LLM) ──
-ETR = {
+ETR = {  # „Łatwy tekst” napisany ręcznie dla kilku rozwiązań (bez LLM)
     "senior-cuder": "To gra w karty dla seniorów. Gra się w grupie, na przykład w klubie seniora. "
                     "Gra pomaga rozmawiać o zdrowiu, emocjach i bliskich. Dzięki niej seniorzy poznają nowych ludzi i czują się mniej samotni.",
     "merkury": "To strona internetowa do ćwiczeń. Można na niej spróbować, jak działa bankomat, paczkomat, parkomat i kasa w sklepie. "
@@ -149,49 +200,36 @@ ETR = {
                     "Pomaga rodzinie zorganizować opiekę, sprzęt i pomoc z urzędów.",
 }
 
+SOURCE_NAME = "Biblioteka Innowacji Społecznych, ROPS w Krakowie"
+
+# ── Materiały: publikacje o tym, jak wspierać i sprawdzać innowacje, i filmy z Biblioteki ──
 MATERIALS = [
-    dict(kind="kanwa", title="Kanwa Innowacji Społecznych INNO AGH (Social Canvas)", year=2026,
+    dict(kind="kanwa", title="Kanwa Innowacji Społecznych INNO AGH (Social Canvas)", year=2026, publisher="AGH w Krakowie",
          description="Trzy plansze do pracy nad pomysłem: problem, odbiorcy, rozwiązanie, koszty i partnerzy. Wydrukuj i wypełnij w zespole.",
-         url="https://rops.krakow.pl/mpliki/IS/Moj_folder/INNO_AGH_-_SOCIAL_CANVAS.pdf", areas=[]),
-    dict(kind="publikacja", title="Połącz kropki, czyli o sile innowacji społecznych w obszarze włączenia społecznego", year=2023,
-         description="Historie innowacji z projektu „Inkubator Włączenia Społecznego”: kto je wymyślił, jak je testowano i co z tego wyszło.",
-         url="https://rops.krakow.pl/mpliki/IS/PUBLIKACJE_INKUBATOROW/Pocz_kropki_Publikacja_IWS.pdf",
-         areas=["niepelnosprawnosc", "seniorzy", "rodzina_piecza", "cudzoziemcy", "ubostwo", "bezdomnosc"]),
-    dict(kind="publikacja", title="Innowacje społeczne dla dostępności", year=2022,
-         description="Rozwiązania dla osób z niepełnosprawnością i seniorów, przetestowane w projekcie „Inkubator Dostępności”.",
-         url="https://rops.krakow.pl/mpliki/IS/ikony_PUBLIKACJE/Innowacje_spoleczne_dla_dostepnosci.pdf",
-         areas=["niepelnosprawnosc", "seniorzy"]),
-    dict(kind="poradnik", title="Przewodnik po innowacjach społecznych", year=2019,
-         description="Jak urząd albo organizacja może wspierać nowe pomysły. Doświadczenia „Małopolskiego Inkubatora Innowacji Społecznych”.",
+         url="https://rops.krakow.pl/mpliki/IS/Moj_folder/INNO_AGH_-_SOCIAL_CANVAS.pdf", domains=[]),
+    dict(kind="poradnik", title="Przewodnik po innowacjach społecznych", year=2019, publisher="ROPS w Krakowie",
+         description="Jak urząd albo instytucja może wspierać nowe pomysły: od pierwszego opisu do testu i upowszechnienia.",
          url="https://rops.krakow.pl/mpliki/IS/ikony_PUBLIKACJE/InnMalopolska_przewodnik_po_innowacjach.pdf",
-         areas=["seniorzy", "niepelnosprawnosc"]),
-    dict(kind="poradnik", title="Guide to social innovations", year=2019, language="en",
+         domains=["administracja", "partycypacja"]),
+    dict(kind="poradnik", title="Guide to social innovations", year=2019, language="en", publisher="ROPS w Krakowie",
          description="Angielska wersja przewodnika po innowacjach społecznych.",
          url="https://rops.krakow.pl/mpliki/IS/PUBLIKACJE_INKUBATOROW/InnMalopolska_Guide_to_social_innovations_MIIS_ENG.pdf",
-         areas=[]),
-    dict(kind="raport", title="Mapa Wyzwań Społecznych", year=2024,
-         description="Osiem najważniejszych obszarów problemów społecznych, z przykładami osób i listą raportów. Dane ogólnopolskie.",
-         url=MAP_SOURCE["url"], areas=[a["key"] for a in AREAS]),
-    dict(kind="raport", report="Usługi społeczne w Małopolsce – deficyty, potrzeby, potencjał rozwojowy. Zaktualizowane wnioski z diagnozy",
-         description="Krótkie podsumowanie: gdzie w Małopolsce brakuje opieki, pomocy dla rodzin, seniorów i osób w kryzysie.",
-         areas=["seniorzy", "niepelnosprawnosc", "bezdomnosc", "zdrowie_psychiczne", "rodzina_piecza", "zdrowie"]),
-    dict(kind="raport", report="Piecza zastępcza w Małopolsce. Stan, potrzeby, wyzwania",
-         description="Ile jest rodzin zastępczych, czego im brakuje i co można poprawić.", areas=["rodzina_piecza"]),
-    dict(kind="raport", report="Domy pomocy społecznej w Małopolsce wobec wyzwań deinstytucjonalizacji opieki długoterminowej",
-         description="Jak domy pomocy społecznej mogą pomagać także osobom, które w nich nie mieszkają.", areas=["seniorzy", "zdrowie"]),
-    dict(kind="raport", report="Mieszkania wspomagane i treningowe w Małopolsce jako priorytet w rozwoju usług społecznych i deinstytucjonalizacji",
-         description="Mieszkania, w których można uczyć się samodzielności: dla kogo są i co utrudnia ich tworzenie.",
-         areas=["bezdomnosc", "niepelnosprawnosc", "rodzina_piecza"]),
-    dict(kind="raport", report="Wyzwania i potrzeby sektora opiekuńczego w Małopolsce. Perspektywa opiekunów oraz podmiotów realizujących opiekę",
-         description="Kim są opiekunowie osób starszych i chorych, ile pracują i czego potrzebują.", areas=["seniorzy", "zdrowie"]),
-    dict(kind="raport", report="Opiekunowie rodzinni osób starszych – problemy, potrzeby, wyzwania dla polityki społecznej",
-         description="Z czym zmagają się rodziny, które same opiekują się starszymi bliskimi.", areas=["seniorzy"]),
-    dict(kind="film", video="senior-cuder", title="Senior CUDER — gra dla seniorów",
-         description="Krótki film o grze, która pomaga seniorom rozmawiać i nawiązywać znajomości.", areas=["seniorzy"]),
-    dict(kind="film", video="przenosne-modularne-lazienki", title="Przenośne, modularne łazienki",
-         description="Jak w kilka dni zrobić łazienkę w mieszkaniu, w którym jej nie ma.", areas=["ubostwo", "seniorzy"]),
+         domains=[]),
+    dict(kind="publikacja", title="Połącz kropki, czyli o sile innowacji społecznych w obszarze włączenia społecznego", year=2023,
+         publisher="ROPS w Krakowie",
+         description="Historie innowacji: kto je wymyślił, jak je testowano i co z tego wyszło. Przykłady, jak sprawdzić pomysł w praktyce.",
+         url="https://rops.krakow.pl/mpliki/IS/PUBLIKACJE_INKUBATOROW/Pocz_kropki_Publikacja_IWS.pdf",
+         domains=["uslugi_spoleczne"]),
+    dict(kind="publikacja", title="Innowacje społeczne dla dostępności", year=2022, publisher="ROPS w Krakowie",
+         description="Rozwiązania dla osób z niepełnosprawnością i seniorów, przetestowane w instytucjach.",
+         url="https://rops.krakow.pl/mpliki/IS/ikony_PUBLIKACJE/Innowacje_spoleczne_dla_dostepnosci.pdf",
+         domains=["uslugi_spoleczne", "mobilnosc"]),
+    dict(kind="film", video="merkury", title="Merkury — ćwiczenia z automatów w mieście",
+         description="Strona, na której seniorzy ćwiczą obsługę biletomatu, bankomatu i paczkomatu.", domains=["cyfryzacja"]),
     dict(kind="film", video="hear-it", title="Hear IT — nauka programowania w polskim języku migowym",
-         description="Platforma, na której osoby głuche uczą się zawodów w branży IT.", areas=["niepelnosprawnosc", "ubostwo"]),
+         description="Platforma, na której osoby głuche uczą się zawodów w branży IT.", domains=["cyfryzacja", "gospodarka"]),
+    dict(kind="film", video="senior-cuder", title="Senior CUDER — gra dla seniorów",
+         description="Krótki film o grze, która pomaga seniorom rozmawiać i nawiązywać znajomości.", domains=["uslugi_spoleczne"]),
 ]
 
 
@@ -203,17 +241,15 @@ def clean(s: str | None) -> str | None:
     return s or None
 
 
-def tag_areas(i: dict) -> list[str]:
-    base = [GROUP_AREA[g] for g in i["groups"]]
-    text = " ".join(filter(None, [i["title"], i["problem"], i["solution"], i["beneficiaries"]])).lower()
-    scored = sorted(((len(re.findall(p, text)), k) for k, p in AREA_WORDS.items() if k not in base), reverse=True)
-    extra = [k for n, k in scored if n >= 2]
-    return list(dict.fromkeys(base + extra))[:3]
+def hits(patterns: dict[str, str], text: str, min_hits: int = 1) -> list[str]:
+    """Klucze, których wzorce występują w tekście co najmniej min_hits razy, od najczęstszych."""
+    scored = [(len(re.findall(p, text)), k) for k, p in patterns.items()]
+    return [k for n, k in sorted(scored, key=lambda x: -x[0]) if n >= min_hits]
 
 
 def tag_type(i: dict) -> str:
     text = " ".join(filter(None, [i["title"], i["title"], (i["solution"] or "")[:400]])).lower()
-    scores = {t: len(re.findall(p, text)) for t, p in TYPE_WORDS.items()}
+    scores = {t: len(re.findall(p, text)) for t, p in INNOVATION_TYPES.items()}
     best = max(TYPE_ORDER, key=lambda t: (scores[t], -TYPE_ORDER.index(t)))
     return best if scores[best] else "metoda"
 
@@ -221,83 +257,66 @@ def tag_type(i: dict) -> str:
 def video_meta(v: dict | None, title: str) -> dict | None:
     if not v:
         return None
-    t = v["title"]
-    return {
-        "youtube_id": v["youtube_id"],
-        "title": f"Film: {title}",
-        "thumbnail_url": v["thumbnail_url"],
-        "sign_language": "PJM" in t,
-        "captions": "napisy" in t.lower(),
-    }
+    return {"youtube_id": v["youtube_id"], "title": f"Film: {title}", "thumbnail_url": v["thumbnail_url"],
+            "sign_language": "PJM" in v["title"], "captions": "napisy" in v["title"].lower()}
 
 
-def build_innovations() -> list[dict]:
+def build_patterns() -> list[dict]:
     raw = json.loads((SRC / "innovations.json").read_text(encoding="utf-8"))
     out = []
     for i in raw:
         title = clean(i["title"])
+        text = " ".join(filter(None, [title, i["problem"], i["solution"], i["beneficiaries"]])).lower()
+        base = [d for g in i["groups"] for d in GROUP_DOMAINS[g]]
+        domains = list(dict.fromkeys(base + hits(DOMAIN_WORDS, text, min_hits=2)))[:3]
+        cross = list(dict.fromkeys(c for g in i["groups"] for c in GROUP_CROSS.get(g, [])))
+        if "seniorzy" in cross and re.search(DOMAIN_WORDS["cyfryzacja"], text):
+            cross.append("wykluczenie_cyfrowe")
+        institutions = hits(INSTITUTION_WORDS, (i["who_can_use"] or "").lower()) or ["pomoc_zdrowie", "gmina"]
+        check_keys("domains", domains, DOMAINS)
+        check_keys("cross", cross, CROSS)
+        check_keys("institutionType", institutions, INSTITUTION_TYPES)
         out.append({
             "id": uid("innowacja", i["source_url"]),
-            "slug": i["slug"],
-            "title": title,
-            "groups": i["groups"],
-            "areas": tag_areas(i),
-            "areas_auto": True,
+            "slug": i["slug"], "title": title, "category": i["groups"][0],
+            "domains": domains, "cross_topics": cross, "institution_types": institutions, "domains_auto": True,
             "innovation_type": tag_type(i),
-            "type_auto": True,
-            "problem": clean(i["problem"]),
-            "solution": clean(i["solution"]),
-            "evidence": clean(i["evidence"]),
-            "who_can_use": clean(i["who_can_use"]),
-            "beneficiaries": clean(i["beneficiaries"]),
+            "problem": clean(i["problem"]), "solution": clean(i["solution"]), "evidence": clean(i["evidence"]),
+            "who_can_use": clean(i["who_can_use"]), "beneficiaries": clean(i["beneficiaries"]),
             "etr_summary": ETR.get(i["slug"]),
+            "lemmas": hits(LEMMAS, text)[:15],
             "video": video_meta(i["video"], title),
-            "pdf_url": i["pdf_url"],
-            "materials_zip": i["materials_zip"],
-            "license_url": i["license_url"],
-            "source_url": i["source_url"],
+            "video_url": i["video"] and f"https://www.youtube.com/watch?v={i['video']['youtube_id']}",
+            "pdf_url": i["pdf_url"], "materials_zip": i["materials_zip"], "license_url": i["license_url"],
+            "source_url": i["source_url"], "source_name": SOURCE_NAME,
             "dissemination": bool(i["dissemination_badge"]),
-            "published": True,
-            "synthetic": False,
         })
     return out
 
 
-def build_areas(personas: list[dict]) -> list[dict]:
-    cmap = json.loads((SRC / "challenge_map.json").read_text(encoding="utf-8"))["areas"]
-    out = []
-    for n, a in enumerate(AREAS):
-        out.append({
-            "key": a["key"], "slug": a["key"].replace("_", "-"), "name": a["name"], "icon": a["icon"],
-            "lead": a["lead"], "definition": a["definition"],
-            "challenges": a["challenges"], "challenges_source": MAP_SOURCE,
-            "reading": cmap[a["key"]]["further_reading"],
-            "persona_keys": [p["key"] for p in personas if p["area"] == a["key"]],
-            "sort": n, "published": True,
-        })
-    return out
+def build_domains() -> list[dict]:
+    if set(DOMAIN_TEXT) != set(DOMAINS):
+        sys.exit(f"DOMAIN_TEXT nie zgadza się z config/taxonomy.json: {set(DOMAIN_TEXT) ^ set(DOMAINS)}")
+    return [{"key": k, "slug": DOMAINS[k]["slug"], "name": DOMAINS[k]["label"], **DOMAIN_TEXT[k], "reading": [], "sort": n}
+            for n, k in enumerate(DOMAINS)]
 
 
-def build_materials(innovations: list[dict]) -> list[dict]:
-    reports = {r["title"]: r for r in json.loads((SRC / "reports.json").read_text(encoding="utf-8"))}
+def build_materials(patterns: list[dict]) -> list[dict]:
     pubs = {p["url"]: p for p in json.loads((SRC / "publications.json").read_text(encoding="utf-8"))}
-    by_slug = {i["slug"]: i for i in innovations}
+    by_slug = {p["slug"]: p for p in patterns}
     out = []
     for n, m in enumerate(MATERIALS):
-        item = {"kind": m["kind"], "description": m["description"], "areas": m["areas"],
-                "language": m.get("language", "pl"), "sort": n, "published": True}
-        if m.get("report"):
-            r = reports[m["report"]]
-            item.update(title=r["title"], year=r["year"], url=r["url"], format=r["format"], size_bytes=r["size_bytes"])
-        elif m.get("video"):
-            i = by_slug[m["video"]]
-            item.update(title=m["title"], year=None, url=f"https://www.youtube.com/watch?v={i['video']['youtube_id']}",
-                        format="film", size_bytes=None, sign_language=i["video"]["sign_language"],
-                        captions=i["video"]["captions"], innovation_slug=i["slug"])
+        check_keys("domains", m["domains"], DOMAINS)
+        item = {"kind": m["kind"], "title": m["title"], "slug": slugify(m["title"])[:60], "description": m["description"],
+                "domains": m["domains"], "language": m.get("language", "pl"), "sort": n}
+        if m.get("video"):
+            p = by_slug[m["video"]]
+            item.update(year=None, url=p["video_url"], format="film", size_bytes=None, publisher="ROPS w Krakowie",
+                        sign_language=p["video"]["sign_language"], captions=p["video"]["captions"], pattern_slug=p["slug"])
         else:
-            p = pubs.get(m["url"])
-            size = p["size_bytes"] if p else 7787592  # Mapa Wyzwań: rozmiar z pobranego pliku
-            item.update(title=m["title"], year=m["year"], url=m["url"], format="PDF", size_bytes=size)
+            pub = pubs.get(m["url"])
+            item.update(year=m["year"], url=m["url"], format="PDF", size_bytes=pub["size_bytes"] if pub else None,
+                        publisher=m["publisher"])
         item["id"] = uid("material", item["url"])
         out.append(item)
     return out
@@ -305,77 +324,61 @@ def build_materials(innovations: list[dict]) -> list[dict]:
 
 def build_facts() -> list[dict]:
     facts = json.loads((SRC / "facts.json").read_text(encoding="utf-8"))
-    return [{**f, "id": uid("fakt", f["area"], f["quote"]), "published": True, "sort": n} for n, f in enumerate(facts)]
+    if any("domain" not in f for f in facts):
+        print("! out/knowledge/facts.json ma stary format (bez domain) — uruchom knowledge_facts.py; pomijam fakty", file=sys.stderr)
+        return []
+    check_keys("domains", [f["domain"] for f in facts], DOMAINS)
+    return [{**f, "id": uid("fakt", f["domain"], f["quote"]), "sort": n} for n, f in enumerate(facts)]
 
 
-# ── SQL dla Supabase (migracja 0010_knowledge.sql musi być już zastosowana) ──
-
-class Jsonb:
-    """Wartość do kolumny jsonb (lista napisów domyślnie idzie jako text[])."""
-    def __init__(self, value):
-        self.value = value
-
-
-def lit(v) -> str:
-    if isinstance(v, Jsonb):
-        return "'" + json.dumps(v.value, ensure_ascii=False).replace("'", "''") + "'::jsonb"
-    if v is None:
-        return "null"
-    if isinstance(v, bool):
-        return "true" if v else "false"
-    if isinstance(v, (int, float)):
-        return repr(v)
-    if isinstance(v, (dict, list)) and not (isinstance(v, list) and all(isinstance(x, str) for x in v)):
-        return "'" + json.dumps(v, ensure_ascii=False).replace("'", "''") + "'::jsonb"
-    if isinstance(v, list):
-        return "array[" + ",".join(lit(x) for x in v) + "]::text[]" if v else "'{}'::text[]"
-    return "'" + str(v).replace("'", "''") + "'"
-
-
-def upsert(table: str, key: str, row: dict) -> str:
-    cols = list(row)
-    sets = ", ".join(f"{c} = excluded.{c}" for c in cols if c != key)
-    return f"insert into {table} ({', '.join(cols)}) values ({', '.join(lit(row[c]) for c in cols)}) on conflict ({key}) do update set {sets};"
-
-
-def sql(areas, facts, materials, innovations) -> str:
-    lines = ["-- Wygenerowane przez data/knowledge_seed.py — nie edytuj ręcznie.", "begin;"]
-    for a in areas:
-        lines.append(upsert("areas", "key", {k: a[k] for k in ("key", "slug", "name", "icon", "lead", "definition", "sort", "published")}
-                            | {"challenges": Jsonb(a["challenges"]), "challenges_source": a["challenges_source"], "reading": Jsonb(a["reading"])}))
+def sql(domains, facts, materials, patterns) -> str:
+    lines = ["-- Wygenerowane przez data/knowledge_seed.py — nie edytuj ręcznie.",
+             # Fakty liczymy od nowa z BDL: stare (np. z innego roku danych) nie mogą zostać obok nowych.
+             "delete from facts;"]
+    for d in domains:
+        lines.append(upsert("domains", "key", {
+            "key": d["key"], "slug": d["slug"], "name": d["name"], "icon": d["icon"], "lead": d["lead"],
+            "definition": d["definition"], "challenges": Jsonb(d["challenges"]), "reading": Jsonb(d["reading"]),
+            "sort": d["sort"], "published": True}))
+        lines.append(index_row("domain", uid("domain", d["key"]), d["name"], f"{d['lead']} {d['definition']}",
+                               [d["name"].lower(), *DOMAINS[d["key"]]["description"].split(", ")], domains=[d["key"]]))
     for f in facts:
         lines.append(upsert("facts", "id", {
-            "id": f["id"], "area_key": f["area"], "value": f["value"], "unit": f["unit"], "display_value": f["display_value"],
+            "id": f["id"], "domain_key": f["domain"], "value": f["value"], "unit": f["unit"], "display_value": f["display_value"],
             "sentence": f["sentence"], "data_year": f["data_year"], "source_title": f["source_title"],
             "source_publisher": f["source_publisher"], "source_url": f["source_url"], "source_year": f["source_year"],
-            "source_page": f["source_page"], "quote": f["quote"], "is_example": f["is_example"], "sort": f["sort"], "published": True}))
+            "source_page": f["source_page"], "quote": f["quote"], "is_example": f["is_example"], "sort": f["sort"],
+            "published": True}))
     for m in materials:
-        lines.append(upsert("knowledge_materials", "id", {k: m.get(k) for k in (
-            "id", "kind", "title", "description", "url", "format", "size_bytes", "language", "areas", "year", "sort", "published")}))
-    for i in innovations:
-        lines.append(upsert("innovations", "slug", {
-            "id": i["id"], "slug": i["slug"], "title": i["title"], "category": i["groups"][0], "target_groups": i["groups"],
-            "areas": i["areas"], "areas_auto": True, "innovation_type": i["innovation_type"], "type_auto": True,
-            "problem": i["problem"], "solution": i["solution"], "evidence": i["evidence"], "who_can_use": i["who_can_use"],
-            "beneficiaries": i["beneficiaries"], "etr_summary": i["etr_summary"], "source_url": i["source_url"],
-            "pdf_url": i["pdf_url"], "video_url": i["video"] and f"https://www.youtube.com/watch?v={i['video']['youtube_id']}",
-            "video": i["video"], "materials_zip": i["materials_zip"], "license_url": i["license_url"],
-            "dissemination": i["dissemination"], "corpus": "biblioteka", "published": True, "synthetic": False}))
-    lines.append("commit;")
+        lines.append(upsert("materials", "id", {k: m.get(k) for k in (
+            "id", "slug", "kind", "title", "description", "url", "format", "size_bytes", "language", "publisher",
+            "domains", "year", "sort")} | {"published": True}))
+        lines.append(index_row("material", m["id"], m["title"], m["description"],
+                               [w for w in re.findall(r"\w+", m["title"].lower()) if len(w) > 4], domains=m["domains"]))
+    for p in patterns:
+        lines.append(upsert("patterns", "slug", {k: p[k] for k in (
+            "id", "slug", "title", "category", "domains", "cross_topics", "institution_types", "domains_auto",
+            "innovation_type", "problem", "solution", "evidence", "who_can_use", "beneficiaries", "etr_summary",
+            "video_url", "video", "pdf_url", "materials_zip", "license_url", "source_url", "source_name", "dissemination")}
+            | {"published": True, "synthetic": False}))
+        lines.append(index_row("pattern", p["id"], p["title"], f"{p['problem'] or ''} {p['solution'] or ''}".strip(),
+                               p["lemmas"], domains=p["domains"], tags=p["cross_topics"]))
     return "\n".join(lines) + "\n"
 
 
 def main() -> None:
-    personas = json.loads((SRC / "personas.json").read_text(encoding="utf-8"))
-    innovations = build_innovations()
-    areas = build_areas(personas)
+    patterns = build_patterns()
+    domains = build_domains()
     facts = build_facts()
-    materials = build_materials(innovations)
-    for name, data in [("areas", areas), ("facts", facts), ("materials", materials),
-                       ("innovations", innovations), ("personas", personas)]:
+    materials = build_materials(patterns)
+    for name, data in [("domains", domains), ("facts", facts), ("materials", materials), ("patterns", patterns)]:
         write_json(DEST / f"{name}.json", data)
-    SQL.write_text(sql(areas, facts, materials, innovations), encoding="utf-8")
-    print(f"obszary {len(areas)}, fakty {len(facts)}, materiały {len(materials)}, innowacje {len(innovations)}, persony {len(personas)}")
+    SEED.mkdir(parents=True, exist_ok=True)
+    (SEED / "20_knowledge.sql").write_text(sql(domains, facts, materials, patterns), encoding="utf-8")
+    print(f"dziedziny {len(domains)}, fakty {len(facts)}, materiały {len(materials)}, rozwiązania {len(patterns)}")
+    print("Rozwiązania po dziedzinach:", dict(Counter(d for p in patterns for d in p["domains"])))
+    print("Typy instytucji:", dict(Counter(t for p in patterns for t in p["institution_types"])))
+    print("Mniej niż 3 słowa kluczowe:", [p["slug"] for p in patterns if len(p["lemmas"]) < 3])
 
 
 if __name__ == "__main__":
