@@ -47,9 +47,9 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
         )}
         <dl className="grid max-w-[48rem] gap-x-6 gap-y-3 text-lg sm:grid-cols-[auto_1fr]">
           {i.municipality && (<><dt className="font-bold">Gdzie</dt><dd>gmina {i.municipality}{i.county && `, powiat ${i.county.replace(/^m\. /, "")}`}</dd></>)}
-          {i.institution_type && (<><dt className="font-bold">Kto prowadzi</dt><dd>{i.institution_name ?? institutionLabel(i.institution_type)}</dd></>)}
+          {(i.institution_name || i.institution_type) && (<><dt className="font-bold">Kto prowadzi</dt><dd>{i.institution_name ?? institutionLabel(i.institution_type!)}</dd></>)}
           {creators.length > 0 && (
-            <><dt className="font-bold">Twórcy</dt><dd>{creators.map((c) => c.display_name ?? creatorRoleLabel(c.role)).join(", ")}</dd></>
+            <><dt className="font-bold">Twórcy</dt><dd>{creatorNames(creators)}</dd></>
           )}
           {i.innovation_kind && (<><dt className="font-bold">Typ innowacji</dt><dd>{innovationKindLabel(i.innovation_kind)}</dd></>)}
           {i.sectors.length > 0 && (<><dt className="font-bold">Sektory PCI</dt><dd>{i.sectors.map(sectorLabel).join(", ")}</dd></>)}
@@ -97,4 +97,12 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
       </section>
     </article>
   );
+}
+
+/** Podpisy za zgodą, a role bez podpisu zbite z liczbą: „Uczeń ×3” zamiast „Uczeń, Uczeń, Uczeń”. */
+function creatorNames(creators: PublicCreator[]): string {
+  const named = creators.filter((c) => c.display_name).map((c) => c.display_name as string);
+  const roles = new Map<string, number>();
+  for (const c of creators) if (!c.display_name) roles.set(c.role, (roles.get(c.role) ?? 0) + 1);
+  return [...named, ...[...roles].map(([role, n]) => (n > 1 ? `${creatorRoleLabel(role)} ×${n}` : creatorRoleLabel(role)))].join(", ");
 }

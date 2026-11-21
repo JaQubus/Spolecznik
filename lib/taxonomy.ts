@@ -93,11 +93,11 @@ export const ipStatusLabel = (k: string) => IP_STATUSES[k as IpStatusKey]?.label
 export const creatorRoleLabel = (k: string) => CREATOR_ROLES[k as CreatorRoleKey]?.label ?? k;
 export const partnerKindLabel = (k: string) => PARTNER_KINDS[k as PartnerKindKey]?.label ?? k;
 export const partnerSupportLabel = (k: string) => PARTNER_SUPPORT[k as PartnerSupportKey]?.label ?? k;
-const TRL_STAGE = data.trlStage as unknown as Record<"pomysl" | "pilotaz" | "dziala", [number, number]>;
-/** Etap, który odpowiada poziomowi TRL (config/taxonomy.json → trlStage). */
+/** Przedziały TRL etapów (config/taxonomy.json → trlStage), bez klucza „_opis”. */
+const TRL_RANGES = Object.entries(data.trlStage).filter((e): e is [StageKey, [number, number]] => Array.isArray(e[1]));
+/** Etap, który odpowiada poziomowi TRL; ten sam przedział daje data/common.py (stage_for_trl). */
 export function stageForTrl(trl: number): StageKey {
-  const ranges = Object.entries(TRL_STAGE).filter(([, v]) => Array.isArray(v)) as [StageKey, [number, number]][]; // bez „_opis”
-  const hit = ranges.find(([, [from, to]]) => trl >= from && trl <= to);
+  const hit = TRL_RANGES.find(([, [from, to]]) => trl >= from && trl <= to);
   return hit?.[0] ?? (trl > TRL_MAX ? "dziala" : "pomysl");
 }
 

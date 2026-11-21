@@ -111,7 +111,12 @@ describe("karta inicjatywy", () => {
   test("schemat przyjmuje kartę z modelem PCI i odrzuca TRL spoza 1–9", () => {
     InitiativeCard.parse(card);
     assert.throws(() => InitiativeCard.parse({ ...card, trl: 10 }));
-    assert.throws(() => InitiativeCard.parse({ ...card, sectors: [] }));
+  });
+
+  test("normalizeCard naprawia sektory i role zamiast odrzucać kartę", () => {
+    assert.deepEqual(normalizeCard({ ...card, sectors: [] }).sectors, ["inne"]);
+    assert.deepEqual(normalizeCard({ ...card, sectors: ["ict", "motoryzacja", "jakosc_zycia"] }).sectors, ["ict", "motoryzacja"]);
+    assert.deepEqual(normalizeCard({ ...card, creatorRoles: ["uczen", "uczen", "nauczyciel", "student", "urzednik"] }).creatorRoles.length, 3);
   });
 
   test("normalizeCard zostawia TRL tylko innowacji technologicznej", () => {

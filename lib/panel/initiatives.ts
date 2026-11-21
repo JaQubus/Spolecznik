@@ -40,6 +40,7 @@ export const INITIATIVE_COLUMNS =
   "innovation_kind, sectors, trl, ip_status, radar, institutions(name, slug), published, duplicate_of, nominations_count, raw_text, teryt, assigned_mentor, synthetic, created_at, municipalities(name, county)";
 
 export type CreatorRow = {
+  id: string;
   role: string;
   display_name: string | null;
   under_18: boolean;
@@ -51,7 +52,7 @@ export type CreatorRow = {
 export async function initiativeCreators(initiativeId: string): Promise<CreatorRow[]> {
   const { data, error } = await createAdminClient()
     .from("initiative_creators")
-    .select("sort, creators(role, display_name, under_18, guardian_consent, show_publicly)")
+    .select("sort, creators(id, role, display_name, under_18, guardian_consent, show_publicly)")
     .eq("initiative_id", initiativeId)
     .order("sort");
   if (error) throw error;
