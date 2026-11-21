@@ -26,7 +26,6 @@ const ERRORS: Record<string, string> = {
 const ROLE_LABELS: Record<string, string> = {
   author: "autor",
   institution: "instytucja",
-  mentor: "mentor",
   admin: `administrator ${org.short}`,
 };
 
@@ -57,13 +56,6 @@ export default async function Page(props: PageProps<"/logowanie">) {
               </Link>
             </p>
           )}
-          {viewer.role === "mentor" && (
-            <p>
-              <Link href="/mentor" className="text-lg font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
-                Przejdź do inicjatyw, przy których zespół {org.short} prosi Cię o pomoc
-              </Link>
-            </p>
-          )}
           <form action={logout}>
             <Button type="submit" variant="outline"><ArrowRightStartOnRectangleIcon aria-hidden />Wyloguj się</Button>
           </form>
@@ -71,7 +63,7 @@ export default async function Page(props: PageProps<"/logowanie">) {
       ) : (
         <>
           <p className="text-lg">
-            Konto jest dla mentorów, instytucji i zespołu {org.short}. Żeby zgłosić albo wskazać inicjatywę, sprawdzić
+            Konto jest dla instytucji i zespołu {org.short}. Żeby zgłosić albo wskazać inicjatywę, sprawdzić
             status czy przeglądać bazę, nie musisz się logować.
           </p>
 
@@ -110,15 +102,12 @@ export default async function Page(props: PageProps<"/logowanie">) {
                 <Button type="submit" name="rola" value="institution" variant="outline">
                   <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako opiekun instytucji
                 </Button>
-                <Button type="submit" name="rola" value="mentor" variant="outline">
-                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako mentor
-                </Button>
                 <Button type="submit" name="rola" value="author" variant="outline">
                   <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako autor
                 </Button>
               </form>
               <FieldHint>
-                Opiekun instytucji widzi w Panelu tylko innowacje swojej instytucji. Mentor widzi tylko inicjatywy, które zespół {org.short} do niego przypisał. Konto autora pozwala sprawdzić, że
+                Opiekun instytucji widzi w Panelu tylko innowacje swojej instytucji. Konto autora pozwala sprawdzić, że
                 Panel jest dla niego niedostępny.
               </FieldHint>
             </section>

@@ -7,7 +7,7 @@ const linkClass = "inline-flex min-h-12 items-center gap-2 font-bold underline d
 
 /**
  * Strona startowa: pytanie z briefu kampanii i dwie drogi — zgłoszenie własnej inicjatywy (jedyny zielony
- * przycisk) albo wskazanie cudzej. „Szukam rozwiązania” i wiedza są drugorzędne, jako zwykłe linki.
+ * przycisk) albo wskazanie cudzej. „Szukam rozwiązania” i przeglądanie innowacji są drugorzędne, jako zwykłe linki.
  */
 export default function Home() {
   return (
@@ -52,12 +52,12 @@ export default function Home() {
       <ul className="mt-10 space-y-1">
         <li>
           <Link href="/szukam" className={linkClass}>
-            Szukasz rozwiązania dla swojej szkoły, uczelni albo urzędu? Opisz problem <ArrowRightIcon aria-hidden className="size-5" />
+            Szukasz innowacji dla swojej szkoły, uczelni albo urzędu? Opisz problem <ArrowRightIcon aria-hidden className="size-5" />
           </Link>
         </li>
         <li>
-          <Link href="/wiedza" className={linkClass}>
-            Sprawdzone rozwiązania z Polski i wiedza o regionie <ArrowRightIcon aria-hidden className="size-5" />
+          <Link href="/innowacje" className={linkClass}>
+            Przeglądaj innowacje z regionu <ArrowRightIcon aria-hidden className="size-5" />
           </Link>
         </li>
         <li>

@@ -112,8 +112,7 @@ export function IdeaWorkshop({
           </div>
           <p className="max-w-2xl">
             Zespół {org.short} przeczyta pomysł i odpisze w{" "}
-            <Link href={`/rozmowy?kod=${result.initiative.statusCode}`} className={linkClass}>rozmowie o zgłoszeniu</Link>. Może też
-            zaprosić do niej mentora.
+            <Link href={`/rozmowy?kod=${result.initiative.statusCode}`} className={linkClass}>rozmowie o zgłoszeniu</Link>.
           </p>
         </div>
         {programs.length > 0 && <ApplicationDraft initiativeId={result.initiative.id} programs={programs} />}

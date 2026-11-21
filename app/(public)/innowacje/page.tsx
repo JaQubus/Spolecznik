@@ -45,8 +45,7 @@ export default async function Page(props: PageProps<"/innowacje">) {
       <header className="space-y-3">
         <h1 className="text-4xl font-bold">Innowacje {region.locative}</h1>
         <p className="max-w-2xl text-xl">
-          Innowacje ze szkół, uczelni, samorządów i instytucji publicznych, które zespół zweryfikował. Każdą można przenieść do siebie,
-          wdrożyć albo sfinansować.
+          Innowacje ze szkół, uczelni, samorządów i instytucji publicznych, które zespół zweryfikował. Każdą można wdrożyć albo sfinansować.
         </p>
         <p>
           <Link href="/szukam-innowacji" className={`inline-flex min-h-12 items-center font-bold ${linkClass}`}>Szukasz innowacji do wdrożenia lub finansowania?</Link>

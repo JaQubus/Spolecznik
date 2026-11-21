@@ -235,7 +235,7 @@ export function IntakeFlow({
             <Label htmlFor="typ-instytucji">{mode === "challenge" ? "Typ Twojej instytucji" : "Gdzie powstała inicjatywa"}</Label>
             <FieldHint id="typ-instytucji-pomoc">
               {mode === "challenge"
-                ? "Nieobowiązkowo. Pomoże znaleźć rozwiązania z podobnych instytucji."
+                ? "Nieobowiązkowo. Pomoże znaleźć innowacje z podobnych instytucji."
                 : "Typ instytucji. Nieobowiązkowo — jeśli nie wybierzesz, Radar rozpozna go z opisu."}
             </FieldHint>
             <NativeSelect
@@ -278,11 +278,11 @@ export function IntakeFlow({
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="gmina">Gmina</Label>
+            <Label htmlFor="gmina">Gmina, w której działa instytucja</Label>
             <FieldHint id="gmina-pomoc">
               {mode === "challenge"
-                ? "Nieobowiązkowo. Pomoże dopasować rozwiązania i partnerów z okolicy."
-                : "Gdzie działa inicjatywa. Pokażemy ją na mapie i poszukamy partnerów w pobliżu. Nieobowiązkowo."}
+                ? "Nieobowiązkowo. Pomoże dopasować innowacje i partnerów z okolicy."
+                : "Tylko miejsce, nie dane osobowe. Pokażemy inicjatywę na mapie powiatów i poszukamy partnerów w pobliżu. Nieobowiązkowo."}
             </FieldHint>
             <div className="max-w-sm">
               <GminaField id="gmina" aria-describedby="gmina-pomoc" options={gminy} value={gmina} onValueChange={setGmina} />

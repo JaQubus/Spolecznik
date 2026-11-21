@@ -39,7 +39,7 @@ export type InstitutionInnovationRow = InstitutionInnovation & {
 
 /** Opublikowane innowacje jednej instytucji z etapem lejka (public_initiatives.funnel_stage, 0010). */
 export async function listInstitutionInnovations(institutionId: string): Promise<InstitutionInnovationRow[]> {
-  const columns = "id, slug, title, summary, innovation_kind, trl, sectors, signal, adoptions_count, institution_id";
+  const columns = "id, slug, title, summary, innovation_kind, trl, sectors, signal, institution_id";
   const supabase = createPublicClient();
   const withStage = await supabase
     .from("public_initiatives").select(`${columns}, funnel_stage`).eq("institution_id", institutionId)

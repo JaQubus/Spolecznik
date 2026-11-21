@@ -14,10 +14,6 @@ const LINKS = [
   { href: "/panel/instytucje", label: "Instytucje" },
   { href: "/panel/zrodla", label: "Źródła" },
   { href: "/panel/programy", label: "Programy" },
-  { href: "/panel/adopcje", label: "Adopcje" },
-  { href: "/panel/przeniesienia", label: "Przeniesienia" },
-  { href: "/panel/trendy", label: "Trendy" },
-  { href: "/panel/wiedza", label: "Wiedza" },
 ] as const;
 
 /**

@@ -1,7 +1,7 @@
 import { anonymize } from "@/lib/pii";
 import { rateLimit } from "@/lib/rate-limit";
 import { STATUS_CODE, ThreadPostRequest } from "@/lib/schemas";
-import { authorView, authorizedThread, initiativeThread, mentorName, postAuthorMessage, THREAD_NOT_FOUND } from "@/lib/threads";
+import { authorView, authorizedThread, initiativeThread, postAuthorMessage, THREAD_NOT_FOUND } from "@/lib/threads";
 
 export async function GET(request: Request) {
   const limited = rateLimit(request, "threads-read", 60);
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return Response.json({ error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane" }, { status: 400 });
   }
-  const { code, body, mentorId } = parsed.data;
+  const { code, body } = parsed.data;
 
   try {
     const thread = await authorizedThread(code);
@@ -37,12 +37,10 @@ export async function POST(request: Request) {
     if (thread.status === "archived") {
       return Response.json({ error: "To zgłoszenie jest zamknięte. Jeśli inicjatywa ruszyła na nowo, zgłoś ją jeszcze raz" }, { status: 409 });
     }
-    // Mentor z linku musi istnieć; przypisanego w Panelu autor nie zmienia.
-    const chosen = mentorId && !thread.mentor && (await mentorName(mentorId)) ? mentorId : null;
     const clean = anonymize(body);
     // Osobny, ciaśniejszy limit na AI: po jego przekroczeniu wiadomość i tak trafia do zespołu, tylko bez asystenta.
     const assistant = rateLimit(request, "threads-ai", 5) === null;
-    const { ai } = await postAuthorMessage(thread, clean.text, { mentorId: chosen, assistant });
+    const { ai } = await postAuthorMessage(thread, clean.text, { assistant });
     const updated = await initiativeThread({ code });
     return Response.json({ ...authorView(updated!), assistant: ai, removedPersonalData: clean.found });
   } catch (e) {

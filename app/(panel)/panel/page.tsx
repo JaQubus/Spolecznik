@@ -7,7 +7,6 @@ import { viewerClient } from "@/lib/auth";
 import { requireStaff } from "@/lib/panel/access";
 import { PANEL_FILTERS as FILTERS } from "@/lib/panel/filters";
 import { statusLabel } from "@/lib/initiatives/status";
-import { getClusters } from "@/lib/knowledge/clusters";
 import { effectiveSignal, INITIATIVE_COLUMNS, initiativeTriage, type InitiativeRow, type Triage } from "@/lib/panel/initiatives";
 import { anonymize } from "@/lib/pii";
 import { formatDate, plural } from "@/lib/pl";
@@ -26,14 +25,11 @@ const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2"
 const chipLink =
   "inline-flex min-h-12 items-center rounded-full border border-border-strong px-4 text-base hover:border-foreground aria-[current=page]:border-foreground aria-[current=page]:bg-foreground aria-[current=page]:font-bold aria-[current=page]:text-background";
 
-/** Radar zespołu: zgłoszenia i wskazania od najsilniejszego sygnału, z podpowiedziami (duplikaty, mentor). */
+/** Radar zespołu: zgłoszenia i wskazania od najsilniejszego sygnału, z podpowiedziami (duplikaty). */
 export default async function Page(props: PageProps<"/panel">) {
   const { viewer, scope } = await requireStaff();
   const params = await props.searchParams;
-  // Grupa podobnych inicjatyw z /panel/trendy: domyślnie wszystkie statusy, bo grupa obejmuje też zamknięte.
-  const groupKey = typeof params.grupa === "string" && /^[0-9a-f]{10}$/.test(params.grupa) ? params.grupa : null;
-  const group = groupKey ? (await getClusters()).clusters.find((c) => c.key === groupKey) ?? null : null;
-  const filter = FILTERS.find((f) => f.key === params.status) ?? (groupKey ? FILTERS.find((f) => f.key === "wszystkie")! : FILTERS[0]);
+  const filter = FILTERS.find((f) => f.key === params.status) ?? FILTERS[0];
   const page = Math.max(1, Number(params.strona) || 1);
 
   // Odczyt sesją użytkownika: RLS (is_admin) pilnuje dostępu drugi raz (konto testowe: service role, lib/auth.ts).
@@ -46,7 +42,6 @@ export default async function Page(props: PageProps<"/panel">) {
     .order("created_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (filter.statuses) query = query.in("status", filter.statuses);
-  if (groupKey) query = query.in("id", group?.ids ?? []);
   if (filter.waiting) query = query.in("id", [...(await waitingOrEmpty()).keys()]);
   const { data, count, error } = await query;
   if (error) throw error;
@@ -55,29 +50,18 @@ export default async function Page(props: PageProps<"/panel">) {
   const [triage, waiting] = await Promise.all([initiativeTriage(rows), waitingOrEmpty(rows.map((n) => n.id))]);
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const groupParam = groupKey ? `&grupa=${groupKey}` : "";
-  const href = (p: number) => `/panel?status=${filter.key}${groupParam}${p > 1 ? `&strona=${p}` : ""}`;
+  const href = (p: number) => `/panel?status=${filter.key}${p > 1 ? `&strona=${p}` : ""}`;
 
   return (
     <section className="space-y-6">
       <h1 className="text-3xl font-bold">Radar{scope.kind === "institution" && ": innowacje Twojej instytucji"}</h1>
       {params.usunieto === "inicjatywa" && <Alert tone="success" title="Usunięto inicjatywę" />}
-      {groupKey && (
-        <p className="text-lg">
-          {group
-            ? <>Grupa podobnych inicjatyw: <strong>{group.label ?? group.keywords.join(", ")}</strong>. </>
-            : "Tej grupy już nie ma: inicjatywy zmieniły się od wejścia na Trendy. "}
-          <Link href={`/panel?status=${filter.key}`} className={linkClass}>Pokaż wszystkie</Link>
-          {" · "}
-          <Link href="/panel/trendy#grupy" className={linkClass}>Wróć do grup</Link>
-        </p>
-      )}
 
       <nav aria-label="Filtruj inicjatywy">
         <ul className="flex flex-wrap gap-2">
           {FILTERS.map((f) => (
             <li key={f.key}>
-              <Link href={`/panel?status=${f.key}${groupParam}`} aria-current={f.key === filter.key ? "page" : undefined} className={chipLink}>
+              <Link href={`/panel?status=${f.key}`} aria-current={f.key === filter.key ? "page" : undefined} className={chipLink}>
                 {f.label}
               </Link>
             </li>
@@ -142,7 +126,6 @@ function InitiativeItem({ row: n, triage, waiting }: { row: InitiativeRow; triag
         {pii && <li><Badge variant="warning"><ShieldExclamationIcon aria-hidden className="size-4" /> Może zawierać dane osobowe</Badge></li>}
         {dups > 0 && <li><Badge variant="warning"><DocumentDuplicateIcon aria-hidden className="size-4" /> Możliwy duplikat ({dups})</Badge></li>}
       </ul>
-      {triage?.mentorName && <p className="text-base">Sugerowany mentor: <strong>{triage.mentorName}</strong></p>}
     </li>
   );
 }

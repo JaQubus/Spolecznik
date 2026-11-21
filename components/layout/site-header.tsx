@@ -17,7 +17,6 @@ const NAV = [
   { href: "/szukam", label: "Szukam rozwiązania" },
   { href: "/innowacje", label: "Innowacje" },
   { href: "/szukam-innowacji", label: "Szukam innowacji" },
-  { href: "/wiedza", label: "Wiedza" },
   { href: "/rozmowy", label: "Rozmowy" },
   { href: "/status", label: "Sprawdź status" },
 ];

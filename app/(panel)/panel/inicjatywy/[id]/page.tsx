@@ -17,13 +17,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { viewerClient } from "@/lib/auth";
 import { requireStaff } from "@/lib/panel/access";
 import { statusLabel, STATUS_LABELS } from "@/lib/initiatives/status";
-import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
+import { initiativeHref } from "@/lib/knowledge/hrefs";
 import {
   DUPLICATE_MIN, effectiveSignal, INITIATIVE_COLUMNS, initiativeCreators, initiativeHistory, initiativeNeighbours, submissionLabel,
   type AuditRow, type CreatorRow, type InitiativeRow,
 } from "@/lib/panel/initiatives";
 import { initiativeContacts, type ContactRequest } from "@/lib/contacts";
-import { panelPartnerships, type PanelPartnership } from "@/lib/partnerships";
 import { initiativePathwaySource, pathwaysFor, type PathwaysView } from "@/lib/pathways";
 import { anonymize } from "@/lib/pii";
 import { formatDate } from "@/lib/pl";
@@ -41,9 +40,8 @@ import { issueClaimLink } from "../../zrodla/actions";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
 import { assignPartner, mergeDuplicate, unmergeDuplicate } from "../../radar-actions";
 import { KeeperView } from "./keeper-view";
-import { assignMentor, overrideSignal, reassessRadar, removePersonalData, setCreatorConsent, setPublished, updateInitiativeStatus } from "../../actions";
+import { overrideSignal, reassessRadar, removePersonalData, setCreatorConsent, setPublished, updateInitiativeStatus } from "../../actions";
 import { readAssessment } from "@/lib/radar/score";
-import { PartnershipSection } from "../../partnership-section";
 import { proposeContact, recordPartnerAnswer, regenerateNarrative } from "../../pathway-actions";
 import { ThreadSection } from "../../thread-section";
 import { panelTitle } from "@/lib/brand";
@@ -67,23 +65,16 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
   if (scope.kind === "institution") return <KeeperView row={row} />;
 
   const admin = createAdminClient();
-  const [history, mentors, neighbours, matches, assigned, thread, partnerships, creators] = await Promise.all([
+  const [history, neighbours, thread, creators] = await Promise.all([
     initiativeHistory(id),
-    initiativeNeighbours(row, "mentor", 3),
     initiativeNeighbours(row, "initiative", 5),
-    supabase.from("matches").select("target_id, target_kind, fit, why").eq("initiative_id", id).order("fit", { ascending: false }),
-    row.assigned_mentor
-      ? admin.from("mentors").select("name").eq("id", row.assigned_mentor).maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
     initiativeThread({ id }).catch((e) => { console.error("[panel] rozmowa:", e); return null; }),
-    panelPartnerships(id).catch((e) => { console.error("[panel] partnerstwa:", e); return [] as PanelPartnership[]; }),
     initiativeCreators(id).catch((e) => { console.error("[panel] twórcy:", e); return [] as CreatorRow[]; }),
   ]);
   // Wykryta w źródłach (7/10): rekord źródłowy i podobne rekordy z innych źródeł (sprawdzanie dublowania).
   const sourceRecord = await sourceRecordOf(id).catch((e) => { console.error("[panel] źródło:", e); return null as SourceRecordRow | null; });
   const sameInSources = await similarSources(row.card.keywords ?? [], sourceRecord?.id)
     .catch((e) => { console.error("[panel] podobne w źródłach:", e); return [] as SimilarSource[]; });
-  if (matches.error) throw matches.error;
   // Ścieżki, partnerzy, prośby o kontakt i etap lejka (6/10). Baza sprzed 0009 nie ma tych kolumn — wtedy sekcja znika.
   const [pathways, contacts, funnel] = await Promise.all([
     initiativePathwaySource(id).then((src) => (src ? pathwaysFor(src) : null))
@@ -106,24 +97,17 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
   ]);
 
   const duplicateHits = neighbours.filter((n) => n.similarity >= DUPLICATE_MIN);
-  const patternIds = (matches.data ?? []).filter((m) => m.target_kind === "pattern").map((m) => m.target_id as string);
-  const [duplicates, patterns] = await Promise.all([
+  const [duplicates] = await Promise.all([
     duplicateHits.length
       ? supabase.from("initiatives").select("id, status_code, status, municipalities(name)").in("id", duplicateHits.map((d) => d.ref_id))
       : Promise.resolve({ data: [], error: null }),
-    patternIds.length ? supabase.from("patterns").select("id, title, slug").in("id", patternIds) : Promise.resolve({ data: [], error: null }),
   ]);
   const duplicateById = new Map((duplicates.data ?? []).map((d) => [d.id as string, d as unknown as { status_code: string; status: string; municipalities: { name: string } | null }]));
-  const patternById = new Map((patterns.data ?? []).map((p) => [p.id as string, { title: p.title as string, href: patternHref((p.slug as string | null) ?? (p.id as string)) }]));
 
   const card = row.card;
   const pii = !!row.raw_text && anonymize(row.raw_text).found;
-  const assignedName = assigned.data?.name as string | undefined;
   const signal = effectiveSignal(row);
   const radar = readAssessment(row.radar);
-  // Jeden zielony przycisk na widok: przypisanie mentora, a gdy nie ma kogo przypisać — zapis statusu.
-  const canAssign = !row.assigned_mentor && mentors.length > 0;
-
   return (
     <article className="max-w-4xl space-y-10">
       <div className="space-y-3">
@@ -379,44 +363,13 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
         )}
       </section>
 
-      <section aria-labelledby="mentor" className="space-y-3">
-        <h2 id="mentor" className="text-2xl font-bold">Mentor</h2>
-        {assignedName && <p>Przypisany mentor: <strong>{assignedName}</strong></p>}
-        {mentors.length === 0 ? (
-          <p className="text-muted-foreground">Brak sugestii — słowa kluczowe inicjatywy nie pasują do żadnego mentora.</p>
-        ) : (
-          <ul className="border-t">
-            {mentors.map((m, i) => (
-              <li key={m.ref_id} className="flex flex-wrap items-center justify-between gap-3 border-b py-4">
-                <div className="min-w-0 flex-1 basis-64">
-                  <p className="font-bold">{m.title}{i === 0 && " (najlepiej pasuje)"}</p>
-                  <p className="line-clamp-2 text-muted-foreground">{m.body}</p>
-                  <p className="text-base text-muted-foreground">Zgodność słów kluczowych {Math.round(m.similarity * 100)} na 100</p>
-                </div>
-                {m.ref_id !== row.assigned_mentor && (
-                  <ActionForm action={assignMentor} className="space-y-2">
-                    <input type="hidden" name="initiativeId" value={row.id} />
-                    <input type="hidden" name="mentorId" value={m.ref_id} />
-                    <SubmitButton variant={canAssign && i === 0 ? "default" : "outline"} size={canAssign && i === 0 ? "default" : "sm"} aria-label={`Przypisz mentora: ${m.title}`}>
-                      Przypisz mentora
-                    </SubmitButton>
-                  </ActionForm>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
       <ThreadSection id={row.id} thread={thread} closed={row.status === "archived"} />
-
-      <PartnershipSection partnerships={partnerships} initiativeId={row.id} />
 
       <section aria-labelledby="publikacja" className="space-y-3">
         <h2 id="publikacja" className="text-2xl font-bold">Publikacja</h2>
         <p className="max-w-[68ch]">
           {row.published
-            ? "Inicjatywa jest w publicznej bazie, w API i w „Przenieś do siebie”."
+            ? "Inicjatywa jest w publicznej bazie, i w API."
             : "Inicjatywa jest prywatna: widzą ją tylko autor i zespół. Opublikuj ją po weryfikacji."}
         </p>
         <ActionForm action={setPublished}>
@@ -444,7 +397,7 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
             </FieldHint>
             <Textarea id="note" name="note" maxLength={1000} aria-describedby="note-pomoc" className="max-w-xl min-h-24" />
           </div>
-          <SubmitButton variant={canAssign ? "outline" : "default"}>Zapisz status</SubmitButton>
+          <SubmitButton>Zapisz status</SubmitButton>
         </ActionForm>
       </section>
 
@@ -519,26 +472,6 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
         </section>
       )}
 
-      <section aria-labelledby="inspiracje" className="space-y-3">
-        <h2 id="inspiracje" className="text-2xl font-bold">Rozwiązania pokazane autorowi</h2>
-        {(matches.data ?? []).length === 0 ? (
-          <p className="text-muted-foreground">Brak dopasowanych sprawdzonych rozwiązań.</p>
-        ) : (
-          <ul className="border-t">
-            {(matches.data ?? []).map((m) => {
-              const p = patternById.get(m.target_id as string);
-              return (
-                <li key={m.target_id as string} className="grid gap-1 border-b py-4">
-                  <p className="font-bold">{p ? <Link href={p.href} className={linkClass}>{p.title}</Link> : "Pozycja usunięta"}</p>
-                  <p className="text-base text-muted-foreground">Dopasowanie {m.fit} na 100</p>
-                  {m.why && <p>{m.why}</p>}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-
       <section aria-labelledby="historia" className="space-y-3">
         <h2 id="historia" className="text-2xl font-bold">Historia zmian</h2>
         {history.length === 0 ? (
@@ -562,7 +495,7 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
           label={`inicjatywę ${row.status_code}`}
           consequence={
             <>
-              Znikną też rozmowa, dopasowania, adopcje i powiadomienia, a kod{" "}
+              Znikną też rozmowa, dopasowania i powiadomienia, a kod{" "}
               <span className="font-mono tracking-wider">{row.status_code}</span> przestanie działać. Używaj do zgłoszeń
               testowych i spamu — prawdziwe zgłoszenie lepiej zamknąć.
             </>
@@ -593,7 +526,6 @@ function describeChange(h: AuditRow): string {
     case "initiative.note": return `Wiadomość dla autora${note}`;
     case "initiative.publish": return "Opublikowano";
     case "initiative.unpublish": return "Ukryto z publicznej bazy";
-    case "initiative.assign_mentor": return `Przypisano mentora${note}`;
     case "initiative.radar": return `Nowa ocena radaru: sygnał ${d.from ?? "brak"} → ${d.to}`;
     case "initiative.pathways": return "Nowe uzasadnienie ścieżek od AI";
     case "initiative.contact_proposed": return `Zespół zaproponował kontakt${d.partner ? ` z: ${d.partner}` : ""}${d.partnerAgreed ? " (partner się zgodził)" : ""}`;

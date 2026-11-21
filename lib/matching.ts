@@ -1,13 +1,12 @@
 import "server-only";
 import { rerank, type Candidate } from "./llm";
-import { RELATED_MIN_SIMILARITY, type Match, type MentorHit, type ProgramHit, type RerankItem, type SourceKind } from "./schemas";
+import { RELATED_MIN_SIMILARITY, type Match, type ProgramHit, type RerankItem, type SourceKind } from "./schemas";
 import { keywordSearch } from "./search";
 import { contentStems, stem, words } from "./stems";
 import { createAdminClient } from "./supabase/admin";
 
 /**
- * Wspólne kroki dopasowania dla „Szukam rozwiązania” (lib/challenge-search.ts) i inspiracji przy zgłoszeniu
- * inicjatywy (lib/initiatives/create.ts): kandydaci po PROBLEMIE → rerank LLM → siatka bezpieczeństwa → szczegóły.
+ * Dopasowanie dla „Szukam rozwiązania” (lib/challenge-search.ts): kandydaci po PROBLEMIE → rerank LLM → siatka bezpieczeństwa → szczegóły.
  */
 
 const CANDIDATES = 15;
@@ -21,27 +20,15 @@ export type Lexical = { candidate: Candidate; kind: SourceKind; overlap: number;
 
 type Doc = { id: string; kind: SourceKind; title: string; body: string };
 
-/** Problemy kandydatów: sprawdzone rozwiązania (patterns.problem) i opublikowane inicjatywy (karta: problem). */
-async function loadDocs(kinds: SourceKind[]): Promise<Doc[]> {
-  const supabase = createAdminClient();
-  const [patterns, initiatives] = await Promise.all([
-    kinds.includes("pattern")
-      ? supabase.from("patterns").select("id, title, problem").eq("published", true).not("problem", "is", null).limit(500)
-      : { data: [], error: null },
-    // Widok public_initiatives: tylko opublikowane i bez danych kontaktowych.
-    kinds.includes("initiative")
-      ? supabase.from("public_initiatives").select("id, title, card").limit(1000)
-      : { data: [], error: null },
-  ]);
-  if (patterns.error) throw patterns.error;
-  if (initiatives.error) throw initiatives.error;
-  return [
-    ...(patterns.data ?? []).map((p) => ({ id: p.id as string, kind: "pattern" as const, title: p.title as string, body: (p.problem as string).trim() })),
-    ...(initiatives.data ?? []).flatMap((i) => {
-      const problem = ((i.card as { problem?: string } | null)?.problem ?? "").trim();
-      return problem ? [{ id: i.id as string, kind: "initiative" as const, title: i.title as string, body: problem }] : [];
-    }),
-  ];
+/** Problemy kandydatów: opublikowane inicjatywy (karta: problem). */
+async function loadDocs(): Promise<Doc[]> {
+  // Widok public_initiatives: tylko opublikowane i bez danych kontaktowych.
+  const { data, error } = await createAdminClient().from("public_initiatives").select("id, title, card").limit(1000);
+  if (error) throw error;
+  return (data ?? []).flatMap((i) => {
+    const problem = ((i.card as { problem?: string } | null)?.problem ?? "").trim();
+    return problem ? [{ id: i.id as string, kind: "initiative" as const, title: i.title as string, body: problem }] : [];
+  });
 }
 
 /**
@@ -53,10 +40,10 @@ async function loadDocs(kinds: SourceKind[]): Promise<Doc[]> {
  * obecnych w problemie kandydata (0–1); problem wklejony słowo w słowo daje ~1. Słowa kluczowe z karty (formy
  * podstawowe z LLM) liczymy tak samo — to one łapią parafrazy.
  */
-export async function lexicalCandidates(originalText: string, keywords: string[], kinds: SourceKind[]): Promise<Lexical[]> {
+export async function lexicalCandidates(originalText: string, keywords: string[]): Promise<Lexical[]> {
   // Ta sama pozycja dwa razy w bazie zajmowałaby dwa miejsca w reranku.
   const seen = new Set<string>();
-  const docs = (await loadDocs(kinds))
+  const docs = (await loadDocs())
     .filter((d) => {
       const key = `${d.title.trim().toLowerCase()}|${d.body.toLowerCase()}`;
       return !seen.has(key) && seen.add(key);
@@ -124,52 +111,32 @@ export async function rankCandidates(
   return ranked.sort((a, b) => b.fit - a.fit);
 }
 
-/** Wyniki rerankingu → karty do pokazania (tytuł, link, gmina, liczba adopcji). matchIds: id wierszy w tabeli matches. */
-export async function matchDetails(ranked: RerankItem[], kindOf: Map<string, SourceKind>, matchIds: Map<string, string>): Promise<Match[]> {
-  const supabase = createAdminClient();
-  const ids = (kind: SourceKind) => ranked.filter((r) => kindOf.get(r.id) === kind).map((r) => r.id);
-  const [patterns, initiatives] = await Promise.all([
-    ids("pattern").length
-      ? supabase.from("patterns").select("id, title, slug, etr_summary, solution, adoptions_count, avg_rating").in("id", ids("pattern"))
-      : { data: [], error: null },
-    ids("initiative").length
-      ? supabase.from("public_initiatives").select("id, title, slug, summary, municipality, adoptions_count, avg_rating").in("id", ids("initiative"))
-      : { data: [], error: null },
-  ]);
-  if (patterns.error) throw patterns.error;
-  if (initiatives.error) throw initiatives.error;
-  const byId = new Map<string, Omit<Match, keyof RerankItem | "matchId">>([
-    ...(patterns.data ?? []).map((p) => [p.id as string, {
-      kind: "pattern" as const, title: p.title as string, slug: p.slug as string | null, gmina: null,
-      summary: (p.etr_summary as string | null) ?? (p.solution as string | null),
-      adoptionsCount: (p.adoptions_count as number) ?? 0, avgRating: p.avg_rating != null ? Number(p.avg_rating) : null,
-    }] as const),
-    ...(initiatives.data ?? []).map((i) => [i.id as string, {
-      kind: "initiative" as const, title: i.title as string, slug: i.slug as string | null, gmina: i.municipality as string | null,
-      summary: i.summary as string | null,
-      adoptionsCount: (i.adoptions_count as number) ?? 0, avgRating: i.avg_rating != null ? Number(i.avg_rating) : null,
-    }] as const),
-  ]);
+/** Wyniki rerankingu → karty do pokazania (tytuł, link, miejsce). matchIds: id wierszy w tabeli matches. */
+export async function matchDetails(ranked: RerankItem[], matchIds: Map<string, string>): Promise<Match[]> {
+  if (ranked.length === 0) return [];
+  const { data, error } = await createAdminClient()
+    .from("public_initiatives")
+    .select("id, title, slug, summary, municipality")
+    .in("id", ranked.map((r) => r.id));
+  if (error) throw error;
+  const byId = new Map((data ?? []).map((i) => [i.id as string, i]));
   return ranked.flatMap((r) => {
-    const d = byId.get(r.id);
-    return d ? [{ ...r, ...d, matchId: matchIds.get(r.id) ?? null }] : [];
+    const i = byId.get(r.id);
+    return i
+      ? [{
+          ...r, kind: "initiative" as const, title: i.title as string, slug: i.slug as string | null,
+          gmina: i.municipality as string | null, summary: i.summary as string | null, matchId: matchIds.get(r.id) ?? null,
+        }]
+      : [];
   });
 }
 
-/** Mentorzy i otwarte programy pasujące do słów kluczowych (bez reranku — sam próg podobieństwa). */
-export async function relatedSupport(keywords: string[]): Promise<{ mentors: MentorHit[]; programs: ProgramHit[] }> {
-  const [mentorHits, programHits] = await Promise.all([keywordSearch("mentor", keywords, 5), keywordSearch("program", keywords, 5)]);
-  const mentorIds = mentorHits.filter((h) => h.similarity >= RELATED_MIN_SIMILARITY).map((h) => h.ref_id);
+/** Otwarte programy pasujące do słów kluczowych (bez reranku — sam próg podobieństwa). */
+export async function relatedSupport(keywords: string[]): Promise<{ programs: ProgramHit[] }> {
+  const programHits = await keywordSearch("program", keywords, 5);
   const programIds = programHits.filter((h) => h.similarity >= RELATED_MIN_SIMILARITY).map((h) => h.ref_id);
-  const supabase = createAdminClient();
-  const [mentors, programs] = await Promise.all([
-    mentorIds.length ? supabase.from("mentors").select("id, name, bio").eq("active", true).in("id", mentorIds) : { data: [], error: null },
-    programIds.length ? supabase.from("programs").select("id, title, closes_at").eq("active", true).in("id", programIds) : { data: [], error: null },
-  ]);
-  if (mentors.error) throw mentors.error;
-  if (programs.error) throw programs.error;
-  return {
-    mentors: (mentors.data ?? []).map((m) => ({ id: m.id as string, name: m.name as string, bio: m.bio as string })),
-    programs: (programs.data ?? []).map((p) => ({ id: p.id as string, title: p.title as string, closesAt: p.closes_at as string | null })),
-  };
+  if (programIds.length === 0) return { programs: [] };
+  const { data, error } = await createAdminClient().from("programs").select("id, title, closes_at").eq("active", true).in("id", programIds);
+  if (error) throw error;
+  return { programs: (data ?? []).map((p) => ({ id: p.id as string, title: p.title as string, closesAt: p.closes_at as string | null })) };
 }

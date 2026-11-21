@@ -15,6 +15,6 @@ export const canSee = (scope: PanelScope, row: { institution_id: string | null }
 
 /** Sekcje Panelu dostępne dla zakresu. Opiekun instytucji: lista, lejek i eksport własnych innowacji. */
 export const PANEL_SECTIONS = {
-  all: ["/panel", "/panel/lejek", "/panel/wskazniki", "/panel/partnerzy", "/panel/instytucje", "/panel/zrodla", "/panel/programy", "/panel/adopcje", "/panel/przeniesienia", "/panel/trendy", "/panel/wiedza"],
+  all: ["/panel", "/panel/lejek", "/panel/wskazniki", "/panel/partnerzy", "/panel/instytucje", "/panel/zrodla", "/panel/programy"],
   institution: ["/panel", "/panel/lejek"],
 } as const;

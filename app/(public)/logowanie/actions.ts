@@ -15,9 +15,9 @@ export async function testLogin(formData: FormData) {
   (await cookies()).set(TEST_COOKIE, testCookieValue(role as TestRole), {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 8,
   });
-  const home = role === "admin" || role === "institution" ? "/panel" : role === "mentor" ? "/mentor" : "/";
+  const home = role === "admin" || role === "institution" ? "/panel" : "/";
   const next = field(formData.get("dalej"));
-  // Strona logowania domyślnie podaje dalej=/panel — mentor i autor dostaliby tam 403.
+  // Strona logowania domyślnie podaje dalej=/panel — autor dostałby tam 403.
   redirect(role !== "admin" && role !== "institution" && (!next || next.startsWith("/panel")) ? home : safeNext(next, home));
 }
 

@@ -21,19 +21,15 @@ const SENT: Record<string, string> = {
 const SENT_DEFAULT = "Wysłano. Odpowiedź pojawi się tutaj — nie musisz odświeżać strony.";
 
 /**
- * Rozmowa autora inicjatywy z zespołem i mentorem. Autor wchodzi po kodzie, więc wszystko idzie przez /api/threads.
+ * Rozmowa autora inicjatywy z zespołem. Autor wchodzi po kodzie, więc wszystko idzie przez /api/threads.
  * Na każdą wiadomość najpierw odpowiada asystent z bazy wiedzy albo przekazuje ją zespołowi.
  */
 export function Conversation({
   code,
-  mentorId,
-  mentorName,
   closed,
   initial,
 }: {
   code: string;
-  mentorId?: string;
-  mentorName: string | null;
   closed: boolean;
   initial: ThreadView;
 }) {
@@ -59,7 +55,7 @@ export function Conversation({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (body.trim().length < 2) {
-      setFieldError("Wpisz wiadomość, np. pytanie do mentora albo to, co zmieniło się od zgłoszenia.");
+      setFieldError("Wpisz wiadomość, np. pytanie do zespołu albo to, co zmieniło się od zgłoszenia.");
       field.current?.focus();
       return;
     }
@@ -71,7 +67,7 @@ export function Conversation({
       const res = await fetch("/api/threads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, body, mentorId }),
+        body: JSON.stringify({ code, body }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ?? "Nie udało się wysłać wiadomości");
@@ -112,7 +108,7 @@ export function Conversation({
   const lastReply = thread.messages.findLast((m) => m.role !== "author");
   const canMarkNotHelpful = lastReply?.role === "ai" && !!lastReply.sources?.length && thread.waiting !== "pilne";
 
-  const recipient = mentorName ? `mentor (${mentorName}) i zespół ${org.short}` : `zespół ${org.short}`;
+  const recipient = `zespół ${org.short}`;
 
   return (
     <div className="space-y-8">

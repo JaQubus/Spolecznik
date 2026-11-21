@@ -15,7 +15,7 @@ import {
   creatorRoleLabel, crossLabel, innovationKindLabel, institutionLabel, ipStatusLabel, sectorLabel, signalLevel, stageLabel, trlLabel,
 } from "@/lib/taxonomy";
 import { readAssessment } from "@/lib/radar/score";
-import { safeDecode } from "../../wiedza/shared";
+import { safeDecode } from "@/lib/params";
 
 async function load(props: PageProps<"/innowacje/[slug]">) {
   if (!publicInitiativesAvailable()) return null;
@@ -27,11 +27,10 @@ export async function generateMetadata(props: PageProps<"/innowacje/[slug]">): P
   return i ? { title: `${i.title} · Innowacje`, description: i.summary } : {};
 }
 
-/** Opublikowana inicjatywa: historia w krokach problem → rozwiązanie → efekty → jak przenieść. */
+/** Opublikowana inicjatywa: historia w krokach problem → rozwiązanie → efekty. */
 export default async function Page(props: PageProps<"/innowacje/[slug]">) {
   const i = await load(props);
   if (!i) notFound();
-  const param = `inicjatywa=${encodeURIComponent(i.slug ?? i.id)}`;
   const radar = readAssessment(i.radar);
   const [creators, narrative] = await Promise.all([
     getPublicCreators(i.id).catch((e) => { console.error("[inicjatywa] twórcy:", e); return [] as PublicCreator[]; }),
@@ -85,12 +84,10 @@ export default async function Page(props: PageProps<"/innowacje/[slug]">) {
         </dl>
       </div>
 
-      <section aria-label="Historia inicjatywy w 4 krokach">
+      <section aria-label="Historia inicjatywy w 3 krokach">
         <StorySteps story={{
           problem: i.card.problem ?? null, beneficiaries: i.card.beneficiaries ?? null, solution: i.card.solution ?? null,
-          evidence: i.card.effects ?? null, howToUse: null,
-          whoCanUse: i.institution_type ? `${institutionLabel(i.institution_type)} w innym miejscu regionu albo kraju. Skorzystaj z „Przenieś do siebie”, żeby dostać plan dopasowany do Twojej instytucji.` : null,
-          adoptionsCount: i.adoptions_count, avgRating: i.avg_rating, sourceParam: param,
+          evidence: i.card.effects ?? null,
         }} />
       </section>
 
@@ -119,11 +116,9 @@ export default async function Page(props: PageProps<"/innowacje/[slug]">) {
       )}
 
       <section aria-labelledby="dzialaj" className="full-bleed space-y-4 bg-secondary py-10">
-        <h2 id="dzialaj" className="text-3xl font-bold">Chcesz to mieć u siebie?</h2>
+        <h2 id="dzialaj" className="text-3xl font-bold">Chcesz ją wdrożyć albo sfinansować?</h2>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild size="lg"><Link href={`/przenies?${param}`}>Przenieś do siebie</Link></Button>
-          <Button asChild size="lg" variant="outline"><Link href={`/wyprobuj?${param}`}>Wypróbowaliśmy u nas</Link></Button>
-          <Button asChild size="lg" variant="outline"><Link href="/szukam-innowacji">Chcę ją wdrożyć lub sfinansować</Link></Button>
+          <Button asChild size="lg"><Link href="/szukam-innowacji">Chcę ją wdrożyć lub sfinansować</Link></Button>
         </div>
       </section>
     </article>

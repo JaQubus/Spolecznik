@@ -2,7 +2,7 @@
 
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
+import { initiativeHref } from "@/lib/knowledge/hrefs";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldHint } from "@/components/ui/field";
@@ -76,11 +76,11 @@ export function AssistantChat({ sketch }: { sketch: () => Sketch | undefined }) 
               {similar.map((s) => (
                 <li key={`${s.kind}:${s.id}`}>
                   {s.slug ? (
-                    <Link href={s.kind === "pattern" ? patternHref(s.slug) : initiativeHref(s.slug)} className={linkClass}>{s.title}</Link>
+                    <Link href={initiativeHref(s.slug)} className={linkClass}>{s.title}</Link>
                   ) : (
                     <span>{s.title}</span>
                   )}
-                  <span className="text-muted-foreground"> ({s.kind === "pattern" ? "sprawdzone rozwiązanie z Polski" : "inicjatywa z regionu"})</span>
+                  <span className="text-muted-foreground"> (inicjatywa z regionu)</span>
                 </li>
               ))}
             </ul>

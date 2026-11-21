@@ -81,29 +81,3 @@ export async function emailAuthor(initiativeId: string, what: string): Promise<v
     console.error("[e-mail] autor zgłoszenia:", e);
   }
 }
-
-/**
- * E-mail do instytucji bez konta („Wypróbowaliśmy u nas”), jeśli podała adres: zespół zmienił status adopcji.
- * Jak emailAuthor — tylko tytuł i status, bez opinii. Błędy tylko logujemy.
- */
-export async function emailAdopter(to: string, title: string | null, status: string, href: string | null): Promise<void> {
-  const site = process.env.SITE_URL?.replace(/\/$/, "");
-  try {
-    await sendEmail({
-      to,
-      subject: `${brand.name}: ${status} — przeniesienie inicjatywy`,
-      text: [
-        "Dzień dobry,",
-        "",
-        `${org.short} zmienił status Waszego przeniesienia${title ? ` „${title}”` : ""}: ${status}.`,
-        ...(site && href ? [`Opis: ${site}${href}`] : []),
-        "",
-        "To wiadomość automatyczna, nie odpowiadaj na nią. Adres służy tylko do powiadomień o tym przeniesieniu.",
-        "",
-        `${brand.name} — ${org.name}`,
-      ].join("\n"),
-    });
-  } catch (e) {
-    console.error("[e-mail] adopcja:", e);
-  }
-}
