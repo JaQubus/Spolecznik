@@ -306,11 +306,30 @@ Robimy to w `data/eval.py`.
 - MRR@5,
 - trafność wykrywania luk.
 
-**Konfiguracje do porównania** (bez embeddingów):
-- sam BM25 na lematach,
-- BM25 + rerank (Groq).
+**Konfiguracje do porównania** (bez embeddingów, wszystkie tylko po polu `problem` innowacji):
+- **BM25:** klasyczny BM25 na słowach opisu i słowach kluczowych z karty, punkt odniesienia,
+- **Słowa:** pierwszy etap produkcji, czyli `lexicalCandidates` z `lib/match.ts` (rdzenie słów ważone rzadkością w Bibliotece),
+- **Słowa + rerank:** cała produkcja: 15 kandydatów → rerank (Groq) → luka, gdy najlepszy fit < 50.
 
 Wynik idzie na slajd jako tabela. Kryterium „trafność dopasowania” zostaje dzięki temu poparte liczbą, a nie tylko demem.
+
+**Wyniki** (4.10.2026, kod dopasowania z `main` @ `dab1422`; korpus: tabela `innovations`, 144 innowacje, w tym 115 prawdziwych z Biblioteki; zbiór: 33 opisy, 29 z odpowiedzią i 4 luki; szczegóły w `data/out/eval_results.json`):
+
+| Konfiguracja | hit@3 | MRR@5 |
+|---|---|---|
+| BM25 | 0,31 | 0,30 |
+| Słowa | 0,62 | 0,55 |
+| **Słowa + rerank** | **0,76** | **0,74** |
+
+Trafność wykrywania luk: **91%** (30 z 33). Fałszywa luka w 1 z 29 opisów z odpowiedzią. Wykryte 2 z 4 prawdziwych luk; w pozostałych dwóch rerank uznał za pokrewne innowacje z Biblioteki (depresja, integracja sąsiedzka).
+
+Co z tego wynika:
+- **Rerank nie zgubił żadnej innowacji, którą dostał.** Gdy trafna innowacja była wśród 15 kandydatów (22 z 29 opisów), zawsze lądowała w top 3. Wszystkie 7 pudeł to kandydaci, których etap słów w ogóle nie przepuścił.
+- **Słowa potoczne kontra urzędowe:** „schody” vs „bariery architektoniczne”, „niesprawna ręka po udarze” vs „niedowład kończyn”, „alzheimer” vs „otępienie”, „dom dziecka” vs „placówki całodobowe”. Brak wspólnych rdzeni = brak kandydata.
+- **Długie opisy wygrywają z krótkimi:** problemy z Biblioteki mają po kilka zdań, więc częściej zawierają przypadkowe słowa z opisu i wypychają z puli innowacje opisane jednym zdaniem.
+- hit@3 to dolna granica: zbiór oznacza tylko innowacje syntetyczne, a rerank czasem stawia wyżej prawdziwą innowację o tym samym problemie (np. „Dialog ponad kulturami” dla rodziny z Ukrainy).
+
+Uruchomienie: `cd data && uv run eval.py` (ok. 100 tys. tokenów, połowa dziennego limitu darmowego Groq; odpowiedzi idą do cache w `data/raw/`, więc przerwany przebieg wznawia się bez ponownych wywołań). `--offline` liczy na samych 29 innowacjach syntetycznych z `out/innovations.json`.
 
 ---
 
