@@ -4,12 +4,14 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/knowledge/breadcrumbs";
 import { StorySteps } from "@/components/knowledge/story-steps";
 import { DomainBadge } from "@/components/taxonomy/icons";
+import { RadarNotes, RadarTable } from "@/components/radar/radar-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getPublicCreators, getPublicInitiative, publicInitiativesAvailable, type PublicCreator } from "@/lib/initiatives/public";
 import {
   creatorRoleLabel, crossLabel, innovationKindLabel, institutionLabel, ipStatusLabel, sectorLabel, signalLevel, stageLabel, trlLabel,
 } from "@/lib/taxonomy";
+import { readAssessment } from "@/lib/radar/score";
 import { safeDecode } from "../../wiedza/shared";
 
 async function load(props: PageProps<"/inicjatywy/[slug]">) {
@@ -27,6 +29,7 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
   const i = await load(props);
   if (!i) notFound();
   const param = `inicjatywa=${encodeURIComponent(i.slug ?? i.id)}`;
+  const radar = readAssessment(i.radar);
   const creators = await getPublicCreators(i.id).catch((e) => { console.error("[inicjatywa] twórcy:", e); return [] as PublicCreator[]; });
 
   return (
@@ -39,6 +42,9 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
           {i.signal != null && <Badge>Sygnał {i.signal}/100: {signalLevel(i.signal).label}</Badge>}
           {i.synthetic && <Badge>Przykład demonstracyjny</Badge>}
         </p>
+        {i.signal != null && (
+          <p><Link href="/metodologia" className="underline decoration-1 underline-offset-4 hover:decoration-2">Jak liczymy sygnał radaru</Link></p>
+        )}
         <dl className="grid max-w-[48rem] gap-x-6 gap-y-3 text-lg sm:grid-cols-[auto_1fr]">
           {i.municipality && (<><dt className="font-bold">Gdzie</dt><dd>gmina {i.municipality}{i.county && `, powiat ${i.county.replace(/^m\. /, "")}`}</dd></>)}
           {(i.institution_name || i.institution_type) && (<><dt className="font-bold">Kto prowadzi</dt><dd>{i.institution_name ?? institutionLabel(i.institution_type!)}</dd></>)}
@@ -69,6 +75,18 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
           adoptionsCount: i.adoptions_count, avgRating: i.avg_rating, sourceParam: param,
         }} />
       </section>
+
+      {radar && (
+        <section aria-labelledby="ocena" className="space-y-4">
+          <h2 id="ocena" className="text-3xl font-bold">Ocena radaru</h2>
+          <p className="max-w-[68ch] text-lg">
+            Wstępna ocena według jawnych kryteriów. Przygotowało ją AI na podstawie opisu, a zespół ją zweryfikował.
+            {i.signal != null && i.signal !== radar.signal && " Zespół skorygował sygnał po weryfikacji."}
+          </p>
+          <RadarTable radar={radar} id="radar" />
+          <RadarNotes radar={radar} />
+        </section>
+      )}
 
       <section aria-labelledby="dzialaj" className="full-bleed space-y-4 bg-secondary py-10">
         <h2 id="dzialaj" className="text-3xl font-bold">Chcesz to mieć u siebie?</h2>
