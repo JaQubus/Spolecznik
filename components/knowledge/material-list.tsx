@@ -1,7 +1,7 @@
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { formatBytes, isHugeFile, MATERIAL_KIND_LABELS, materialLinkText } from "@/lib/knowledge/labels";
 import type { Material } from "@/lib/knowledge/types";
-import { MATERIAL_ICONS } from "./icons";
+import { MATERIAL_ICONS } from "@/components/taxonomy/icons";
 
 /** Materiały jako lista wierszy (ResultList.md): typ z ikoną i tekstem, tytuł, opis, opisowy link. */
 export function MaterialList({ items, headingLevel = 3 }: { items: Material[]; headingLevel?: 2 | 3 | 4 }) {

@@ -18,7 +18,7 @@ function SourceLine({ f }: { f: Fact }) {
   );
 }
 
-/** „Małopolska w liczbach”: wiersze rozdzielone linią, bez kart (design system: bez kafli ze statystykami). */
+/** „Region w liczbach”: wiersze rozdzielone linią, bez kart (design system: bez kafli ze statystykami). */
 export function FactList({ facts }: { facts: Fact[] }) {
   const shown = facts.filter(isShowable);
   if (!shown.length) return <p>Nie mamy jeszcze sprawdzonych liczb dla tego obszaru.</p>;

@@ -12,7 +12,7 @@ const FALLBACK_POLL_MS = 60_000;
 
 async function fetchNotifications(): Promise<NotificationsResponse | null> {
   try {
-    const res = await fetch("/api/powiadomienia", { cache: "no-store" });
+    const res = await fetch("/api/notifications", { cache: "no-store" });
     return res.ok ? ((await res.json()) as NotificationsResponse) : null;
   } catch {
     return null;
@@ -24,7 +24,7 @@ const when = (iso: string) =>
 
 /**
  * Dzwonek w nagłówku (README §6, „Ścieżka komunikacji”): dla zalogowanych — admin widzi nowe zgłoszenia,
- * pomysły i wiadomości, autor z kontem zmiany statusu, odpowiedzi i nabory. Niezalogowany nie widzi nic
+ * inicjatywy i wiadomości, autor z kontem zmiany statusu, odpowiedzi i programy. Niezalogowany nie widzi nic
  * (status sprawdza po kodzie). Na żywo przez Supabase Broadcast, zapasowo co minutę, gdy karta jest widoczna.
  */
 export function NotificationBell({ buttonClassName }: { buttonClassName: string }) {
@@ -85,7 +85,7 @@ export function NotificationBell({ buttonClassName }: { buttonClassName: string 
     setOpen(next);
     if (next && unread > 0 && items[0]) {
       // Widziane do najnowszego pokazanego. Znacznik „nowe” przy pozycjach zostaje do zamknięcia listy.
-      void fetch("/api/powiadomienia", {
+      void fetch("/api/notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ seenAt: items[0].createdAt }),

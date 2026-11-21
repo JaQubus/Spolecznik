@@ -29,7 +29,7 @@ const noopSubscribe = () => () => {};
  * „Opowiedz problem” — duży przycisk mikrofonu (Chrome/Edge). Rozpoznany tekst trafia do pola,
  * gdzie można go poprawić przed wysłaniem. W innych przeglądarkach przycisk się nie pokazuje.
  */
-export function VoiceInput({ onText, label = "Opowiedz problem" }: { onText: (chunk: string) => void; label?: string }) {
+export function VoiceInput({ onText, label = "Opowiedz głosem" }: { onText: (chunk: string) => void; label?: string }) {
   const supported = useSyncExternalStore(noopSubscribe, () => getCtor() !== null, () => false);
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState("");

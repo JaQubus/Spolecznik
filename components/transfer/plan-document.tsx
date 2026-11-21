@@ -1,11 +1,13 @@
+import Link from "next/link";
 import { PrintNote } from "@/components/layout/print-note";
 import { Alert } from "@/components/ui/alert";
-import { formatFact, monthRange, STAGE_LABELS, zl } from "@/lib/implementation-plan";
-import { BUDGET_LABELS, GRANT, INSTITUTION_LABELS, PLAN_STAGES, type PlanDocument as Doc } from "@/lib/schemas";
-import { brand, org } from "@/lib/brand";
+import { formatFact, monthRange, STAGE_LABELS, zl } from "@/lib/transfer-plan";
+import { BUDGET_LABELS, PLAN_STAGES, TRANSFER, type PlanDocument as Doc } from "@/lib/schemas";
+import { institutionLabel } from "@/lib/taxonomy";
+import { brand } from "@/lib/brand";
 
-// Szkic planu wdrożenia (#99) w kolejności części III–VI „Wniosku o grant” z naboru „Usługa Wrażliwa”.
-// Ten sam znacznik idzie na ekran, do druku (globals.css: [data-print-root], .doc) i do Panelu → Wdrożenia.
+// Szkic planu przeniesienia inicjatywy albo rozwiązania do wskazanej gminy i instytucji.
+// Ten sam znacznik idzie na ekran, do druku (globals.css: [data-print-root], .doc) i do Panelu → Przeniesienia.
 
 /** Etykieta przy liczbach, które przygotował model, a nie BDL. */
 function Estimate() {
@@ -34,42 +36,42 @@ const Text = ({ children }: { children: string }) => <p className="doc-text">{ch
 
 export function PlanDocument({ doc, headingRef }: { doc: Doc; headingRef?: React.Ref<HTMLHeadingElement> }) {
   const p = doc.plan;
-  const people = p.peopleSupported.women + p.peopleSupported.men;
+  const sourceKind = doc.source.kind === "initiative" ? "inicjatywa z regionu" : "sprawdzone rozwiązanie z Polski";
   return (
     <article data-print-root className="doc max-w-[80ch] space-y-8">
       <div className="space-y-2">
-        <PrintNote dated>Szkic planu wdrożenia · {brand.name}</PrintNote>
+        <PrintNote dated>Szkic planu przeniesienia · {brand.name}</PrintNote>
         <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-bold outline-none">
-          {doc.innovation.title} w gminie {doc.gmina.nazwa}
+          {doc.source.title} w gminie {doc.gmina.nazwa}
         </h2>
         <p className="doc-text">
-          Szkic pod nabór „Usługa Wrażliwa” {org.nameGenitive}: grant do {zl(GRANT.maxPln)} na
-          wdrożenie usługi społecznej opartej na innowacji, najwyżej {GRANT.maxMonths} miesięcy.
+          Pilotaż do {TRANSFER.maxMonths} miesięcy, w tym przygotowanie do {TRANSFER.maxPreparationMonths}. Źródło:{" "}
+          <Link href={doc.source.href} className="underline decoration-1 underline-offset-4 hover:decoration-2">{doc.source.title}</Link> ({sourceKind}).
         </p>
         <table className="doc-kv">
           <tbody>
-            <tr><th scope="row">Wnioskodawca</th><td>{INSTITUTION_LABELS[doc.input.institutionType]}</td></tr>
-            <tr><th scope="row">Obszar wdrażania</th><td>{doc.gmina.label}</td></tr>
+            <tr><th scope="row">Instytucja</th><td>{institutionLabel(doc.input.institutionType)}</td></tr>
+            <tr><th scope="row">Gmina</th><td>{doc.gmina.label}</td></tr>
             <tr><th scope="row">Budżet orientacyjny</th><td>{BUDGET_LABELS[doc.input.budget]}</td></tr>
             {doc.input.audienceSize && <tr><th scope="row">Liczba odbiorców podana w formularzu</th><td>{doc.input.audienceSize.toLocaleString("pl-PL")}</td></tr>}
-            {doc.input.staff && <tr><th scope="row">Dostępna kadra</th><td>{doc.input.staff}</td></tr>}
+            {doc.input.staff && <tr><th scope="row">Dostępne osoby</th><td>{doc.input.staff}</td></tr>}
           </tbody>
         </table>
         <p className="doc-text text-muted-foreground">
           Liczby o gminie mają podane źródło (Bank Danych Lokalnych GUS). Liczby oznaczone „szacunek” przygotowała sztuczna
-          inteligencja na podstawie opisu innowacji — sprawdź je przed złożeniem wniosku.
+          inteligencja na podstawie opisu — sprawdź je, zanim zaczniesz.
         </p>
       </div>
 
       {p.warnings.length > 0 && (
-        <Alert title="Do poprawy przed złożeniem wniosku" className="print:border-2 print:border-black">
+        <Alert title="Do poprawy" className="print:border-2 print:border-black">
           <ul className="list-disc space-y-1 pl-6">{p.warnings.map((w) => <li key={w}>{w}</li>)}</ul>
         </Alert>
       )}
 
-      <Section id="plan-cel" title="Cel usługi"><Text>{p.goal}</Text></Section>
-      <Section id="plan-opis" title="Na czym polega usługa"><Text>{p.description}</Text></Section>
-      <Section id="plan-forma" title="Forma usługi"><Text>{p.serviceForm}</Text></Section>
+      <Section id="plan-cel" title="Cel"><Text>{p.goal}</Text></Section>
+      <Section id="plan-opis" title="Jak to zadziała u nas"><Text>{p.description}</Text></Section>
+      <Section id="plan-zmiany" title="Co zmieniamy względem oryginału"><Text>{p.adaptation}</Text></Section>
 
       <Section id="plan-odbiorcy" title="Odbiorcy w gminie">
         <Text>{p.audience.summary}</Text>
@@ -95,18 +97,9 @@ export function PlanDocument({ doc, headingRef }: { doc: Doc; headingRef?: React
         )}
       </Section>
 
-      <Section id="plan-osoby" title="Liczba osób objętych wsparciem" estimate>
-        <table className="doc-kv max-w-md">
-          <tbody>
-            <tr><th scope="row">Kobiety</th><td className="doc-num">{p.peopleSupported.women.toLocaleString("pl-PL")}</td></tr>
-            <tr><th scope="row">Mężczyźni</th><td className="doc-num">{p.peopleSupported.men.toLocaleString("pl-PL")}</td></tr>
-            <tr><th scope="row"><strong>Ogółem</strong></th><td className="doc-num"><strong>{people.toLocaleString("pl-PL")}</strong></td></tr>
-          </tbody>
-        </table>
-        <Text>{p.peopleSupported.basis}</Text>
+      <Section id="plan-osoby" title="Ilu odbiorców obejmie pilotaż" estimate>
+        <p className="doc-text"><strong>{p.peopleReached.count.toLocaleString("pl-PL")}</strong>. {p.peopleReached.basis}</p>
       </Section>
-
-      <Section id="plan-rekrutacja" title="Rekrutacja odbiorców"><Text>{p.recruitment}</Text></Section>
 
       <Section id="plan-harmonogram" title="Harmonogram i koszty działań" estimate>
         {PLAN_STAGES.map((stage) => {
@@ -133,18 +126,18 @@ export function PlanDocument({ doc, headingRef }: { doc: Doc; headingRef?: React
             </TableRegion>
           );
         })}
-        <p className="doc-text"><strong>Suma kosztów działań: {zl(p.totalPln)}</strong> (limit grantu: {zl(GRANT.maxPln)})</p>
+        <p className="doc-text"><strong>Suma kosztów działań: {zl(p.totalPln)}</strong></p>
       </Section>
 
-      <Section id="plan-kadra" title="Kadra i zasoby"><Text>{p.staffAndResources}</Text></Section>
+      <Section id="plan-zasoby" title="Ludzie i zasoby"><Text>{p.staffAndResources}</Text></Section>
 
-      <Section id="plan-koszty" title="Widełki kosztów całego wdrożenia" estimate>
+      <Section id="plan-koszty" title="Widełki kosztów całego pilotażu" estimate>
         <p className="doc-text">Od <strong>{zl(p.costEstimate.minPln)}</strong> do <strong>{zl(p.costEstimate.maxPln)}</strong>. {p.costEstimate.basis}</p>
       </Section>
 
       {p.partners.length > 0 ? (
         <Section id="plan-partnerzy" title="Kto może pomóc">
-          <p className="doc-text text-muted-foreground">Eksperci i organizacje z bazy {brand.nameGenitive}.</p>
+          <p className="doc-text text-muted-foreground">Autor inicjatywy i mentorzy z bazy {brand.nameGenitive}.</p>
           <ul className="list-disc space-y-1 pl-6">
             {p.partners.map((x) => <li key={x.id}><strong>{x.name}</strong>: {x.role}</li>)}
           </ul>
@@ -172,20 +165,18 @@ export function PlanDocument({ doc, headingRef }: { doc: Doc; headingRef?: React
         </Section>
       )}
 
-      <Section id="plan-horyzontalne" title="Zgodność z zasadami horyzontalnymi"><Text>{p.horizontalPrinciples}</Text></Section>
-      <Section id="plan-trwalosc" title="Utrzymanie efektów po zakończeniu grantu"><Text>{p.sustainability}</Text></Section>
-      <Section id="plan-dei" title="Deinstytucjonalizacja"><Text>{p.deinstitutionalization}</Text></Section>
+      <Section id="plan-trwalosc" title="Co zostanie po pilotażu"><Text>{p.sustainability}</Text></Section>
 
       {p.assumptions.length > 0 && (
         <Alert title="Założenia, których nie sprawdziliśmy" className="print:border-2 print:border-black">
-          <p>Tego nie było w opisie innowacji ani w danych o gminie. Sprawdź przed złożeniem wniosku.</p>
+          <p>Tego nie było w opisie ani w danych o gminie. Sprawdź, zanim zaczniesz.</p>
           <ul className="list-disc space-y-1 pl-6">{p.assumptions.map((a) => <li key={a}>{a}</li>)}</ul>
         </Alert>
       )}
 
       <PrintNote>
-        Wygenerowano w {brand.nameLocative} z opisu innowacji z Biblioteki i danych BDL GUS o gminie. Liczby oznaczone „szacunek”
-        i założenia trzeba sprawdzić przed złożeniem wniosku.
+        Wygenerowano w {brand.nameLocative} z opisu {doc.source.kind === "initiative" ? "inicjatywy" : "rozwiązania"} i danych BDL GUS o gminie.
+        Liczby oznaczone „szacunek” i założenia trzeba sprawdzić.
       </PrintNote>
     </article>
   );

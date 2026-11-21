@@ -12,26 +12,18 @@ import { org } from "@/lib/brand";
 const noSubscribe = () => () => {};
 
 const COPY = {
-  potrzeba: {
-    label: "Prywatny link do rozmowy",
-    hint: "Zapisz go, żeby wrócić do rozmowy z innego telefonu albo komputera. Nie pokazuj go innym — kto ma link, może czytać rozmowę.",
-  },
-  pomysl: {
-    label: "Prywatny link do pomysłu",
-    hint: `Zapisz go, żeby wrócić do pomysłu i rozmowy z ${org.short} z innego telefonu albo komputera. Nie pokazuj go innym — kto ma link, może czytać rozmowę.`,
-  },
+  label: "Prywatny link do zgłoszenia",
+  hint: `Zapisz go, żeby wrócić do zgłoszenia i rozmowy z zespołem ${org.short} z innego telefonu albo komputera. Nie pokazuj go innym — kto ma link, może czytać rozmowę.`,
 };
 
 /** Prywatny link do zgłoszenia: pole tylko do odczytu + „Kopiuj link” (z tekstem, nie sama ikona). */
 export function PrivateLink({
   code,
   accessKey,
-  kind = "potrzeba",
   id = "prywatny-link",
 }: {
   code: string;
   accessKey: string;
-  kind?: keyof typeof COPY;
   id?: string;
 }) {
   const origin = useSyncExternalStore(noSubscribe, () => window.location.origin, () => "");
@@ -49,8 +41,8 @@ export function PrivateLink({
 
   return (
     <div className="max-w-2xl space-y-2">
-      <Label htmlFor={id}>{COPY[kind].label}</Label>
-      <FieldHint id={`${id}-pomoc`}>{COPY[kind].hint}</FieldHint>
+      <Label htmlFor={id}>{COPY.label}</Label>
+      <FieldHint id={`${id}-pomoc`}>{COPY.hint}</FieldHint>
       <div className="flex flex-wrap gap-3">
         <Input
           id={id}

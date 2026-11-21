@@ -118,7 +118,7 @@ export function IdeaPoster({ poster }: { poster: Poster }) {
         )}
       </div>
 
-      <PrintNote>Plakat przygotowany w {brand.nameLocative} z fiszki pomysłu. To wizualizacja do rozmowy, a nie gotowy projekt.</PrintNote>
+      <PrintNote>Plakat przygotowany w {brand.nameLocative} ze szkicu pomysłu. To wizualizacja do rozmowy, a nie gotowy projekt.</PrintNote>
     </article>
   );
 }

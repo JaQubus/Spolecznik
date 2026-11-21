@@ -1,10 +1,9 @@
 import Link from "next/link";
-import type { Innovation } from "@/lib/knowledge/types";
 import { formatNumber, plural } from "@/lib/pl";
-import { brand, org } from "@/lib/brand";
+import { brand } from "@/lib/brand";
 
-/** Tekst ze strony ROPS: akapity po nowych liniach, wiersze z „•” jako lista. */
-function Prose({ text }: { text: string }) {
+/** Tekst z opisu: akapity po nowych liniach, wiersze z „•” jako lista. */
+export function Prose({ text }: { text: string }) {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   const blocks: (string | string[])[] = [];
   for (const line of lines) {
@@ -26,50 +25,63 @@ function Prose({ text }: { text: string }) {
   );
 }
 
+export type Story = {
+  problem: string | null;
+  beneficiaries?: string | null;
+  solution: string | null;
+  components?: string | null;
+  evidence: string | null;
+  howToUse: string | null;
+  whoCanUse?: string | null;
+  adoptionsCount: number;
+  avgRating: number | null;
+  /** ?inicjatywa=… albo ?rozwiazanie=… — link do „Wypróbowaliśmy u nas” i „Przenieś do siebie”. */
+  sourceParam: string;
+};
+
 /**
- * Innowacja jako historia w 4 krokach — odpowiadają stałym sekcjom stron Biblioteki ROPS.
+ * Inicjatywa albo rozwiązanie jako historia w 4 krokach: problem → rozwiązanie → efekty → jak przenieść.
  * Kroki to <ol> z nagłówkami h2, więc czytnik ekranu ogłasza „lista, 4 elementy” i można skakać po nagłówkach.
  */
-export function StorySteps({ innovation: i }: { innovation: Innovation }) {
-  const tests = i.testsCount ?? 0;
-  // Wyniki z Próby (/przetestuj) wracają tutaj. Przy zerze testów mówimy to wprost i zapraszamy do testu,
+export function StorySteps({ story: s }: { story: Story }) {
+  const n = s.adoptionsCount;
+  // Wyniki z „Wypróbowaliśmy u nas” wracają tutaj. Przy zerze mówimy to wprost i zapraszamy do przeniesienia,
   // zamiast milczeć — brak zdania wyglądałby jak brak takiej możliwości.
-  const testsLine = tests > 0
-    ? `W ${brand.nameLocative} przetestowano ją ${tests} ${plural(tests, "raz", "razy", "razy")}${i.avgRating != null ? `, średnia ocena ${formatNumber(i.avgRating)} na 5` : ""}.`
+  const adoptionsLine = n > 0
+    ? `Przeniesiono ją już w ${n} ${plural(n, "miejscu", "miejscach", "miejscach")}${s.avgRating != null ? `, średnia ocena ${formatNumber(s.avgRating)} na 5` : ""}.`
     : (
       <>
-        W {brand.nameLocative} nikt jeszcze jej nie przetestował.{" "}
-        <Link href={`/przetestuj?innowacja=${i.slug ?? i.id}`} className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
-          Przetestuj ją u siebie i oceń
+        Nikt jeszcze nie zgłosił w {brand.nameLocative}, że ją przeniósł.{" "}
+        <Link href={`/wyprobuj?${s.sourceParam}`} className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+          Wypróbowaliście ją u siebie? Daj znać
         </Link>
       </>
     );
   const steps = [
-    { title: "Jaki problem rozwiązuje", body: i.problem, extra: i.beneficiaries && { label: "Dla kogo", text: i.beneficiaries } },
-    { title: "Na czym polega rozwiązanie", body: i.solution, extra: i.components && { label: "Z czego się składa", text: i.components } },
-    { title: "Skąd wiemy, że działa", body: i.evidence ?? `${org.short} nie opisał jeszcze wyników testu tej innowacji.`, note: testsLine },
-    // Dwa różne pola (z karty PDF i ze strony ROPS) — każde ze swoją etykietą, gdy są oba.
-    i.howToUse
-      ? { title: "Jak skorzystać i kto może to wdrożyć", body: i.howToUse, extra: i.whoCanUse && { label: "Kto może to wdrożyć", text: i.whoCanUse } }
-      : { title: "Jak skorzystać i kto może to wdrożyć", body: i.whoCanUse },
+    { title: "Jaki problem rozwiązuje", body: s.problem, extra: s.beneficiaries && { label: "Dla kogo", text: s.beneficiaries } },
+    { title: "Na czym polega", body: s.solution, extra: s.components && { label: "Z czego się składa", text: s.components } },
+    { title: "Co już dała", body: s.evidence ?? "Autor nie opisał jeszcze efektów.", note: adoptionsLine },
+    s.howToUse
+      ? { title: "Jak przenieść ją do siebie", body: s.howToUse, extra: s.whoCanUse && { label: "Kto może to zrobić", text: s.whoCanUse } }
+      : { title: "Jak przenieść ją do siebie", body: s.whoCanUse ?? null },
   ];
   return (
     <ol className="space-y-10">
-      {steps.map((s, n) => (
-        <li key={s.title} className="grid gap-x-5 gap-y-3 sm:grid-cols-[3rem_1fr]">
+      {steps.map((step, i) => (
+        <li key={step.title} className="grid gap-x-5 gap-y-3 sm:grid-cols-[3rem_1fr]">
           <span aria-hidden className="flex size-12 items-center justify-center rounded-full bg-foreground text-xl font-bold text-background">
-            {n + 1}
+            {i + 1}
           </span>
           <div className="space-y-3">
             <h2 className="text-2xl font-bold">
-              <span className="sr-only">Krok {n + 1}: </span>{s.title}
+              <span className="sr-only">Krok {i + 1}: </span>{step.title}
             </h2>
-            {s.body ? <Prose text={s.body} /> : <p>Brak opisu.</p>}
-            {"note" in s && s.note && <p className="max-w-[44rem]">{s.note}</p>}
-            {s.extra && (
+            {step.body ? <Prose text={step.body} /> : <p>Brak opisu.</p>}
+            {"note" in step && step.note && <p className="max-w-[44rem]">{step.note}</p>}
+            {step.extra && (
               <div className="max-w-[44rem]">
-                <h3 className="text-lg font-bold">{s.extra.label}</h3>
-                <Prose text={s.extra.text} />
+                <h3 className="text-lg font-bold">{step.extra.label}</h3>
+                <Prose text={step.extra.text} />
               </div>
             )}
           </div>

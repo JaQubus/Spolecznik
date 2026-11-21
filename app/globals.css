@@ -15,8 +15,8 @@
   --color-info-soft: var(--info-soft);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
-  --color-area: var(--area);
-  --color-area-soft: var(--area-soft);
+  --color-domain: var(--domain);
+  --color-domain-soft: var(--domain-soft);
   --font-sans: var(--font-atkinson);
   --font-mono: var(--font-atkinson-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -79,17 +79,20 @@
   --info-soft: #e9f0fa;
   --warning: #8a5700;
   --warning-soft: #fbf0d9;
-  /* Obszary: jeden odcień na obszar, ten sam na ikonach i etykietach w całym serwisie. Tylko na ikony (≥3:1),
+  /* Dziedziny: jeden odcień na dziedzinę, ten sam na ikonach i etykietach w całym serwisie. Tylko na ikony (≥3:1),
      tekst na miękkim tle zostaje w kolorze --ink. Dobrane tak, żeby różniły się też przy deuteranopii i protanopii
      (jasność, nie tylko odcień): najbliższa para ΔE ≈ 15 w symulacji Machado 2009. */
-  --area-seniorzy: #8968a4;             --area-seniorzy-soft: #f6ebff;
-  --area-niepelnosprawnosc: #0c3e87;    --area-niepelnosprawnosc-soft: #e5f1ff;
-  --area-rodzina_piecza: #a94512;       --area-rodzina_piecza-soft: #ffebe2;
-  --area-zdrowie_psychiczne: #1e7f75;   --area-zdrowie_psychiczne-soft: #dcf7f2;
-  --area-zdrowie: #742d4f;              --area-zdrowie-soft: #ffe9f1;
-  --area-ubostwo: #9e7745;              --area-ubostwo-soft: #fdeedc;
-  --area-bezdomnosc: #563e31;           --area-bezdomnosc-soft: #ffebe0;
-  --area-cudzoziemcy: #2c3c06;          --area-cudzoziemcy-soft: #ecf4e0;
+  --domain-edukacja: #0c3e87;          --domain-edukacja-soft: #e5f1ff;
+  --domain-nauka: #4b3a9a;             --domain-nauka-soft: #ecebff;
+  --domain-cyfryzacja: #1e7f75;        --domain-cyfryzacja-soft: #dcf7f2;
+  --domain-administracja: #563e31;     --domain-administracja-soft: #ffebe0;
+  --domain-srodowisko: #33620c;        --domain-srodowisko-soft: #ecf4e0;
+  --domain-zdrowie: #742d4f;           --domain-zdrowie-soft: #ffe9f1;
+  --domain-uslugi_spoleczne: #8968a4;  --domain-uslugi_spoleczne-soft: #f6ebff;
+  --domain-mobilnosc: #9e7745;         --domain-mobilnosc-soft: #fdeedc;
+  --domain-kultura: #a94512;           --domain-kultura-soft: #ffebe2;
+  --domain-gospodarka: #4a5568;        --domain-gospodarka-soft: #edf0f4;
+  --domain-partycypacja: #0b6a8a;      --domain-partycypacja-soft: #e0f4fb;
   --focus: #222222;
   --flag-white: #ffffff;
   --flag-red: #dc143c;
@@ -97,7 +100,7 @@
   /* Mapa: czerwony = więcej / wzrost, niebieski = spadek; 1 = najbliżej zera. Walidator dataviz --ordinal. */
   --map-red-1: #f29aa4; --map-red-2: #e86a7c; --map-red-3: #d23f5c; --map-red-4: #a81a42; --map-red-5: #720530;
   --map-blue-1: #89bde3; --map-blue-2: #5a90c8; --map-blue-3: #3763a3; --map-blue-4: #1d3d70;
-  /* Kartogram (Kondycja Małopolski): jeden odcień, jasny → ciemny = mniejsze → większe wyzwanie. */
+  /* Kartogram (mapa kondycji regionu): jeden odcień, jasny → ciemny = mniejsze → większe wyzwanie. */
   --map-1: #cde2fb;
   --map-2: #86b6ef;
   --map-3: #3987e5;
@@ -152,14 +155,17 @@
   --info-soft: #1c2b40;
   --warning: #f0c060;
   --warning-soft: #3a2e14;
-  --area-seniorzy: #cf9df7;             --area-seniorzy-soft: #31263b;
-  --area-niepelnosprawnosc: #bbd5fe;    --area-niepelnosprawnosc-soft: #1f2c3f;
-  --area-rodzina_piecza: #de8560;       --area-rodzina_piecza-soft: #3c251b;
-  --area-zdrowie_psychiczne: #4fd1c2;   --area-zdrowie_psychiczne-soft: #10322e;
-  --area-zdrowie: #c888a2;              --area-zdrowie-soft: #3b232d;
-  --area-ubostwo: #f0a830;              --area-ubostwo-soft: #382814;
-  --area-bezdomnosc: #e5bfac;           --area-bezdomnosc-soft: #3c2519;
-  --area-cudzoziemcy: #aed467;          --area-cudzoziemcy-soft: #272f18;
+  --domain-edukacja: #bbd5fe;          --domain-edukacja-soft: #1f2c3f;
+  --domain-nauka: #c4b8ff;             --domain-nauka-soft: #28243f;
+  --domain-cyfryzacja: #4fd1c2;        --domain-cyfryzacja-soft: #10322e;
+  --domain-administracja: #e5bfac;     --domain-administracja-soft: #3c2519;
+  --domain-srodowisko: #aed467;        --domain-srodowisko-soft: #272f18;
+  --domain-zdrowie: #c888a2;           --domain-zdrowie-soft: #3b232d;
+  --domain-uslugi_spoleczne: #cf9df7;  --domain-uslugi_spoleczne-soft: #31263b;
+  --domain-mobilnosc: #f0a830;         --domain-mobilnosc-soft: #382814;
+  --domain-kultura: #de8560;           --domain-kultura-soft: #3c251b;
+  --domain-gospodarka: #c3cad6;        --domain-gospodarka-soft: #2a2f37;
+  --domain-partycypacja: #7fd3f0;      --domain-partycypacja-soft: #14303b;
   --focus: #f2efea;
   --flag-white: #ffffff;
   --flag-red: #dc143c;
@@ -186,7 +192,7 @@
     /* Długi link albo słowo (np. w wiadomości) nie może rozepchnąć strony na telefonie (SC 1.4.10). */
     overflow-wrap: break-word;
   }
-  /* Krótkie kody (SPL-xxxx) nie łamią się na myślniku, ale długie listy wartości i ścieżki (break-words) się zawijają (WCAG 1.4.10). */
+  /* Krótkie kody (RAD-xxxx) nie łamią się na myślniku, ale długie listy wartości i ścieżki (break-words) się zawijają (WCAG 1.4.10). */
   .font-mono:not(.break-words) {
     white-space: nowrap;
   }
@@ -216,7 +222,7 @@ html.a11y-contrast {
   --on-brand: #ffffff;
   --danger: #8f0018;
   --danger-soft: #ffffff;
-  /* Wysoki kontrast zostaje czarno-biały: linki, informacje i obszary wracają do czerni (patrz [data-area] niżej). */
+  /* Wysoki kontrast zostaje czarno-biały: linki, informacje i dziedziny wracają do czerni (patrz [data-domain] niżej). */
   --link: #000000;
   --info: #000000;
   --info-soft: #ffffff;
@@ -231,17 +237,20 @@ html.a11y-contrast {
   --map-blue-1: #89bde3; --map-blue-2: #5a90c8; --map-blue-3: #3763a3; --map-blue-4: #1d3d70;
 }
 
-/* Element z data-area="<klucz obszaru>" dostaje --area / --area-soft (text-area, bg-area-soft). */
-[data-area] { --area: var(--ink); --area-soft: var(--surface-alt); }
-[data-area="seniorzy"] { --area: var(--area-seniorzy); --area-soft: var(--area-seniorzy-soft); }
-[data-area="niepelnosprawnosc"] { --area: var(--area-niepelnosprawnosc); --area-soft: var(--area-niepelnosprawnosc-soft); }
-[data-area="rodzina_piecza"] { --area: var(--area-rodzina_piecza); --area-soft: var(--area-rodzina_piecza-soft); }
-[data-area="zdrowie_psychiczne"] { --area: var(--area-zdrowie_psychiczne); --area-soft: var(--area-zdrowie_psychiczne-soft); }
-[data-area="zdrowie"] { --area: var(--area-zdrowie); --area-soft: var(--area-zdrowie-soft); }
-[data-area="ubostwo"] { --area: var(--area-ubostwo); --area-soft: var(--area-ubostwo-soft); }
-[data-area="bezdomnosc"] { --area: var(--area-bezdomnosc); --area-soft: var(--area-bezdomnosc-soft); }
-[data-area="cudzoziemcy"] { --area: var(--area-cudzoziemcy); --area-soft: var(--area-cudzoziemcy-soft); }
-html.a11y-contrast [data-area] { --area: var(--ink); --area-soft: var(--surface); }
+/* Element z data-domain="<klucz dziedziny>" dostaje --domain / --domain-soft (text-domain, bg-domain-soft). */
+[data-domain] { --domain: var(--ink); --domain-soft: var(--surface-alt); }
+[data-domain="edukacja"] { --domain: var(--domain-edukacja); --domain-soft: var(--domain-edukacja-soft); }
+[data-domain="nauka"] { --domain: var(--domain-nauka); --domain-soft: var(--domain-nauka-soft); }
+[data-domain="cyfryzacja"] { --domain: var(--domain-cyfryzacja); --domain-soft: var(--domain-cyfryzacja-soft); }
+[data-domain="administracja"] { --domain: var(--domain-administracja); --domain-soft: var(--domain-administracja-soft); }
+[data-domain="srodowisko"] { --domain: var(--domain-srodowisko); --domain-soft: var(--domain-srodowisko-soft); }
+[data-domain="zdrowie"] { --domain: var(--domain-zdrowie); --domain-soft: var(--domain-zdrowie-soft); }
+[data-domain="uslugi_spoleczne"] { --domain: var(--domain-uslugi_spoleczne); --domain-soft: var(--domain-uslugi_spoleczne-soft); }
+[data-domain="mobilnosc"] { --domain: var(--domain-mobilnosc); --domain-soft: var(--domain-mobilnosc-soft); }
+[data-domain="kultura"] { --domain: var(--domain-kultura); --domain-soft: var(--domain-kultura-soft); }
+[data-domain="gospodarka"] { --domain: var(--domain-gospodarka); --domain-soft: var(--domain-gospodarka-soft); }
+[data-domain="partycypacja"] { --domain: var(--domain-partycypacja); --domain-soft: var(--domain-partycypacja-soft); }
+html.a11y-contrast [data-domain] { --domain: var(--ink); --domain-soft: var(--surface); }
 
 /* Wypełniony wniosek (/wniosek): układ jak we wzorze, czytelny na ekranie i na wydruku. */
 @layer components {
