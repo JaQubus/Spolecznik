@@ -1,2381 +1,3042 @@
 [
   {
-    "teryt": "1201011",
-    "bdl_id": "011212001011",
-    "nazwa": "Bochnia",
-    "powiat": "bocheński",
-    "typ": "miejska",
-    "ludnosc": 28187,
-    "udzial_65plus": 22.5,
-    "zmiana_ludnosci_10l": -6.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1201022",
-    "bdl_id": "011212001022",
-    "nazwa": "Bochnia",
-    "powiat": "bocheński",
+    "teryt": "1801032",
+    "bdl_id": "061813301032",
+    "nazwa": "Czarna",
+    "powiat": "bieszczadzki",
     "typ": "wiejska",
-    "ludnosc": 20945,
-    "udzial_65plus": 17.2,
-    "zmiana_ludnosci_10l": 7.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1201032",
-    "bdl_id": "011212001032",
-    "nazwa": "Drwinia",
-    "powiat": "bocheński",
-    "typ": "wiejska",
-    "ludnosc": 6240,
-    "udzial_65plus": 19.0,
-    "zmiana_ludnosci_10l": -4.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1201042",
-    "bdl_id": "011212001042",
-    "nazwa": "Lipnica Murowana",
-    "powiat": "bocheński",
-    "typ": "wiejska",
-    "ludnosc": 5489,
-    "udzial_65plus": 15.8,
-    "zmiana_ludnosci_10l": -2.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1201052",
-    "bdl_id": "011212001052",
-    "nazwa": "Łapanów",
-    "powiat": "bocheński",
-    "typ": "wiejska",
-    "ludnosc": 8693,
-    "udzial_65plus": 15.1,
-    "zmiana_ludnosci_10l": 9.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1201063",
-    "bdl_id": "011212001063",
-    "nazwa": "Nowy Wiśnicz",
-    "powiat": "bocheński",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 14522,
-    "udzial_65plus": 16.1,
-    "zmiana_ludnosci_10l": 5.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1201072",
-    "bdl_id": "011212001072",
-    "nazwa": "Rzezawa",
-    "powiat": "bocheński",
-    "typ": "wiejska",
-    "ludnosc": 11600,
-    "udzial_65plus": 15.9,
-    "zmiana_ludnosci_10l": 4.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1201082",
-    "bdl_id": "011212001082",
-    "nazwa": "Trzciana",
-    "powiat": "bocheński",
-    "typ": "wiejska",
-    "ludnosc": 5711,
-    "udzial_65plus": 16.1,
-    "zmiana_ludnosci_10l": 5.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1201092",
-    "bdl_id": "011212001092",
-    "nazwa": "Żegocina",
-    "powiat": "bocheński",
-    "typ": "wiejska",
-    "ludnosc": 5539,
-    "udzial_65plus": 16.7,
-    "zmiana_ludnosci_10l": 2.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1202012",
-    "bdl_id": "011212402012",
-    "nazwa": "Borzęcin",
-    "powiat": "brzeski",
-    "typ": "wiejska",
-    "ludnosc": 8057,
-    "udzial_65plus": 18.4,
-    "zmiana_ludnosci_10l": -4.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1202023",
-    "bdl_id": "011212402023",
-    "nazwa": "Brzesko",
-    "powiat": "brzeski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 35120,
-    "udzial_65plus": 19.7,
-    "zmiana_ludnosci_10l": -3.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1202033",
-    "bdl_id": "011212402033",
-    "nazwa": "Czchów",
-    "powiat": "brzeski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 9588,
-    "udzial_65plus": 17.4,
-    "zmiana_ludnosci_10l": -2.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1202042",
-    "bdl_id": "011212402042",
-    "nazwa": "Dębno",
-    "powiat": "brzeski",
-    "typ": "wiejska",
-    "ludnosc": 14458,
-    "udzial_65plus": 17.3,
-    "zmiana_ludnosci_10l": -1.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1202052",
-    "bdl_id": "011212402052",
-    "nazwa": "Gnojnik",
-    "powiat": "brzeski",
-    "typ": "wiejska",
-    "ludnosc": 8075,
-    "udzial_65plus": 15.5,
-    "zmiana_ludnosci_10l": 2.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1202062",
-    "bdl_id": "011212402062",
-    "nazwa": "Iwkowa",
-    "powiat": "brzeski",
-    "typ": "wiejska",
-    "ludnosc": 6661,
-    "udzial_65plus": 16.4,
-    "zmiana_ludnosci_10l": 5.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1202072",
-    "bdl_id": "011212402072",
-    "nazwa": "Szczurowa",
-    "powiat": "brzeski",
-    "typ": "wiejska",
-    "ludnosc": 8983,
-    "udzial_65plus": 19.7,
-    "zmiana_ludnosci_10l": -7.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1203013",
-    "bdl_id": "011212303013",
-    "nazwa": "Alwernia",
-    "powiat": "chrzanowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 12160,
-    "udzial_65plus": 21.1,
-    "zmiana_ludnosci_10l": -4.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1203022",
-    "bdl_id": "011212303022",
-    "nazwa": "Babice",
-    "powiat": "chrzanowski",
-    "typ": "wiejska",
-    "ludnosc": 8961,
-    "udzial_65plus": 20.9,
-    "zmiana_ludnosci_10l": -1.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1203033",
-    "bdl_id": "011212303033",
-    "nazwa": "Chrzanów",
-    "powiat": "chrzanowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 43122,
-    "udzial_65plus": 25.9,
-    "zmiana_ludnosci_10l": -9.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1203043",
-    "bdl_id": "011212303043",
-    "nazwa": "Libiąż",
-    "powiat": "chrzanowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 20715,
-    "udzial_65plus": 22.3,
-    "zmiana_ludnosci_10l": -8.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1203053",
-    "bdl_id": "011212303053",
-    "nazwa": "Trzebinia",
-    "powiat": "chrzanowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 31823,
-    "udzial_65plus": 23.5,
-    "zmiana_ludnosci_10l": -7.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1204012",
-    "bdl_id": "011212404012",
-    "nazwa": "Bolesław",
-    "powiat": "dąbrowski",
-    "typ": "wiejska",
-    "ludnosc": 2614,
-    "udzial_65plus": 19.1,
-    "zmiana_ludnosci_10l": -5.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1204023",
-    "bdl_id": "011212404023",
-    "nazwa": "Dąbrowa Tarnowska",
-    "powiat": "dąbrowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 20817,
-    "udzial_65plus": 19.3,
-    "zmiana_ludnosci_10l": -1.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1204032",
-    "bdl_id": "011212404032",
-    "nazwa": "Gręboszów",
-    "powiat": "dąbrowski",
-    "typ": "wiejska",
-    "ludnosc": 3112,
-    "udzial_65plus": 23.8,
-    "zmiana_ludnosci_10l": -8.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1204042",
-    "bdl_id": "011212404042",
-    "nazwa": "Mędrzechów",
-    "powiat": "dąbrowski",
-    "typ": "wiejska",
-    "ludnosc": 3199,
-    "udzial_65plus": 19.8,
-    "zmiana_ludnosci_10l": -9.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1204052",
-    "bdl_id": "011212404052",
-    "nazwa": "Olesno",
-    "powiat": "dąbrowski",
-    "typ": "wiejska",
-    "ludnosc": 7595,
-    "udzial_65plus": 18.2,
-    "zmiana_ludnosci_10l": -4.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1204062",
-    "bdl_id": "011212404062",
-    "nazwa": "Radgoszcz",
-    "powiat": "dąbrowski",
-    "typ": "wiejska",
-    "ludnosc": 7366,
-    "udzial_65plus": 16.5,
-    "zmiana_ludnosci_10l": -0.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1204073",
-    "bdl_id": "011212404073",
-    "nazwa": "Szczucin",
-    "powiat": "dąbrowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 12272,
-    "udzial_65plus": 18.1,
-    "zmiana_ludnosci_10l": -7.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1205011",
-    "bdl_id": "011212205011",
-    "nazwa": "Gorlice",
-    "powiat": "gorlicki",
-    "typ": "miejska",
-    "ludnosc": 24825,
-    "udzial_65plus": 27.0,
-    "zmiana_ludnosci_10l": -11.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1205023",
-    "bdl_id": "011212205023",
-    "nazwa": "Biecz",
-    "powiat": "gorlicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 15827,
-    "udzial_65plus": 20.3,
-    "zmiana_ludnosci_10l": -6.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1205033",
-    "bdl_id": "011212205033",
-    "nazwa": "Bobowa",
-    "powiat": "gorlicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 9499,
-    "udzial_65plus": 15.3,
-    "zmiana_ludnosci_10l": -2.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1205042",
-    "bdl_id": "011212205042",
-    "nazwa": "Gorlice",
-    "powiat": "gorlicki",
-    "typ": "wiejska",
-    "ludnosc": 16829,
+    "ludnosc": 2327,
     "udzial_65plus": 18.8,
-    "zmiana_ludnosci_10l": -1.9,
+    "zmiana_ludnosci_10l": -3.1,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -5.12,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.83,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 555.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1205052",
-    "bdl_id": "011212205052",
-    "nazwa": "Lipinki",
-    "powiat": "gorlicki",
+    "teryt": "1801052",
+    "bdl_id": "061813301052",
+    "nazwa": "Lutowiska",
+    "powiat": "bieszczadzki",
     "typ": "wiejska",
-    "ludnosc": 6617,
-    "udzial_65plus": 18.9,
-    "zmiana_ludnosci_10l": -2.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1205062",
-    "bdl_id": "011212205062",
-    "nazwa": "Łużna",
-    "powiat": "gorlicki",
-    "typ": "wiejska",
-    "ludnosc": 8233,
-    "udzial_65plus": 16.3,
-    "zmiana_ludnosci_10l": -2.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1205072",
-    "bdl_id": "011212205072",
-    "nazwa": "Moszczenica",
-    "powiat": "gorlicki",
-    "typ": "wiejska",
-    "ludnosc": 4893,
-    "udzial_65plus": 16.0,
-    "zmiana_ludnosci_10l": -0.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1205082",
-    "bdl_id": "011212205082",
-    "nazwa": "Ropa",
-    "powiat": "gorlicki",
-    "typ": "wiejska",
-    "ludnosc": 5502,
-    "udzial_65plus": 15.2,
-    "zmiana_ludnosci_10l": 2.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1205092",
-    "bdl_id": "011212205092",
-    "nazwa": "Sękowa",
-    "powiat": "gorlicki",
-    "typ": "wiejska",
-    "ludnosc": 4858,
-    "udzial_65plus": 18.5,
-    "zmiana_ludnosci_10l": -2.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1205102",
-    "bdl_id": "011212205102",
-    "nazwa": "Uście Gorlickie",
-    "powiat": "gorlicki",
-    "typ": "wiejska",
-    "ludnosc": 6642,
-    "udzial_65plus": 16.8,
-    "zmiana_ludnosci_10l": -2.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206012",
-    "bdl_id": "011212006012",
-    "nazwa": "Czernichów",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 15507,
-    "udzial_65plus": 17.1,
-    "zmiana_ludnosci_10l": 8.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206022",
-    "bdl_id": "011212006022",
-    "nazwa": "Igołomia-Wawrzeńczyce",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 7809,
-    "udzial_65plus": 20.5,
-    "zmiana_ludnosci_10l": 1.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206032",
-    "bdl_id": "011212006032",
-    "nazwa": "Iwanowice",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 9859,
-    "udzial_65plus": 17.9,
-    "zmiana_ludnosci_10l": 9.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206042",
-    "bdl_id": "011212006042",
-    "nazwa": "Jerzmanowice-Przeginia",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 11094,
-    "udzial_65plus": 19.3,
-    "zmiana_ludnosci_10l": 2.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206052",
-    "bdl_id": "011212006052",
-    "nazwa": "Kocmyrzów-Luborzyca",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 18779,
-    "udzial_65plus": 15.7,
-    "zmiana_ludnosci_10l": 25.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206063",
-    "bdl_id": "011212006063",
-    "nazwa": "Krzeszowice",
-    "powiat": "krakowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 31661,
-    "udzial_65plus": 22.6,
-    "zmiana_ludnosci_10l": -2.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206072",
-    "bdl_id": "011212006072",
-    "nazwa": "Liszki",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 18832,
-    "udzial_65plus": 16.8,
-    "zmiana_ludnosci_10l": 12.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206082",
-    "bdl_id": "011212006082",
-    "nazwa": "Michałowice",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 13692,
-    "udzial_65plus": 14.2,
-    "zmiana_ludnosci_10l": 37.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206092",
-    "bdl_id": "011212006092",
-    "nazwa": "Mogilany",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 16594,
-    "udzial_65plus": 14.7,
-    "zmiana_ludnosci_10l": 22.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206103",
-    "bdl_id": "011212006103",
-    "nazwa": "Skała",
-    "powiat": "krakowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 10860,
-    "udzial_65plus": 18.9,
-    "zmiana_ludnosci_10l": 3.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206113",
-    "bdl_id": "011212006113",
-    "nazwa": "Skawina",
-    "powiat": "krakowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 43944,
-    "udzial_65plus": 19.8,
-    "zmiana_ludnosci_10l": 1.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206123",
-    "bdl_id": "011212006123",
-    "nazwa": "Słomniki",
-    "powiat": "krakowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 13620,
-    "udzial_65plus": 20.3,
-    "zmiana_ludnosci_10l": -0.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206132",
-    "bdl_id": "011212006132",
-    "nazwa": "Sułoszowa",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 5584,
-    "udzial_65plus": 20.3,
-    "zmiana_ludnosci_10l": -4.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206143",
-    "bdl_id": "011212006143",
-    "nazwa": "Świątniki Górne",
-    "powiat": "krakowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 11165,
-    "udzial_65plus": 16.1,
-    "zmiana_ludnosci_10l": 14.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206152",
-    "bdl_id": "011212006152",
-    "nazwa": "Wielka Wieś",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 17589,
-    "udzial_65plus": 13.3,
-    "zmiana_ludnosci_10l": 56.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206162",
-    "bdl_id": "011212006162",
-    "nazwa": "Zabierzów",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 30041,
-    "udzial_65plus": 18.5,
-    "zmiana_ludnosci_10l": 17.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1206172",
-    "bdl_id": "011212006172",
-    "nazwa": "Zielonki",
-    "powiat": "krakowski",
-    "typ": "wiejska",
-    "ludnosc": 28255,
-    "udzial_65plus": 14.2,
-    "zmiana_ludnosci_10l": 32.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207011",
-    "bdl_id": "011212207011",
-    "nazwa": "Limanowa",
-    "powiat": "limanowski",
-    "typ": "miejska",
-    "ludnosc": 14224,
-    "udzial_65plus": 20.9,
-    "zmiana_ludnosci_10l": -6.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207021",
-    "bdl_id": "011212207021",
-    "nazwa": "Mszana Dolna",
-    "powiat": "limanowski",
-    "typ": "miejska",
-    "ludnosc": 7808,
-    "udzial_65plus": 19.1,
-    "zmiana_ludnosci_10l": -1.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207032",
-    "bdl_id": "011212207032",
-    "nazwa": "Dobra",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 10123,
-    "udzial_65plus": 16.7,
-    "zmiana_ludnosci_10l": 2.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207042",
-    "bdl_id": "011212207042",
-    "nazwa": "Jodłownik",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 8777,
-    "udzial_65plus": 15.9,
-    "zmiana_ludnosci_10l": 3.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207052",
-    "bdl_id": "011212207052",
-    "nazwa": "Kamienica",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 5948,
-    "udzial_65plus": 14.7,
-    "zmiana_ludnosci_10l": null,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207062",
-    "bdl_id": "011212207062",
-    "nazwa": "Laskowa",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 8115,
-    "udzial_65plus": 14.5,
-    "zmiana_ludnosci_10l": 1.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207072",
-    "bdl_id": "011212207072",
-    "nazwa": "Limanowa",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 26193,
-    "udzial_65plus": 14.0,
-    "zmiana_ludnosci_10l": 5.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207082",
-    "bdl_id": "011212207082",
-    "nazwa": "Łukowica",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 10236,
-    "udzial_65plus": 14.6,
-    "zmiana_ludnosci_10l": 3.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207092",
-    "bdl_id": "011212207092",
-    "nazwa": "Mszana Dolna",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 17608,
-    "udzial_65plus": 14.5,
-    "zmiana_ludnosci_10l": 0.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207102",
-    "bdl_id": "011212207102",
-    "nazwa": "Niedźwiedź",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 7298,
-    "udzial_65plus": 14.1,
-    "zmiana_ludnosci_10l": 0.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207112",
-    "bdl_id": "011212207112",
-    "nazwa": "Słopnice",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 7054,
-    "udzial_65plus": 11.8,
-    "zmiana_ludnosci_10l": 7.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207122",
-    "bdl_id": "011212207122",
-    "nazwa": "Tymbark",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 6297,
-    "udzial_65plus": 16.1,
-    "zmiana_ludnosci_10l": -2.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1207132",
-    "bdl_id": "011212207132",
-    "nazwa": "Szczawa",
-    "powiat": "limanowski",
-    "typ": "wiejska",
-    "ludnosc": 1799,
-    "udzial_65plus": 14.8,
-    "zmiana_ludnosci_10l": null,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1208012",
-    "bdl_id": "011212008012",
-    "nazwa": "Charsznica",
-    "powiat": "miechowski",
-    "typ": "wiejska",
-    "ludnosc": 6954,
-    "udzial_65plus": 24.0,
-    "zmiana_ludnosci_10l": -8.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1208022",
-    "bdl_id": "011212008022",
-    "nazwa": "Gołcza",
-    "powiat": "miechowski",
-    "typ": "wiejska",
-    "ludnosc": 5827,
-    "udzial_65plus": 20.9,
-    "zmiana_ludnosci_10l": -5.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1208032",
-    "bdl_id": "011212008032",
-    "nazwa": "Kozłów",
-    "powiat": "miechowski",
-    "typ": "wiejska",
-    "ludnosc": 4344,
-    "udzial_65plus": 24.0,
+    "ludnosc": 1925,
+    "udzial_65plus": 21.4,
     "zmiana_ludnosci_10l": -7.9,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -15.53,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.66,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 663.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1208043",
-    "bdl_id": "011212008043",
-    "nazwa": "Książ Wielki",
-    "powiat": "miechowski",
+    "teryt": "1801083",
+    "bdl_id": "061813301083",
+    "nazwa": "Ustrzyki Dolne",
+    "powiat": "bieszczadzki",
     "typ": "miejsko-wiejska",
-    "ludnosc": 4736,
-    "udzial_65plus": 26.0,
-    "zmiana_ludnosci_10l": -9.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1208053",
-    "bdl_id": "011212008053",
-    "nazwa": "Miechów",
-    "powiat": "miechowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 18401,
-    "udzial_65plus": 24.2,
-    "zmiana_ludnosci_10l": -7.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1208062",
-    "bdl_id": "011212008062",
-    "nazwa": "Racławice",
-    "powiat": "miechowski",
-    "typ": "wiejska",
-    "ludnosc": 2378,
+    "ludnosc": 15963,
     "udzial_65plus": 22.4,
-    "zmiana_ludnosci_10l": -3.2,
+    "zmiana_ludnosci_10l": -9.2,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -4.43,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.92,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 353.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1208072",
-    "bdl_id": "011212008072",
-    "nazwa": "Słaboszów",
-    "powiat": "miechowski",
-    "typ": "wiejska",
-    "ludnosc": 3258,
-    "udzial_65plus": 26.1,
-    "zmiana_ludnosci_10l": -10.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1209013",
-    "bdl_id": "011212009013",
-    "nazwa": "Dobczyce",
-    "powiat": "myślenicki",
+    "teryt": "1802013",
+    "bdl_id": "061813302013",
+    "nazwa": "Brzozów",
+    "powiat": "brzozowski",
     "typ": "miejsko-wiejska",
-    "ludnosc": 15580,
-    "udzial_65plus": 17.1,
-    "zmiana_ludnosci_10l": 2.7,
+    "ludnosc": 25637,
+    "udzial_65plus": 20.1,
+    "zmiana_ludnosci_10l": -3.7,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -2.41,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.8,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 331.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1209022",
-    "bdl_id": "011212009022",
-    "nazwa": "Lubień",
-    "powiat": "myślenicki",
+    "teryt": "1802022",
+    "bdl_id": "061813302022",
+    "nazwa": "Domaradz",
+    "powiat": "brzozowski",
     "typ": "wiejska",
-    "ludnosc": 10113,
-    "udzial_65plus": 15.9,
-    "zmiana_ludnosci_10l": 1.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1209033",
-    "bdl_id": "011212009033",
-    "nazwa": "Myślenice",
-    "powiat": "myślenicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 45429,
-    "udzial_65plus": 17.4,
-    "zmiana_ludnosci_10l": 4.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1209042",
-    "bdl_id": "011212009042",
-    "nazwa": "Pcim",
-    "powiat": "myślenicki",
-    "typ": "wiejska",
-    "ludnosc": 10990,
-    "udzial_65plus": 17.1,
-    "zmiana_ludnosci_10l": 0.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1209052",
-    "bdl_id": "011212009052",
-    "nazwa": "Raciechowice",
-    "powiat": "myślenicki",
-    "typ": "wiejska",
-    "ludnosc": 6456,
-    "udzial_65plus": 17.1,
-    "zmiana_ludnosci_10l": 3.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1209062",
-    "bdl_id": "011212009062",
-    "nazwa": "Siepraw",
-    "powiat": "myślenicki",
-    "typ": "wiejska",
-    "ludnosc": 9804,
-    "udzial_65plus": 15.4,
-    "zmiana_ludnosci_10l": 13.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1209073",
-    "bdl_id": "011212009073",
-    "nazwa": "Sułkowice",
-    "powiat": "myślenicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 15274,
-    "udzial_65plus": 16.5,
-    "zmiana_ludnosci_10l": 4.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1209082",
-    "bdl_id": "011212009082",
-    "nazwa": "Tokarnia",
-    "powiat": "myślenicki",
-    "typ": "wiejska",
-    "ludnosc": 8777,
-    "udzial_65plus": 14.9,
-    "zmiana_ludnosci_10l": 2.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1209092",
-    "bdl_id": "011212009092",
-    "nazwa": "Wiśniowa",
-    "powiat": "myślenicki",
-    "typ": "wiejska",
-    "ludnosc": 7556,
-    "udzial_65plus": 16.4,
-    "zmiana_ludnosci_10l": 4.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210011",
-    "bdl_id": "011212210011",
-    "nazwa": "Grybów",
-    "powiat": "nowosądecki",
-    "typ": "miejska",
-    "ludnosc": 5857,
-    "udzial_65plus": 19.6,
-    "zmiana_ludnosci_10l": -3.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210022",
-    "bdl_id": "011212210022",
-    "nazwa": "Chełmiec",
-    "powiat": "nowosądecki",
-    "typ": "wiejska",
-    "ludnosc": 29876,
-    "udzial_65plus": 13.6,
-    "zmiana_ludnosci_10l": 7.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210032",
-    "bdl_id": "011212210032",
-    "nazwa": "Gródek nad Dunajcem",
-    "powiat": "nowosądecki",
-    "typ": "wiejska",
-    "ludnosc": 8823,
-    "udzial_65plus": 16.4,
-    "zmiana_ludnosci_10l": -4.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210042",
-    "bdl_id": "011212210042",
-    "nazwa": "Grybów",
-    "powiat": "nowosądecki",
-    "typ": "wiejska",
-    "ludnosc": 25420,
-    "udzial_65plus": 14.4,
-    "zmiana_ludnosci_10l": 2.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210052",
-    "bdl_id": "011212210052",
-    "nazwa": "Kamionka Wielka",
-    "powiat": "nowosądecki",
-    "typ": "wiejska",
-    "ludnosc": 10486,
-    "udzial_65plus": 13.3,
-    "zmiana_ludnosci_10l": 3.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210062",
-    "bdl_id": "011212210062",
-    "nazwa": "Korzenna",
-    "powiat": "nowosądecki",
-    "typ": "wiejska",
-    "ludnosc": 14443,
-    "udzial_65plus": 13.7,
-    "zmiana_ludnosci_10l": 1.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210073",
-    "bdl_id": "011212210073",
-    "nazwa": "Krynica-Zdrój",
-    "powiat": "nowosądecki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 15276,
-    "udzial_65plus": 23.0,
-    "zmiana_ludnosci_10l": -9.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210082",
-    "bdl_id": "011212210082",
-    "nazwa": "Łabowa",
-    "powiat": "nowosądecki",
-    "typ": "wiejska",
-    "ludnosc": 6016,
-    "udzial_65plus": 13.3,
-    "zmiana_ludnosci_10l": 1.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210092",
-    "bdl_id": "011212210092",
-    "nazwa": "Łącko",
-    "powiat": "nowosądecki",
-    "typ": "wiejska",
-    "ludnosc": 16714,
-    "udzial_65plus": 14.3,
-    "zmiana_ludnosci_10l": 3.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210102",
-    "bdl_id": "011212210102",
-    "nazwa": "Łososina Dolna",
-    "powiat": "nowosądecki",
-    "typ": "wiejska",
-    "ludnosc": 11187,
-    "udzial_65plus": 14.9,
-    "zmiana_ludnosci_10l": 3.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210113",
-    "bdl_id": "011212210113",
-    "nazwa": "Muszyna",
-    "powiat": "nowosądecki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 11012,
-    "udzial_65plus": 19.7,
-    "zmiana_ludnosci_10l": -5.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210122",
-    "bdl_id": "011212210122",
-    "nazwa": "Nawojowa",
-    "powiat": "nowosądecki",
-    "typ": "wiejska",
-    "ludnosc": 8869,
-    "udzial_65plus": 14.2,
-    "zmiana_ludnosci_10l": 4.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1210133",
-    "bdl_id": "011212210133",
-    "nazwa": "Piwniczna-Zdrój",
-    "powiat": "nowosądecki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 9750,
+    "ludnosc": 5737,
     "udzial_65plus": 18.7,
-    "zmiana_ludnosci_10l": -8.6,
+    "zmiana_ludnosci_10l": -5.5,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -6.76,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 0.17,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 914.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1210142",
-    "bdl_id": "011212210142",
-    "nazwa": "Podegrodzie",
-    "powiat": "nowosądecki",
+    "teryt": "1802032",
+    "bdl_id": "061813302032",
+    "nazwa": "Dydnia",
+    "powiat": "brzozowski",
     "typ": "wiejska",
-    "ludnosc": 13725,
-    "udzial_65plus": 13.2,
-    "zmiana_ludnosci_10l": 6.8,
+    "ludnosc": 7402,
+    "udzial_65plus": 19.3,
+    "zmiana_ludnosci_10l": -8.1,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -3.77,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.39,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 681.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1210152",
-    "bdl_id": "011212210152",
-    "nazwa": "Rytro",
-    "powiat": "nowosądecki",
+    "teryt": "1802042",
+    "bdl_id": "061813302042",
+    "nazwa": "Haczów",
+    "powiat": "brzozowski",
     "typ": "wiejska",
-    "ludnosc": 3583,
-    "udzial_65plus": 18.3,
-    "zmiana_ludnosci_10l": -7.1,
+    "ludnosc": 8909,
+    "udzial_65plus": 19.9,
+    "zmiana_ludnosci_10l": -4.2,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": 0.45,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.24,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 366.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1210163",
-    "bdl_id": "011212210163",
-    "nazwa": "Stary Sącz",
-    "powiat": "nowosądecki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 23420,
-    "udzial_65plus": 16.9,
-    "zmiana_ludnosci_10l": -0.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211011",
-    "bdl_id": "011216911011",
-    "nazwa": "Nowy Targ",
-    "powiat": "nowotarski",
-    "typ": "miejska",
-    "ludnosc": 32956,
-    "udzial_65plus": 20.8,
-    "zmiana_ludnosci_10l": -1.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211023",
-    "bdl_id": "011216911023",
-    "nazwa": "Szczawnica",
-    "powiat": "nowotarski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 6567,
-    "udzial_65plus": 21.5,
-    "zmiana_ludnosci_10l": -11.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211033",
-    "bdl_id": "011216911033",
-    "nazwa": "Czarny Dunajec",
-    "powiat": "nowotarski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 22115,
-    "udzial_65plus": 17.2,
-    "zmiana_ludnosci_10l": -0.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211042",
-    "bdl_id": "011216911042",
-    "nazwa": "Czorsztyn",
-    "powiat": "nowotarski",
+    "teryt": "1802052",
+    "bdl_id": "061813302052",
+    "nazwa": "Jasienica Rosielna",
+    "powiat": "brzozowski",
     "typ": "wiejska",
-    "ludnosc": 7535,
-    "udzial_65plus": 16.9,
-    "zmiana_ludnosci_10l": -0.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211052",
-    "bdl_id": "011216911052",
-    "nazwa": "Jabłonka",
-    "powiat": "nowotarski",
-    "typ": "wiejska",
-    "ludnosc": 19289,
-    "udzial_65plus": 14.4,
-    "zmiana_ludnosci_10l": 5.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211062",
-    "bdl_id": "011216911062",
-    "nazwa": "Krościenko nad Dunajcem",
-    "powiat": "nowotarski",
-    "typ": "wiejska",
-    "ludnosc": 6592,
-    "udzial_65plus": 19.1,
-    "zmiana_ludnosci_10l": -2.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211072",
-    "bdl_id": "011216911072",
-    "nazwa": "Lipnica Wielka",
-    "powiat": "nowotarski",
-    "typ": "wiejska",
-    "ludnosc": 6060,
-    "udzial_65plus": 14.2,
-    "zmiana_ludnosci_10l": 1.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211082",
-    "bdl_id": "011216911082",
-    "nazwa": "Łapsze Niżne",
-    "powiat": "nowotarski",
-    "typ": "wiejska",
-    "ludnosc": 9237,
+    "ludnosc": 7412,
     "udzial_65plus": 17.7,
-    "zmiana_ludnosci_10l": 0.0,
+    "zmiana_ludnosci_10l": -4.6,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -4.98,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 0.54,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 803.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1211092",
-    "bdl_id": "011216911092",
-    "nazwa": "Nowy Targ",
-    "powiat": "nowotarski",
+    "teryt": "1802062",
+    "bdl_id": "061813302062",
+    "nazwa": "Nozdrzec",
+    "powiat": "brzozowski",
     "typ": "wiejska",
-    "ludnosc": 24077,
-    "udzial_65plus": 16.2,
-    "zmiana_ludnosci_10l": 1.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211102",
-    "bdl_id": "011216911102",
-    "nazwa": "Ochotnica Dolna",
-    "powiat": "nowotarski",
-    "typ": "wiejska",
-    "ludnosc": 8469,
-    "udzial_65plus": 15.4,
-    "zmiana_ludnosci_10l": -0.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211112",
-    "bdl_id": "011216911112",
-    "nazwa": "Raba Wyżna",
-    "powiat": "nowotarski",
-    "typ": "wiejska",
-    "ludnosc": 14380,
-    "udzial_65plus": 16.6,
-    "zmiana_ludnosci_10l": -1.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211123",
-    "bdl_id": "011216911123",
-    "nazwa": "Rabka-Zdrój",
-    "powiat": "nowotarski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 16386,
-    "udzial_65plus": 21.4,
-    "zmiana_ludnosci_10l": -5.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211132",
-    "bdl_id": "011216911132",
-    "nazwa": "Spytkowice",
-    "powiat": "nowotarski",
-    "typ": "wiejska",
-    "ludnosc": 4703,
-    "udzial_65plus": 16.2,
-    "zmiana_ludnosci_10l": 4.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1211142",
-    "bdl_id": "011216911142",
-    "nazwa": "Szaflary",
-    "powiat": "nowotarski",
-    "typ": "wiejska",
-    "ludnosc": 11338,
-    "udzial_65plus": 15.6,
-    "zmiana_ludnosci_10l": 3.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1212011",
-    "bdl_id": "011212312011",
-    "nazwa": "Bukowno",
-    "powiat": "olkuski",
-    "typ": "miejska",
-    "ludnosc": 9104,
-    "udzial_65plus": 26.7,
+    "ludnosc": 7312,
+    "udzial_65plus": 22.4,
     "zmiana_ludnosci_10l": -12.0,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -5.29,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.38,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 845.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1212032",
-    "bdl_id": "011212312032",
-    "nazwa": "Bolesław",
-    "powiat": "olkuski",
-    "typ": "wiejska",
-    "ludnosc": 7353,
-    "udzial_65plus": 25.6,
-    "zmiana_ludnosci_10l": -5.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1212042",
-    "bdl_id": "011212312042",
-    "nazwa": "Klucze",
-    "powiat": "olkuski",
-    "typ": "wiejska",
-    "ludnosc": 14206,
-    "udzial_65plus": 23.1,
-    "zmiana_ludnosci_10l": -6.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1212053",
-    "bdl_id": "011212312053",
-    "nazwa": "Olkusz",
-    "powiat": "olkuski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 44782,
-    "udzial_65plus": 25.2,
-    "zmiana_ludnosci_10l": -9.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1212062",
-    "bdl_id": "011212312062",
-    "nazwa": "Trzyciąż",
-    "powiat": "olkuski",
-    "typ": "wiejska",
-    "ludnosc": 6876,
-    "udzial_65plus": 19.9,
-    "zmiana_ludnosci_10l": -2.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1212073",
-    "bdl_id": "011212312073",
-    "nazwa": "Wolbrom",
-    "powiat": "olkuski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 21566,
-    "udzial_65plus": 22.2,
-    "zmiana_ludnosci_10l": -7.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1213011",
-    "bdl_id": "011212313011",
-    "nazwa": "Oświęcim",
-    "powiat": "oświęcimski",
+    "teryt": "1803011",
+    "bdl_id": "061813603011",
+    "nazwa": "Dębica",
+    "powiat": "dębicki",
     "typ": "miejska",
-    "ludnosc": 35005,
-    "udzial_65plus": 25.7,
-    "zmiana_ludnosci_10l": -10.7,
+    "ludnosc": 42223,
+    "udzial_65plus": 24.0,
+    "zmiana_ludnosci_10l": -9.0,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -4.76,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.17,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 355.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1213023",
-    "bdl_id": "011212313023",
-    "nazwa": "Brzeszcze",
-    "powiat": "oświęcimski",
+    "teryt": "1803023",
+    "bdl_id": "061813603023",
+    "nazwa": "Brzostek",
+    "powiat": "dębicki",
     "typ": "miejsko-wiejska",
-    "ludnosc": 20083,
-    "udzial_65plus": 23.2,
-    "zmiana_ludnosci_10l": -6.7,
+    "ludnosc": 12551,
+    "udzial_65plus": 17.9,
+    "zmiana_ludnosci_10l": -4.7,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -2.47,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.75,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 510.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1213033",
-    "bdl_id": "011212313033",
-    "nazwa": "Chełmek",
-    "powiat": "oświęcimski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 12063,
-    "udzial_65plus": 23.4,
-    "zmiana_ludnosci_10l": -8.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1213043",
-    "bdl_id": "011212313043",
-    "nazwa": "Kęty",
-    "powiat": "oświęcimski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 33014,
-    "udzial_65plus": 21.2,
-    "zmiana_ludnosci_10l": -3.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1213052",
-    "bdl_id": "011212313052",
-    "nazwa": "Osiek",
-    "powiat": "oświęcimski",
+    "teryt": "1803032",
+    "bdl_id": "061813603032",
+    "nazwa": "Czarna",
+    "powiat": "dębicki",
     "typ": "wiejska",
-    "ludnosc": 8098,
+    "ludnosc": 13367,
+    "udzial_65plus": 16.7,
+    "zmiana_ludnosci_10l": 3.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 2.85,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 0.15,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 585.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1803042",
+    "bdl_id": "061813603042",
+    "nazwa": "Dębica",
+    "powiat": "dębicki",
+    "typ": "wiejska",
+    "ludnosc": 25515,
+    "udzial_65plus": 17.2,
+    "zmiana_ludnosci_10l": 0.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.72,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.0,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 392.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1803052",
+    "bdl_id": "061813603052",
+    "nazwa": "Jodłowa",
+    "powiat": "dębicki",
+    "typ": "wiejska",
+    "ludnosc": 5146,
     "udzial_65plus": 17.6,
+    "zmiana_ludnosci_10l": -5.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -7.16,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.1,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 784.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1803063",
+    "bdl_id": "061813603063",
+    "nazwa": "Pilzno",
+    "powiat": "dębicki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 18195,
+    "udzial_65plus": 17.3,
+    "zmiana_ludnosci_10l": 0.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.16,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.03,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 374.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1803072",
+    "bdl_id": "061813603072",
+    "nazwa": "Żyraków",
+    "powiat": "dębicki",
+    "typ": "wiejska",
+    "ludnosc": 14513,
+    "udzial_65plus": 15.6,
+    "zmiana_ludnosci_10l": 4.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 4.64,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.62,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 503.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1804011",
+    "bdl_id": "061813404011",
+    "nazwa": "Jarosław",
+    "powiat": "jarosławski",
+    "typ": "miejska",
+    "ludnosc": 34707,
+    "udzial_65plus": 25.3,
+    "zmiana_ludnosci_10l": -9.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -3.27,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.3,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 386.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1804021",
+    "bdl_id": "061813404021",
+    "nazwa": "Radymno",
+    "powiat": "jarosławski",
+    "typ": "miejska",
+    "ludnosc": 4814,
+    "udzial_65plus": 21.5,
+    "zmiana_ludnosci_10l": -10.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -7.64,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.75,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 328.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1804032",
+    "bdl_id": "061813404032",
+    "nazwa": "Chłopice",
+    "powiat": "jarosławski",
+    "typ": "wiejska",
+    "ludnosc": 5194,
+    "udzial_65plus": 19.8,
+    "zmiana_ludnosci_10l": -7.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.73,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.45,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 399.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1804042",
+    "bdl_id": "061813404042",
+    "nazwa": "Jarosław",
+    "powiat": "jarosławski",
+    "typ": "wiejska",
+    "ludnosc": 13041,
+    "udzial_65plus": 18.3,
     "zmiana_ludnosci_10l": -1.0,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -2.52,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.67,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 376.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1213062",
-    "bdl_id": "011212313062",
-    "nazwa": "Oświęcim",
-    "powiat": "oświęcimski",
+    "teryt": "1804052",
+    "bdl_id": "061813404052",
+    "nazwa": "Laszki",
+    "powiat": "jarosławski",
     "typ": "wiejska",
-    "ludnosc": 18897,
-    "udzial_65plus": 19.8,
-    "zmiana_ludnosci_10l": 4.3,
+    "ludnosc": 6396,
+    "udzial_65plus": 19.5,
+    "zmiana_ludnosci_10l": -8.9,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -7.16,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.07,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 568.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1213072",
-    "bdl_id": "011212313072",
-    "nazwa": "Polanka Wielka",
-    "powiat": "oświęcimski",
+    "teryt": "1804062",
+    "bdl_id": "061813404062",
+    "nazwa": "Pawłosiów",
+    "powiat": "jarosławski",
     "typ": "wiejska",
-    "ludnosc": 4296,
-    "udzial_65plus": 17.3,
-    "zmiana_ludnosci_10l": 0.5,
+    "ludnosc": 8356,
+    "udzial_65plus": 18.9,
+    "zmiana_ludnosci_10l": -0.9,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": 2.03,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.79,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 270.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1213082",
-    "bdl_id": "011212313082",
-    "nazwa": "Przeciszów",
-    "powiat": "oświęcimski",
-    "typ": "wiejska",
-    "ludnosc": 6246,
-    "udzial_65plus": 21.1,
-    "zmiana_ludnosci_10l": -7.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1213093",
-    "bdl_id": "011212313093",
-    "nazwa": "Zator",
-    "powiat": "oświęcimski",
+    "teryt": "1804073",
+    "bdl_id": "061813404073",
+    "nazwa": "Pruchnik",
+    "powiat": "jarosławski",
     "typ": "miejsko-wiejska",
-    "ludnosc": 8994,
+    "ludnosc": 9192,
+    "udzial_65plus": 18.4,
+    "zmiana_ludnosci_10l": -6.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.13,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.98,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 526.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1804082",
+    "bdl_id": "061813404082",
+    "nazwa": "Radymno",
+    "powiat": "jarosławski",
+    "typ": "wiejska",
+    "ludnosc": 10757,
+    "udzial_65plus": 18.5,
+    "zmiana_ludnosci_10l": -6.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -3.34,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.36,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 307.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1804092",
+    "bdl_id": "061813404092",
+    "nazwa": "Rokietnica",
+    "powiat": "jarosławski",
+    "typ": "wiejska",
+    "ludnosc": 4074,
+    "udzial_65plus": 17.8,
+    "zmiana_ludnosci_10l": -6.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -7.07,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.44,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 759.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1804102",
+    "bdl_id": "061813404102",
+    "nazwa": "Roźwienica",
+    "powiat": "jarosławski",
+    "typ": "wiejska",
+    "ludnosc": 6061,
+    "udzial_65plus": 17.4,
+    "zmiana_ludnosci_10l": -2.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.31,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.44,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 710.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1804112",
+    "bdl_id": "061813404112",
+    "nazwa": "Wiązownica",
+    "powiat": "jarosławski",
+    "typ": "wiejska",
+    "ludnosc": 11788,
+    "udzial_65plus": 17.0,
+    "zmiana_ludnosci_10l": 1.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.69,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.42,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 574.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805011",
+    "bdl_id": "061813305011",
+    "nazwa": "Jasło",
+    "powiat": "jasielski",
+    "typ": "miejska",
+    "ludnosc": 32042,
+    "udzial_65plus": 25.4,
+    "zmiana_ludnosci_10l": -11.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.22,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.58,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 455.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805022",
+    "bdl_id": "061813305022",
+    "nazwa": "Brzyska",
+    "powiat": "jasielski",
+    "typ": "wiejska",
+    "ludnosc": 6261,
+    "udzial_65plus": 17.0,
+    "zmiana_ludnosci_10l": -3.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.76,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.03,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 559.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805032",
+    "bdl_id": "061813305032",
+    "nazwa": "Dębowiec",
+    "powiat": "jasielski",
+    "typ": "wiejska",
+    "ludnosc": 8693,
+    "udzial_65plus": 18.4,
+    "zmiana_ludnosci_10l": -0.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 1.6,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.18,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 404.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805042",
+    "bdl_id": "061813305042",
+    "nazwa": "Jasło",
+    "powiat": "jasielski",
+    "typ": "wiejska",
+    "ludnosc": 15798,
+    "udzial_65plus": 19.1,
+    "zmiana_ludnosci_10l": -3.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.7,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.54,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 233.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805053",
+    "bdl_id": "061813305053",
+    "nazwa": "Kołaczyce",
+    "powiat": "jasielski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 8501,
+    "udzial_65plus": 18.4,
+    "zmiana_ludnosci_10l": -5.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.45,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.41,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 477.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805062",
+    "bdl_id": "061813305062",
+    "nazwa": "Krempna",
+    "powiat": "jasielski",
+    "typ": "wiejska",
+    "ludnosc": 1651,
+    "udzial_65plus": 21.7,
+    "zmiana_ludnosci_10l": -13.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -6.0,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.2,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 1327.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805072",
+    "bdl_id": "061813305072",
+    "nazwa": "Nowy Żmigród",
+    "powiat": "jasielski",
+    "typ": "wiejska",
+    "ludnosc": 8447,
+    "udzial_65plus": 20.4,
+    "zmiana_ludnosci_10l": -8.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -5.88,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.53,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 593.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805082",
+    "bdl_id": "061813305082",
+    "nazwa": "Osiek Jasielski",
+    "powiat": "jasielski",
+    "typ": "wiejska",
+    "ludnosc": 5126,
+    "udzial_65plus": 18.0,
+    "zmiana_ludnosci_10l": -5.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.78,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.53,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 856.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805092",
+    "bdl_id": "061813305092",
+    "nazwa": "Skołyszyn",
+    "powiat": "jasielski",
+    "typ": "wiejska",
+    "ludnosc": 11805,
+    "udzial_65plus": 20.0,
+    "zmiana_ludnosci_10l": -5.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.77,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.89,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 365.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1805112",
+    "bdl_id": "061813305112",
+    "nazwa": "Tarnowiec",
+    "powiat": "jasielski",
+    "typ": "wiejska",
+    "ludnosc": 8876,
+    "udzial_65plus": 20.2,
+    "zmiana_ludnosci_10l": -3.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -3.46,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.7,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 372.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1806012",
+    "bdl_id": "061813506012",
+    "nazwa": "Cmolas",
+    "powiat": "kolbuszowski",
+    "typ": "wiejska",
+    "ludnosc": 7910,
+    "udzial_65plus": 16.5,
+    "zmiana_ludnosci_10l": -2.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 1.14,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.53,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 601.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1806023",
+    "bdl_id": "061813506023",
+    "nazwa": "Kolbuszowa",
+    "powiat": "kolbuszowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 24000,
     "udzial_65plus": 19.3,
     "zmiana_ludnosci_10l": -3.6,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -2.54,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.74,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 303.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1214012",
-    "bdl_id": "011212014012",
-    "nazwa": "Koniusza",
-    "powiat": "proszowicki",
+    "teryt": "1806032",
+    "bdl_id": "061813506032",
+    "nazwa": "Majdan Królewski",
+    "powiat": "kolbuszowski",
     "typ": "wiejska",
-    "ludnosc": 9115,
-    "udzial_65plus": 19.0,
-    "zmiana_ludnosci_10l": 2.8,
+    "ludnosc": 9491,
+    "udzial_65plus": 17.4,
+    "zmiana_ludnosci_10l": -3.9,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -3.48,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.32,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 366.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1214023",
-    "bdl_id": "011212014023",
-    "nazwa": "Koszyce",
-    "powiat": "proszowicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 5169,
-    "udzial_65plus": 22.7,
-    "zmiana_ludnosci_10l": -7.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1214033",
-    "bdl_id": "011212014033",
-    "nazwa": "Nowe Brzesko",
-    "powiat": "proszowicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 5590,
-    "udzial_65plus": 21.6,
-    "zmiana_ludnosci_10l": -3.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1214042",
-    "bdl_id": "011212014042",
-    "nazwa": "Pałecznica",
-    "powiat": "proszowicki",
+    "teryt": "1806042",
+    "bdl_id": "061813506042",
+    "nazwa": "Niwiska",
+    "powiat": "kolbuszowski",
     "typ": "wiejska",
-    "ludnosc": 3409,
-    "udzial_65plus": 20.7,
-    "zmiana_ludnosci_10l": -7.1,
+    "ludnosc": 6217,
+    "udzial_65plus": 16.7,
+    "zmiana_ludnosci_10l": 3.1,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": 4.34,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.29,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 601.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1214053",
-    "bdl_id": "011212014053",
-    "nazwa": "Proszowice",
-    "powiat": "proszowicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 15224,
-    "udzial_65plus": 22.0,
-    "zmiana_ludnosci_10l": -7.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1214062",
-    "bdl_id": "011212014062",
-    "nazwa": "Radziemice",
-    "powiat": "proszowicki",
+    "teryt": "1806052",
+    "bdl_id": "061813506052",
+    "nazwa": "Raniżów",
+    "powiat": "kolbuszowski",
     "typ": "wiejska",
-    "ludnosc": 3140,
-    "udzial_65plus": 21.0,
-    "zmiana_ludnosci_10l": -8.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1215011",
-    "bdl_id": "011216915011",
-    "nazwa": "Jordanów",
-    "powiat": "suski",
-    "typ": "miejska",
-    "ludnosc": 5365,
-    "udzial_65plus": 19.8,
-    "zmiana_ludnosci_10l": 0.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1215021",
-    "bdl_id": "011216915021",
-    "nazwa": "Sucha Beskidzka",
-    "powiat": "suski",
-    "typ": "miejska",
-    "ludnosc": 8688,
-    "udzial_65plus": 22.6,
-    "zmiana_ludnosci_10l": -7.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1215032",
-    "bdl_id": "011216915032",
-    "nazwa": "Budzów",
-    "powiat": "suski",
-    "typ": "wiejska",
-    "ludnosc": 8807,
-    "udzial_65plus": 15.2,
-    "zmiana_ludnosci_10l": -0.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1215042",
-    "bdl_id": "011216915042",
-    "nazwa": "Bystra-Sidzina",
-    "powiat": "suski",
-    "typ": "wiejska",
-    "ludnosc": 6845,
-    "udzial_65plus": 15.0,
-    "zmiana_ludnosci_10l": 0.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1215052",
-    "bdl_id": "011216915052",
-    "nazwa": "Jordanów",
-    "powiat": "suski",
-    "typ": "wiejska",
-    "ludnosc": 11118,
-    "udzial_65plus": 16.5,
-    "zmiana_ludnosci_10l": 1.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1215063",
-    "bdl_id": "011216915063",
-    "nazwa": "Maków Podhalański",
-    "powiat": "suski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 15566,
-    "udzial_65plus": 19.2,
-    "zmiana_ludnosci_10l": -4.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1215072",
-    "bdl_id": "011216915072",
-    "nazwa": "Stryszawa",
-    "powiat": "suski",
-    "typ": "wiejska",
-    "ludnosc": 11846,
-    "udzial_65plus": 18.9,
-    "zmiana_ludnosci_10l": 0.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1215082",
-    "bdl_id": "011216915082",
-    "nazwa": "Zawoja",
-    "powiat": "suski",
-    "typ": "wiejska",
-    "ludnosc": 8686,
-    "udzial_65plus": 19.4,
-    "zmiana_ludnosci_10l": -4.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1215092",
-    "bdl_id": "011216915092",
-    "nazwa": "Zembrzyce",
-    "powiat": "suski",
-    "typ": "wiejska",
-    "ludnosc": 5331,
-    "udzial_65plus": 20.2,
-    "zmiana_ludnosci_10l": -5.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216013",
-    "bdl_id": "011212416013",
-    "nazwa": "Ciężkowice",
-    "powiat": "tarnowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 10929,
-    "udzial_65plus": 18.1,
-    "zmiana_ludnosci_10l": -2.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216022",
-    "bdl_id": "011212416022",
-    "nazwa": "Gromnik",
-    "powiat": "tarnowski",
-    "typ": "wiejska",
-    "ludnosc": 8751,
-    "udzial_65plus": 17.2,
-    "zmiana_ludnosci_10l": -0.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216032",
-    "bdl_id": "011212416032",
-    "nazwa": "Lisia Góra",
-    "powiat": "tarnowski",
-    "typ": "wiejska",
-    "ludnosc": 15694,
-    "udzial_65plus": 15.1,
-    "zmiana_ludnosci_10l": 4.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216042",
-    "bdl_id": "011212416042",
-    "nazwa": "Pleśna",
-    "powiat": "tarnowski",
-    "typ": "wiejska",
-    "ludnosc": 11730,
-    "udzial_65plus": 17.5,
-    "zmiana_ludnosci_10l": -2.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216053",
-    "bdl_id": "011212416053",
-    "nazwa": "Radłów",
-    "powiat": "tarnowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 9288,
-    "udzial_65plus": 18.6,
-    "zmiana_ludnosci_10l": -5.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216063",
-    "bdl_id": "011212416063",
-    "nazwa": "Ryglice",
-    "powiat": "tarnowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 11124,
-    "udzial_65plus": 16.6,
-    "zmiana_ludnosci_10l": -5.0,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216072",
-    "bdl_id": "011212416072",
-    "nazwa": "Rzepiennik Strzyżewski",
-    "powiat": "tarnowski",
-    "typ": "wiejska",
-    "ludnosc": 6488,
-    "udzial_65plus": 18.1,
-    "zmiana_ludnosci_10l": -4.1,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216082",
-    "bdl_id": "011212416082",
-    "nazwa": "Skrzyszów",
-    "powiat": "tarnowski",
-    "typ": "wiejska",
-    "ludnosc": 14201,
-    "udzial_65plus": 17.2,
-    "zmiana_ludnosci_10l": 0.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216092",
-    "bdl_id": "011212416092",
-    "nazwa": "Tarnów",
-    "powiat": "tarnowski",
-    "typ": "wiejska",
-    "ludnosc": 26526,
+    "ludnosc": 6823,
     "udzial_65plus": 17.7,
-    "zmiana_ludnosci_10l": 3.8,
+    "zmiana_ludnosci_10l": -3.9,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -4.67,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.73,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 713.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1216103",
-    "bdl_id": "011212416103",
-    "nazwa": "Tuchów",
-    "powiat": "tarnowski",
+    "teryt": "1806062",
+    "bdl_id": "061813506062",
+    "nazwa": "Dzikowiec",
+    "powiat": "kolbuszowski",
+    "typ": "wiejska",
+    "ludnosc": 6243,
+    "udzial_65plus": 17.0,
+    "zmiana_ludnosci_10l": -3.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.97,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.13,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 675.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1807012",
+    "bdl_id": "061813307012",
+    "nazwa": "Chorkówka",
+    "powiat": "krośnieński",
+    "typ": "wiejska",
+    "ludnosc": 13421,
+    "udzial_65plus": 18.9,
+    "zmiana_ludnosci_10l": -0.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.15,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.01,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 259.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1807023",
+    "bdl_id": "061813307023",
+    "nazwa": "Dukla",
+    "powiat": "krośnieński",
     "typ": "miejsko-wiejska",
-    "ludnosc": 16752,
-    "udzial_65plus": 19.0,
+    "ludnosc": 13606,
+    "udzial_65plus": 20.4,
     "zmiana_ludnosci_10l": -7.7,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -3.64,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.52,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 635.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1216112",
-    "bdl_id": "011212416112",
-    "nazwa": "Wierzchosławice",
-    "powiat": "tarnowski",
-    "typ": "wiejska",
-    "ludnosc": 10433,
-    "udzial_65plus": 20.4,
-    "zmiana_ludnosci_10l": -2.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216122",
-    "bdl_id": "011212416122",
-    "nazwa": "Wietrzychowice",
-    "powiat": "tarnowski",
-    "typ": "wiejska",
-    "ludnosc": 3665,
-    "udzial_65plus": 21.6,
-    "zmiana_ludnosci_10l": -8.3,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216133",
-    "bdl_id": "011212416133",
-    "nazwa": "Wojnicz",
-    "powiat": "tarnowski",
+    "teryt": "1807033",
+    "bdl_id": "061813307033",
+    "nazwa": "Iwonicz-Zdrój",
+    "powiat": "krośnieński",
     "typ": "miejsko-wiejska",
-    "ludnosc": 13018,
-    "udzial_65plus": 18.1,
-    "zmiana_ludnosci_10l": -2.8,
+    "ludnosc": 10062,
+    "udzial_65plus": 20.0,
+    "zmiana_ludnosci_10l": -8.4,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -5.45,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.65,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 297.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1216143",
-    "bdl_id": "011212416143",
-    "nazwa": "Zakliczyn",
-    "powiat": "tarnowski",
+    "teryt": "1807043",
+    "bdl_id": "061813307043",
+    "nazwa": "Jedlicze",
+    "powiat": "krośnieński",
     "typ": "miejsko-wiejska",
-    "ludnosc": 12315,
-    "udzial_65plus": 17.1,
+    "ludnosc": 14760,
+    "udzial_65plus": 20.8,
+    "zmiana_ludnosci_10l": -4.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.55,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.41,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 365.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1807052",
+    "bdl_id": "061813307052",
+    "nazwa": "Korczyna",
+    "powiat": "krośnieński",
+    "typ": "wiejska",
+    "ludnosc": 11020,
+    "udzial_65plus": 19.4,
     "zmiana_ludnosci_10l": -0.8,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": 0.45,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.54,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 332.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1216153",
-    "bdl_id": "011212416153",
-    "nazwa": "Żabno",
-    "powiat": "tarnowski",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 18203,
+    "teryt": "1807062",
+    "bdl_id": "061813307062",
+    "nazwa": "Krościenko Wyżne",
+    "powiat": "krośnieński",
+    "typ": "wiejska",
+    "ludnosc": 5269,
     "udzial_65plus": 19.2,
-    "zmiana_ludnosci_10l": -4.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1216162",
-    "bdl_id": "011212416162",
-    "nazwa": "Szerzyny",
-    "powiat": "tarnowski",
-    "typ": "wiejska",
-    "ludnosc": 7404,
-    "udzial_65plus": 19.4,
-    "zmiana_ludnosci_10l": -7.5,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1217011",
-    "bdl_id": "011216917011",
-    "nazwa": "Zakopane",
-    "powiat": "tatrzański",
-    "typ": "miejska",
-    "ludnosc": 24921,
-    "udzial_65plus": 25.1,
-    "zmiana_ludnosci_10l": -9.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1217022",
-    "bdl_id": "011216917022",
-    "nazwa": "Biały Dunajec",
-    "powiat": "tatrzański",
-    "typ": "wiejska",
-    "ludnosc": 6810,
-    "udzial_65plus": 16.3,
-    "zmiana_ludnosci_10l": -4.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1217032",
-    "bdl_id": "011216917032",
-    "nazwa": "Bukowina Tatrzańska",
-    "powiat": "tatrzański",
-    "typ": "wiejska",
-    "ludnosc": 13556,
-    "udzial_65plus": 17.4,
-    "zmiana_ludnosci_10l": 2.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1217042",
-    "bdl_id": "011216917042",
-    "nazwa": "Kościelisko",
-    "powiat": "tatrzański",
-    "typ": "wiejska",
-    "ludnosc": 9087,
-    "udzial_65plus": 18.1,
-    "zmiana_ludnosci_10l": 4.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1217052",
-    "bdl_id": "011216917052",
-    "nazwa": "Poronin",
-    "powiat": "tatrzański",
-    "typ": "wiejska",
-    "ludnosc": 11807,
-    "udzial_65plus": 15.5,
-    "zmiana_ludnosci_10l": 2.9,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1218013",
-    "bdl_id": "011212318013",
-    "nazwa": "Andrychów",
-    "powiat": "wadowicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 41472,
-    "udzial_65plus": 20.1,
-    "zmiana_ludnosci_10l": -5.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1218022",
-    "bdl_id": "011212318022",
-    "nazwa": "Brzeźnica",
-    "powiat": "wadowicki",
-    "typ": "wiejska",
-    "ludnosc": 10873,
-    "udzial_65plus": 17.0,
-    "zmiana_ludnosci_10l": 6.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1218033",
-    "bdl_id": "011212318033",
-    "nazwa": "Kalwaria Zebrzydowska",
-    "powiat": "wadowicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 19752,
-    "udzial_65plus": 18.4,
-    "zmiana_ludnosci_10l": -0.7,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1218042",
-    "bdl_id": "011212318042",
-    "nazwa": "Lanckorona",
-    "powiat": "wadowicki",
-    "typ": "wiejska",
-    "ludnosc": 6231,
-    "udzial_65plus": 17.0,
-    "zmiana_ludnosci_10l": 1.4,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1218052",
-    "bdl_id": "011212318052",
-    "nazwa": "Mucharz",
-    "powiat": "wadowicki",
-    "typ": "wiejska",
-    "ludnosc": 4162,
-    "udzial_65plus": 18.3,
-    "zmiana_ludnosci_10l": 3.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1218062",
-    "bdl_id": "011212318062",
-    "nazwa": "Spytkowice",
-    "powiat": "wadowicki",
-    "typ": "wiejska",
-    "ludnosc": 10017,
-    "udzial_65plus": 16.4,
-    "zmiana_ludnosci_10l": -2.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1218072",
-    "bdl_id": "011212318072",
-    "nazwa": "Stryszów",
-    "powiat": "wadowicki",
-    "typ": "wiejska",
-    "ludnosc": 6742,
-    "udzial_65plus": 16.9,
-    "zmiana_ludnosci_10l": -1.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1218082",
-    "bdl_id": "011212318082",
-    "nazwa": "Tomice",
-    "powiat": "wadowicki",
-    "typ": "wiejska",
-    "ludnosc": 8339,
-    "udzial_65plus": 15.8,
-    "zmiana_ludnosci_10l": 5.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1218093",
-    "bdl_id": "011212318093",
-    "nazwa": "Wadowice",
-    "powiat": "wadowicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 36050,
-    "udzial_65plus": 21.0,
     "zmiana_ludnosci_10l": -5.4,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -5.3,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.7,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 218.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1218102",
-    "bdl_id": "011212318102",
-    "nazwa": "Wieprz",
-    "powiat": "wadowicki",
+    "teryt": "1807072",
+    "bdl_id": "061813307072",
+    "nazwa": "Miejsce Piastowe",
+    "powiat": "krośnieński",
     "typ": "wiejska",
-    "ludnosc": 12864,
-    "udzial_65plus": 15.4,
-    "zmiana_ludnosci_10l": 5.4,
+    "ludnosc": 13151,
+    "udzial_65plus": 20.4,
+    "zmiana_ludnosci_10l": -3.6,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": 2.5,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.72,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 316.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1219012",
-    "bdl_id": "011212019012",
-    "nazwa": "Biskupice",
-    "powiat": "wielicki",
-    "typ": "wiejska",
-    "ludnosc": 12020,
-    "udzial_65plus": 15.4,
-    "zmiana_ludnosci_10l": 21.8,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1219022",
-    "bdl_id": "011212019022",
-    "nazwa": "Gdów",
-    "powiat": "wielicki",
-    "typ": "wiejska",
-    "ludnosc": 18751,
-    "udzial_65plus": 16.4,
-    "zmiana_ludnosci_10l": 5.6,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1219032",
-    "bdl_id": "011212019032",
-    "nazwa": "Kłaj",
-    "powiat": "wielicki",
-    "typ": "wiejska",
-    "ludnosc": 11435,
-    "udzial_65plus": 18.6,
-    "zmiana_ludnosci_10l": 8.2,
-    "wskazniki": {
-      "rok": 2025
-    }
-  },
-  {
-    "teryt": "1219043",
-    "bdl_id": "011212019043",
-    "nazwa": "Niepołomice",
-    "powiat": "wielicki",
+    "teryt": "1807083",
+    "bdl_id": "061813307083",
+    "nazwa": "Rymanów",
+    "powiat": "krośnieński",
     "typ": "miejsko-wiejska",
-    "ludnosc": 34020,
-    "udzial_65plus": 14.9,
-    "zmiana_ludnosci_10l": 27.7,
+    "ludnosc": 14904,
+    "udzial_65plus": 21.3,
+    "zmiana_ludnosci_10l": -5.7,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -4.74,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.87,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 300.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1219053",
-    "bdl_id": "011212019053",
-    "nazwa": "Wieliczka",
-    "powiat": "wielicki",
-    "typ": "miejsko-wiejska",
-    "ludnosc": 70471,
-    "udzial_65plus": 15.8,
-    "zmiana_ludnosci_10l": 24.3,
+    "teryt": "1807092",
+    "bdl_id": "061813307092",
+    "nazwa": "Wojaszówka",
+    "powiat": "krośnieński",
+    "typ": "wiejska",
+    "ludnosc": 9121,
+    "udzial_65plus": 19.4,
+    "zmiana_ludnosci_10l": -1.4,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -0.11,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -7.43,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 273.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1261011",
-    "bdl_id": "011212161011",
-    "nazwa": "Kraków",
-    "powiat": "m. Kraków",
+    "teryt": "1807102",
+    "bdl_id": "061813307102",
+    "nazwa": "Jaśliska",
+    "powiat": "krośnieński",
+    "typ": "wiejska",
+    "ludnosc": 2004,
+    "udzial_65plus": 21.1,
+    "zmiana_ludnosci_10l": -2.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -10.43,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -7.94,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 879.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1808011",
+    "bdl_id": "061813608011",
+    "nazwa": "Leżajsk",
+    "powiat": "leżajski",
     "typ": "miejska",
-    "ludnosc": 816614,
-    "udzial_65plus": 20.0,
-    "zmiana_ludnosci_10l": 7.3,
+    "ludnosc": 12395,
+    "udzial_65plus": 26.4,
+    "zmiana_ludnosci_10l": -12.2,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -9.86,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.61,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 442.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1262011",
-    "bdl_id": "011212262011",
-    "nazwa": "Nowy Sącz",
-    "powiat": "m. Nowy Sącz",
-    "typ": "miejska",
-    "ludnosc": 79416,
-    "udzial_65plus": 21.7,
+    "teryt": "1808022",
+    "bdl_id": "061813608022",
+    "nazwa": "Grodzisko Dolne",
+    "powiat": "leżajski",
+    "typ": "wiejska",
+    "ludnosc": 7656,
+    "udzial_65plus": 19.1,
     "zmiana_ludnosci_10l": -5.3,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -3.65,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.09,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 365.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   },
   {
-    "teryt": "1263011",
-    "bdl_id": "011212463011",
-    "nazwa": "Tarnów",
-    "powiat": "m. Tarnów",
-    "typ": "miejska",
-    "ludnosc": 101177,
-    "udzial_65plus": 25.5,
-    "zmiana_ludnosci_10l": -8.6,
+    "teryt": "1808032",
+    "bdl_id": "061813608032",
+    "nazwa": "Kuryłówka",
+    "powiat": "leżajski",
+    "typ": "wiejska",
+    "ludnosc": 5409,
+    "udzial_65plus": 18.7,
+    "zmiana_ludnosci_10l": -5.1,
     "wskazniki": {
-      "rok": 2025
+      "rok": 2025,
+      "saldo_migracji_1000": -4.23,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.76,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 636.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1808042",
+    "bdl_id": "061813608042",
+    "nazwa": "Leżajsk",
+    "powiat": "leżajski",
+    "typ": "wiejska",
+    "ludnosc": 19684,
+    "udzial_65plus": 17.6,
+    "zmiana_ludnosci_10l": -2.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.08,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.95,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 713.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1808053",
+    "bdl_id": "061813608053",
+    "nazwa": "Nowa Sarzyna",
+    "powiat": "leżajski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 20683,
+    "udzial_65plus": 18.9,
+    "zmiana_ludnosci_10l": -4.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.74,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.33,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 543.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1809011",
+    "bdl_id": "061813409011",
+    "nazwa": "Lubaczów",
+    "powiat": "lubaczowski",
+    "typ": "miejska",
+    "ludnosc": 11125,
+    "udzial_65plus": 23.6,
+    "zmiana_ludnosci_10l": -9.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.25,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.98,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 217.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1809023",
+    "bdl_id": "061813409023",
+    "nazwa": "Cieszanów",
+    "powiat": "lubaczowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 6554,
+    "udzial_65plus": 21.8,
+    "zmiana_ludnosci_10l": -11.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -8.09,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.8,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 327.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1809032",
+    "bdl_id": "061813409032",
+    "nazwa": "Horyniec-Zdrój",
+    "powiat": "lubaczowski",
+    "typ": "wiejska",
+    "ludnosc": 4080,
+    "udzial_65plus": 22.0,
+    "zmiana_ludnosci_10l": -15.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -12.08,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -21.5,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 643.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1809042",
+    "bdl_id": "061813409042",
+    "nazwa": "Lubaczów",
+    "powiat": "lubaczowski",
+    "typ": "wiejska",
+    "ludnosc": 8844,
+    "udzial_65plus": 17.0,
+    "zmiana_ludnosci_10l": -3.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.82,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.94,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 589.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1809053",
+    "bdl_id": "061813409053",
+    "nazwa": "Narol",
+    "powiat": "lubaczowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 7381,
+    "udzial_65plus": 22.6,
+    "zmiana_ludnosci_10l": -10.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.59,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.94,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 644.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1809063",
+    "bdl_id": "061813409063",
+    "nazwa": "Oleszyce",
+    "powiat": "lubaczowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 5933,
+    "udzial_65plus": 19.7,
+    "zmiana_ludnosci_10l": -7.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -10.37,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.34,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 757.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1809072",
+    "bdl_id": "061813409072",
+    "nazwa": "Stary Dzików",
+    "powiat": "lubaczowski",
+    "typ": "wiejska",
+    "ludnosc": 3849,
+    "udzial_65plus": 21.5,
+    "zmiana_ludnosci_10l": -11.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -10.8,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.63,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 486.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1809082",
+    "bdl_id": "061813409082",
+    "nazwa": "Wielkie Oczy",
+    "powiat": "lubaczowski",
+    "typ": "wiejska",
+    "ludnosc": 3620,
+    "udzial_65plus": 18.0,
+    "zmiana_ludnosci_10l": -6.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.55,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.09,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 726.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1810011",
+    "bdl_id": "061813510011",
+    "nazwa": "Łańcut",
+    "powiat": "łańcucki",
+    "typ": "miejska",
+    "ludnosc": 17809,
+    "udzial_65plus": 22.4,
+    "zmiana_ludnosci_10l": -0.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 3.94,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.19,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 331.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1810022",
+    "bdl_id": "061813510022",
+    "nazwa": "Białobrzegi",
+    "powiat": "łańcucki",
+    "typ": "wiejska",
+    "ludnosc": 8699,
+    "udzial_65plus": 16.8,
+    "zmiana_ludnosci_10l": 1.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.11,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.07,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 264.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1810032",
+    "bdl_id": "061813510032",
+    "nazwa": "Czarna",
+    "powiat": "łańcucki",
+    "typ": "wiejska",
+    "ludnosc": 12087,
+    "udzial_65plus": 16.2,
+    "zmiana_ludnosci_10l": 4.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 3.14,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.47,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 324.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1810042",
+    "bdl_id": "061813510042",
+    "nazwa": "Łańcut",
+    "powiat": "łańcucki",
+    "typ": "wiejska",
+    "ludnosc": 21732,
+    "udzial_65plus": 18.6,
+    "zmiana_ludnosci_10l": 1.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.41,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.92,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 203.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1810052",
+    "bdl_id": "061813510052",
+    "nazwa": "Markowa",
+    "powiat": "łańcucki",
+    "typ": "wiejska",
+    "ludnosc": 6277,
+    "udzial_65plus": 19.4,
+    "zmiana_ludnosci_10l": -3.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.28,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.43,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 730.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1810062",
+    "bdl_id": "061813510062",
+    "nazwa": "Rakszawa",
+    "powiat": "łańcucki",
+    "typ": "wiejska",
+    "ludnosc": 7203,
+    "udzial_65plus": 18.4,
+    "zmiana_ludnosci_10l": -0.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 1.25,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.53,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 468.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1810072",
+    "bdl_id": "061813510072",
+    "nazwa": "Żołynia",
+    "powiat": "łańcucki",
+    "typ": "wiejska",
+    "ludnosc": 6790,
+    "udzial_65plus": 15.9,
+    "zmiana_ludnosci_10l": -2.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 2.19,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -16.24,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 433.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811011",
+    "bdl_id": "061813611011",
+    "nazwa": "Mielec",
+    "powiat": "mielecki",
+    "typ": "miejska",
+    "ludnosc": 56032,
+    "udzial_65plus": 24.4,
+    "zmiana_ludnosci_10l": -7.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -3.94,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.42,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 138.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811022",
+    "bdl_id": "061813611022",
+    "nazwa": "Borowa",
+    "powiat": "mielecki",
+    "typ": "wiejska",
+    "ludnosc": 5151,
+    "udzial_65plus": 19.0,
+    "zmiana_ludnosci_10l": -8.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.39,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.77,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 259.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811032",
+    "bdl_id": "061813611032",
+    "nazwa": "Czermin",
+    "powiat": "mielecki",
+    "typ": "wiejska",
+    "ludnosc": 7044,
+    "udzial_65plus": 15.7,
+    "zmiana_ludnosci_10l": 0.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 1.98,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.57,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 203.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811042",
+    "bdl_id": "061813611042",
+    "nazwa": "Gawłuszowice",
+    "powiat": "mielecki",
+    "typ": "wiejska",
+    "ludnosc": 2716,
+    "udzial_65plus": 18.7,
+    "zmiana_ludnosci_10l": -1.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -5.89,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.31,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 431.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811052",
+    "bdl_id": "061813611052",
+    "nazwa": "Mielec",
+    "powiat": "mielecki",
+    "typ": "wiejska",
+    "ludnosc": 13686,
+    "udzial_65plus": 17.2,
+    "zmiana_ludnosci_10l": 3.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 1.1,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.02,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 137.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811062",
+    "bdl_id": "061813611062",
+    "nazwa": "Padew Narodowa",
+    "powiat": "mielecki",
+    "typ": "wiejska",
+    "ludnosc": 5060,
+    "udzial_65plus": 20.1,
+    "zmiana_ludnosci_10l": -6.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.97,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.54,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 377.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811073",
+    "bdl_id": "061813611073",
+    "nazwa": "Przecław",
+    "powiat": "mielecki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 12054,
+    "udzial_65plus": 16.0,
+    "zmiana_ludnosci_10l": 2.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 2.57,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.91,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 342.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811083",
+    "bdl_id": "061813611083",
+    "nazwa": "Radomyśl Wielki",
+    "powiat": "mielecki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 14232,
+    "udzial_65plus": 16.2,
+    "zmiana_ludnosci_10l": 0.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.91,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.63,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 531.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811092",
+    "bdl_id": "061813611092",
+    "nazwa": "Tuszów Narodowy",
+    "powiat": "mielecki",
+    "typ": "wiejska",
+    "ludnosc": 8249,
+    "udzial_65plus": 16.2,
+    "zmiana_ludnosci_10l": 2.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 4.72,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.84,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 440.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1811102",
+    "bdl_id": "061813611102",
+    "nazwa": "Wadowice Górne",
+    "powiat": "mielecki",
+    "typ": "wiejska",
+    "ludnosc": 7650,
+    "udzial_65plus": 15.6,
+    "zmiana_ludnosci_10l": 0.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.18,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 1.18,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 242.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1812012",
+    "bdl_id": "061813612012",
+    "nazwa": "Harasiuki",
+    "powiat": "niżański",
+    "typ": "wiejska",
+    "ludnosc": 5593,
+    "udzial_65plus": 19.3,
+    "zmiana_ludnosci_10l": -9.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -7.13,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.99,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 632.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1812022",
+    "bdl_id": "061813612022",
+    "nazwa": "Jarocin",
+    "powiat": "niżański",
+    "typ": "wiejska",
+    "ludnosc": 4996,
+    "udzial_65plus": 19.2,
+    "zmiana_ludnosci_10l": -8.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 0.2,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.8,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 453.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1812032",
+    "bdl_id": "061813612032",
+    "nazwa": "Jeżowe",
+    "powiat": "niżański",
+    "typ": "wiejska",
+    "ludnosc": 9777,
+    "udzial_65plus": 15.6,
+    "zmiana_ludnosci_10l": -4.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.07,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.51,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 900.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1812042",
+    "bdl_id": "061813612042",
+    "nazwa": "Krzeszów",
+    "powiat": "niżański",
+    "typ": "wiejska",
+    "ludnosc": 4048,
+    "udzial_65plus": 22.4,
+    "zmiana_ludnosci_10l": -5.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.23,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.42,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 594.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1812053",
+    "bdl_id": "061813612053",
+    "nazwa": "Nisko",
+    "powiat": "niżański",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 20885,
+    "udzial_65plus": 21.1,
+    "zmiana_ludnosci_10l": -6.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.38,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.95,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 274.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1812063",
+    "bdl_id": "061813612063",
+    "nazwa": "Rudnik nad Sanem",
+    "powiat": "niżański",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 9658,
+    "udzial_65plus": 21.2,
+    "zmiana_ludnosci_10l": -5.7,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.55,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.05,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 513.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1812073",
+    "bdl_id": "061813612073",
+    "nazwa": "Ulanów",
+    "powiat": "niżański",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 7694,
+    "udzial_65plus": 21.4,
+    "zmiana_ludnosci_10l": -9.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -5.69,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.52,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 278.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813013",
+    "bdl_id": "061813413013",
+    "nazwa": "Bircza",
+    "powiat": "przemyski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 5739,
+    "udzial_65plus": 19.9,
+    "zmiana_ludnosci_10l": -14.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -10.88,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.45,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 1208.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813023",
+    "bdl_id": "061813413023",
+    "nazwa": "Dubiecko",
+    "powiat": "przemyski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 8506,
+    "udzial_65plus": 19.6,
+    "zmiana_ludnosci_10l": -9.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.68,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -11.1,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 1086.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813032",
+    "bdl_id": "061813413032",
+    "nazwa": "Fredropol",
+    "powiat": "przemyski",
+    "typ": "wiejska",
+    "ludnosc": 5074,
+    "udzial_65plus": 18.6,
+    "zmiana_ludnosci_10l": -8.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -9.03,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -7.26,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 775.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813042",
+    "bdl_id": "061813413042",
+    "nazwa": "Krasiczyn",
+    "powiat": "przemyski",
+    "typ": "wiejska",
+    "ludnosc": 5059,
+    "udzial_65plus": 18.6,
+    "zmiana_ludnosci_10l": -1.7,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.39,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.94,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 376.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813052",
+    "bdl_id": "061813413052",
+    "nazwa": "Krzywcza",
+    "powiat": "przemyski",
+    "typ": "wiejska",
+    "ludnosc": 4426,
+    "udzial_65plus": 18.9,
+    "zmiana_ludnosci_10l": -9.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 0.67,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -8.3,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 1049.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813062",
+    "bdl_id": "061813413062",
+    "nazwa": "Medyka",
+    "powiat": "przemyski",
+    "typ": "wiejska",
+    "ludnosc": 6217,
+    "udzial_65plus": 18.0,
+    "zmiana_ludnosci_10l": -4.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -5.94,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.41,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 600.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813072",
+    "bdl_id": "061813413072",
+    "nazwa": "Orły",
+    "powiat": "przemyski",
+    "typ": "wiejska",
+    "ludnosc": 8498,
+    "udzial_65plus": 18.3,
+    "zmiana_ludnosci_10l": -4.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.83,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 0.71,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 644.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813082",
+    "bdl_id": "061813413082",
+    "nazwa": "Przemyśl",
+    "powiat": "przemyski",
+    "typ": "wiejska",
+    "ludnosc": 10625,
+    "udzial_65plus": 17.9,
+    "zmiana_ludnosci_10l": 2.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.09,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.63,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 257.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813092",
+    "bdl_id": "061813413092",
+    "nazwa": "Stubno",
+    "powiat": "przemyski",
+    "typ": "wiejska",
+    "ludnosc": 3609,
+    "udzial_65plus": 18.8,
+    "zmiana_ludnosci_10l": -8.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.49,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.43,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 526.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1813102",
+    "bdl_id": "061813413102",
+    "nazwa": "Żurawica",
+    "powiat": "przemyski",
+    "typ": "wiejska",
+    "ludnosc": 12408,
+    "udzial_65plus": 19.2,
+    "zmiana_ludnosci_10l": -4.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.41,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.14,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 399.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1814011",
+    "bdl_id": "061813414011",
+    "nazwa": "Przeworsk",
+    "powiat": "przeworski",
+    "typ": "miejska",
+    "ludnosc": 14354,
+    "udzial_65plus": 23.8,
+    "zmiana_ludnosci_10l": -7.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.42,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.34,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 314.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1814022",
+    "bdl_id": "061813414022",
+    "nazwa": "Adamówka",
+    "powiat": "przeworski",
+    "typ": "wiejska",
+    "ludnosc": 3937,
+    "udzial_65plus": 19.1,
+    "zmiana_ludnosci_10l": -4.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.55,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.29,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 1455.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1814032",
+    "bdl_id": "061813414032",
+    "nazwa": "Gać",
+    "powiat": "przeworski",
+    "typ": "wiejska",
+    "ludnosc": 4467,
+    "udzial_65plus": 19.5,
+    "zmiana_ludnosci_10l": -3.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -3.57,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.68,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 386.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1814043",
+    "bdl_id": "061813414043",
+    "nazwa": "Jawornik Polski",
+    "powiat": "przeworski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 4151,
+    "udzial_65plus": 22.5,
+    "zmiana_ludnosci_10l": -7.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -7.42,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.22,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 1289.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1814053",
+    "bdl_id": "061813414053",
+    "nazwa": "Kańczuga",
+    "powiat": "przeworski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 11480,
+    "udzial_65plus": 20.7,
+    "zmiana_ludnosci_10l": -8.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 0.52,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.3,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 451.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1814062",
+    "bdl_id": "061813414062",
+    "nazwa": "Przeworsk",
+    "powiat": "przeworski",
+    "typ": "wiejska",
+    "ludnosc": 14410,
+    "udzial_65plus": 18.3,
+    "zmiana_ludnosci_10l": -3.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -3.93,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.76,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 411.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1814073",
+    "bdl_id": "061813414073",
+    "nazwa": "Sieniawa",
+    "powiat": "przeworski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 6686,
+    "udzial_65plus": 18.7,
+    "zmiana_ludnosci_10l": -4.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.47,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.13,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 550.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1814082",
+    "bdl_id": "061813414082",
+    "nazwa": "Tryńcza",
+    "powiat": "przeworski",
+    "typ": "wiejska",
+    "ludnosc": 8509,
+    "udzial_65plus": 16.4,
+    "zmiana_ludnosci_10l": 1.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.35,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.47,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 590.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1814092",
+    "bdl_id": "061813414092",
+    "nazwa": "Zarzecze",
+    "powiat": "przeworski",
+    "typ": "wiejska",
+    "ludnosc": 6862,
+    "udzial_65plus": 18.4,
+    "zmiana_ludnosci_10l": -4.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.65,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.18,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 411.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1815012",
+    "bdl_id": "061813515012",
+    "nazwa": "Iwierzyce",
+    "powiat": "ropczycko-sędziszowski",
+    "typ": "wiejska",
+    "ludnosc": 7764,
+    "udzial_65plus": 16.8,
+    "zmiana_ludnosci_10l": 1.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 0.39,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.64,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 363.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1815022",
+    "bdl_id": "061813515022",
+    "nazwa": "Ostrów",
+    "powiat": "ropczycko-sędziszowski",
+    "typ": "wiejska",
+    "ludnosc": 7517,
+    "udzial_65plus": 15.1,
+    "zmiana_ludnosci_10l": 4.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.53,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 0.0,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 518.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1815033",
+    "bdl_id": "061813515033",
+    "nazwa": "Ropczyce",
+    "powiat": "ropczycko-sędziszowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 27232,
+    "udzial_65plus": 17.8,
+    "zmiana_ludnosci_10l": 0.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 0.0,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.48,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 254.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1815043",
+    "bdl_id": "061813515043",
+    "nazwa": "Sędziszów Małopolski",
+    "powiat": "ropczycko-sędziszowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 23843,
+    "udzial_65plus": 18.4,
+    "zmiana_ludnosci_10l": 1.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 1.72,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.39,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 294.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1815052",
+    "bdl_id": "061813515052",
+    "nazwa": "Wielopole Skrzyńskie",
+    "powiat": "ropczycko-sędziszowski",
+    "typ": "wiejska",
+    "ludnosc": 7681,
+    "udzial_65plus": 17.7,
+    "zmiana_ludnosci_10l": -7.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -3.37,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.91,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 605.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816011",
+    "bdl_id": "061813516011",
+    "nazwa": "Dynów",
+    "powiat": "rzeszowski",
+    "typ": "miejska",
+    "ludnosc": 5925,
+    "udzial_65plus": 20.8,
+    "zmiana_ludnosci_10l": -3.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 0.0,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.06,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 406.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816023",
+    "bdl_id": "061813516023",
+    "nazwa": "Błażowa",
+    "powiat": "rzeszowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 10695,
+    "udzial_65plus": 19.4,
+    "zmiana_ludnosci_10l": -1.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.59,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.2,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 273.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816033",
+    "bdl_id": "061813516033",
+    "nazwa": "Boguchwała",
+    "powiat": "rzeszowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 22382,
+    "udzial_65plus": 17.3,
+    "zmiana_ludnosci_10l": 12.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 7.86,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.25,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 291.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816042",
+    "bdl_id": "061813516042",
+    "nazwa": "Chmielnik",
+    "powiat": "rzeszowski",
+    "typ": "wiejska",
+    "ludnosc": 7389,
+    "udzial_65plus": 16.3,
+    "zmiana_ludnosci_10l": 8.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 6.09,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.03,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 331.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816052",
+    "bdl_id": "061813516052",
+    "nazwa": "Dynów",
+    "powiat": "rzeszowski",
+    "typ": "wiejska",
+    "ludnosc": 6517,
+    "udzial_65plus": 20.1,
+    "zmiana_ludnosci_10l": -6.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.91,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.45,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 849.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816063",
+    "bdl_id": "061813516063",
+    "nazwa": "Głogów Małopolski",
+    "powiat": "rzeszowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 20471,
+    "udzial_65plus": 15.1,
+    "zmiana_ludnosci_10l": 4.7,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 15.99,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 1.28,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 229.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816072",
+    "bdl_id": "061813516072",
+    "nazwa": "Hyżne",
+    "powiat": "rzeszowski",
+    "typ": "wiejska",
+    "ludnosc": 6931,
+    "udzial_65plus": 18.0,
+    "zmiana_ludnosci_10l": -1.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -3.45,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.3,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 503.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816082",
+    "bdl_id": "061813516082",
+    "nazwa": "Kamień",
+    "powiat": "rzeszowski",
+    "typ": "wiejska",
+    "ludnosc": 6811,
+    "udzial_65plus": 15.7,
+    "zmiana_ludnosci_10l": -0.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 0.0,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.73,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 1044.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816092",
+    "bdl_id": "061813516092",
+    "nazwa": "Krasne",
+    "powiat": "rzeszowski",
+    "typ": "wiejska",
+    "ludnosc": 13394,
+    "udzial_65plus": 15.0,
+    "zmiana_ludnosci_10l": 23.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 13.75,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 3.83,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 183.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816102",
+    "bdl_id": "061813516102",
+    "nazwa": "Lubenia",
+    "powiat": "rzeszowski",
+    "typ": "wiejska",
+    "ludnosc": 6503,
+    "udzial_65plus": 18.9,
+    "zmiana_ludnosci_10l": 0.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.46,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.92,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 284.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816113",
+    "bdl_id": "061813516113",
+    "nazwa": "Sokołów Małopolski",
+    "powiat": "rzeszowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 17380,
+    "udzial_65plus": 16.7,
+    "zmiana_ludnosci_10l": 1.7,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 0.29,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.01,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 339.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816122",
+    "bdl_id": "061813516122",
+    "nazwa": "Świlcza",
+    "powiat": "rzeszowski",
+    "typ": "wiejska",
+    "ludnosc": 16796,
+    "udzial_65plus": 17.6,
+    "zmiana_ludnosci_10l": 3.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 6.75,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.97,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 236.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816132",
+    "bdl_id": "061813516132",
+    "nazwa": "Trzebownisko",
+    "powiat": "rzeszowski",
+    "typ": "wiejska",
+    "ludnosc": 24870,
+    "udzial_65plus": 15.0,
+    "zmiana_ludnosci_10l": 18.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 12.48,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 0.0,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 195.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1816143",
+    "bdl_id": "061813516143",
+    "nazwa": "Tyczyn",
+    "powiat": "rzeszowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 11696,
+    "udzial_65plus": 16.4,
+    "zmiana_ludnosci_10l": 1.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 9.7,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.26,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 270.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1817011",
+    "bdl_id": "061813317011",
+    "nazwa": "Sanok",
+    "powiat": "sanocki",
+    "typ": "miejska",
+    "ludnosc": 33488,
+    "udzial_65plus": 26.6,
+    "zmiana_ludnosci_10l": -13.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.64,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -7.45,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 376.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1817022",
+    "bdl_id": "061813317022",
+    "nazwa": "Besko",
+    "powiat": "sanocki",
+    "typ": "wiejska",
+    "ludnosc": 4318,
+    "udzial_65plus": 17.5,
+    "zmiana_ludnosci_10l": -3.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.23,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.25,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 759.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1817032",
+    "bdl_id": "061813317032",
+    "nazwa": "Bukowsko",
+    "powiat": "sanocki",
+    "typ": "wiejska",
+    "ludnosc": 5254,
+    "udzial_65plus": 18.5,
+    "zmiana_ludnosci_10l": -5.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.19,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.04,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 475.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1817042",
+    "bdl_id": "061813317042",
+    "nazwa": "Komańcza",
+    "powiat": "sanocki",
+    "typ": "wiejska",
+    "ludnosc": 4003,
+    "udzial_65plus": 24.1,
+    "zmiana_ludnosci_10l": -18.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -6.94,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.45,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 362.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1817052",
+    "bdl_id": "061813317052",
+    "nazwa": "Sanok",
+    "powiat": "sanocki",
+    "typ": "wiejska",
+    "ludnosc": 18002,
+    "udzial_65plus": 18.2,
+    "zmiana_ludnosci_10l": 1.1,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.33,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.27,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 628.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1817062",
+    "bdl_id": "061813317062",
+    "nazwa": "Tyrawa Wołoska",
+    "powiat": "sanocki",
+    "typ": "wiejska",
+    "ludnosc": 1920,
+    "udzial_65plus": 17.0,
+    "zmiana_ludnosci_10l": -3.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -6.3,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 4.73,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 699.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1817073",
+    "bdl_id": "061813317073",
+    "nazwa": "Zagórz",
+    "powiat": "sanocki",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 12522,
+    "udzial_65plus": 20.6,
+    "zmiana_ludnosci_10l": -3.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.83,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.19,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 225.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1817082",
+    "bdl_id": "061813317082",
+    "nazwa": "Zarszyn",
+    "powiat": "sanocki",
+    "typ": "wiejska",
+    "ludnosc": 8851,
+    "udzial_65plus": 20.0,
+    "zmiana_ludnosci_10l": -5.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 0.0,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.27,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 487.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1818011",
+    "bdl_id": "061813618011",
+    "nazwa": "Stalowa Wola",
+    "powiat": "stalowowolski",
+    "typ": "miejska",
+    "ludnosc": 53540,
+    "udzial_65plus": 27.1,
+    "zmiana_ludnosci_10l": -14.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -8.5,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.45,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 243.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1818022",
+    "bdl_id": "061813618022",
+    "nazwa": "Bojanów",
+    "powiat": "stalowowolski",
+    "typ": "wiejska",
+    "ludnosc": 7629,
+    "udzial_65plus": 15.8,
+    "zmiana_ludnosci_10l": 1.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.78,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -1.44,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 373.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1818032",
+    "bdl_id": "061813618032",
+    "nazwa": "Pysznica",
+    "powiat": "stalowowolski",
+    "typ": "wiejska",
+    "ludnosc": 12117,
+    "udzial_65plus": 17.3,
+    "zmiana_ludnosci_10l": 13.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 13.34,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -0.75,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 190.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1818042",
+    "bdl_id": "061813618042",
+    "nazwa": "Radomyśl nad Sanem",
+    "powiat": "stalowowolski",
+    "typ": "wiejska",
+    "ludnosc": 7165,
+    "udzial_65plus": 21.0,
+    "zmiana_ludnosci_10l": -2.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.42,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.21,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 454.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1818053",
+    "bdl_id": "061813618053",
+    "nazwa": "Zaklików",
+    "powiat": "stalowowolski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 7891,
+    "udzial_65plus": 22.2,
+    "zmiana_ludnosci_10l": -9.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -6.32,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.41,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 578.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1818062",
+    "bdl_id": "061813618062",
+    "nazwa": "Zaleszany",
+    "powiat": "stalowowolski",
+    "typ": "wiejska",
+    "ludnosc": 10893,
+    "udzial_65plus": 19.0,
+    "zmiana_ludnosci_10l": 0.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.46,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.94,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 355.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1819012",
+    "bdl_id": "061813519012",
+    "nazwa": "Czudec",
+    "powiat": "strzyżowski",
+    "typ": "wiejska",
+    "ludnosc": 11443,
+    "udzial_65plus": 18.5,
+    "zmiana_ludnosci_10l": -2.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.27,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -2.97,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 339.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1819022",
+    "bdl_id": "061813519022",
+    "nazwa": "Frysztak",
+    "powiat": "strzyżowski",
+    "typ": "wiejska",
+    "ludnosc": 9926,
+    "udzial_65plus": 18.7,
+    "zmiana_ludnosci_10l": -5.8,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.93,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.02,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 656.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1819032",
+    "bdl_id": "061813519032",
+    "nazwa": "Niebylec",
+    "powiat": "strzyżowski",
+    "typ": "wiejska",
+    "ludnosc": 10164,
+    "udzial_65plus": 18.5,
+    "zmiana_ludnosci_10l": -3.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.08,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.64,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 314.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1819043",
+    "bdl_id": "061813519043",
+    "nazwa": "Strzyżów",
+    "powiat": "strzyżowski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 19414,
+    "udzial_65plus": 21.2,
+    "zmiana_ludnosci_10l": -6.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.69,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.7,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 384.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1819052",
+    "bdl_id": "061813519052",
+    "nazwa": "Wiśniowa",
+    "powiat": "strzyżowski",
+    "typ": "wiejska",
+    "ludnosc": 7452,
+    "udzial_65plus": 18.9,
+    "zmiana_ludnosci_10l": -9.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.79,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.19,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 906.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1820013",
+    "bdl_id": "061813620013",
+    "nazwa": "Baranów Sandomierski",
+    "powiat": "tarnobrzeski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 11131,
+    "udzial_65plus": 20.4,
+    "zmiana_ludnosci_10l": -7.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -3.13,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.82,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 394.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1820022",
+    "bdl_id": "061813620022",
+    "nazwa": "Gorzyce",
+    "powiat": "tarnobrzeski",
+    "typ": "wiejska",
+    "ludnosc": 12406,
+    "udzial_65plus": 21.6,
+    "zmiana_ludnosci_10l": -7.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -2.0,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -3.37,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 285.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1820032",
+    "bdl_id": "061813620032",
+    "nazwa": "Grębów",
+    "powiat": "tarnobrzeski",
+    "typ": "wiejska",
+    "ludnosc": 9921,
+    "udzial_65plus": 17.9,
+    "zmiana_ludnosci_10l": 0.4,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 2.72,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.02,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 352.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1820043",
+    "bdl_id": "061813620043",
+    "nazwa": "Nowa Dęba",
+    "powiat": "tarnobrzeski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 16646,
+    "udzial_65plus": 23.5,
+    "zmiana_ludnosci_10l": -9.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -7.03,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.48,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 434.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1821012",
+    "bdl_id": "061813321012",
+    "nazwa": "Baligród",
+    "powiat": "leski",
+    "typ": "wiejska",
+    "ludnosc": 2998,
+    "udzial_65plus": 21.9,
+    "zmiana_ludnosci_10l": -6.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -5.95,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.95,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 568.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1821022",
+    "bdl_id": "061813321022",
+    "nazwa": "Cisna",
+    "powiat": "leski",
+    "typ": "wiejska",
+    "ludnosc": 1669,
+    "udzial_65plus": 19.1,
+    "zmiana_ludnosci_10l": -5.0,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.77,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -7.16,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 388.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1821033",
+    "bdl_id": "061813321033",
+    "nazwa": "Lesko",
+    "powiat": "leski",
+    "typ": "miejsko-wiejska",
+    "ludnosc": 10610,
+    "udzial_65plus": 23.1,
+    "zmiana_ludnosci_10l": -7.9,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.79,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.23,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 305.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1821042",
+    "bdl_id": "061813321042",
+    "nazwa": "Olszanica",
+    "powiat": "leski",
+    "typ": "wiejska",
+    "ludnosc": 4587,
+    "udzial_65plus": 20.6,
+    "zmiana_ludnosci_10l": -8.2,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -0.65,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -5.42,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 430.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1821052",
+    "bdl_id": "061813321052",
+    "nazwa": "Solina",
+    "powiat": "leski",
+    "typ": "wiejska",
+    "ludnosc": 5143,
+    "udzial_65plus": 21.4,
+    "zmiana_ludnosci_10l": -2.7,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 2.33,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -4.84,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 236.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1861011",
+    "bdl_id": "061813361011",
+    "nazwa": "Krosno",
+    "powiat": "m. Krosno",
+    "typ": "miejska",
+    "ludnosc": 43274,
+    "udzial_65plus": 25.4,
+    "zmiana_ludnosci_10l": -7.5,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -1.8,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -6.35,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 383.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1862011",
+    "bdl_id": "061813462011",
+    "nazwa": "Przemyśl",
+    "powiat": "m. Przemyśl",
+    "typ": "miejska",
+    "ludnosc": 54352,
+    "udzial_65plus": 26.0,
+    "zmiana_ludnosci_10l": -13.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -6.16,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -9.53,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 628.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1863011",
+    "bdl_id": "061813563011",
+    "nazwa": "Rzeszów",
+    "powiat": "m. Rzeszów",
+    "typ": "miejska",
+    "ludnosc": 199436,
+    "udzial_65plus": 19.6,
+    "zmiana_ludnosci_10l": 7.3,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": 3.17,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": 1.35,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 185.0,
+      "pomoc_spoleczna_10k_rok": 2025
+    }
+  },
+  {
+    "teryt": "1864011",
+    "bdl_id": "061813664011",
+    "nazwa": "Tarnobrzeg",
+    "powiat": "m. Tarnobrzeg",
+    "typ": "miejska",
+    "ludnosc": 42730,
+    "udzial_65plus": 25.2,
+    "zmiana_ludnosci_10l": -10.6,
+    "wskazniki": {
+      "rok": 2025,
+      "saldo_migracji_1000": -4.98,
+      "saldo_migracji_1000_rok": 2025,
+      "przyrost_naturalny_1000": -7.4,
+      "przyrost_naturalny_1000_rok": 2025,
+      "pomoc_spoleczna_10k": 238.0,
+      "pomoc_spoleczna_10k_rok": 2025
     }
   }
 ]

@@ -11,8 +11,8 @@ const PAGES = [
   ["zakładka Materiały", "/biblioteka?tab=materials"],
   [`zakładka Wyzwania ${region.genitive}`, "/biblioteka?tab=challenges"],
   ["Raport gminy: wybór gminy", "/biblioteka/gmina"],
-  ["Raport gminy: gmina wiejska", `/biblioteka/gmina/${region.municipalityExamples.rural}`],
-  [`Raport gminy: ${region.cityCountyExample.name}`, `/biblioteka/gmina/${region.municipalityExamples.city}`],
+  [`Raport gminy: ${region.municipalityExample.name}`, `/biblioteka/gmina/${region.municipalityExample.teryt}`],
+  [`Raport gminy: ${region.cityCountyExample.name}`, `/biblioteka/gmina/${region.cityCountyExample.teryt}011`],
 ] as const;
 
 for (const [name, url] of PAGES) {

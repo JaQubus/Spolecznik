@@ -22,6 +22,7 @@ from region import BDL_UNIT, SPLITS  # ID województwa w BDL, podziały gmin (co
 
 API = "https://bdl.stat.gov.pl/api/v1"
 GMINA_LEVEL = 6
+POWIAT_LEVEL = 5
 
 # Temat P2137 „Ludność wg grup wieku i płci” (poziom gminy)
 VAR_TOTAL = "72305"            # ogółem, ogółem
@@ -88,11 +89,11 @@ class Bdl:
                 return out
             page += 1
 
-    def variable(self, var_id: str, years: list[int]) -> dict[str, dict[int, float]]:
-        """unit_id → {rok: wartość} dla wszystkich gmin województwa."""
+    def variable(self, var_id: str, years: list[int], level: int = GMINA_LEVEL) -> dict[str, dict[int, float]]:
+        """unit_id → {rok: wartość} dla wszystkich gmin (albo powiatów: level=POWIAT_LEVEL) województwa."""
         rows = self.all_pages(
             f"/data/by-variable/{var_id}",
-            **{"unit-parent-id": BDL_UNIT, "unit-level": GMINA_LEVEL, "year": years},
+            **{"unit-parent-id": BDL_UNIT, "unit-level": level, "year": years},
         )
         return {r["id"]: {int(v["year"]): v["val"] for v in r["values"]} for r in rows}
 
@@ -160,7 +161,7 @@ def main() -> None:
 
     units = bdl.all_pages("/units", **{"parent-id": BDL_UNIT, "level": GMINA_LEVEL})
     gminy_units = [u for u in units if u["id"][-1] in GMINA_KINDS]
-    powiaty = {u["id"]: u["name"] for u in bdl.all_pages("/units", **{"parent-id": BDL_UNIT, "level": 5})}
+    powiaty = {u["id"]: u["name"] for u in bdl.all_pages("/units", **{"parent-id": BDL_UNIT, "level": POWIAT_LEVEL})}
     print(f"Gmin: {len(gminy_units)} (z {len(units)} jednostek poziomu 6)")
 
     total = bdl.variable(VAR_TOTAL, [base, year])

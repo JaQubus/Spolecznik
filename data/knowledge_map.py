@@ -8,7 +8,7 @@ przez scalenie gmin — więc granice warstw pokrywają się co do punktu.
 Dane:
 - gminy: GUS, Bank Danych Lokalnych — ludność, udział 65+, zmiana ludności w 10 lat (out/gminy.json z bdl.py)
   i dodatkowe wskaźniki z out/gminy_wskazniki.json (bdl_wskazniki.py; bez tego pliku mapa ma tylko trzy bazowe),
-- powiaty: Internetowy Obserwator Statystyk Społecznych ROPS (../dane/powiaty, 2024) — wszystkie wskaźniki.
+- powiaty: GUS, Bank Danych Lokalnych — te same zmienne na poziomie powiatu (out/powiaty_wskazniki.json z bdl_wskazniki.py --level powiat).
 Opisy i kategorie wskaźników: map_indicators.py.
 
 Wynik: ../public/mapa/region.json — ścieżki SVG gotowe do narysowania (viewBox w metrach
@@ -17,7 +17,6 @@ przeskalowanych do 1000 px szerokości) i wartości wskaźników. Strona Kondycj
 
 Wymaga mapshapera: npx mapshaper (albo ścieżka w zmiennej MAPSHAPER).
     cd data && uv run knowledge_map.py"""
-import csv
 import json
 import os
 import re
@@ -30,7 +29,7 @@ from pathlib import Path
 
 from common import ROOT, write_json
 from region import EXPECTED_GMINY, MAP_LABELS, TERYT_PREFIX
-from map_indicators import GMINA_INDICATORS, POWIAT_INDICATORS, POWIAT_SKIPPED, check
+from map_indicators import GMINA_INDICATORS, check
 from scrape_knowledge import fetch
 
 WFS = "https://mapy.geoportal.gov.pl/wss/service/PZGIK/PRG/WFS/AdministrativeBoundaries"
@@ -45,7 +44,6 @@ LABELS = MAP_LABELS
 
 PRG_SOURCE = {"title": "Państwowy Rejestr Granic (GUGiK)", "url": "https://www.geoportal.gov.pl/pl/dane/panstwowy-rejestr-granic-prg/"}
 BDL_SOURCE = {"title": "GUS, Bank Danych Lokalnych", "url": "https://bdl.stat.gov.pl/"}
-IOSS_SOURCE = {"title": "Internetowy Obserwator Statystyk Społecznych ROPS", "url": "https://obserwator.rops.krakow.pl/"}
 
 # ── Granice z PRG ───────────────────────────────────────────
 
@@ -183,34 +181,23 @@ def gmina_values() -> tuple[dict, list[dict]]:
 
 
 def powiat_values(names: dict[str, str]) -> tuple[dict, list[dict]]:
-    rows = list(csv.DictReader(open(ROOT.parent / "dane" / "powiaty" / "wszystkie_powiaty.csv", encoding="utf-8-sig")))
-    norm = lambda s: s.lower().replace("powiat ", "").replace("m. ", "").replace(" (miasto na prawach powiatu)", "").strip()
-    by_name = {norm(n): code for code, n in names.items()}
-    by_csv = {i["csv"]: i for i in POWIAT_INDICATORS}
-    unmapped = {r["wskaznik"] for r in rows} - by_csv.keys() - POWIAT_SKIPPED.keys()
-    if unmapped:
-        sys.exit(f"Wskaźniki IOSS bez opisu w map_indicators.py: {sorted(unmapped)}")
-    out: dict[str, dict] = {code: {} for code in names}
-    years: dict[str, int] = {}
-    for r in rows:
-        ind = by_csv.get(r["wskaznik"])
-        code = by_name.get(norm(r["powiat"]))
-        if not (ind and code and r["wartosc"]):
-            continue
-        v = float(r["wartosc"])
-        # „Mieszkańcy na 1 miejsce w kinie” = 0 znaczy „nie ma kina”, a nie „najlepszy dostęp”.
-        out[code][ind["key"]] = None if ind["zero_is_null"] and v == 0 else v
-        years[ind["key"]] = max(years.get(ind["key"], 0), int(r["rok"]))
-    missing = [names[c] for c, v in out.items() if len(v) < 0.9 * len(POWIAT_INDICATORS)]
+    """Wartości powiatów z out/powiaty_wskazniki.json (bdl_wskazniki.py --level powiat), klucz: 4 cyfry TERYT jak w PRG."""
+    path = ROOT / "out" / "powiaty_wskazniki.json"
+    if not path.exists():
+        sys.exit("Brak out/powiaty_wskazniki.json — uruchom: uv run bdl_wskazniki.py --level powiat")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    indicators = data["indicators"]
+    out = {code: data["values"].get(code, {}) for code in names}
+    missing = [names[c] for c, v in out.items() if len(v) < 0.9 * len(indicators)]
     if missing:
-        sys.exit(f"Brak wskaźników IOSS dla: {missing}")
-    check(POWIAT_INDICATORS)
-    return out, [{**i, "year": years[i["key"]]} for i in POWIAT_INDICATORS]
+        sys.exit(f"Brak wskaźników BDL dla powiatów: {missing}")
+    check(indicators)
+    return out, indicators
 
 
 def public(i: dict, source: dict) -> dict:
     """Opis wskaźnika do pliku dla przeglądarki: bez pól roboczych, ze źródłem i rokiem danych."""
-    hidden = {"csv", "zero_is_null", "year", "bdl"}
+    hidden = {"year", "bdl"}
     return {k: v for k, v in i.items() if k not in hidden} | {"source": {**source, "year": i["year"]}}
 
 
@@ -266,7 +253,7 @@ def main() -> None:
                     "d": proj.path(f["geometry"]),
                     "values": {i["key"]: p_values[f["properties"]["powiat"]].get(i["key"]) for i in p_indicators},
                 } for f in powiaty["features"]), key=lambda u: u["name"]),
-                "indicators": [public(i, IOSS_SOURCE) for i in p_indicators],
+                "indicators": [public(i, BDL_SOURCE) for i in p_indicators],
             },
         },
     }
