@@ -5,7 +5,7 @@ import { notify } from "../notifications";
 import { anonymize } from "../pii";
 import { slugify } from "../pl";
 import {
-  GAP_THRESHOLD, SIMILAR_INITIATIVE_MIN_SIMILARITY, normalizeCard,
+  GAP_THRESHOLD, SIMILAR_INITIATIVE_MIN_SIMILARITY,
   type IdeaPoster, type InitiativeCard, type InitiativeResponse, type SimilarInitiative, type SubmissionKind,
 } from "../schemas";
 import { similarInitiatives, upsertIndex } from "../search";
@@ -16,6 +16,7 @@ import { newAccessKey } from "./access";
 
 type CreateInput = {
   kind: SubmissionKind;
+  /** Już znormalizowana (normalizeCard) przy wejściu do systemu: po LLM albo po żądaniu klienta. */
   card: InitiativeCard;
   text: string;
   gmina?: string;
@@ -32,10 +33,8 @@ type CreateInput = {
  * podobne inicjatywy z regionu (potencjalni partnerzy), sprawdzone rozwiązania z Polski (inspiracje), mentorzy
  * i otwarte programy. Inicjatywa jest prywatna, dopóki zespół nie opublikuje jej w Panelu.
  */
-export async function createInitiative({ kind, card: input, text, gmina, teryt, canvas, poster, authorId }: CreateInput): Promise<InitiativeResponse> {
+export async function createInitiative({ kind, card, text, gmina, teryt, canvas, poster, authorId }: CreateInput): Promise<InitiativeResponse> {
   const supabase = createAdminClient();
-  // Karta przychodzi od klienta: TRL przy innowacji nietechnologicznej odrzuciłby check w bazie (0007).
-  const card = normalizeCard(input);
   const original = anonymize(text).text;
 
   // Szukamy, zanim zapiszemy nową inicjatywę — dzięki temu nie znajdzie samej siebie.
@@ -109,7 +108,7 @@ export async function createInitiative({ kind, card: input, text, gmina, teryt, 
       body: `${card.problem} ${card.solution}`,
       lemmas: card.keywords,
       domains: [...card.domains],
-      tags: [card.stage, ...card.cross],
+      tags: [card.stage, card.innovationKind, ...card.sectors, ...card.cross],
       institutionType: card.institutionType,
       teryt: gminaRow?.teryt ?? null,
     }),
@@ -137,16 +136,9 @@ export async function createInitiative({ kind, card: input, text, gmina, teryt, 
  */
 async function saveCreators(initiativeId: string, roles: InitiativeCard["creatorRoles"]) {
   if (roles.length === 0) return;
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("creators")
-    .insert(roles.map((role) => ({ role, under_18: role === "uczen" })))
-    .select("id");
+  // Jedna funkcja w bazie = jedna transakcja: albo twórcy i powiązania, albo nic (bez osieroconych wierszy).
+  const { error } = await createAdminClient().rpc("add_initiative_creators", { p_initiative: initiativeId, p_roles: roles });
   if (error) throw error;
-  const { error: linkError } = await supabase
-    .from("initiative_creators")
-    .insert((data ?? []).map((c, sort) => ({ initiative_id: initiativeId, creator_id: c.id, sort })));
-  if (linkError) throw linkError;
 }
 
 /** Opublikowane z tytułem i linkiem; nieopublikowane tylko z gminą — treść cudzych zgłoszeń jest prywatna. */
