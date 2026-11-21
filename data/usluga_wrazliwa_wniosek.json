@@ -1,0 +1,224 @@
+{
+  "_source": "Wniosek o grant i Oświadczenia podmiotu, II nabór „Usługa Wrażliwa” (zał. 2 do ogłoszenia, zarządzenie IS-430-6/26), rops.krakow.pl. Podpowiedzi: „Instrukcja – jak wypełnić wniosek o grant” (ROPS, I nabór).",
+  "call": {
+    "name": "II",
+    "title": "II nabór wniosków na pilotażowe wdrożenie usług społecznych bazujących na innowacyjnych rozwiązaniach",
+    "order": "IS-430-6/26",
+    "url": "https://rops.krakow.pl/nabory-szkolenia-granty-dotacje-wizyty-studyjne-studia-specjalizacje-superwizje/granty-na-innowacje-spoleczne,ii-nabor-wnioskow-na-pilotazowe-wdrozenie-uslug-spolecznych-bazujacych-na-innowacyjnych-rozwiazaniach-w-ramach-projektu-usluga-wrazliwa-upowszechnianie-innowacji-spolecznych-w-srodowiskach-lokalnych",
+    "formUrl": "https://uw-nabor2.webankieta.pl/",
+    "opensAt": "2026-05-27",
+    "closesAt": "2026-06-30",
+    "contact": "uw@rops.krakow.pl, tel. 12 422 06 36 wew. 34 lub 27"
+  },
+  "intro": "Nabór wniosków na pilotażowe wdrożenie usług społecznych bazujących na innowacyjnych rozwiązaniach, organizowany przez Regionalny Ośrodek Polityki Społecznej w Krakowie w ramach projektu „Usługa Wrażliwa – upowszechnianie innowacji społecznych w środowiskach lokalnych”. Projekt jest realizowany w ramach Działania 6.23 Programu Fundusze Europejskie dla Małopolski na lata 2021 – 2027, współfinansowanego przez Unię Europejską w ramach Europejskiego Funduszu Społecznego Plus.",
+  "innovations": [
+    {
+      "title": "Przenośne modularne łazienki",
+      "slug": "przenosne-modularne-lazienki"
+    },
+    {
+      "title": "koMIX życiowy",
+      "slug": "komix-zyciowy"
+    },
+    {
+      "title": "Organizator kompleksowej opieki w miejscu zamieszkania",
+      "slug": "organizator-kompleksowej-opieki-w-miejscu-zamieszkania"
+    },
+    {
+      "title": "Szlakiem ludzi bezdomnych (Mobilny Punkt Higieniczny)",
+      "slug": "szlakiem-ludzi-bezdomnych"
+    },
+    {
+      "title": "Terapeuta przestrzeni",
+      "slug": "terapeuta-przestrzeni"
+    }
+  ],
+  "statuses": [
+    "Jednostka sektora finansów publicznych",
+    "Osoba prawna",
+    "Jednostka organizacyjna nie będąca osobą prawną, posiadająca zdolność prawną"
+  ],
+  "experience": {
+    "lead": "Podmiot, który reprezentuję posiada minimum 3-letnie doświadczenie w obszarze:",
+    "areas": [
+      "pracy z grupą docelową, do której kierowana jest innowacja",
+      "udzielaniu podobnej formy wsparcia w obszarze wybranej innowacji",
+      "działalności w obszarze innowacji społecznych"
+    ],
+    "tip": "Zaznacz każdy obszar, w którym masz co najmniej 3 lata doświadczenia, i krótko je opisz. Doświadczenie w więcej niż jednym obszarze jest premiowane: 2 obszary – 10 pkt, 3 obszary – 20 pkt."
+  },
+  "targetGroups": [
+    "rodziny (naturalne, zastępcze, adopcyjne) z dziećmi i ich otoczenie, w tym rodziny dysfunkcyjne, przeżywające trudności w wypełnianiu funkcji opiekuńczo-wychowawczych lub w kryzysie (dotyczy zarówno całych rodzin, jak i ich poszczególnych członków)",
+    "dzieci i młodzież",
+    "osoby wymagające wsparcia w codziennym funkcjonowaniu lub ich opiekunowie",
+    "osoby z niepełnosprawnościami lub o ograniczonej mobilności",
+    "kadra realizująca działania w obszarze usług społecznych, pracująca w podmiotach działających na terenie województwa małopolskiego"
+  ],
+  "sections": {
+    "tytul": {
+      "n": "III.1",
+      "title": "Tytuł innowacyjnej usługi społecznej",
+      "tip": "Możliwie krótki, chwytliwy i kojarzący się z usługą.",
+      "questions": []
+    },
+    "opis": {
+      "n": "III.2",
+      "title": "Opis innowacyjnej usługi społecznej",
+      "tip": "Na czym będzie polegała usługa w Twojej społeczności, jakie działania podejmiesz i jak wykorzystasz wybraną innowację.",
+      "questions": [
+        "Na czym będzie polegała innowacyjna usługa społeczna świadczona w społeczności lokalnej?",
+        "Jakie są jej główne założenia i działania?",
+        "Jaki ma cel i jaką zmianę zamierza wywołać?",
+        "W jaki sposób planuje się wykorzystanie wybranej innowacji społecznej?"
+      ]
+    },
+    "daty": {
+      "n": "III.3",
+      "title": "Daty realizacji innowacyjnej usługi społecznej",
+      "tip": "Od złożenia wniosku do podpisania umowy mija kilka miesięcy. Całość trwa najwyżej 18 miesięcy, przygotowanie najwyżej 6, a samą usługę świadczysz co najmniej 12 miesięcy.",
+      "questions": []
+    },
+    "grupy": {
+      "n": "III.4",
+      "title": "Grupa docelowa, do której kierowana będzie innowacyjna usługa społeczna",
+      "tip": "Możesz wybrać więcej niż jedną grupę.",
+      "questions": []
+    },
+    "diagnoza": {
+      "n": "III.5",
+      "title": "Diagnoza problemu i opis odbiorców usługi",
+      "tip": "Opisz problem, grupę i jej liczebność na Twoim terenie. Podaj źródła danych i napisz, czy odbiorcy są wykluczeni społecznie i dlaczego.",
+      "questions": [
+        "Na jaki problem odpowiada usługa i jaka jest skala problemu na planowanym obszarze wdrażania usługi?",
+        "Charakterystyka grupy docelowej, problemy i potrzeby grupy docelowej, bariery uczestnictwa.",
+        "Liczebność grupy docelowej, w tym liczba osób planowana do objęcia innowacyjną usługą społeczną.",
+        "Źródła informacji i danych dotyczących grupy docelowej.",
+        "Czy odbiorcy usługi to grupy wykluczone społecznie i dlaczego?"
+      ]
+    },
+    "rekrutacja": {
+      "n": "III.6",
+      "title": "Opis sposobu rekrutacji, w tym kryteria oraz ramy czasowe rekrutacji odbiorców usługi",
+      "tip": "Jak dotrzesz do odbiorców, kogo przyjmiesz i kiedy.",
+      "questions": []
+    },
+    "liczba": {
+      "n": "III.7",
+      "title": "Liczba osób objętych wsparciem grantu, w tym liczba osób objętych usługą społeczną bazującą na innowacyjnym rozwiązaniu wybranym do wdrożenia",
+      "tip": "Podaj konkretne liczby: wszystkie osoby objęte wsparciem (także kadrę) i ile z nich skorzysta z samej usługi.",
+      "questions": []
+    },
+    "obszar": {
+      "n": "III.8",
+      "title": "Obszar wdrażania innowacyjnej usługi społecznej",
+      "tip": "Gmina, powiat, kilka gmin lub powiatów, województwo albo region.",
+      "questions": [
+        "Na jakim terenie będzie wdrażana usługa?"
+      ]
+    },
+    "efekty": {
+      "n": "III.9",
+      "title": "Oczekiwane efekty realizacji grantu",
+      "tip": "Jak zmieni się sytuacja osób objętych usługą, np. poprawa standardu życia.",
+      "questions": []
+    },
+    "plan": {
+      "n": "III.10",
+      "title": "Plan działania i koszty – koncepcja wdrażania innowacyjnej usługi społecznej",
+      "tip": "Przy każdym działaniu: co zrobisz (forma wsparcia, miejsce, częstotliwość, liczba uczestników), kiedy, ile to kosztuje i jak policzono koszt, np. 12 h × 100 zł = 1200 zł.",
+      "questions": []
+    },
+    "wskaznik": {
+      "n": "III.10",
+      "title": "Wskaźnik obligatoryjny produktu: liczba osób objętych usługami świadczonymi w społeczności lokalnej w programie",
+      "tip": "Liczby kobiet i mężczyzn w kolejnych latach oraz sposób pomiaru, np. listy obecności.",
+      "questions": []
+    },
+    "kwota": {
+      "n": "III.11",
+      "title": "Wnioskowana kwota grantu",
+      "tip": "Suma kosztów z planu działania, najwyżej 600 000 zł.",
+      "questions": []
+    },
+    "cross": {
+      "n": "III.12",
+      "title": "Czy przewidywane są wydatki w ramach cross-financingu?",
+      "tip": "Cross-financing to zakupy typowe dla innych funduszy, np. środki trwałe lub prace budowlane. Jeśli tak, wypisz wszystkie takie wydatki.",
+      "questions": []
+    },
+    "trwaloscCross": {
+      "n": "III.13",
+      "title": "Opis koncepcji utrzymania trwałości, w przypadku wydatków w ramach cross-financingu",
+      "tip": "Tylko jeśli planujesz wydatki w ramach cross-financingu.",
+      "questions": []
+    },
+    "horyzontalne": {
+      "n": "IV",
+      "title": "Zgodność z zasadami horyzontalnymi, w tym zasadami równościowymi i zasadą zrównoważonego rozwoju",
+      "tip": "Opisz, jak w ramach grantu przestrzegasz każdej z zasad.",
+      "questions": [
+        "zasady równości kobiet i mężczyzn",
+        "zasady równości szans i niedyskryminacji, w tym dostępności innowacyjnej usługi społecznej i działań w ramach grantu (zgodności usług i działań niezbędnych do jej wdrożenia ze standardami dostępności)",
+        "Karty Praw Podstawowych i Konwencji o Prawach Osób Niepełnosprawnych",
+        "zasady zrównoważonego rozwoju oraz DNSH (zasada „nie czyń poważnych szkód”)"
+      ]
+    },
+    "utrzymanie": {
+      "n": "V",
+      "title": "Koncepcja utrzymania efektów wdrożenia innowacji społecznej",
+      "tip": "Jak usługa i jej efekty przetrwają po zakończeniu finansowania z grantu.",
+      "questions": [
+        "Opisz swoje założenia dotyczące utrzymania efektów wdrożonej ze środków grantu innowacyjnej usługi społecznej (po zakończeniu finansowania)."
+      ]
+    },
+    "deinstytucjonalizacja": {
+      "n": "VI",
+      "title": "Uzasadnienie spełnienia zasady deinstytucjonalizacji w proponowanej koncepcji usług społecznych",
+      "tip": "Dlaczego to usługa w społeczności lokalnej, a nie w instytucji całodobowej.",
+      "questions": []
+    }
+  },
+  "declarations": {
+    "title": "Oświadczenia podmiotu",
+    "lead": "Świadomy/a odpowiedzialności karnej wynikającej z art. 297 § 1 kodeksu karnego przewidującego karę pozbawienia wolności do lat 5, oświadczam, że:",
+    "items": [
+      "w imieniu podmiotu, który reprezentuję dobrowolnie deklaruję uczestnictwo w projekcie pn. „Usługa Wrażliwa – upowszechnianie innowacji społecznych w środowiskach lokalnych” realizowanym przez Województwo Małopolskie - Regionalny Ośrodek Polityki Społecznej w Krakowie, w ramach Programu Fundusze Europejskie dla Małopolski na lata 2021 – 2027, współfinansowanego przez Unię Europejską w ramach Europejskiego Funduszu Społecznego Plus.",
+      "posiadam pełne uprawnienia do reprezentowania Wnioskodawcy w zakresie objętym niniejszym wnioskiem oraz pełną zdolność do czynności prawnych.",
+      "potwierdzam zgodność informacji zawartych we wniosku o grant, oświadczeniach oraz załączonych dokumentach ze stanem faktycznym i prawnym.",
+      "zapoznałem/am się z Regulaminem udzielania grantów w ramach projektu „Usługa Wrażliwa – upowszechnianie innowacji społecznych w środowiskach lokalnych” oraz załącznikami do niniejszego Regulaminu i akceptuję wszystkie warunki w nich określone.",
+      "Podmiot, który reprezentuję posiada siedzibę, filię, delegaturę, oddział lub inną formę działalności na terenie województwa małopolskiego.",
+      "podmiot, który reprezentuję posiada minimum 3-letnie doświadczenie w co najmniej jednym obszarze zbieżnym z przedmiotem danej innowacji, tj. w: a. pracy z grupą docelową, do której kierowana jest innowacja b. udzielaniu podobnej formy wsparcia c. działalności w obszarze innowacji społecznych,",
+      "podmiot, który reprezentuję nie został wykluczony z możliwości otrzymania środków przeznaczonych na realizację programów finansowanych z udziałem środków europejskich, na podstawie art. 207 ust. 4 ustawy z dnia 27 sierpnia 2009 r. o finansach publicznych, art. 12 ust. 1 pkt 1 ustawy z dnia 15 czerwca 2012 r. o skutkach powierzania wykonywania pracy cudzoziemcom przebywającym wbrew przepisom na terytorium Rzeczypospolitej Polskiej oraz art. 9 ust. 1 pkt 2a ustawy z dnia 28 października 2002 r. o odpowiedzialności podmiotów zbiorowych za czyny zabronione pod groźbą kary,",
+      "podmiot, który reprezentuję nie podlega wykluczeniu z otrzymania wsparcia w związku z sankcjami wynikającymi z agresji Federacji Rosyjskiej na Ukrainę: a. nie jest objęty sankcjami, b. nie jest powiązany z osobami lub podmiotami objętymi sankcjami.",
+      "podmiot, który reprezentuję nie zalega z uiszczeniem podatków, opłat, składek na ubezpieczenia społeczne lub zdrowotne,",
+      "urzędujący członek organu zarządzającego lub nadzorczego podmiotu, który reprezentuję, wspólnik w spółce jawnej lub partnerskiej albo komplementariusz w spółce komandytowej lub komandytowo-akcyjnej nie został skazany prawomocnym wyrokiem sądu za umyślne przestępstwo ścigane z oskarżenia publicznego lub umyślne przestępstwo skarbowe,",
+      "wspólnik lub urzędujący członkowie organu zarządzającego lub nadzorczego wnioskującego podmiotu nie są zatrudnieni/one w Regionalnym Ośrodku Polityki Społecznej w Krakowie (ROPS).",
+      "nie łączy mnie z personelem projektu ani władzami ROPS, Głównym Księgowym lub Radcą Prawnym ROPS związek małżeński, stosunek pokrewieństwa i powinowactwa (w linii prostej lub bocznej do II stopnia) lub związek z tytułu przysposobienia, opieki lub kurateli lub inny związek faktyczny, który może budzić uzasadnione wątpliwości, co do zachowania zasady bezstronności, podmiot, który reprezentuję nie jest jednostką organizacyjną ani osobą prawną Województwa Małopolskiego.",
+      "podmiot, który reprezentuję przestrzega przepisów antydyskryminacyjnych, zgodnie z art. 9 ust. 3 Rozporządzenia Parlamentu Europejskiego i Rady (UE) nr 2021/1060,",
+      "reprezentuję podmiot, którego działania w obszarze powiązanym z grantem są zgodne z Kartą Praw Podstawowych oraz Konwencją o Prawach Osób Niepełnosprawnych,",
+      "podmiot, który reprezentuję nie korzysta równolegle z innych środków publicznych na realizację tych samych wydatków, w szczególności w ramach FEM 2021-2027 oraz FERS 2021-2027",
+      "deklaruję, że wszelkie działania i rezultaty grantu będą zgodne z zasadami równościowymi wskazanymi w Wytycznych dotyczących realizacji zasad równościowych w ramach funduszy unijnych na lata 2021-2027, w tym z zasadą równości kobiet i mężczyzn, zasadami równości szans i niedyskryminacji, w szczególności standardami dostępności dla osób z niepełnosprawnościami, Kartą Praw Podstawowych, Konwencją o Prawach Osób Niepełnosprawnych, a także zasadami polityki zrównoważonego rozwoju, w tym zasadą DNSH (zasada „nie czyń poważnych szkód”).",
+      "Zobowiązuję się do pisemnego poinformowania ROPS o wszelkich zmianach w oświadczeniach i dokumentacji, które nastąpią między złożeniem wniosku a podpisaniem umowy o powierzenie grantu.",
+      "Oświadczam, że akceptuję formę elektroniczną jako obowiązującą formę komunikacji w postępowaniu dotyczącym przyznania dofinansowania.",
+      "Podmiot, który reprezentuję nie będzie pobierać opłat od osób objętych usługami społecznymi w ramach wdrażania innowacji lub kadry realizującej działania w obszarze usług społecznych,",
+      "Wypełniłem obowiązki informacyjne przewidziane w art. 13 lub art. 14 RODO (w tym za Regionalny Ośrodek Polityki Społecznej w Krakowie, zgodnie z wzorami klauzul informacyjnych stanowiących Załączniki nr 7a i 7b do Regulaminu udzielania grantów) wobec osób fizycznych, których dane osobowe bezpośrednio lub pośrednio pozyskałem w celu ubiegania się o udzielenie grantu i zobowiązuję się wypełnić je wobec osób fizycznych których dane osobowe bezpośrednio lub pośrednio pozyskam w celu zawarcia umowy o powierzenie grantu,",
+      "jestem świadomy/a, że niniejszy wniosek o grant zostanie udostępniony członkom Komisji Oceny Wniosków dokonującym jego oceny,"
+    ],
+    "deMinimis": {
+      "lead": "Oświadczam, że w odniesieniu do prowadzonej przeze mnie działalności gospodarczej (jeśli dotyczy):",
+      "options": [
+        "nie występuje pomoc publiczna ani pomoc de minimis",
+        "występuje pomoc de minimis i spełniam wszystkie warunki jej otrzymania, w tym nie przekraczam dopuszczalnego limitu pomocy de minimis (dostarczam wymaganą dokumentację zgodnie z Rozdziałem 13.4 ust. 3 Regulaminu udzielania grantów)."
+      ]
+    },
+    "summary": [
+      "Twoja organizacja działa w Małopolsce i ma co najmniej 3 lata doświadczenia w obszarze innowacji.",
+      "Nie jest wykluczona z dotacji unijnych, nie jest objęta sankcjami i nie ma zaległości wobec skarbówki ani ZUS.",
+      "Nie łączą Cię związki rodzinne ani zawodowe z ROPS, a organizacja nie jest jednostką województwa.",
+      "Nie finansujesz tych samych wydatków z innych pieniędzy publicznych i nie pobierasz opłat od uczestników.",
+      "Usługa będzie zgodna z zasadami równości, dostępności i zrównoważonego rozwoju.",
+      "Dane we wniosku są prawdziwe, a o zmianach poinformujesz ROPS na piśmie."
+    ],
+    "attachmentNote": "Oświadczenia składa się jako osobny, podpisany załącznik do wniosku (skan z podpisem albo dokument z kwalifikowanym podpisem elektronicznym). Przy pomocy de minimis dołącz też formularz informacji i zaświadczenia o pomocy de minimis."
+  }
+}

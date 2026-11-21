@@ -13,12 +13,17 @@ import { innovationPage, knowledge } from "@/lib/knowledge";
 import { formatBytes, isHugeFile, TYPE_LABELS } from "@/lib/knowledge/labels";
 import { similarInnovations } from "@/lib/knowledge/similar";
 import { GROUP_LABELS } from "@/lib/taxonomy";
+import { todayInPoland } from "@/lib/pl";
+import { callStatus, formatDay, frameworkPlan } from "@/lib/usluga-wrazliwa";
 import { safeDecode } from "../../shared";
 
 export async function generateMetadata(props: PageProps<"/biblioteka/innowacja/[slug]">): Promise<Metadata> {
   const i = await innovationPage(safeDecode((await props.params).slug));
   return i ? { title: `${i.title} · Biblioteka i wiedza`, description: i.etrSummary ?? i.problem ?? undefined } : {};
 }
+
+// Tekst o naborze „Usługa Wrażliwa” zależy od dzisiejszej daty (otwarty / zamknięty), więc karta nie może wisieć w cache bez końca.
+export const revalidate = 3600;
 
 const link = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
@@ -27,6 +32,8 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
   const i = await innovationPage(safeDecode((await props.params).slug));
   if (!i) notFound();
   const [areas, similar] = await Promise.all([knowledge.areas(), similarInnovations(i)]);
+  const framework = frameworkPlan(i.slug);
+  const call = callStatus(i.slug, todayInPoland());
   const firstArea = areas.find((a) => a.key === i.areas[0]);
   const TypeIcon = i.innovationType ? TYPE_ICONS[i.innovationType] : null;
   const zipSize = formatBytes(i.materialsZip?.sizeBytes);
@@ -146,6 +153,27 @@ export default async function Page(props: PageProps<"/biblioteka/innowacja/[slug
           <Button asChild size="lg"><Link href={`/wdrozenie?innowacja=${i.slug ?? i.id}`}>Jak to wdrożyć u nas?</Link></Button>
           <Button asChild size="lg" variant="outline"><Link href={`/przetestuj?innowacja=${i.slug ?? i.id}`}>Chcę przetestować</Link></Button>
         </div>
+        {framework && call && (
+          <div className="max-w-[48rem] space-y-2 text-lg">
+            {call.open ? (
+              <p>
+                ROPS w Krakowie wybrał tę innowację do {call.name} naboru „Usługa Wrażliwa”: gmina, ośrodek pomocy społecznej
+                albo organizacja może dostać do 600 tys. zł na jej wdrożenie. Wnioski do {formatDay(call.closesAt)}.
+                „Jak to wdrożyć u nas?” przygotuje plan, a z niego szkic wniosku o grant.
+              </p>
+            ) : (
+              <p>
+                ROPS w Krakowie wybrał tę innowację do {call.name} naboru „Usługa Wrażliwa” na wdrożenie usług społecznych.
+                Ten nabór jest już zamknięty. Ramowy Plan Wdrożenia i „Jak to wdrożyć u nas?” pomogą przygotować usługę
+                przed kolejnym naborem.
+              </p>
+            )}
+            <a href={framework.url} className={`inline-flex items-start gap-2 ${link}`}>
+              <ArrowDownTrayIcon aria-hidden className="mt-1 size-5 shrink-0" />
+              Pobierz Ramowy Plan Wdrożenia tej innowacji (PDF, rops.krakow.pl)
+            </a>
+          </div>
+        )}
       </section>
 
       {similar.length > 0 && (

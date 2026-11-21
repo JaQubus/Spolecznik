@@ -16,10 +16,12 @@ uv run eval.py             # hit@3, MRR@5, wykrywanie luk                (GROQ_A
 uv run seed_innovations.py # szybki seed Biblioteki z out/innovations.json, bez kluczy API (SUPABASE_DB_URL)
 uv run import_powiaty.py   # 22 powiaty × 112 wskaźników → powiaty_wskazniki (SUPABASE_DB_URL)
 uv run import_powiaty.py --sql  # to samo jako out/powiaty.sql do wklejenia w SQL Editor Supabase
+uv run usluga_wrazliwa.py   # Ramowe Plany Wdrożenia ROPS (nabory „Usługa Wrażliwa”) → out/usluga_wrazliwa.json (bez kluczy)
 ```
 
 - Przed `embed.py` w Supabase muszą być migracje `0001`–`0006`; przed `import_powiaty.py` także `0007`, a lista „Ucz się” to migracja `0008` (materiały są w tabeli `materials`, nowy materiał = nowy wiersz).
 - Formularz `/wniosek` (pytania, oświadczenia, klauzule RODO) czyta treść z `calls.form_schema.content`. Źródło dla naborów demo: `iws2_formularz.json`, wstawiany przez `seed_synthetic.py` + `embed.py`. Poprawka w treści = edycja `form_schema` w bazie (np. Table Editor Supabase), bez wdrożenia; kształt sprawdza `lib/call-schema.ts`. Aktywny nabór bez `content` pokazuje „Formularz jeszcze nie jest gotowy”. Szkic `/wniosek` zostaje tylko w przeglądarce (localStorage) — dane osobowe nie trafiają do bazy.
+- Generator `/wniosek-o-grant` („Usługa Wrażliwa”, #105) czyta treść wzoru z `usluga_wrazliwa_wniosek.json` (pytania, lista innowacji naboru, grupy docelowe, 22 oświadczenia; kształt sprawdza `lib/uw-content.ts`). Nowy nabór = edycja tego pliku i dopisanie innowacji do `NABORY` w `usluga_wrazliwa.py`. Ramowe Plany idą jako kontekst do planu wdrożenia i oceny szkicu, a na karcie innowacji jest link do PDF-a. Szkic wniosku zostaje w przeglądarce.
 - `embed.py` jest idempotentny: innowacje upsertuje po slugu (usuwa te spoza `out/innovations.json`), dane syntetyczne kasuje i wstawia od nowa.
 - Wyniki LLM są cache'owane (`out/enriched.json`, `raw/*_cache.json`), więc ponowne uruchomienie płaci tylko za zmiany.
 - Wszystko, co pochodzi z mocka albo z `seed_synthetic.py`, ma `synthetic = true`.
