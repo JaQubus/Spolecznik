@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ADOPTION_STATUS_LABELS } from "@/lib/adoption-status";
 import { emailAdopter, emailAuthor } from "@/lib/author-contact";
+import { sendAlertsFor } from "@/lib/innovations/alerts-send";
 import { requireAdmin } from "@/lib/auth";
 import { statusLabel, type InitiativeStatus } from "@/lib/initiatives/status";
 import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
@@ -23,6 +24,9 @@ import { ensureThread, initiativeThread, nudge, postStaffMessage } from "@/lib/t
 import { org } from "@/lib/brand";
 
 export type ActionResult = { ok: boolean; message: string } | null;
+
+/** Alerty dla partnerów o świeżo opublikowanej innowacji. Błąd tylko logujemy: publikacja już się udała. */
+const alertPartners = (id: string) => sendAlertsFor(id).catch((e) => console.error("[panel] alerty dla partnerów:", e));
 
 const SAVE_FAILED: ActionResult = { ok: false, message: "Nie udało się zapisać. Spróbuj ponownie." };
 const NOT_FOUND: ActionResult = { ok: false, message: "Nie znaleziono inicjatywy. Odśwież stronę." };
@@ -84,6 +88,7 @@ export async function updateInitiativeStatus(_prev: ActionResult, formData: Form
         .from("initiatives").update({ status, ...publish, updated_at: new Date().toISOString() }).eq("id", id);
       if (error) throw error;
       if (i.status === "archived" || status === "archived") await syncIndex(id, status !== "archived");
+      if ("published" in publish && !i.published) await alertPartners(id);
     }
     await logChange(user.id, noteOnly ? "initiative.note" : "initiative.status", "initiative", id, {
       from: i.status, to: status, note: note ?? null,
@@ -113,6 +118,7 @@ export async function setPublished(_prev: ActionResult, formData: FormData): Pro
     const { error } = await createAdminClient().from("initiatives").update({ published, updated_at: new Date().toISOString() }).eq("id", id);
     if (error) throw error;
     await logChange(user.id, published ? "initiative.publish" : "initiative.unpublish", "initiative", id, { published });
+    if (published && !i.published) await alertPartners(id);
   } catch (e) {
     console.error("[panel] publikacja:", e);
     return SAVE_FAILED;

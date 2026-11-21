@@ -1,11 +1,12 @@
 import { signOut } from "@/app/(public)/logowanie/actions";
 import { Button } from "@/components/ui/button";
-import { requireAdmin } from "@/lib/auth";
+import { PANEL_SECTIONS } from "@/lib/panel/scope";
+import { requireStaff } from "@/lib/panel/access";
 import { PanelNav } from "./panel-nav";
 import { panelTitle } from "@/lib/brand";
 
 export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
-  const user = await requireAdmin();
+  const { viewer: user, scope } = await requireStaff();
   return (
     <div className="space-y-8">
       <div className="space-y-3 rounded-[16px] bg-secondary px-4 py-3 md:px-5">
@@ -15,7 +16,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
             <Button type="submit" variant="outline" size="sm">Wyloguj się</Button>
           </form>
         </div>
-        <PanelNav />
+        <PanelNav sections={PANEL_SECTIONS[scope.kind]} />
       </div>
       {children}
     </div>

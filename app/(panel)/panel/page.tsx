@@ -1,10 +1,12 @@
-import { DocumentDuplicateIcon, EyeIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, DocumentDuplicateIcon, EyeIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { DomainBadge } from "@/components/taxonomy/icons";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { requireAdmin, viewerClient } from "@/lib/auth";
-import { statusLabel, type InitiativeStatus } from "@/lib/initiatives/status";
+import { viewerClient } from "@/lib/auth";
+import { requireStaff } from "@/lib/panel/access";
+import { PANEL_FILTERS as FILTERS } from "@/lib/panel/filters";
+import { statusLabel } from "@/lib/initiatives/status";
 import { getClusters } from "@/lib/knowledge/clusters";
 import { effectiveSignal, INITIATIVE_COLUMNS, initiativeTriage, type InitiativeRow, type Triage } from "@/lib/panel/initiatives";
 import { anonymize } from "@/lib/pii";
@@ -19,19 +21,6 @@ export const metadata = { title: panelTitle() };
 
 const PAGE_SIZE = 25;
 
-const FILTERS: { key: string; label: string; statuses: InitiativeStatus[] | null; waiting?: true }[] = [
-  { key: "nowe", label: "Do przejrzenia", statuses: ["submitted"] },
-  // Kandydaci z publicznych źródeł (7/10): czekają na przejęcie przez twórcę albo weryfikację.
-  { key: "wykryte", label: "Wykryte w źródłach", statuses: ["detected"] },
-  // Rozmowy, w których asystent przekazał pytanie albo jego odpowiedź nie pomogła.
-  { key: "czeka", label: "Czekają na człowieka", statuses: null, waiting: true },
-  { key: "w_analizie", label: "W analizie", statuses: ["in_review"] },
-  { key: "wyroznione", label: "Wyróżnione", statuses: ["featured"] },
-  { key: "wsparcie", label: "Ze wsparciem", statuses: ["supported"] },
-  { key: "przenoszone", label: "Przenoszone dalej", statuses: ["scaling"] },
-  { key: "zamkniete", label: "Zamknięte", statuses: ["archived"] },
-  { key: "wszystkie", label: "Wszystkie", statuses: null },
-];
 
 const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2";
 const chipLink =
@@ -39,20 +28,20 @@ const chipLink =
 
 /** Radar zespołu: zgłoszenia i wskazania od najsilniejszego sygnału, z podpowiedziami (duplikaty, mentor). */
 export default async function Page(props: PageProps<"/panel">) {
-  const viewer = await requireAdmin();
+  const { viewer, scope } = await requireStaff();
   const params = await props.searchParams;
   // Grupa podobnych inicjatyw z /panel/trendy: domyślnie wszystkie statusy, bo grupa obejmuje też zamknięte.
   const groupKey = typeof params.grupa === "string" && /^[0-9a-f]{10}$/.test(params.grupa) ? params.grupa : null;
   const group = groupKey ? (await getClusters()).clusters.find((c) => c.key === groupKey) ?? null : null;
-  const filter = FILTERS.find((f) => f.key === params.status) ?? (groupKey ? FILTERS.at(-1)! : FILTERS[0]);
+  const filter = FILTERS.find((f) => f.key === params.status) ?? (groupKey ? FILTERS.find((f) => f.key === "wszystkie")! : FILTERS[0]);
   const page = Math.max(1, Number(params.strona) || 1);
 
   // Odczyt sesją użytkownika: RLS (is_admin) pilnuje dostępu drugi raz (konto testowe: service role, lib/auth.ts).
   const supabase = await viewerClient(viewer);
-  let query = supabase
-    .from("initiatives")
-    .select(INITIATIVE_COLUMNS, { count: "exact" })
-    .is("duplicate_of", null)
+  // Opiekun instytucji dostaje tylko jej innowacje: RLS (0010) i filtr w zapytaniu, bo konto testowe omija RLS.
+  const base = supabase.from("initiatives").select(INITIATIVE_COLUMNS, { count: "exact" });
+  let query = (scope.kind === "all" ? base : base.eq("institution_id", scope.institutionId));
+  query = (filter.merged ? query.not("duplicate_of", "is", null) : query.is("duplicate_of", null))
     .order("signal", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
@@ -71,7 +60,7 @@ export default async function Page(props: PageProps<"/panel">) {
 
   return (
     <section className="space-y-6">
-      <h1 className="text-3xl font-bold">Radar</h1>
+      <h1 className="text-3xl font-bold">Radar{scope.kind === "institution" && ": innowacje Twojej instytucji"}</h1>
       {params.usunieto === "inicjatywa" && <Alert tone="success" title="Usunięto inicjatywę" />}
       {groupKey && (
         <p className="text-lg">
@@ -95,6 +84,12 @@ export default async function Page(props: PageProps<"/panel">) {
           ))}
         </ul>
       </nav>
+
+      <p>
+        <a href={`/panel/eksport?status=${filter.key}`} download className={`inline-flex min-h-12 items-center gap-2 ${linkClass}`}>
+          <ArrowDownTrayIcon aria-hidden className="size-5" /> Pobierz listę jako CSV<span className="sr-only"> ({filter.label})</span>
+        </a>
+      </p>
 
       <p className="text-lg">
         {filter.label}: <strong>{total}</strong> {plural(total, "inicjatywa", "inicjatywy", "inicjatyw")}

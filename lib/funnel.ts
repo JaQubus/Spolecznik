@@ -10,3 +10,15 @@ export async function advanceFunnel(
   });
   if (error) console.error("[lejek]", error);
 }
+
+/**
+ * Przesunięcie w lejku z Panelu (9/10). W odróżnieniu od advanceFunnel zwraca wynik i błąd rzuca: zespół ma zobaczyć,
+ * że przejście się nie zapisało. `changed` = false, gdy innowacja jest już na tym etapie albo dalej (zdarzenie i tak trafia do historii).
+ */
+export async function moveFunnel(initiativeId: string, stage: string, actorId: string | null, note?: string): Promise<{ changed: boolean }> {
+  const { data, error } = await createAdminClient().rpc("advance_funnel", {
+    p_initiative: initiativeId, p_stage: stage, p_source: "panel", p_ref: null, p_note: note ?? null, p_actor: actorId,
+  });
+  if (error) throw error;
+  return { changed: data === true };
+}

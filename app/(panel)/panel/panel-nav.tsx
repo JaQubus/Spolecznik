@@ -8,6 +8,10 @@ import { cn } from "cn";
 
 const LINKS = [
   { href: "/panel", label: "Radar" },
+  { href: "/panel/lejek", label: "Lejek" },
+  { href: "/panel/wskazniki", label: "Wskaźniki" },
+  { href: "/panel/partnerzy", label: "Partnerzy" },
+  { href: "/panel/instytucje", label: "Instytucje" },
   { href: "/panel/zrodla", label: "Źródła" },
   { href: "/panel/programy", label: "Programy" },
   { href: "/panel/adopcje", label: "Adopcje" },
@@ -20,12 +24,14 @@ const LINKS = [
  * Telefon: jeden przycisk z bieżącą sekcją, a pod nim wiersze na całą szerokość (jak główne Menu) —
  * zamiast trzech rzędów linków nad treścią. Od lg: linki w jednym rzędzie, zawsze widoczne.
  */
-export function PanelNav() {
+export function PanelNav({ sections }: { sections: readonly string[] }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  // Opiekun instytucji dostaje tylko część sekcji (lib/panel/scope.ts); reszta i tak odmówi dostępu po stronie serwera.
+  const visible = LINKS.filter((l) => sections.includes(l.href));
   const current = (href: string) =>
     href === "/panel" ? path === "/panel" || path.startsWith("/panel/inicjatywy") : path.startsWith(href);
-  const active = LINKS.find((l) => current(l.href));
+  const active = visible.find((l) => current(l.href));
 
   return (
     <nav aria-label="Panel" onKeyDown={(e) => e.key === "Escape" && setOpen(false)}>
@@ -42,7 +48,7 @@ export function PanelNav() {
         <ChevronDownIcon aria-hidden className={cn("size-5 shrink-0 transition-transform", open && "rotate-180")} />
       </button>
       <ul id="panel-sekcje" className={cn("mt-2 border-t lg:mt-0 lg:flex lg:flex-wrap lg:gap-x-6 lg:border-0", open ? "block" : "hidden lg:flex")}>
-        {LINKS.map((l) => (
+        {visible.map((l) => (
           <li key={l.href} className="border-b lg:border-0">
             <Link
               href={l.href}

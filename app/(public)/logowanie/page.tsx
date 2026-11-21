@@ -102,10 +102,13 @@ export default async function Page(props: PageProps<"/logowanie">) {
               <Alert title="Tylko do testów">
                 <p>Wybierz rolę jednym przyciskiem. To zastępuje prawdziwe konta, dopóki nie podłączymy logowania {org.short}.</p>
               </Alert>
-              <form action={testLogin} className="flex flex-col gap-3 sm:flex-row">
+              <form action={testLogin} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <input type="hidden" name="dalej" value={next} />
                 <Button type="submit" name="rola" value="admin" variant={supabaseEnabled ? "outline" : "default"}>
                   <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako administrator {org.short}
+                </Button>
+                <Button type="submit" name="rola" value="institution" variant="outline">
+                  <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako opiekun instytucji
                 </Button>
                 <Button type="submit" name="rola" value="mentor" variant="outline">
                   <ArrowRightEndOnRectangleIcon aria-hidden />Wejdź jako mentor
@@ -115,7 +118,7 @@ export default async function Page(props: PageProps<"/logowanie">) {
                 </Button>
               </form>
               <FieldHint>
-                Mentor widzi tylko inicjatywy, które zespół {org.short} do niego przypisał. Konto autora pozwala sprawdzić, że
+                Opiekun instytucji widzi w Panelu tylko innowacje swojej instytucji. Mentor widzi tylko inicjatywy, które zespół {org.short} do niego przypisał. Konto autora pozwala sprawdzić, że
                 Panel jest dla niego niedostępny.
               </FieldHint>
             </section>
