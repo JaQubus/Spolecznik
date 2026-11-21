@@ -4,7 +4,7 @@ import { createInitiative } from "@/lib/initiatives/create";
 import { rateLimit } from "@/lib/rate-limit";
 import { InitiativeRequest, normalizeCard } from "@/lib/schemas";
 
-/** Zgłoszenie albo wskazanie po intake: zapis z kodem i kluczem, wyniki (partnerzy, rozwiązania, mentorzy, programy). */
+/** Zgłoszenie albo wskazanie po intake: zapis z kodem i kluczem, wyniki (podobne inicjatywy, ścieżki z partnerami, programy). */
 export async function POST(request: Request) {
   const limited = rateLimit(request, "initiatives", 6);
   if (limited) return limited;

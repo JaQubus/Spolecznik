@@ -14,7 +14,7 @@ export default async function Page(props: PageProps<"/szukam">) {
     <section className="space-y-6">
       <h1 className="text-3xl font-bold">Szukam rozwiązania</h1>
       <p className="max-w-2xl text-lg">
-        Opisz problem, z którym mierzy się Twoja szkoła, gmina albo instytucja. Pokażemy inicjatywy z regionu i sprawdzone rozwiązania z Polski, które już na niego odpowiadają.
+        Opisz problem, z którym mierzy się Twoja szkoła, uczelnia, urząd albo firma. Pokażemy innowacje z regionu, które już na niego odpowiadają.
       </p>
       <IntakeFlow
         mode="challenge"

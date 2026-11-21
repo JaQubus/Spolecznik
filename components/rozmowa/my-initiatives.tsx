@@ -32,13 +32,6 @@ export function MyInitiatives({ mine, primary }: { mine: MyInitiative[]; primary
                     <span className="text-muted-foreground"> · {formatDate(n.createdAt)} · {statusLabel(n.status)}</span>
                   </p>
                   {n.title && <p className="line-clamp-2">{n.title}</p>}
-                  {n.invitations > 0 && (
-                    <p>
-                      <Link href={`/partnerstwo?kod=${n.code}`} className={linkClass} aria-label={`Zaproszenie do partnerstwa: zgłoszenie ${n.code}`}>
-                        {n.invitations === 1 ? "Autor podobnej inicjatywy zaprasza Cię do rozmowy" : `Zaproszenia do partnerstwa: ${n.invitations}`}
-                      </Link>
-                    </p>
-                  )}
                   <p>
                     <Link href={other.href} className={linkClass} aria-label={`${other.label}: zgłoszenie ${n.code}`}>
                       {other.label}

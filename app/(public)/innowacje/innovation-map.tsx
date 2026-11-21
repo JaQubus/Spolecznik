@@ -8,7 +8,7 @@ import { plural } from "@/lib/pl";
 import { region } from "@/lib/brand";
 import mapJson from "@/public/mapa/region.json";
 import type { MapData } from "@/lib/knowledge/map";
-import { TerritoryMap, type TerritoryItem } from "../mapa/kondycja/territory-map";
+import { TerritoryMap, type TerritoryItem } from "@/components/maps/territory-map";
 
 const DATA = mapJson as unknown as MapData;
 const POWIATY = DATA.layers.powiaty.units;

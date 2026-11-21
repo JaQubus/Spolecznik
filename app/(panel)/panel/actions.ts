@@ -3,24 +3,19 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { ADOPTION_STATUS_LABELS } from "@/lib/adoption-status";
-import { emailAdopter, emailAuthor } from "@/lib/author-contact";
+import { emailAuthor } from "@/lib/author-contact";
 import { sendAlertsFor } from "@/lib/innovations/alerts-send";
 import { requireAdmin } from "@/lib/auth";
 import { statusLabel, type InitiativeStatus } from "@/lib/initiatives/status";
-import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
-import { mentorName } from "@/lib/threads";
-import { notifyMentor } from "@/lib/mentors";
 import { notify } from "@/lib/notifications";
 import { logChange } from "@/lib/panel/initiatives";
-import { postPartnershipMessage } from "@/lib/partnerships";
 import { anonymize } from "@/lib/pii";
 import { GroqBusyError } from "@/lib/groq";
 import { assessInitiative } from "@/lib/radar";
-import { ADOPTION_STATUSES, INITIATIVE_STATUSES, SignalOverrideInput } from "@/lib/schemas";
+import { INITIATIVE_STATUSES, SignalOverrideInput } from "@/lib/schemas";
 import { keywordSearch } from "@/lib/search";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ensureThread, initiativeThread, nudge, postStaffMessage } from "@/lib/threads";
+import { initiativeThread, postStaffMessage } from "@/lib/threads";
 import { org } from "@/lib/brand";
 
 export type ActionResult = { ok: boolean; message: string } | null;
@@ -43,7 +38,7 @@ async function loadInitiative(id: string): Promise<InitiativeBasics | null> {
   return data as InitiativeBasics | null;
 }
 
-/** Zamknięta inicjatywa nie liczy się do „w innych gminach działa coś podobnego” ani do duplikatów. */
+/** Zamknięta inicjatywa nie liczy się do podobnych inicjatyw z innych gmin ani do duplikatów. */
 async function syncIndex(id: string, active: boolean) {
   const { error } = await createAdminClient().from("search_index").update({ active }).eq("kind", "initiative").eq("ref_id", id);
   if (error) throw error;
@@ -105,7 +100,7 @@ export async function updateInitiativeStatus(_prev: ActionResult, formData: Form
 
 const PublishInput = z.object({ initiativeId: z.uuid(), published: z.enum(["true", "false"]) });
 
-/** Publikacja: dopiero po niej inicjatywa jest w publicznej bazie, w API i w „Przenieś do siebie”. */
+/** Publikacja: dopiero po niej inicjatywa jest w publicznej bazie i w API. */
 export async function setPublished(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const user = await requireAdmin();
   const parsed = PublishInput.safeParse({ initiativeId: formData.get("initiativeId"), published: formData.get("published") });
@@ -231,41 +226,9 @@ export async function setCreatorConsent(_prev: ActionResult, formData: FormData)
   return { ok: true, message: "Zapisano zgody twórcy." };
 }
 
-const AssignInput = z.object({ initiativeId: z.uuid(), mentorId: z.uuid() });
+const ReplyInput = z.object({ id: z.uuid(), as: z.literal("staff"), body: z.string().trim().min(2).max(2000) });
 
-/** Przypisanie mentora: zapis w inicjatywie i w wątku, prośba w dzwonku mentora, wpis na osi czasu autora. */
-export async function assignMentor(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const user = await requireAdmin();
-  const parsed = AssignInput.safeParse({ initiativeId: formData.get("initiativeId"), mentorId: formData.get("mentorId") });
-  if (!parsed.success) return { ok: false, message: "Wybierz mentora." };
-  const { initiativeId: id, mentorId } = parsed.data;
-
-  let name: string | null;
-  try {
-    const thread = await initiativeThread({ id });
-    if (!thread) return NOT_FOUND;
-    name = await mentorName(mentorId);
-    if (!name) return { ok: false, message: "Nie znaleziono tego mentora. Odśwież stronę." };
-    const { error } = await createAdminClient()
-      .from("initiatives").update({ assigned_mentor: mentorId, updated_at: new Date().toISOString() }).eq("id", id);
-    if (error) throw error;
-    await ensureThread(thread, mentorId, true);
-    await logChange(user.id, "initiative.assign_mentor", "initiative", id, { mentorId, note: `Pomoże: ${name}` });
-    await notifyMentor(mentorId, thread);
-  } catch (e) {
-    console.error("[panel] mentor:", e);
-    return SAVE_FAILED;
-  }
-  refresh();
-  return { ok: true, message: `Przypisano mentora: ${name}.` };
-}
-
-const ReplyInput = z.object({ id: z.uuid(), as: z.enum(["staff", "mentor"]), body: z.string().trim().min(2).max(2000) });
-
-/**
- * Odpowiedź w rozmowie o inicjatywie. Mentor demo nie ma konta, więc admin może napisać w jego imieniu —
- * podpis to imię mentora wątku.
- */
+/** Odpowiedź zespołu w rozmowie o inicjatywie. */
 export async function replyInThread(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const user = await requireAdmin();
   const parsed = ReplyInput.safeParse({ id: formData.get("id"), as: formData.get("as"), body: formData.get("body") });
@@ -276,10 +239,8 @@ export async function replyInThread(_prev: ActionResult, formData: FormData): Pr
     const thread = await initiativeThread({ id });
     if (!thread) return NOT_FOUND;
     if (thread.status === "archived") return { ok: false, message: "To zgłoszenie jest zamknięte. Najpierw zmień status." };
-    if (as === "mentor" && !thread.mentor) return { ok: false, message: "Ta rozmowa nie ma mentora. Najpierw go przypisz." };
     await postStaffMessage(thread, {
       role: as,
-      name: as === "mentor" ? thread.mentor!.name : undefined,
       // Bez anonymize(): odpowiedź zespołu może celowo podawać telefon albo adres instytucji.
       body,
       actorId: user.id,
@@ -290,47 +251,6 @@ export async function replyInThread(_prev: ActionResult, formData: FormData): Pr
   }
   refresh();
   return { ok: true, message: "Wysłano. Autor zobaczy wiadomość w rozmowie." };
-}
-
-const PartnershipReplyInput = z.object({ threadId: z.uuid(), body: z.string().trim().min(2).max(2000) });
-
-/** Zespół prowadzi każde partnerstwo: pisze podpisany jako zespół, autorzy z kontem dostają powiadomienie. */
-export async function replyInPartnership(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const user = await requireAdmin();
-  const parsed = PartnershipReplyInput.safeParse({ threadId: formData.get("threadId"), body: formData.get("body") });
-  if (!parsed.success) return { ok: false, message: "Wpisz wiadomość (od 2 do 2000 znaków)." };
-  try {
-    await postPartnershipMessage(parsed.data.threadId, { actorId: user.id }, parsed.data.body);
-  } catch (e) {
-    console.error("[panel] partnerstwo:", e);
-    return { ok: false, message: "Nie udało się wysłać. Spróbuj ponownie." };
-  }
-  refresh();
-  return { ok: true, message: "Wysłano. Zobaczą ją wszyscy autorzy w partnerstwie." };
-}
-
-const ModerateInput = z.object({ threadId: z.uuid(), messageId: z.uuid() });
-
-/** Moderacja: wiadomość autora znika z partnerstwa (np. dane osobowe, których nie wyłapała anonimizacja). Ślad w audit_log. */
-export async function removePartnershipMessage(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const user = await requireAdmin();
-  const parsed = ModerateInput.safeParse({ threadId: formData.get("threadId"), messageId: formData.get("messageId") });
-  if (!parsed.success) return { ok: false, message: "Nie znaleziono wiadomości. Odśwież stronę." };
-  const { threadId, messageId } = parsed.data;
-  try {
-    const supabase = createAdminClient();
-    const { data, error } = await supabase
-      .from("messages").delete().eq("id", messageId).eq("thread_id", threadId).select("author_name").maybeSingle();
-    if (error) throw error;
-    if (!data) return { ok: false, message: "Nie znaleziono wiadomości. Odśwież stronę." };
-    await logChange(user.id, "partnership.remove_message", "thread", threadId, { author: data.author_name });
-    await nudge(threadId);
-  } catch (e) {
-    console.error("[panel] moderacja:", e);
-    return SAVE_FAILED;
-  }
-  refresh();
-  return { ok: true, message: "Usunięto wiadomość z partnerstwa." };
 }
 
 const IdInput = z.object({ initiativeId: z.uuid() });
@@ -357,48 +277,9 @@ export async function removePersonalData(_prev: ActionResult, formData: FormData
   return { ok: true, message: "Usunięto rozpoznane dane osobowe z treści." };
 }
 
-const AdoptionStatusInput = z.object({ adoptionId: z.uuid(), status: z.enum(ADOPTION_STATUSES) });
-
-/** Status przeniesienia, np. „Przeniesienie potwierdzone”. Instytucja z kontem dostaje powiadomienie, z adresem — e-mail. */
-export async function updateAdoptionStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const user = await requireAdmin();
-  const parsed = AdoptionStatusInput.safeParse({ adoptionId: formData.get("adoptionId"), status: formData.get("status") });
-  if (!parsed.success) return { ok: false, message: "Wybierz nowy status." };
-  const { adoptionId, status } = parsed.data;
-
-  try {
-    const supabase = createAdminClient();
-    const { data: before, error } = await supabase
-      .from("adoptions")
-      .select("status, tester_id, contact_email, synthetic, initiatives(title, slug), patterns(title, slug)")
-      .eq("id", adoptionId)
-      .maybeSingle();
-    if (error) throw error;
-    if (!before) return { ok: false, message: "Nie znaleziono przeniesienia. Odśwież stronę." };
-    if (before.status === status) return { ok: false, message: "Wybierz inny status." };
-    const { error: updateError } = await supabase.from("adoptions").update({ status }).eq("id", adoptionId);
-    if (updateError) throw updateError;
-    await logChange(user.id, "adoption.status", "adoption", adoptionId, { from: before.status, to: status });
-    const initiative = before.initiatives as unknown as { title: string; slug: string | null } | null;
-    const pattern = before.patterns as unknown as { title: string; slug: string | null } | null;
-    const title = initiative?.title ?? pattern?.title ?? null;
-    const href = initiative?.slug ? initiativeHref(initiative.slug) : pattern?.slug ? patternHref(pattern.slug) : null;
-    if (before.contact_email && !before.synthetic) await emailAdopter(before.contact_email, title, ADOPTION_STATUS_LABELS[status], href);
-    if (before.tester_id) {
-      await notify({ user_id: before.tester_id, kind: "zmiana_statusu_adopcji", payload: { adoptionId, status, title, href } })
-        .catch((e) => console.error("[panel] powiadomienie o adopcji:", e));
-    }
-  } catch (e) {
-    console.error("[panel] status adopcji:", e);
-    return SAVE_FAILED;
-  }
-  refresh();
-  return { ok: true, message: `Zapisano status: ${ADOPTION_STATUS_LABELS[status]}.` };
-}
-
 /**
  * Co usuwamy i co z tym sprzątamy. `kind` to rodzaj w search_index i threads, `payloadKey` — id w powiadomieniach.
- * Klucze obce (dopasowania, szkice wniosków, adopcje) sprząta baza przez on delete cascade (0001_core.sql).
+ * Klucze obce (dopasowania, szkice wniosków) sprząta baza przez on delete cascade (0001_core.sql).
  */
 const DELETABLE = {
   inicjatywa: { table: "initiatives", kind: "initiative", payloadKey: "initiativeId", list: "/panel" },

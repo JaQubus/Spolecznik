@@ -9,7 +9,6 @@ const PAGES = [
   ["Szukam rozwiązania", "/szukam"],
   ["Sprawdź status", "/status"],
   ["status — nieznany kod", "/status/XXXX-0000"],
-  ["Przenieś do siebie", "/przenies"],
   ["Rozmowy", "/rozmowy"],
   ["API dla integracji", "/api-docs"],
 ] as const;

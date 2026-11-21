@@ -116,11 +116,11 @@ describe("profil partnera", () => {
 describe("statystyki instytucji", () => {
   test("liczy sygnał, wdrożenia i sektory", () => {
     const s = institutionStats([
-      { signal: 80, sectors: ["ict"], adoptions_count: 2, funnel_stage: "w_realizacji" },
-      { signal: 40, sectors: ["ict", "motoryzacja"], adoptions_count: 0, funnel_stage: "oceniona" },
-      { signal: null, sectors: [], adoptions_count: 1, funnel_stage: null },
+      { signal: 80, sectors: ["ict"], funnel_stage: "w_realizacji" },
+      { signal: 40, sectors: ["ict", "motoryzacja"], funnel_stage: "oceniona" },
+      { signal: null, sectors: [], funnel_stage: null },
     ]);
-    assert.deepEqual({ ...s, sectors: undefined }, { total: 3, strong: 1, inProgress: 1, adoptions: 3, avgSignal: 60, sectors: undefined });
+    assert.deepEqual({ ...s, sectors: undefined }, { total: 3, strong: 1, inProgress: 1, avgSignal: 60, sectors: undefined });
     assert.deepEqual(s.sectors, [{ sector: "ict", count: 2 }, { sector: "motoryzacja", count: 1 }]);
     assert.equal(institutionStats([]).avgSignal, null);
   });

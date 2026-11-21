@@ -72,25 +72,18 @@ export const effectiveSignal = (r: Pick<InitiativeRow, "signal" | "signal_overri
 /** Próg duplikatu: zgodność słów kluczowych ≥ 90%. */
 export const DUPLICATE_MIN = 0.9;
 
-export type Triage = { duplicates: string[]; mentorId: string | null; mentorName: string | null };
+export type Triage = { duplicates: string[] };
 
 /**
- * Możliwe duplikaty i sugerowany mentor dla listy w Panelu, ze słów kluczowych karty (bez embeddingów).
+ * Możliwe duplikaty dla listy w Panelu, ze słów kluczowych karty (bez embeddingów).
  * Liczone przy odczycie, więc obejmują też zgłoszenia, które pojawiły się później.
  */
 export async function initiativeTriage(rows: Pick<InitiativeRow, "id" | "card">[]): Promise<Map<string, Triage>> {
   try {
     const entries = await Promise.all(rows.map(async (n): Promise<[string, Triage]> => {
       const keywords = n.card.keywords ?? [];
-      const [dupes, mentors] = await Promise.all([
-        similarInitiatives(keywords, DUPLICATE_MIN),
-        keywordSearch("mentor", keywords, 1),
-      ]);
-      return [n.id, {
-        duplicates: dupes.filter((d) => d.initiative_id !== n.id).map((d) => d.initiative_id),
-        mentorId: mentors[0]?.ref_id ?? null,
-        mentorName: mentors[0]?.title ?? null,
-      }];
+      const dupes = await similarInitiatives(keywords, DUPLICATE_MIN);
+      return [n.id, { duplicates: dupes.filter((d) => d.initiative_id !== n.id).map((d) => d.initiative_id) }];
     }));
     return new Map(entries);
   } catch (e) {

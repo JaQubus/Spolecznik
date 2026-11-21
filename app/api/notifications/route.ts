@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { getViewer, type Viewer } from "@/lib/auth";
-import { currentMentor } from "@/lib/mentors";
 import type { NotificationsResponse } from "@/lib/notification-types";
 import { channelsFor, listNotifications, notificationsEnabled } from "@/lib/notifications";
 import { rateLimit } from "@/lib/rate-limit";
@@ -33,11 +32,9 @@ export async function GET(request: Request) {
   const viewer = await getViewer();
   if (!viewer || !notificationsEnabled()) return off();
   try {
-    // Mentor z konta testowego nie ma user_id — jego powiadomienia idą po kluczu roli „mentor:<id>”.
-    const mentorId = viewer.via === "test" ? (await currentMentor(viewer))?.id ?? null : null;
-    const { items, unread } = await listNotifications(viewer, await readSeen(viewer), 20, mentorId);
+    const { items, unread } = await listNotifications(viewer, await readSeen(viewer), 20);
     return Response.json(
-      { enabled: true, items, unread, channels: channelsFor(viewer, mentorId) } satisfies NotificationsResponse,
+      { enabled: true, items, unread, channels: channelsFor(viewer) } satisfies NotificationsResponse,
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e) {

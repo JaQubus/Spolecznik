@@ -11,7 +11,7 @@ import { getPublicInstitution, listInstitutionInnovations } from "@/lib/innovati
 import { initiativeHref } from "@/lib/knowledge/hrefs";
 import { plural } from "@/lib/pl";
 import { innovationKindLabel, institutionLabel, sectorLabel, signalLevel } from "@/lib/taxonomy";
-import { safeDecode } from "../../wiedza/shared";
+import { safeDecode } from "@/lib/params";
 
 async function load(props: PageProps<"/instytucje/[slug]">) {
   if (!publicInitiativesAvailable()) return null;
@@ -56,7 +56,6 @@ export default async function Page(props: PageProps<"/instytucje/[slug]">) {
           <dt className="font-bold">Opublikowane innowacje</dt><dd>{stats.total}</dd>
           <dt className="font-bold">Z silnym sygnałem radaru</dt><dd>{stats.strong}</dd>
           <dt className="font-bold">W realizacji lub wdrożone</dt><dd>{stats.inProgress}</dd>
-          <dt className="font-bold">Wypróbowania w innych miejscach</dt><dd>{stats.adoptions}</dd>
           {stats.avgSignal != null && (<><dt className="font-bold">Średni sygnał radaru</dt><dd>{stats.avgSignal}/100: {signalLevel(stats.avgSignal).label}</dd></>)}
           {stats.sectors.length > 0 && (
             <><dt className="font-bold">Sektory</dt><dd>{stats.sectors.map((s) => `${sectorLabel(s.sector)} (${s.count})`).join(", ")}</dd></>

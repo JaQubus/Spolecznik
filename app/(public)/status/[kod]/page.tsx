@@ -173,10 +173,6 @@ export default async function Page(props: PageProps<"/status/[kod]">) {
           <Button asChild variant="outline">
             <Link href={`/rozmowy?kod=${code}`}>Napisz do zespołu {org.short}</Link>
           </Button>
-          {/* Sam kod nie otwiera partnerstwa — /partnerstwo sprawdza klucz z przeglądarki. */}
-          <Button asChild variant="outline">
-            <Link href={`/partnerstwo?kod=${code}`}>Partnerstwo z autorami podobnych inicjatyw</Link>
-          </Button>
         </div>
       )}
 

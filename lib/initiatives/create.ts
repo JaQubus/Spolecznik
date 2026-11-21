@@ -1,12 +1,11 @@
 import "server-only";
 import { after } from "next/server";
-import { describeGmina, findGmina } from "../gminy";
-import { lexicalCandidates, matchDetails, rankCandidates, relatedSupport } from "../matching";
+import { findGmina } from "../gminy";
+import { relatedSupport } from "../matching";
 import { notify } from "../notifications";
-import { anonymize } from "../pii";
 import { slugify } from "../pl";
 import {
-  GAP_THRESHOLD, SIMILAR_INITIATIVE_MIN_SIMILARITY,
+  SIMILAR_INITIATIVE_MIN_SIMILARITY,
   type IdeaPoster, type InitiativeCard, type InitiativeResponse, type SimilarInitiative, type SubmissionKind,
 } from "../schemas";
 import { similarInitiatives, upsertIndex } from "../search";
@@ -34,12 +33,10 @@ type CreateInput = {
 
 /**
  * Zgłoszenie albo wskazanie inicjatywy: zapis z kodem i tajnym kluczem, a w odpowiedzi to, co pomoże ją rozwinąć —
- * podobne inicjatywy z regionu (potencjalni partnerzy), sprawdzone rozwiązania z Polski (inspiracje), mentorzy
- * i otwarte programy. Inicjatywa jest prywatna, dopóki zespół nie opublikuje jej w Panelu.
+ * podobne inicjatywy z regionu (potencjalni partnerzy), ścieżki rozwoju z partnerami i otwarte programy. Inicjatywa jest prywatna, dopóki zespół nie opublikuje jej w Panelu.
  */
 export async function createInitiative({ kind, card, text, gmina, teryt, institution, canvas, poster, authorId }: CreateInput): Promise<InitiativeResponse> {
   const supabase = createAdminClient();
-  const original = anonymize(text).text;
   // Błąd wyszukiwania instytucji nie blokuje zgłoszenia — nazwa trafi wtedy do raw_text.
   const institutionRow = await findInstitution(institution).catch((e) => { console.error("[zgłoszenie] instytucja:", e); return null; });
   // Typ instytucji z bazy jest pewny; w karcie jest wybór z formularza albo rozpoznanie modelu z opisu.
@@ -48,19 +45,15 @@ export async function createInitiative({ kind, card, text, gmina, teryt, institu
   const rawText = institution && !institutionRow ? `${text}\n\nInstytucja (z formularza): ${institution}` : text;
 
   // Szukamy, zanim zapiszemy nową inicjatywę — dzięki temu nie znajdzie samej siebie.
-  const [gminaRow, similar, lexical, support, sources] = await Promise.all([
+  const [gminaRow, similar, support, sources] = await Promise.all([
     findGmina(gmina, teryt)
       .then((g) => g ?? (institutionRow?.teryt ? findGmina(null, institutionRow.teryt) : null))
       .then((g) => g ?? findGmina(card.municipality)),
     similarInitiatives(card.keywords, SIMILAR_INITIATIVE_MIN_SIMILARITY),
-    lexicalCandidates(original, card.keywords, ["pattern"]),
     relatedSupport(card.keywords),
     // Sprawdzanie dublowania (7/10): patenty, publikacje i projekty ze źródeł. Błąd nie blokuje zgłoszenia.
     similarSources(card.keywords).catch((e) => { console.error("[zgłoszenie] podobne w źródłach:", e); return []; }),
   ]);
-  const query = { summary: `${card.problem} ${card.summary}`, keywords: card.keywords };
-  const ranked = await rankCandidates(query, lexical, original, gminaRow ? describeGmina(gminaRow) : undefined);
-
   // Zapis z kodem zgłoszenia (ponowienie przy kolizji kodu) i skrótem klucza do rozmowy.
   const access = newAccessKey();
   let row: { id: string; status_code: string } | null = null;
@@ -109,17 +102,6 @@ export async function createInitiative({ kind, card, text, gmina, teryt, institu
     void assess(); // poza żądaniem (skrypt, test) after() nie działa
   }
 
-  // Wszystkie oceny zapisujemy (analityka), pokazujemy tylko te powyżej progu.
-  const kindOf = new Map(lexical.map((l) => [l.candidate.id, l.kind]));
-  const { data: matchRows, error: matchError } = ranked.length
-    ? await supabase
-        .from("matches")
-        .insert(ranked.map((m) => ({ initiative_id: initiative.id, target_kind: "pattern", target_id: m.id, fit: m.fit, why: m.why, adapt: m.adapt })))
-        .select("id, target_id")
-    : { data: [], error: null };
-  if (matchError) throw matchError;
-  const matchIds = new Map((matchRows ?? []).map((r) => [r.target_id as string, r.id as string]));
-
   // Indeks i powiadomienie nie mogą zablokować wyniku dla autora.
   const sideEffects = await Promise.allSettled([
     saveCreators(initiative.id, card.creatorRoles),
@@ -152,7 +134,6 @@ export async function createInitiative({ kind, card, text, gmina, teryt, institu
     initiative: { id: initiative.id, statusCode: initiative.status_code, accessKey: access.key, gmina: gminaRow?.nazwa ?? null },
     similar: await similarDetails(similar),
     similarGminy: otherGminy(similar, gminaRow?.teryt ?? null),
-    patterns: await matchDetails(ranked.filter((m) => m.fit >= GAP_THRESHOLD), kindOf, matchIds),
     ...support,
     similarSources: sources,
     pathways,
@@ -204,7 +185,7 @@ async function similarDetails(similar: Awaited<ReturnType<typeof similarInitiati
     .slice(0, 5);
 }
 
-/** „W 4 innych gminach działa coś podobnego” — liczymy gminy, nie zgłoszenia, i bez własnej. */
+/** Ile innych gmin ma podobne inicjatywy — liczymy gminy, nie zgłoszenia, i bez własnej. */
 function otherGminy(similar: Awaited<ReturnType<typeof similarInitiatives>>, own: string | null) {
   const gminy = new Map<string, string>();
   for (const s of similar) if (s.teryt && s.teryt !== own) gminy.set(s.teryt, s.municipality ?? s.teryt);

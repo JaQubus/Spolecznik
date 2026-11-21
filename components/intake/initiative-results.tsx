@@ -15,11 +15,11 @@ import { plural } from "@/lib/pl";
 import type { InitiativeCard, InitiativeResponse, SubmissionKind } from "@/lib/schemas";
 import { innovationKindLabel, institutionLabel, sectorLabel, stageLabel } from "@/lib/taxonomy";
 import { org } from "@/lib/brand";
-import { linkClass, MatchRow, StatusCode, SupportSections } from "./result-parts";
+import { linkClass, StatusCode, SupportSections } from "./result-parts";
 
 /**
  * Po zgłoszeniu albo wskazaniu: jak zrozumieliśmy inicjatywę, kod RAD, ocena radaru, ścieżki rozwoju i dopasowani partnerzy,
- * podobne inicjatywy z regionu, sprawdzone rozwiązania z Polski, mentorzy i programy. Ocena radaru i uzasadnienie ścieżek
+ * podobne inicjatywy z regionu i programy. Ocena radaru i uzasadnienie ścieżek
  * liczą się w tle — AuthorAssessmentSection dopytuje o nie i podmienia wstępne ścieżki (z reguł) na przeliczone z oceną.
  */
 export function InitiativeResults({
@@ -28,7 +28,7 @@ export function InitiativeResults({
   const heading = useRef<HTMLHeadingElement>(null);
   // Po pojawieniu się wyników przenosimy fokus na nagłówek — czytnik ekranu od razu go odczyta.
   useEffect(() => heading.current?.focus(), []);
-  const { initiative, similar, similarGminy, patterns, mentors, programs } = result;
+  const { initiative, similar, similarGminy, programs } = result;
   const similarSources = result.similarSources ?? [];
 
   return (
@@ -109,25 +109,10 @@ export function InitiativeResults({
               ))}
             </ul>
           )}
-          <p className="text-muted-foreground">
-            Autorzy podobnych inicjatyw mogą się wymienić doświadczeniem albo rozwijać i wdrażać rozwiązanie razem. Zaprosimy ich
-            do wspólnej rozmowy — dołączą, jeśli się zgodzą.
-          </p>
-          <Button asChild variant="outline">
-            <Link href={`/partnerstwo?kod=${initiative.statusCode}`}>Zaproś autorów podobnych inicjatyw</Link>
-          </Button>
         </section>
       )}
 
-      {patterns.length > 0 && (
-        <section aria-labelledby="inspiracje" className="max-w-3xl space-y-3">
-          <h2 id="inspiracje" className="text-xl font-bold">Sprawdzone rozwiązania z Polski na podobny problem</h2>
-          <p className="text-muted-foreground">Mogą podpowiedzieć, jak rozwinąć inicjatywę albo zmierzyć jej efekty.</p>
-          <ol>{patterns.map((m) => <MatchRow key={m.id} match={m} />)}</ol>
-        </section>
-      )}
-
-      <SupportSections mentors={mentors} programs={programs} code={initiative.statusCode} />
+      <SupportSections programs={programs} />
 
       <div className="flex flex-wrap gap-3">
         <Button variant="outline" onClick={onReset}>{kind === "nomination" ? "Wskaż kolejną inicjatywę" : "Zgłoś kolejną inicjatywę"}</Button>

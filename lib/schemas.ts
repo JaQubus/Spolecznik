@@ -136,16 +136,6 @@ export const CardTags = z.object({
 });
 export type CardTags = z.infer<typeof CardTags>;
 
-// /panel/trendy: etykiety grup podobnych inicjatyw i wyzwań, liczone wsadowo i trzymane w cluster_labels
-export const ClusterLabels = z.object({
-  clusters: z.array(z.object({
-    n: z.number().int(),              // numer grupy z <grupa n="…">
-    label: z.string().max(80),        // krótkie hasło, np. „Robotyka w małych szkołach”
-    description: z.string().max(300), // jedno zdanie
-  })),
-});
-export type ClusterLabels = z.infer<typeof ClusterLabels>;
-
 // Rozmowa: asystent jako pierwsza linia (lib/first-line.ts)
 export const FirstLineAnswer = z.object({
   // odpowiedz: źródła zawierają odpowiedź · przekaz: nie zawierają albo pytanie o własną sprawę · bez_pytania: to nie pytanie
@@ -177,29 +167,10 @@ export const WorkshopRequest = z.object({
 /** accessKey: tajny klucz do rozmowy — tylko dla autora (ciasteczko + prywatny link). */
 export type SubmitResponseBase = { initiative: { id: string; statusCode: string; accessKey: string; gmina: string | null } };
 
-// /api/adoptions: „Wypróbowaliśmy u nas” — zgłoszenie przeniesienia albo ocena po nim
-export const AdoptionRequest = z
-  .object({
-    initiativeId: z.uuid().optional(),
-    patternId: z.uuid().optional(),
-    gmina: z.string().min(2).max(100),
-    teryt: teryt.optional(),
-    status: z.enum(ADOPTION_STATUSES).extract(["planowany", "zakonczony"]),
-    adopterOrg: z.string().max(200).optional(),
-    plannedFor: z.iso.date().optional(),
-    contactEmail: z.email().max(254).optional(), // powiadomienia o statusie bez konta
-    rating: z.number().int().min(1).max(5).optional(),
-    worked: z.string().max(2000).optional(), // co działa
-    improve: z.string().max(2000).optional(), // co poprawić
-  })
-  .refine((t) => (t.initiativeId == null) !== (t.patternId == null), { path: ["initiativeId"], message: "Wybierz inicjatywę albo rozwiązanie" })
-  .refine((t) => t.status !== "zakonczony" || t.rating != null, { path: ["rating"], message: "Wybierz ocenę od 1 do 5" });
-
 // /api/threads: wiadomość autora w wątku inicjatywy (wchodzi po kodzie, bez konta)
 export const ThreadPostRequest = z.object({
   code: z.string().regex(STATUS_CODE),
   body: z.string().trim().min(2, "Wpisz wiadomość").max(2000, "Wiadomość może mieć najwyżej 2000 znaków"),
-  mentorId: z.uuid().optional(), // „Zapytaj mentora” z wyników
 });
 
 export const ThreadNotHelpfulRequest = z.object({ code: z.string().trim().toUpperCase().regex(STATUS_CODE) });
@@ -214,91 +185,7 @@ export const AssistantRequest = z.object({
 });
 export type AssistantResponse = {
   reply: string;
-  similar: { kind: "initiative" | "pattern"; id: string; title: string; similarity: number; slug: string | null }[];
-};
-
-// ── /api/transfer: plan przeniesienia inicjatywy albo rozwiązania do wskazanej gminy i instytucji ──
-
-/** Ramy planu: pilotaż przeniesienia do 12 miesięcy, w tym przygotowanie do 3. */
-export const TRANSFER = { maxMonths: 12, maxPreparationMonths: 3 } as const;
-
-export const BUDGET_RANGES = ["do_20", "20_50", "50_150", "nie_wiem"] as const;
-export type BudgetRange = (typeof BUDGET_RANGES)[number];
-export const BUDGET_LABELS: Record<BudgetRange, string> = {
-  do_20: "do 20 tys. zł",
-  "20_50": "20–50 tys. zł",
-  "50_150": "50–150 tys. zł",
-  nie_wiem: "Jeszcze nie wiem",
-};
-/** Górna granica widełek w złotych; „nie wiem” = bez ostrzeżenia o budżecie. */
-export const BUDGET_MAX_PLN: Record<BudgetRange, number | null> = { do_20: 20_000, "20_50": 50_000, "50_150": 150_000, nie_wiem: null };
-
-export const SOURCE_KINDS = ["initiative", "pattern"] as const;
-export type SourceKind = (typeof SOURCE_KINDS)[number];
-
-export const TransferRequest = z.object({
-  sourceKind: z.enum(SOURCE_KINDS),
-  sourceId: z.uuid(),
-  gmina: z.string().min(1).max(100),
-  teryt: teryt.optional(),
-  institutionType: z.enum(INSTITUTION_KEYS),
-  audienceSize: z.number().int().min(1).max(1_000_000).optional(), // przybliżona liczba odbiorców
-  staff: z.string().trim().max(300).optional(), // dostępne osoby
-  budget: z.enum(BUDGET_RANGES),
-});
-export type TransferRequest = z.infer<typeof TransferRequest>;
-
-/** Liczba z profilu gminy z podanym źródłem (lib/gminy.ts → gminaFacts). Model wskazuje ją po id, nie przepisuje. */
-export type GminaFact = { id: string; label: string; value: number; unit: string; source: string };
-
-export const PLAN_STAGES = ["przygotowanie", "uruchomienie"] as const;
-
-/** Odpowiedź modelu. Liczby o gminie tylko przez factId; liczby od modelu (osoby, koszty) są szacunkiem. */
-export const TransferPlan = z.object({
-  goal: z.string(),
-  description: z.string(), // jak inicjatywa zadziała u nas
-  adaptation: z.string(), // co zmieniamy względem oryginału i dlaczego
-  audience: z.object({
-    summary: z.string(), // kto skorzysta, bez liczb
-    facts: z.array(z.object({ factId: z.string(), why: z.string() })).max(6),
-  }),
-  peopleReached: z.object({ count: z.number().int().min(0), basis: z.string() }),
-  steps: z.array(z.object({
-    stage: z.enum(PLAN_STAGES),
-    title: z.string(),
-    details: z.string(),
-    monthFrom: z.number().int(),
-    monthTo: z.number().int(),
-    costPln: z.number().min(0),
-    costBasis: z.string(), // sposób kalkulacji, np. „12 h × 100 zł”
-  })).min(3).max(10),
-  staffAndResources: z.string(),
-  costEstimate: z.object({ minPln: z.number(), maxPln: z.number(), basis: z.string() }), // zawsze szacunek
-  partners: z.array(z.object({ id: z.string(), role: z.string() })).max(5),
-  partnerTypes: z.array(z.string()).max(5), // gdy w bazie nie ma partnerów: typy, bez nazw
-  risks: z.array(z.object({ risk: z.string(), mitigation: z.string() })).max(6),
-  successIndicators: z.array(z.string()).max(6),
-  sustainability: z.string(), // co zostanie po pilotażu i kto za to zapłaci
-  assumptions: z.array(z.string()), // jawnie oznaczone założenia
-});
-export type TransferPlan = z.infer<typeof TransferPlan>;
-
-/** Plan po sprawdzeniu na serwerze (lib/transfer-plan.ts): fakty z wartościami, partnerzy z nazwami, suma i uwagi. */
-export type CheckedPlan = Omit<TransferPlan, "audience" | "partners"> & {
-  audience: { summary: string; facts: (GminaFact & { why: string })[] };
-  partners: { id: string; name: string; role: string }[];
-  totalPln: number; // suma kosztów działań
-  warnings: string[]; // niezgodności z ramami planu, wykryte przez serwer
-};
-
-/** Dokument zwracany przez /api/transfer i zapisywany w transfer_plans. */
-export type PlanDocument = {
-  id: string | null; // null, gdy zapis się nie udał
-  createdAt: string;
-  source: { kind: SourceKind; id: string; title: string; href: string };
-  gmina: { teryt: string; nazwa: string; label: string };
-  input: Omit<TransferRequest, "sourceKind" | "sourceId" | "gmina" | "teryt">;
-  plan: CheckedPlan;
+  similar: { kind: "initiative"; id: string; title: string; similarity: number; slug: string | null }[];
 };
 
 // /api/apply: szkic wniosku do otwartego programu
@@ -361,7 +248,9 @@ export const PosterRequest = z.object({
 
 // ── Odpowiedzi wyników — wspólne typy dla serwera i klienta ──
 
-/** Dopasowanie z uzasadnieniem: inicjatywa z regionu albo sprawdzone rozwiązanie z Polski. */
+/** Dopasowanie z uzasadnieniem: inicjatywa z regionu. */
+export type SourceKind = "initiative";
+
 export type Match = RerankItem & {
   matchId: string | null;
   kind: SourceKind;
@@ -369,11 +258,8 @@ export type Match = RerankItem & {
   slug: string | null;
   gmina: string | null; // tylko inicjatywy
   summary: string | null;
-  adoptionsCount: number;
-  avgRating: number | null;
 };
 
-export type MentorHit = { id: string; name: string; bio: string };
 export type ProgramHit = { id: string; title: string; closesAt: string | null };
 
 /** Podobna inicjatywa z regionu: opublikowana ma tytuł i link, nieopublikowana tylko gminę (zgłoszenia są prywatne). */
@@ -383,8 +269,6 @@ export type InitiativeResponse = SubmitResponseBase & {
   similar: SimilarInitiative[];
   /** Ile innych gmin ma podobne inicjatywy (także nieopublikowane) — liczymy gminy, nie zgłoszenia. */
   similarGminy: { count: number; gminy: string[] };
-  patterns: Match[];
-  mentors: MentorHit[];
   programs: ProgramHit[];
   /** „Podobne rozwiązanie już istnieje”: patenty, publikacje i projekty ze źródeł (sprawdzanie dublowania, 7/10). */
   similarSources: SimilarSource[];
@@ -396,7 +280,6 @@ export type ChallengeResponse = {
   challengeId: string;
   matches: Match[];
   isGap: boolean;
-  mentors: MentorHit[];
   programs: ProgramHit[];
 };
 
@@ -406,7 +289,7 @@ export const GAP_THRESHOLD = 50;
 export const CLARITY_THRESHOLD = 0.6;
 /**
  * Progi podobieństwa = jaka część słów kluczowych zapytania pasuje do karty (keyword_search, 0–1).
- * Mentorzy i programy nie przechodzą przez rerank, więc odcinamy je samym progiem.
+ * Programy nie przechodzą przez rerank, więc odcinamy je samym progiem.
  */
 export const RELATED_MIN_SIMILARITY = 0.25;
 export const SIMILAR_INITIATIVE_MIN_SIMILARITY = 0.4;

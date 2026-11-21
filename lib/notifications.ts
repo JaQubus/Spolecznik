@@ -1,18 +1,17 @@
 import "server-only";
 import { viewerClient, type Viewer } from "./auth";
-import { adoptionStatusLabel } from "./adoption-status";
 import { statusLabel } from "./initiatives/status";
-import { ADMIN_CHANNEL, mentorChannel, mentorRole, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
+import { ADMIN_CHANNEL, NOTIFICATION_EVENT, userChannel, type NotificationItem } from "./notification-types";
 import { createAdminClient } from "./supabase/admin";
 import { org } from "@/lib/brand";
 
-/** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin' albo 'mentor:<id>'). */
+/** Powiadomienie do jednej osoby (user_id) albo do całej roli (role = 'admin'). */
 export type NewNotification =
   | { user_id: string; role?: never; kind: string; payload: Record<string, unknown> }
-  | { role: "admin" | ReturnType<typeof mentorRole>; user_id?: never; kind: string; payload: Record<string, unknown> };
+  | { role: "admin"; user_id?: never; kind: string; payload: Record<string, unknown> };
 
 const channelOf = (n: NewNotification) =>
-  n.role === "admin" ? ADMIN_CHANNEL : n.role ? mentorChannel(n.role.slice("mentor:".length)) : userChannel(n.user_id!);
+  n.role === "admin" ? ADMIN_CHANNEL : userChannel(n.user_id!);
 
 /** Dzwonek działa tylko z bazą: bez niej nie ma kont ani tabeli notifications. */
 export const notificationsEnabled = () =>
@@ -46,22 +45,20 @@ export async function notify(rows: NewNotification | NewNotification[]): Promise
   );
 }
 
-/** Kanały, których słucha dzwonek tej osoby. `mentorId` — mentor bez konta Supabase (konto testowe). */
-export function channelsFor(viewer: Viewer, mentorId?: string | null): string[] {
+/** Kanały, których słucha dzwonek tej osoby. */
+export function channelsFor(viewer: Viewer): string[] {
   return [
     ...(viewer.role === "admin" ? [ADMIN_CHANNEL] : []),
     ...(viewer.id ? [userChannel(viewer.id)] : []),
-    ...(mentorId ? [mentorChannel(mentorId)] : []),
   ];
 }
 
 /** Filtr PostgREST: powiadomienia tej osoby i jej roli — to samo co polityka RLS „własne powiadomienia”. */
-function audienceFilter(viewer: Viewer, mentorId?: string | null): string | null {
+function audienceFilter(viewer: Viewer): string | null {
   const parts = [
     ...(viewer.role === "admin" ? ["role.eq.admin"] : []),
     ...(viewer.id ? [`user_id.eq.${viewer.id}`] : []),
     // Dwukropek jest zarezerwowany w filtrze or() PostgREST — wartość w cudzysłowie.
-    ...(mentorId ? [`role.eq."${mentorRole(mentorId)}"`] : []),
   ];
   return parts.length ? parts.join(",") : null;
 }
@@ -92,7 +89,7 @@ function describe(r: Row): Pick<NotificationItem, "text" | "href"> {
         href: panelCard ?? "/panel",
       };
     case "wyzwanie_bez_rozwiazania":
-      return { text: `Instytucja szuka rozwiązania, którego nie ma w bazie${str(p.summary) ? `: ${short(str(p.summary)!)}` : ""}`, href: "/panel/mapa" };
+      return { text: `Instytucja szuka rozwiązania, którego nie ma w bazie${str(p.summary) ? `: ${short(str(p.summary)!)}` : ""}`, href: "/panel" };
     case "nowa_wiadomosc":
       return forAdmin
         ? {
@@ -112,40 +109,8 @@ function describe(r: Row): Pick<NotificationItem, "text" | "href"> {
         text: `${code ? `Zgłoszenie ${code}` : "Twoje zgłoszenie"} ma nowy status: ${statusLabel(String(p.status))}`,
         href: code ? `/status/${code}` : null,
       };
-    case "nowa_adopcja": {
-      const what = str(p.title) ? ` „${short(str(p.title)!)}”` : "";
-      const where = str(p.gmina) ? ` (${str(p.gmina)})` : "";
-      return {
-        text: p.status === "zakonczony"
-          ? `Nowa ocena przeniesienia${what}${where}${typeof p.rating === "number" ? `: ${p.rating} na 5` : ""}`
-          : `Ktoś przenosi do siebie${what}${where}`,
-        href: "/panel/adopcje",
-      };
-    }
-    case "zmiana_statusu_adopcji":
-      return {
-        text: `Wasze przeniesienie${str(p.title) ? ` „${short(str(p.title)!)}”` : ""} ma nowy status: ${adoptionStatusLabel(String(p.status))}`,
-        href: str(p.href),
-      };
     case "wiadomosc":
       return { text: `${org.short} dodał wiadomość do ${code ? `zgłoszenia ${code}` : "Twojego zgłoszenia"}`, href: code ? `/status/${code}` : null };
-    case "prosba_mentora":
-      return { text: `${org.short} prosi Cię o pomoc przy inicjatywie${code ? ` ${code}` : ""}`, href: code ? `/mentor/${code}` : "/mentor" };
-    // Partnerstwa: autor trafia na stronę statusu (/partnerstwo wymaga klucza z przeglądarki, z której wysłano
-    // zgłoszenie, a status działa wszędzie i ma link do partnerstwa). Admin do Panelu inicjatywy, która zaprasza.
-    case "partnerstwo_zaproszenie":
-      return { text: `${str(p.gmina) ?? "Inna gmina"} chce porozmawiać o podobnej inicjatywie`, href: code ? `/status/${code}` : null };
-    case "partnerstwo_nowe":
-      return {
-        text: `${str(p.gmina) ?? "Autor"} zaprasza autorów podobnych inicjatyw do partnerstwa${typeof p.invited === "number" ? ` (zaproszenia: ${p.invited})` : ""}`,
-        href: panelCard ? `${panelCard}#partnerstwo` : "/panel",
-      };
-    case "partnerstwo_dolaczenie":
-      return { text: `${str(p.gmina) ?? "Autor"} dołączył do partnerstwa`, href: panelCard ? `${panelCard}#partnerstwo` : "/panel" };
-    case "partnerstwo_wiadomosc":
-      return forAdmin
-        ? { text: `${str(p.gmina) ?? "Autor"} napisał w partnerstwie`, href: panelCard ? `${panelCard}#partnerstwo` : "/panel" }
-        : { text: "Nowa wiadomość w partnerstwie", href: code ? `/status/${code}` : null };
     // Kontakt z partnerem (6/10): admin zapisuje zgodę partnera w Panelu, autor odpowiada w rozmowie (przez stronę statusu).
     case "prosba_o_kontakt":
       return {
@@ -173,8 +138,8 @@ function describe(r: Row): Pick<NotificationItem, "text" | "href"> {
  * Ostatnie powiadomienia tej osoby i liczba nowych. `seenAt` to czas najnowszego powiadomienia, które ta osoba
  * już widziała (zapisany przy otwarciu dzwonka) — czas z bazy, więc różnica zegarów serwerów nic nie gubi.
  */
-export async function listNotifications(viewer: Viewer, seenAt: string | null, limit = 20, mentorId?: string | null) {
-  const filter = audienceFilter(viewer, mentorId);
+export async function listNotifications(viewer: Viewer, seenAt: string | null, limit = 20) {
+  const filter = audienceFilter(viewer);
   if (!filter) return { items: [] as NotificationItem[], unread: 0 };
   // Konto Supabase czyta własną sesją, więc granicę pilnuje też RLS („własne powiadomienia”), a filtr wyżej jest
   // drugą warstwą. Konta testowe nie mają sesji (działają tylko lokalnie albo z TEST_LOGIN=1) — dla nich service role.

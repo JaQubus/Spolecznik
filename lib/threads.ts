@@ -134,9 +134,8 @@ export function authorView(t: InitiativeThread) {
 
 /**
  * Inicjatywa z listy „Twoje zgłoszenia na tym urządzeniu”.
- * `invitations`: zaproszenia do partnerstwa bez odpowiedzi (lib/partnerships.ts).
  */
-export type MyInitiative = { code: string; status: InitiativeStatus; title: string; createdAt: string; invitations: number };
+export type MyInitiative = { code: string; status: InitiativeStatus; title: string; createdAt: string };
 
 /** „Twoje zgłoszenia na tym urządzeniu”: pary kod–klucz z ciasteczka, sprawdzone z bazą, najnowsze pierwsze. */
 export async function rememberedThreads(): Promise<MyInitiative[]> {
@@ -154,19 +153,11 @@ export async function rememberedThreads(): Promise<MyInitiative[]> {
     return row ? [row] : [];
   });
 
-  const invitations = new Map<string, number>();
-  const { data: invited, error: iError } = mine.length
-    ? await supabase.from("thread_participants").select("initiative_id").in("initiative_id", mine.map((r) => r.id)).eq("status", "zaproszone")
-    : { data: [], error: null };
-  if (iError) console.error("[rozmowy] zaproszenia:", iError);
-  for (const r of invited ?? []) invitations.set(r.initiative_id as string, (invitations.get(r.initiative_id as string) ?? 0) + 1);
-
   return mine.map((r) => ({
     code: r.status_code as string,
     status: r.status as InitiativeStatus,
     title: r.title as string,
     createdAt: r.created_at as string,
-    invitations: invitations.get(r.id as string) ?? 0,
   }));
 }
 
@@ -177,23 +168,14 @@ export async function keyOpens(code: string, key: string): Promise<boolean> {
   return keyMatches((data?.access_hash as string | null) ?? null, key);
 }
 
-/**
- * Zakłada wątek przy pierwszej wiadomości (albo przy przypisaniu mentora).
- * `mentorId` zapisujemy, gdy wątek nie ma jeszcze mentora; `replaceMentor` — przypisanie w Panelu, które go zmienia.
- */
-export async function ensureThread(t: InitiativeThread, mentorId: string | null, replaceMentor = false): Promise<string> {
+/** Zakłada wątek przy pierwszej wiadomości. */
+export async function ensureThread(t: InitiativeThread): Promise<string> {
   const supabase = createAdminClient();
-  if (t.threadId) {
-    if (mentorId && (replaceMentor || !t.mentor)) {
-      const { error } = await supabase.from("threads").update({ mentor_id: mentorId }).eq("id", t.threadId);
-      if (error) throw error;
-    }
-    return t.threadId;
-  }
+  if (t.threadId) return t.threadId;
   const { data, error } = await supabase
     .from("threads")
     .upsert(
-      { entity_kind: "initiative", entity_id: t.id, title: `Inicjatywa ${t.code}`, mentor_id: mentorId },
+      { entity_kind: "initiative", entity_id: t.id, title: `Inicjatywa ${t.code}` },
       { onConflict: "entity_kind,entity_id" },
     )
     .select("id")
@@ -258,7 +240,7 @@ async function insertMessage(threadId: string, msg: NewMessage, thread: Record<s
 }
 
 /**
- * Odpowiedź zespołu albo mentora: powiadomienie i e-mail do autora, a rozmowa przestaje czekać na człowieka.
+ * Odpowiedź zespołu: powiadomienie i e-mail do autora, a rozmowa przestaje czekać na człowieka.
  * Pierwsza odpowiedź przesuwa świeże zgłoszenie na „W analizie”. `actorId` to admin piszący z Panelu
  * (null przy koncie testowym).
  */
@@ -266,7 +248,7 @@ export async function postStaffMessage(
   t: InitiativeThread,
   msg: { role: "staff" | "mentor"; name?: string; body: string; actorId?: string | null },
 ): Promise<string> {
-  const threadId = await ensureThread(t, null);
+  const threadId = await ensureThread(t);
   await insertMessage(threadId, msg, { awaiting_human: false, priority: false });
 
   if (t.authorId) {
@@ -294,9 +276,9 @@ export type AssistantOutcome = FirstLine["outcome"] | null;
 export async function postAuthorMessage(
   t: InitiativeThread,
   body: string,
-  { mentorId, assistant }: { mentorId: string | null; assistant: boolean },
+  { assistant }: { assistant: boolean },
 ): Promise<{ threadId: string; ai: AssistantOutcome }> {
-  const threadId = await ensureThread(t, mentorId);
+  const threadId = await ensureThread(t);
   await insertMessage(threadId, { role: "author", body });
   // Sygnał od razu: Panel i druga karta autora widzą wiadomość, zanim asystent skończy.
   await nudge(threadId);

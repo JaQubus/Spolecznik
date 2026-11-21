@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { brand, org, region } from "../../lib/brand";
+import { brand, org } from "../../lib/brand";
 import { axe, headingLevels, horizontalOverflow } from "./a11y";
 
 // Axe na kluczowych ekranach poza bazą wiedzy (ta ma knowledge-a11y.spec.ts). Tylko odczyt — nic nie wysyłamy,
@@ -12,14 +12,10 @@ const PUBLIC = [
   ["Sprawdź status", "/status"],
   ["status: nieznany kod", `/status/${brand.statusPrefix}-ZZZZ`],
   ["Warsztat pomysłu", "/zglos/warsztat"],
-  ["Przenieś do siebie", "/przenies"],
-  ["Wypróbowaliśmy u nas", "/wyprobuj"],
   ["Rozmowy", "/rozmowy"],
   ["Innowacje", "/innowacje"],
   ["Instytucje", "/instytucje"],
   ["Szukam innowacji", "/szukam-innowacji"],
-  [`Kondycja ${region.genitive}`, "/mapa/kondycja"],
-  ["Ucz się", "/wiedza/ucz-sie"],
   ["logowanie", "/logowanie"],
   ["API dla integracji", "/api-docs"],
 ] as const;
@@ -31,10 +27,6 @@ const PANEL = [
   ["Panel: partnerzy", "/panel/partnerzy"],
   ["Panel: instytucje", "/panel/instytucje"],
   ["Panel: programy", "/panel/programy"],
-  ["Panel: adopcje", "/panel/adopcje"],
-  ["Panel: przeniesienia", "/panel/przeniesienia"],
-  ["Panel: trendy i popyt bez podaży", "/panel/trendy"],
-  ["Panel: wiedza", "/panel/wiedza"],
 ] as const;
 
 async function loginAsAdmin(page: Page) {

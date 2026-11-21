@@ -6,9 +6,9 @@ import { useState } from "react";
 import { EmailOptIn } from "@/components/rozmowa/email-opt-in";
 import { PrivateLink } from "@/components/rozmowa/private-link";
 import { Button } from "@/components/ui/button";
-import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
-import { formatDate, formatNumber, plural } from "@/lib/pl";
-import type { Match, MentorHit, ProgramHit } from "@/lib/schemas";
+import { initiativeHref } from "@/lib/knowledge/hrefs";
+import { formatDate } from "@/lib/pl";
+import type { Match, ProgramHit } from "@/lib/schemas";
 
 export const linkClass = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 
@@ -41,17 +41,16 @@ export function StatusCode({ code, accessKey }: { code: string; accessKey: strin
   );
 }
 
-const hrefOf = (m: Match) => (m.kind === "initiative" ? (m.slug ? initiativeHref(m.slug) : null) : patternHref(m.slug ?? m.id));
-const sourceParam = (m: Match) => (m.kind === "initiative" ? `inicjatywa=${m.slug ?? m.id}` : `rozwiazanie=${m.slug ?? m.id}`);
+const hrefOf = (m: Match) => (m.slug ? initiativeHref(m.slug) : null);
 
-/** Wiersz wyniku: tytuł, dopasowanie słowami, uzasadnienie w <dl>, akcje: jedna z obrysem, reszta jako linki. */
+/** Wiersz wyniku: tytuł, dopasowanie słowami, uzasadnienie w <dl>. */
 export function MatchRow({ match: m, heading = 3 }: { match: Match; heading?: 3 | 4 }) {
   const H = `h${heading}` as const;
   const href = hrefOf(m);
   return (
     <li className="grid gap-3 border-b py-8 first:pt-0">
       <p className="text-base text-muted-foreground">
-        {m.kind === "initiative" ? `Inicjatywa z regionu${m.gmina ? ` · ${m.gmina}` : ""}` : "Sprawdzone rozwiązanie z Polski"}
+        Inicjatywa z regionu{m.gmina ? ` · ${m.gmina}` : ""}
       </p>
       <H className="text-xl font-bold">
         {href ? <Link href={href} className="underline decoration-1 underline-offset-4 hover:decoration-2">{m.title}</Link> : m.title}
@@ -67,19 +66,9 @@ export function MatchRow({ match: m, heading = 3 }: { match: Match; heading?: 3 
       <dl className="grid max-w-[68ch] gap-1">
         <dt className="mt-2 font-bold">Dlaczego pasuje</dt>
         <dd>{m.why}</dd>
-        <dt className="mt-2 font-bold">Co dostosować u Ciebie</dt>
+        <dt className="mt-2 font-bold">Co warto sprawdzić u Ciebie</dt>
         <dd>{m.adapt}</dd>
       </dl>
-      {m.adoptionsCount > 0 && (
-        <p className="text-base text-muted-foreground">
-          Przeniesiono w {m.adoptionsCount} {plural(m.adoptionsCount, "miejscu", "miejscach", "miejscach")}
-          {m.avgRating != null && `, średnia ocena ${formatNumber(m.avgRating)} na 5`}.
-        </p>
-      )}
-      <div className="mt-2 flex flex-wrap items-center gap-3">
-        <Button asChild variant="outline"><Link href={`/przenies?${sourceParam(m)}`}>Przenieś do siebie</Link></Button>
-        <Button asChild variant="link"><Link href={`/wyprobuj?${sourceParam(m)}`}>Wypróbowaliśmy u nas</Link></Button>
-      </div>
       {m.matchId && <FeedbackButtons matchId={m.matchId} />}
     </li>
   );
@@ -120,43 +109,20 @@ export function FeedbackButtons({ matchId }: { matchId: string }) {
   );
 }
 
-/** Mentorzy i otwarte programy pasujące do zgłoszenia. `code` — przy zgłoszeniu: „Zapytaj mentora” w rozmowie. */
-export function SupportSections({ mentors, programs, code }: { mentors: MentorHit[]; programs: ProgramHit[]; code?: string }) {
+/** Otwarte programy pasujące do zgłoszenia. */
+export function SupportSections({ programs }: { programs: ProgramHit[] }) {
+  if (programs.length === 0) return null;
   return (
-    <>
-      {programs.length > 0 && (
-        <section aria-labelledby="programy" className="max-w-3xl space-y-3">
-          <h2 id="programy" className="text-xl font-bold">Otwarte programy, które mogą pasować</h2>
-          <ul className="divide-y border-y">
-            {programs.map((p) => (
-              <li key={p.id} className="py-4">
-                <p className="font-bold">{p.title}</p>
-                {p.closesAt && <p className="text-muted-foreground">Wnioski do {formatDate(p.closesAt)}</p>}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {mentors.length > 0 && (
-        <section aria-labelledby="mentorzy" className="max-w-3xl space-y-3">
-          <h2 id="mentorzy" className="text-xl font-bold">Mentorzy, którzy mogą pomóc</h2>
-          <ul className="divide-y border-y">
-            {mentors.map((m) => (
-              <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
-                <div className="min-w-0 flex-1 basis-64">
-                  <p className="font-bold">{m.name}</p>
-                  <p className="line-clamp-2 text-muted-foreground">{m.bio}</p>
-                </div>
-                {code && (
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/rozmowy?kod=${code}&mentor=${m.id}`}>Zapytaj mentora</Link>
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-    </>
+    <section aria-labelledby="programy" className="max-w-3xl space-y-3">
+      <h2 id="programy" className="text-xl font-bold">Otwarte programy, które mogą pasować</h2>
+      <ul className="divide-y border-y">
+        {programs.map((p) => (
+          <li key={p.id} className="py-4">
+            <p className="font-bold">{p.title}</p>
+            {p.closesAt && <p className="text-muted-foreground">Wnioski do {formatDate(p.closesAt)}</p>}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

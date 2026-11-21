@@ -6,7 +6,7 @@ const linkClass = "underline decoration-1 underline-offset-4 hover:decoration-2"
 /**
  * Wiadomości wątku jako wiersze oddzielone liniami (ResultList), bez dymków i ramek.
  * role="log": nowe wiadomości czytnik ekranu ogłasza sam (aria-live polite), bez przerywania.
- * Odpowiedzi zespołu, mentora i AI na kremowym tle; kto pisze, mówi zawsze podpis, nie kolor.
+ * Odpowiedzi zespołu i AI na kremowym tle; kto pisze, mówi zawsze podpis, nie kolor.
  * Asystent ma dodatkowo ikonę, napis „Odpowiedź automatyczna”, opis pod treścią i listę źródeł.
  * `own` to rola, której wiadomości podpisujemy „Ty”.
  */

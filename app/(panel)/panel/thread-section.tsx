@@ -1,17 +1,15 @@
 import { FieldHint } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageList } from "@/components/rozmowa/message-list";
 import type { InitiativeThread } from "@/lib/threads";
 import { ActionForm, SubmitButton } from "./action-form";
 import { replyInThread } from "./actions";
 import { ThreadLive } from "./thread-live";
-import { org } from "@/lib/brand";
 
 const EMPTY = "Nikt jeszcze nie napisał. Autor zobaczy Twoją wiadomość w rozmowie (strona „Rozmowy”).";
 
-/** Rozmowa o inicjatywie w Panelu: wątek na żywo i odpowiedź jako zespół albo w imieniu mentora. */
+/** Rozmowa o inicjatywie w Panelu: wątek na żywo i odpowiedź zespołu. */
 export function ThreadSection({
   id,
   thread,
@@ -39,17 +37,7 @@ export function ThreadSection({
       ) : (
         <ActionForm action={replyInThread} className="max-w-2xl space-y-4">
           <input type="hidden" name="id" value={id} />
-          {thread?.mentor ? (
-            <fieldset className="space-y-2">
-              <legend className="mb-2 text-lg font-bold">Podpis</legend>
-              <RadioGroup name="as" defaultValue="staff">
-                <RadioGroupOption id="as-staff" value="staff" label={org.signature} />
-                <RadioGroupOption id="as-mentor" value="mentor" label={`W imieniu mentora: ${thread.mentor.name}`} />
-              </RadioGroup>
-            </fieldset>
-          ) : (
-            <input type="hidden" name="as" value="staff" />
-          )}
+          <input type="hidden" name="as" value="staff" />
           <div className="space-y-2">
             <Label htmlFor="reply">Odpowiedź</Label>
             <FieldHint id="reply-pomoc">
