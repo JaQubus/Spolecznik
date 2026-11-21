@@ -2,6 +2,7 @@ import "server-only";
 import { rerank, type Candidate } from "./llm";
 import { RELATED_MIN_SIMILARITY, type Match, type MentorHit, type ProgramHit, type RerankItem, type SourceKind } from "./schemas";
 import { keywordSearch } from "./search";
+import { contentStems, stem, words } from "./stems";
 import { createAdminClient } from "./supabase/admin";
 
 /**
@@ -15,29 +16,6 @@ const STRONG_OVERLAP = 0.6;
 /** Opis prawie dosłownie powtarza problem kandydata — wtedy nie może skończyć się luką. */
 const VERBATIM_OVERLAP = 0.85;
 const VERBATIM_MIN_WORDS = 4;
-
-// Słowa, które niczego nie rozróżniają (także stałe wstępy problemów z Biblioteki Innowacji Społecznych: „Innowacja odpowiada na problem…”).
-const STOPWORDS = new Set([
-  "który", "która", "które", "którzy", "których", "którym", "oraz", "jest", "przez", "jako", "może", "mogą", "mają",
-  "bardzo", "tylko", "także", "również", "kiedy", "gdzie", "nawet", "tego", "tych", "temu", "taki", "taka", "takie",
-  "jego", "sobie", "swoje", "swój", "swoją", "będzie", "było", "była", "były", "żeby", "ponieważ", "między", "przed",
-  "jeszcze", "wtedy", "dlatego", "często", "bardziej", "innowacja", "innowacji", "odpowiada", "problem", "rozwiązanie",
-  "dotyczy", "takich", "problemu", "problemy", "problemów", "problemowi", "problemem",
-]);
-
-/** Rdzeń bez polskiej końcówki: „seniorów” → „senio”, „przyjmowaniu” → „przyjmowa”, „leki” → „lek”. */
-function stem(word: string): string {
-  if (word.length >= 7) return word.slice(0, -3);
-  if (word.length >= 5) return word.slice(0, -2);
-  return word.slice(0, 3);
-}
-
-const words = (text: string) => text.toLowerCase().match(/\p{L}+/gu) ?? [];
-
-/** Rdzenie treściowe opisu użytkownika (bez krótkich słów i słów bez znaczenia). */
-export function contentStems(text: string): string[] {
-  return [...new Set(words(text).filter((w) => w.length >= 4 && !STOPWORDS.has(w)).map(stem))];
-}
 
 export type Lexical = { candidate: Candidate; kind: SourceKind; overlap: number; score: number };
 

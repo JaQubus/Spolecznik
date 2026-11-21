@@ -125,3 +125,76 @@ export function gminaType(teryt: string): "miejska" | "wiejska" | "miejsko-wiejs
   if (d === "3") return "miejsko-wiejska";
   return null;
 }
+
+// ── Ścieżki rozwoju i dopasowanie partnerów (6/10). Reguły i mierniki: config/taxonomy.json → pathways, pathwayRules ──
+
+export const PATHWAY_KEYS = ["wdrozenie", "komercjalizacja", "rozwoj", "ochrona_ip", "upowszechnienie"] as const;
+export type PathwayKey = (typeof PATHWAY_KEYS)[number];
+/** Lejek PCI w kolejności (advance_funnel w 0009 przesuwa tylko do przodu). */
+export const FUNNEL_KEYS = [
+  "wykryta", "zweryfikowana", "oceniona", "skierowana", "w_realizacji", "wdrozona", "skomercjalizowana", "zarchiwizowana",
+] as const;
+export type FunnelKey = (typeof FUNNEL_KEYS)[number];
+
+export type PathwayVariant = { label: string; metrics: string[]; metricsByKind?: Partial<Record<InnovationKindKey, string[]>> };
+export type PathwayKind = {
+  label: string;
+  description: string;
+  /** Formy wsparcia partnera (partnerSupport), które pomagają na tej ścieżce. */
+  partnerSupport: PartnerSupportKey[];
+  /** Rodzaje partnerów (partnerKinds), którzy zwykle prowadzą tę ścieżkę. */
+  partnerKinds: PartnerKindKey[];
+  /** „Kto pomaga”: role i programy, bez nazw osób. */
+  helpers: string[];
+  variants: Record<string, PathwayVariant>;
+};
+
+/** Warunek reguły: wszystkie podane pola muszą być spełnione. Pola radaru nie działają bez oceny radaru. */
+export type PathwayCondition = {
+  kinds?: InnovationKindKey[];
+  notKinds?: InnovationKindKey[];
+  trlMin?: number;
+  trlMax?: number;
+  stages?: StageKey[];
+  /** Ma sektor PCI inny niż „inne”. */
+  sectorPci?: boolean;
+  ip?: IpStatusKey[];
+  /** Brak ochrony: ip_status puste albo „brak”. */
+  ipMissing?: boolean;
+  radarMin?: Partial<Record<RadarKey, number>>;
+  radarMax?: Partial<Record<RadarKey, number>>;
+  easeMin?: number;
+  /** Wśród twórców są uczniowie albo studenci (osoby w wieku 16–30 lat, laboratoria PCI). */
+  youth?: boolean;
+  institutionTypes?: InstitutionKey[];
+};
+export type PathwayRule = { pathway: PathwayKey; variant: string; points: number; when: PathwayCondition; reason: string };
+
+export const PATHWAYS = data.pathways as unknown as {
+  minPoints: number;
+  minPointsWithoutRadar: number;
+  max: number;
+  kinds: Record<PathwayKey, PathwayKind>;
+};
+export const PATHWAY_RULES = data.pathwayRules as unknown as PathwayRule[];
+export const PATHWAY_FALLBACK = data.pathwayFallback as unknown as Record<"technologiczna" | "pomysl" | "default", [PathwayKey, string]>;
+export const EASE_OF_ADOPTION = data.easeOfAdoption as unknown as {
+  kindBase: Record<InnovationKindKey, number>;
+  weights: { skalowalnosc: number; dojrzalosc: number; kind: number };
+  transferredBonus: number;
+  levels: { min: number; label: string }[];
+};
+export const PARTNER_MATCHING = data.partnerMatching as unknown as {
+  points: { sector: number; domain: number; domainMax: number; maturity: number; support: number; kind: number; keywords: number; county: number };
+  /** Tyle wspólnych słów daje pełne punkty za słowa kluczowe. */
+  keywordsFull: number;
+  minScore: number;
+  perKind: Record<PartnerKindKey, number>;
+  max: number;
+  challengeMinScore: number;
+  challengeMax: number;
+};
+export const FUNNEL = Object.fromEntries(Object.entries(data.funnel).filter(([k]) => k !== "_opis")) as unknown as Record<FunnelKey, TaxonomyEntry>;
+
+export const pathwayLabel = (k: string) => PATHWAYS.kinds[k as PathwayKey]?.label ?? k;
+export const funnelLabel = (k: string) => FUNNEL[k as FunnelKey]?.label ?? k;

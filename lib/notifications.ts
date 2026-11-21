@@ -146,6 +146,22 @@ function describe(r: Row): Pick<NotificationItem, "text" | "href"> {
       return forAdmin
         ? { text: `${str(p.gmina) ?? "Autor"} napisał w partnerstwie`, href: panelCard ? `${panelCard}#partnerstwo` : "/panel" }
         : { text: "Nowa wiadomość w partnerstwie", href: code ? `/status/${code}` : null };
+    // Kontakt z partnerem (6/10): admin zapisuje zgodę partnera w Panelu, autor odpowiada w rozmowie (przez stronę statusu).
+    case "prosba_o_kontakt":
+      return {
+        text: `Twórca ${code ?? "inicjatywy"} prosi o kontakt z partnerem${str(p.partner) ? `: ${short(str(p.partner)!)}` : ""}. Zapytaj partnera o zgodę`,
+        href: panelCard ? `${panelCard}#kontakty` : "/panel",
+      };
+    case "kontakt_zgoda_tworcy":
+      return {
+        text: `Twórca ${code ?? "inicjatywy"} zgodził się na kontakt${str(p.partner) ? ` z: ${short(str(p.partner)!)}` : ""}. Czeka na zgodę partnera`,
+        href: panelCard ? `${panelCard}#kontakty` : "/panel",
+      };
+    case "propozycja_kontaktu":
+      return {
+        text: `${org.short} proponuje kontakt z partnerem${str(p.partner) ? `: ${short(str(p.partner)!)}` : ""}. Zgódź się albo odmów w rozmowie`,
+        href: code ? `/status/${code}` : null,
+      };
     case "nowy_program":
       return { text: `Ruszył program${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Możesz złożyć wniosek.`, href: "/wniosek" };
     default:

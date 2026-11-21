@@ -102,6 +102,19 @@ CHALLENGES = [
          keywords=["straż pożarna", "OSP", "młodzież", "wolontariat", "bezpieczeństwo"]),
 ]
 CHALLENGE_COUNT = 26
+# Dopisane po CHALLENGES i losowane po nich (po jednym), żeby nie przesuwać losowania wcześniejszych wyzwań.
+# Szkoły zawodowe z problemem kadr i praktyk — przypadek demo „klasa patronacka” (6/10) ma do kogo trafić.
+EXTRA_CHALLENGES = [
+    dict(text="Technikum chce, żeby uczniowie mieli praktyki u prawdziwych pracodawców, ale firmy z okolicy nie odpowiadają na nasze propozycje.",
+         domains=["edukacja", "gospodarka"], institution="szkola_ponadpodstawowa", place="town",
+         keywords=["technikum", "praktyka zawodowa", "pracodawca", "staż", "kształcenie zawodowe"]),
+    dict(text="Absolwenci naszego technikum mechanicznego wyjeżdżają do pracy za granicę, choć zakłady w powiecie szukają ludzi.",
+         domains=["edukacja", "gospodarka"], institution="szkola_ponadpodstawowa", place="town",
+         keywords=["technikum", "absolwent", "praca", "odpływ młodych", "pracodawca"]),
+    dict(text="Szkoła branżowa traci chętnych, bo młodzież nie widzi w regionie pracy w zawodzie. Chcemy pokazać uczniom firmy od środka.",
+         domains=["edukacja", "gospodarka"], institution="szkola_ponadpodstawowa", place="any",
+         keywords=["szkoła branżowa", "kształcenie zawodowe", "pracodawca", "uczeń", "zawód"]),
+]
 
 
 def uid(*parts: str) -> str:
@@ -364,8 +377,8 @@ def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]):
 
 def make_challenges(rng: random.Random, gminy: list[dict]) -> list[dict]:
     out = []
-    for n in range(CHALLENGE_COUNT):
-        c = CHALLENGES[n % len(CHALLENGES)]
+    templates = [CHALLENGES[n % len(CHALLENGES)] for n in range(CHALLENGE_COUNT)] + EXTRA_CHALLENGES
+    for n, c in enumerate(templates):
         check_keys("domains", c["domains"], DOMAINS)
         g = rng.choice(candidates(c["place"], gminy))
         gap = c.get("gap", False) and rng.random() < 0.85

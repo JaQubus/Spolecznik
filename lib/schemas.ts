@@ -4,7 +4,8 @@ import {
   CREATOR_ROLE_KEYS, CROSS_KEYS, DOMAIN_KEYS, INNOVATION_KIND_KEYS, INSTITUTION_KEYS, IP_STATUS_KEYS, SECTOR_KEYS, STAGE_KEYS,
   TRL_MAX, TRL_MIN,
 } from "./taxonomy.ts";
-import { RADAR_KEYS } from "./taxonomy.ts";
+import { PATHWAY_KEYS, RADAR_KEYS } from "./taxonomy.ts";
+import type { PathwaysView } from "./pathways/view.ts";
 
 /** Rodzaje kart we wspólnym indeksie wyszukiwania (search_index.kind, 0001_core.sql). */
 export const CARD_KINDS = ["initiative", "pattern", "challenge", "mentor", "program", "domain", "material", "partner", "source_record"] as const;
@@ -385,6 +386,8 @@ export type InitiativeResponse = SubmitResponseBase & {
   programs: ProgramHit[];
   /** „Podobne rozwiązanie już istnieje”: patenty, publikacje i projekty ze źródeł (sprawdzanie dublowania, 7/10). */
   similarSources: SimilarSource[];
+  /** Wstępne ścieżki rozwoju i dopasowani partnerzy z reguł, przed oceną radaru (6/10); null przy błędzie. */
+  pathways?: PathwaysView | null;
 };
 
 export type ChallengeResponse = {
@@ -481,3 +484,29 @@ export const SignalOverrideInput = z.object({
   signal: z.union([z.literal(""), z.coerce.number().int().min(0).max(100)]),
   reason: z.string().trim().min(10).max(1000),
 });
+
+// ── Ścieżki rozwoju (6/10): uzasadnienie i kolejne kroki od modelu. Same ścieżki, mierniki i partnerów liczy kod
+// (lib/pathways/), więc model nie może dodać ścieżki ani partnera — opisuje tylko to, co wybrały reguły.
+export const PathwayNarrativeItem = z.object({
+  key: z.enum(PATHWAY_KEYS),
+  why: z.string().max(700), // 2 zdania: dlaczego ta ścieżka pasuje tej innowacji
+  nextSteps: z.array(z.string().max(240)).min(1).max(4), // kroki na 12 miesięcy, od czasownika
+  metrics: z.array(z.string().max(200)).max(2), // dodatkowe mierniki dopasowane do karty, z terminem
+});
+export type PathwayNarrativeItem = z.infer<typeof PathwayNarrativeItem>;
+export const PathwayNarrative = z.object({ pathways: z.array(PathwayNarrativeItem).min(1).max(3) });
+export type PathwayNarrative = z.infer<typeof PathwayNarrative>;
+
+/** Zapis w initiatives.pathways (0009). `keys`: ścieżki z reguł w chwili pisania — po zmianie oceny część może się zestarzeć. */
+export type StoredPathways = { items: PathwayNarrativeItem[]; keys: string[]; model: string; generatedAt: string };
+
+/** Odczyt initiatives.pathways: niepoprawny albo pusty zapis daje null zamiast wyjątku na stronie. */
+export function readStoredPathways(value: unknown): StoredPathways | null {
+  const v = value as Partial<StoredPathways> | null;
+  if (!v || typeof v !== "object" || !Array.isArray(v.items)) return null;
+  const items = v.items.flatMap((i) => {
+    const parsed = PathwayNarrativeItem.safeParse(i);
+    return parsed.success ? [parsed.data] : [];
+  });
+  return items.length ? { items, keys: Array.isArray(v.keys) ? v.keys : [], model: String(v.model ?? ""), generatedAt: String(v.generatedAt ?? "") } : null;
+}

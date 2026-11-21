@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { DomainBadge } from "@/components/taxonomy/icons";
+import { PathwaysSection } from "@/components/pathways/pathways-section";
 import { RadarNotes, RadarTable } from "@/components/radar/radar-table";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -19,13 +20,16 @@ import {
   DUPLICATE_MIN, effectiveSignal, INITIATIVE_COLUMNS, initiativeCreators, initiativeHistory, initiativeNeighbours, submissionLabel,
   type AuditRow, type CreatorRow, type InitiativeRow,
 } from "@/lib/panel/initiatives";
+import { initiativeContacts, type ContactRequest } from "@/lib/contacts";
 import { panelPartnerships, type PanelPartnership } from "@/lib/partnerships";
+import { initiativePathwaySource, pathwaysFor, type PathwaysView } from "@/lib/pathways";
 import { anonymize } from "@/lib/pii";
 import { formatDate } from "@/lib/pl";
 import { INITIATIVE_STATUSES } from "@/lib/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
-  creatorRoleLabel, crossLabel, innovationKindLabel, institutionLabel, ipStatusLabel, sectorLabel, signalLevel, stageLabel, trlLabel,
+  creatorRoleLabel, crossLabel, funnelLabel, innovationKindLabel, institutionLabel, ipStatusLabel, partnerKindLabel, pathwayLabel, sectorLabel,
+  signalLevel, stageLabel, trlLabel,
 } from "@/lib/taxonomy";
 import { initiativeThread } from "@/lib/threads";
 import { SimilarSources } from "@/components/sources/similar-sources";
@@ -36,6 +40,7 @@ import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
 import { assignMentor, overrideSignal, reassessRadar, removePersonalData, setCreatorConsent, setPublished, updateInitiativeStatus } from "../../actions";
 import { readAssessment } from "@/lib/radar/score";
 import { PartnershipSection } from "../../partnership-section";
+import { proposeContact, recordPartnerAnswer, regenerateNarrative } from "../../pathway-actions";
 import { ThreadSection } from "../../thread-section";
 import { panelTitle } from "@/lib/brand";
 
@@ -72,6 +77,15 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
   const sameInSources = await similarSources(row.card.keywords ?? [], sourceRecord?.id)
     .catch((e) => { console.error("[panel] podobne w źródłach:", e); return [] as SimilarSource[]; });
   if (matches.error) throw matches.error;
+  // Ścieżki, partnerzy, prośby o kontakt i etap lejka (6/10). Baza sprzed 0009 nie ma tych kolumn — wtedy sekcja znika.
+  const [pathways, contacts, funnel] = await Promise.all([
+    initiativePathwaySource(id).then((src) => (src ? pathwaysFor(src) : null))
+      .catch((e): PathwaysView | null => { console.error("[panel] ścieżki:", e); return null; }),
+    initiativeContacts(id).catch((e): ContactRequest[] => { console.error("[panel] kontakty:", e); return []; }),
+    admin.from("initiatives").select("funnel_stage").eq("id", id).maybeSingle()
+      .then(({ data: f, error: fe }) => { if (fe) throw fe; return (f?.funnel_stage as string | null) ?? null; })
+      .then((v) => v, (e) => { console.error("[panel] lejek:", e); return null; }),
+  ]);
 
   const duplicateHits = neighbours.filter((n) => n.similarity >= DUPLICATE_MIN);
   const patternIds = (matches.data ?? []).filter((m) => m.target_kind === "pattern").map((m) => m.target_id as string);
@@ -110,6 +124,7 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
         <ul className="flex flex-wrap gap-2" aria-label="Sygnał i publikacja">
           {signal != null && <li><Badge>Sygnał {signal}/100: {signalLevel(signal).label}{row.signal_override != null && " (korekta)"}</Badge></li>}
           <li><Badge variant="outline">{row.published ? "Opublikowana" : "Nieopublikowana"}</Badge></li>
+          {funnel && <li><Badge variant="outline">Lejek: {funnelLabel(funnel)}</Badge></li>}
           {row.nominations_count > 0 && <li><Badge variant="outline">Wskazania: {row.nominations_count}</Badge></li>}
         </ul>
         {row.published && row.slug && (
@@ -204,6 +219,81 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
           <SubmitButton variant="outline">Zapisz korektę</SubmitButton>
         </ActionForm>
       </section>
+
+      <section aria-labelledby="kontakty" className="space-y-3">
+        <h2 id="kontakty" className="text-2xl font-bold">Prośby o kontakt z partnerami</h2>
+        <FieldHint>
+          Kontakt wymaga zgody obu stron. Twórca zgadza się w swojej rozmowie, a zgodę partnera zapisujesz tutaj po rozmowie z nim.
+          Po obu zgodach w rozmowie z twórcą pojawi się wiadomość o kontakcie, a lejek przejdzie na „w realizacji”.
+        </FieldHint>
+        {contacts.length === 0 ? (
+          <p className="text-muted-foreground">Nikt jeszcze nie prosił o kontakt. Możesz go zaproponować przy partnerze niżej.</p>
+        ) : (
+          <ul className="max-w-[68ch] border-t">
+            {contacts.map((c) => (
+              <li key={c.id} className="space-y-2 border-b py-4">
+                <p>
+                  <span className="font-bold">{c.partnerName}</span>
+                  {c.partnerKind && <span className="text-muted-foreground"> · {partnerKindLabel(c.partnerKind)}</span>}
+                  {c.pathway && <span className="text-muted-foreground"> · ścieżka „{pathwayLabel(c.pathway)}”</span>}
+                </p>
+                <p className="text-muted-foreground">
+                  {c.initiatedBy === "author" ? "Prośba twórcy" : "Propozycja zespołu"}, {formatDate(c.createdAt)}.
+                  {" "}Twórca: {c.authorConsent ? "zgoda" : "bez odpowiedzi"}. Partner: {c.partnerConsent ? "zgoda" : "bez odpowiedzi"}.
+                </p>
+                <p className="font-bold">{contactStatus(c)}</p>
+                {c.status === "oczekuje" && !c.partnerConsent && (
+                  <div className="flex flex-wrap gap-3">
+                    <ActionForm action={recordPartnerAnswer}>
+                      <input type="hidden" name="requestId" value={c.id} />
+                      <input type="hidden" name="answer" value="tak" />
+                      <SubmitButton variant="outline" size="sm" aria-label={`Partner się zgodził: ${c.partnerName}`}>Partner się zgodził</SubmitButton>
+                    </ActionForm>
+                    <ActionForm action={recordPartnerAnswer}>
+                      <input type="hidden" name="requestId" value={c.id} />
+                      <input type="hidden" name="answer" value="nie" />
+                      <SubmitButton variant="outline" size="sm" aria-label={`Partner odmówił: ${c.partnerName}`}>Partner odmówił</SubmitButton>
+                    </ActionForm>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {pathways && (
+        <div className="space-y-6">
+          <PathwaysSection
+            view={pathways}
+            audience="panel"
+            size="panel"
+            idPrefix="sciezki-panel"
+            partnerAction={(m) => {
+              const c = contacts.find((x) => x.partnerId === m.partner.id);
+              if (c) return <p className="text-muted-foreground">Prośba o kontakt: {contactStatus(c).toLowerCase()}</p>;
+              return (
+                <ActionForm action={proposeContact} className="space-y-2">
+                  <input type="hidden" name="initiativeId" value={row.id} />
+                  <input type="hidden" name="partnerId" value={m.partner.id} />
+                  <input type="hidden" name="pathway" value={m.pathway} />
+                  <CheckboxField name="partnerAgreed" label="Partner już się zgodził" />
+                  <SubmitButton variant="outline" size="sm" aria-label={`Zaproponuj kontakt: ${m.partner.name}`}>Zaproponuj kontakt</SubmitButton>
+                </ActionForm>
+              );
+            }}
+          />
+          <ActionForm action={regenerateNarrative} className="space-y-2">
+            <input type="hidden" name="initiativeId" value={row.id} />
+            <FieldHint>
+              {pathways.narrativeMeta
+                ? `Uzasadnienie od AI: ${pathways.narrativeMeta.model}, ${formatDate(pathways.narrativeMeta.generatedAt)}. Po nowej ocenie radaru przygotuj je ponownie.`
+                : "AI napisze uzasadnienie, kolejne kroki i dodatkowe mierniki dla ścieżek z reguł (jedno wywołanie modelu)."}
+            </FieldHint>
+            <SubmitButton variant="outline" pendingText="Przygotowuję…">Przygotuj uzasadnienie</SubmitButton>
+          </ActionForm>
+        </div>
+      )}
 
       <section aria-labelledby="tworcy" className="space-y-3">
         <h2 id="tworcy" className="text-2xl font-bold">Twórcy</h2>
@@ -424,10 +514,23 @@ function describeChange(h: AuditRow): string {
     case "initiative.unpublish": return "Ukryto z publicznej bazy";
     case "initiative.assign_mentor": return `Przypisano mentora${note}`;
     case "initiative.radar": return `Nowa ocena radaru: sygnał ${d.from ?? "brak"} → ${d.to}`;
+    case "initiative.pathways": return "Nowe uzasadnienie ścieżek od AI";
+    case "initiative.contact_proposed": return `Zespół zaproponował kontakt${d.partner ? ` z: ${d.partner}` : ""}${d.partnerAgreed ? " (partner się zgodził)" : ""}`;
+    case "initiative.contact_partner_consent": return `Partner zgodził się na kontakt${d.partner ? `: ${d.partner}` : ""}`;
+    case "initiative.contact_declined": return `Partner odmówił kontaktu${d.partner ? `: ${d.partner}` : ""}`;
+    case "initiative.contact_connected": return `Połączono z partnerem${d.partner ? `: ${d.partner}` : ""} — obie strony się zgodziły`;
     case "initiative.signal_override":
       return `${d.to == null ? "Usunięto korektę sygnału" : `Korekta sygnału: ${d.to}/100`}${d.reason ? ` — „${d.reason}”` : ""}`;
     default: return d.to ? `Status: ${statusLabel(String(d.to))}${note}` : h.action;
   }
+}
+
+/** Stan prośby o kontakt jednym zdaniem. */
+function contactStatus(c: ContactRequest): string {
+  if (c.status === "polaczone") return "Połączono: obie strony się zgodziły";
+  if (c.status === "odrzucone") return c.declinedBy === "partner" ? "Partner odmówił" : "Twórca odmówił";
+  if (!c.authorConsent) return "Czeka na zgodę twórcy";
+  return "Czeka na zgodę partnera";
 }
 
 /** Stan zgód twórcy jednym zdaniem — to samo liczy widok public_initiative_creators (0007). */
