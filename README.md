@@ -1,5 +1,7 @@
 # Społecznik — cyfrowe serce Małopolskiego Hubu Innowacji Społecznych
 
+> Licencja: [EUPL-1.2](LICENSE) (Licencja Publiczna Unii Europejskiej v. 1.2, wymóg regulaminu zadania PCI, HackNation 2026).
+
 Plan hackathonowy · HackYeah 2026 · wyzwanie ROPS Kraków
 Stan na: sobota 3.10.2026, ~15:15. Kodowanie kończy się w niedzielę o 11:00.
 

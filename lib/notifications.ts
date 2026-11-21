@@ -163,7 +163,7 @@ function describe(r: Row): Pick<NotificationItem, "text" | "href"> {
         href: code ? `/status/${code}` : null,
       };
     case "nowy_program":
-      return { text: `Ruszył program${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Możesz złożyć wniosek.`, href: "/wniosek" };
+      return { text: `Ruszył program${str(p.title) ? ` „${short(str(p.title)!)}”` : ""}. Przygotuj szkic wniosku w warsztacie.`, href: "/zglos/warsztat" };
     default:
       return { text: "Nowe powiadomienie", href: null };
   }

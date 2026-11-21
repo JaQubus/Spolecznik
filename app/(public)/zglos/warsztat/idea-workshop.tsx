@@ -49,12 +49,6 @@ export function IdeaWorkshop({
   const titleField = useRef<HTMLInputElement>(null);
   const errorBox = useRef<HTMLDivElement>(null);
   const doneHeading = useRef<HTMLHeadingElement>(null);
-  const applicationHref = `/wniosek?${new URLSearchParams({
-    tytul: sketch.summary,
-    problem: sketch.problem,
-    opis: sketch.solution,
-    odbiorcy: sketch.beneficiaries,
-  }).toString()}`;
 
   useEffect(() => { if (error) errorBox.current?.focus(); }, [error]);
   useEffect(() => { if (result) doneHeading.current?.focus(); }, [result]);
@@ -208,13 +202,6 @@ export function IdeaWorkshop({
       <div className="space-y-3">
         <p aria-live="polite" className="text-muted-foreground">{busy ? "Zapisuję pomysł…" : ""}</p>
         <Button type="button" onClick={submit} disabled={busy} className="w-full sm:w-auto">Zgłoś pomysł</Button>
-        {/* Bez otwartego programu /wniosek mówi tylko „Nabór jest zamknięty”, a szkic przepada po powrocie. */}
-        {programs.length > 0 && (
-          <p className="max-w-2xl">
-            Chcesz od razu przygotować wniosek do programu?{" "}
-            <Link href={applicationHref} className={linkClass}>Przejdź do formularza — wstępnie uzupełnimy go tym pomysłem</Link>.
-          </p>
-        )}
       </div>
     </div>
   );
