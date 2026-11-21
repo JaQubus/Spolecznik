@@ -5,8 +5,8 @@ reguł place i profili BDL (seniorzy częściej tam, gdzie dużo osób 65+, wylu
 Ten sam archetyp w kilku gminach to celowo „podobne inicjatywy” — potencjalni partnerzy. Pierwsza
 działająca kopia archetypu jest źródłem, a część późniejszych to jej adopcje („Wypróbowaliśmy u nas”).
 
-Ocena radaru: baza z archetypu, szum ±1 i te same zabezpieczenia co lib/radar/score.ts (progi w
-config/taxonomy.json → radar). Bez nazw prawdziwych instytucji: tylko typ instytucji i gmina.
+Ocena radaru: baza z archetypu, szum ±1 i te same reguły oraz wagi dla typu innowacji co lib/radar/score.ts
+(config/taxonomy.json → radar). Bez nazw prawdziwych instytucji: tylko typ instytucji i gmina.
 Nie wywołuje żadnego API. Stałe ziarno i slugi → ten sam wynik przy każdym uruchomieniu.
 
 Model innowacji PCI (Radar 4/10): każda inicjatywa ma typ innowacji, sektory PCI, a technologiczna też TRL zgodny
@@ -181,26 +181,46 @@ def institution_for(a: dict, g: dict, institutions: dict[str, dict]) -> dict:
 
 # ── Ocena radaru (te same zasady co lib/radar/score.ts) ──
 
-def assess(rng: random.Random, base: dict, stage: str) -> tuple[dict, int]:
-    dims = {}
+def weights_key(kind: str | None) -> str:
+    return kind if kind in RADAR["weights"] and kind != "domyslne" else "domyslne"
+
+
+def assess(rng: random.Random, base: dict, stage: str, kind: str | None, trl: int | None) -> tuple[dict, int, list[str]]:
+    """Ocena z archetypu + szum ±1, potem te same reguły co lib/radar/score.ts → applyRules (bez sprawdzania cytatów:
+    seed nie ma cytatów, evidence = null). Zwraca wymiary, sygnał z wag dla typu i nazwę zestawu wag."""
+    raw = {}
     for key in RADAR["dimensions"]:
         score, why = base[key]
-        score = min(max(score + rng.choice([-1, 0, 0, 0, 1]), 0), 5)
-        if key == "dojrzalosc":
-            score = min(score, RADAR["maturityCap"][stage])
-        if key == "przenaszalnosc" and stage == "przeniesiona":
-            score = max(score, RADAR["transferredMinPortability"])
-        dims[key] = {"score": score, "why": why, "basis": "opis"}
+        raw[key] = {"score": min(max(score + rng.choice([-1, 0, 0, 0, 1]), 0), 5), "why": why, "basis": "opis"}
     # Opis pomysłu zwykle nie mówi nic o efektach, a czasem też o tym, czy da się go powtórzyć.
     if stage == "pomysl":
-        thin = ["wplyw"] + (["przenaszalnosc"] if rng.random() < 0.6 else [])
-        for key in thin:
-            dims[key] = {"score": min(dims[key]["score"], RADAR["noDataMax"]),
-                         "why": "Opis nie mówi jeszcze, jakie będą efekty i dla ilu osób." if key == "wplyw"
-                         else "Nie wiadomo jeszcze, czego wymaga uruchomienie w innym miejscu.",
-                         "basis": "brak_danych"}
-    signal = round(100 * sum(RADAR["weights"][k] * d["score"] / 5 for k, d in dims.items()))
-    return dims, signal
+        raw["wplyw"] = {**raw["wplyw"], "basis": "brak_danych", "why": "Opis nie mówi jeszcze, jakie będą efekty i dla ilu osób."}
+        if rng.random() < 0.6:
+            raw["skalowalnosc"] = {**raw["skalowalnosc"], "basis": "brak_danych",
+                                   "why": "Nie wiadomo jeszcze, czego wymaga uruchomienie w innym miejscu."}
+    stage_label = STAGES[stage]["label"]
+    dims = {}
+    for key, r in raw.items():
+        score, rules = r["score"], []
+        if r["basis"] == "brak_danych" and score > RADAR["noDataMax"]:
+            rules.append(f"Karta nic o tym nie mówi: ocena obniżona z {score} do {RADAR['noDataMax']}.")
+            score = RADAR["noDataMax"]
+        if key == "dojrzalosc":
+            cap, reason = 5, None
+            if RADAR["maturityCap"][stage] < cap:
+                cap, reason = RADAR["maturityCap"][stage], f"etap „{stage_label}” pozwala najwyżej na {RADAR['maturityCap'][stage]}"
+            if kind == "technologiczna" and trl is not None and RADAR["trlMaturityCap"][str(trl)] < cap:
+                cap, reason = RADAR["trlMaturityCap"][str(trl)], f"TRL {trl} pozwala najwyżej na {RADAR['trlMaturityCap'][str(trl)]}"
+            if score > cap:
+                rules.append(f"Ocena obniżona z {score} do {cap}: {reason}.")
+                score = cap
+        if key == "skalowalnosc" and stage == "przeniesiona" and score < RADAR["transferredMinScalability"]:
+            rules.append(f"Ocena podniesiona z {score} do {RADAR['transferredMinScalability']}: inicjatywa działa już w innym miejscu.")
+            score = RADAR["transferredMinScalability"]
+        dims[key] = {"score": score, "why": r["why"], "evidence": None, "basis": r["basis"], "rules": rules}
+    wk = weights_key(kind)
+    signal = round(100 * sum(RADAR["weights"][wk][k] * d["score"] / 5 for k, d in dims.items()))
+    return dims, signal, wk
 
 
 def vary_numbers(rng: random.Random, text: str) -> str:
@@ -244,7 +264,6 @@ def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]):
         source = None
         for i, g in enumerate(places):
             stage = mature[0] if i == 0 else rng.choice(a["stages"])
-            dims, signal = assess(rng, a["radar"], stage)
             published = rng.random() < (0.9 if i == 0 else 0.7)
             status = rng.choices(*zip(*(PUBLISHED_STATUS if published else PRIVATE_STATUS).items()))[0]
             nomination = rng.random() < 0.25
@@ -254,6 +273,7 @@ def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]):
             slug = f"{a['key']}-{slugify(g['nazwa'])}"
             trl = trl_for(a["trl"], stage) if "trl" in a else None
             institution = institution_for(a, g, institutions)
+            dims, signal, weights = assess(rng, a["radar"], stage, a["innovation_kind"], trl)
             row = {
                 "id": uid("initiative", slug),
                 "slug": slug,
@@ -298,9 +318,10 @@ def make_initiatives(rng: random.Random, gminy: list[dict], used: set[str]):
                     "dimensions": dims,
                     "strengths": [dims[k]["why"] for k in sorted(dims, key=lambda k: -dims[k]["score"])[:2]],
                     "risks": [dims[k]["why"] for k in sorted(dims, key=lambda k: dims[k]["score"])[:1]],
-                    "related": [],
                     "confidence": round(sum(d["basis"] == "opis" for d in dims.values()) / len(dims), 2),
-                    "version": 1,
+                    "signal": signal,
+                    "weights": weights,
+                    "methodology": RADAR["methodologyVersion"],
                     "model": "seed",
                     "assessedAt": when,
                 },

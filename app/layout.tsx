@@ -44,6 +44,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <footer className="bg-secondary print:hidden px-4 py-8 text-center text-base text-muted-foreground">
           {brand.name} · {brand.campaign} · {org.name} · dane demonstracyjne są syntetyczne ·{" "}
+          <Link href="/metodologia" className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
+            Jak oceniamy innowacje
+          </Link>
+          {" · "}
           <Link href="/api-docs" className="font-bold underline decoration-1 underline-offset-4 hover:decoration-2">
             API dla integracji
           </Link>

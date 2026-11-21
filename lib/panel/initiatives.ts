@@ -19,6 +19,7 @@ export type InitiativeRow = {
   sectors: string[];
   trl: number | null;
   ip_status: string | null;
+  radar: unknown;
   institutions: { name: string; slug: string } | null;
   status: InitiativeStatus;
   signal: number | null;
@@ -36,7 +37,7 @@ export type InitiativeRow = {
 
 export const INITIATIVE_COLUMNS =
   "id, status_code, slug, submission_kind, card, title, summary, domains, institution_type, stage, status, signal, signal_override, " +
-  "innovation_kind, sectors, trl, ip_status, institutions(name, slug), published, duplicate_of, nominations_count, raw_text, teryt, assigned_mentor, synthetic, created_at, municipalities(name, county)";
+  "innovation_kind, sectors, trl, ip_status, radar, institutions(name, slug), published, duplicate_of, nominations_count, raw_text, teryt, assigned_mentor, synthetic, created_at, municipalities(name, county)";
 
 export type CreatorRow = {
   role: string;

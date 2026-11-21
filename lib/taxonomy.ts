@@ -16,7 +16,8 @@ export const STAGE_KEYS = ["pomysl", "pilotaz", "dziala", "przeniesiona"] as con
 export const CROSS_KEYS = [
   "obszary_wiejskie", "depopulacja", "mlodzi", "seniorzy", "wykluczenie_cyfrowe", "wspolpraca", "pogranicze",
 ] as const;
-export const RADAR_KEYS = ["przenaszalnosc", "wplyw", "dojrzalosc", "nowosc", "latwosc"] as const;
+/** Wymiary oceny radaru (metodologia 2, 5/10): kolejność jak na stronie /metodologia. */
+export const RADAR_KEYS = ["nowosc", "wplyw", "dojrzalosc", "skalowalnosc", "komercjalizacja"] as const;
 export const INNOVATION_KIND_KEYS = ["technologiczna", "organizacyjna", "edukacyjna", "spoleczna", "procesowa"] as const;
 /** Sektory PCI (inteligentne specjalizacje regionu); „inne”, gdy żaden nie pasuje. */
 export const SECTOR_KEYS = ["lotnictwo_kosmos", "motoryzacja", "jakosc_zycia", "ict", "inne"] as const;
@@ -57,13 +58,20 @@ export const PARTNER_SUPPORT = data.partnerSupport as Record<PartnerSupportKey, 
 /** Opisy poziomów TRL, klucz to liczba 1–9 jako tekst. */
 export const TRL_LEVELS = data.trl as Record<string, TaxonomyEntry>;
 
-export const RADAR = data.radar as {
+/** Zestaw wag: typ innowacji albo „domyslne”, gdy typu nie znamy (karta sprzed 4/10). */
+export type RadarWeightsKey = InnovationKindKey | "domyslne";
+
+export const RADAR = data.radar as unknown as {
+  methodologyVersion: number;
   dimensions: Record<RadarKey, RadarDimension>;
-  weights: Record<RadarKey, number>;
+  /** Wagi wymiarów dla każdego typu innowacji; każdy zestaw sumuje się do 1. */
+  weights: Record<RadarWeightsKey, Record<RadarKey, number>>;
   /** Najwyższa ocena dojrzałości dla etapu: pomysł nie może być „sprawdzony w praktyce”. */
   maturityCap: Record<StageKey, number>;
-  /** Inicjatywa już przeniesiona gdzie indziej ma co najmniej tyle za przenaszalność. */
-  transferredMinPortability: number;
+  /** Najwyższa ocena dojrzałości dla poziomu TRL (klucz 1–9 jako tekst) — tylko innowacje technologiczne. */
+  trlMaturityCap: Record<string, number>;
+  /** Inicjatywa już przeniesiona gdzie indziej ma co najmniej tyle za skalowalność i przenaszalność. */
+  transferredMinScalability: number;
   /** Ocena wymiaru, o którym opis nic nie mówi (basis = brak_danych), nie przekracza tej wartości. */
   noDataMax: number;
   /** Od najwyższego progu. */

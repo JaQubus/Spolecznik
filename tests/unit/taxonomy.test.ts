@@ -16,8 +16,10 @@ describe("taxonomy", () => {
     assert.deepEqual([...STAGE_KEYS], Object.keys(STAGES));
     assert.deepEqual([...CROSS_KEYS], Object.keys(CROSS));
     assert.deepEqual([...RADAR_KEYS], Object.keys(RADAR.dimensions));
-    assert.deepEqual([...RADAR_KEYS].sort(), Object.keys(RADAR.weights).sort());
+    assert.deepEqual([...INNOVATION_KIND_KEYS, "domyslne"].sort(), Object.keys(RADAR.weights).sort());
+    for (const [kind, w] of Object.entries(RADAR.weights)) assert.deepEqual(Object.keys(w).sort(), [...RADAR_KEYS].sort(), `wagi ${kind}`);
     assert.deepEqual([...STAGE_KEYS].sort(), Object.keys(RADAR.maturityCap).sort());
+    assert.deepEqual(Object.keys(RADAR.trlMaturityCap).map(Number), Array.from({ length: TRL_MAX - TRL_MIN + 1 }, (_, i) => TRL_MIN + i));
     assert.deepEqual([...INNOVATION_KIND_KEYS], Object.keys(INNOVATION_KINDS));
     assert.deepEqual([...SECTOR_KEYS], Object.keys(SECTORS));
     assert.deepEqual([...IP_STATUS_KEYS], Object.keys(IP_STATUSES));
@@ -34,9 +36,11 @@ describe("taxonomy", () => {
     }
   });
 
-  test("wagi radaru sumują się do 1, progi idą od najwyższego", () => {
-    const sum = Object.values(RADAR.weights).reduce((a, b) => a + b, 0);
-    assert.ok(Math.abs(sum - 1) < 1e-9, `suma wag: ${sum}`);
+  test("każdy zestaw wag radaru sumuje się do 1, progi idą od najwyższego", () => {
+    for (const [kind, w] of Object.entries(RADAR.weights)) {
+      const sum = Object.values(w).reduce((a, b) => a + b, 0);
+      assert.ok(Math.abs(sum - 1) < 1e-9, `suma wag ${kind}: ${sum}`);
+    }
     const mins = RADAR.levels.map((l) => l.min);
     assert.deepEqual(mins, [...mins].sort((a, b) => b - a));
     assert.equal(mins.at(-1), 0);

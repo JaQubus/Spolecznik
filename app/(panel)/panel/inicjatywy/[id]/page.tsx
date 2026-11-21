@@ -3,9 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { DomainBadge } from "@/components/taxonomy/icons";
+import { RadarNotes, RadarTable } from "@/components/radar/radar-table";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { FieldHint } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +28,8 @@ import {
 } from "@/lib/taxonomy";
 import { initiativeThread } from "@/lib/threads";
 import { ActionForm, DeleteForm, SubmitButton } from "../../action-form";
-import { assignMentor, removePersonalData, setPublished, updateInitiativeStatus } from "../../actions";
+import { assignMentor, overrideSignal, reassessRadar, removePersonalData, setPublished, updateInitiativeStatus } from "../../actions";
+import { readAssessment } from "@/lib/radar/score";
 import { PartnershipSection } from "../../partnership-section";
 import { ThreadSection } from "../../thread-section";
 import { panelTitle } from "@/lib/brand";
@@ -76,6 +79,7 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
   const pii = !!row.raw_text && anonymize(row.raw_text).found;
   const assignedName = assigned.data?.name as string | undefined;
   const signal = effectiveSignal(row);
+  const radar = readAssessment(row.radar);
   // Jeden zielony przycisk na widok: przypisanie mentora, a gdy nie ma kogo przypisać — zapis statusu.
   const canAssign = !row.assigned_mentor && mentors.length > 0;
 
@@ -124,6 +128,47 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
         <ul className="flex flex-wrap gap-2" aria-label="Dziedziny">{card.domains.map((d) => <li key={d}><DomainBadge domain={d} /></li>)}</ul>
         <TagList label="Tematy przekrojowe" items={card.cross.map(crossLabel)} />
         <TagList label="Słowa kluczowe" items={card.keywords} />
+      </section>
+
+      <section aria-labelledby="ocena" className="space-y-4">
+        <h2 id="ocena" className="text-2xl font-bold">Ocena radaru</h2>
+        {radar ? (
+          <>
+            <p className="max-w-[68ch]">
+              Sygnał radaru: <strong>{radar.signal}/100</strong> ({signalLevel(radar.signal).label})
+              {row.signal_override != null && <>. Po korekcie zespołu: <strong>{row.signal_override}/100</strong></>}.
+              {" "}<span className="text-muted-foreground">Ocenił {radar.model === "seed" ? "generator danych demo" : `model ${radar.model}`}, {formatDate(radar.assessedAt)}, metodologia {radar.methodology}.</span>
+            </p>
+            <RadarTable radar={radar} id="radar-panel" showRules />
+            <RadarNotes radar={radar} />
+          </>
+        ) : (
+          <p className="max-w-[68ch] text-muted-foreground">
+            {row.radar ? "Ocena jest według starej metodologii. Oceń ponownie, żeby zobaczyć wymiary." : "Inicjatywa nie ma jeszcze oceny (AI mogło być zajęte przy zgłoszeniu)."}
+          </p>
+        )}
+        <p><Link href="/metodologia" className={`font-bold ${linkClass}`}>Jak liczymy ocenę</Link></p>
+        <ActionForm action={reassessRadar}>
+          <input type="hidden" name="initiativeId" value={row.id} />
+          <SubmitButton variant="outline" pendingText="Oceniam…">Oceń ponownie</SubmitButton>
+        </ActionForm>
+
+        <ActionForm action={overrideSignal} className="space-y-4 border-t pt-4">
+          <input type="hidden" name="initiativeId" value={row.id} />
+          <h3 className="text-lg font-bold">Korekta sygnału</h3>
+          <div className="space-y-2">
+            <Label htmlFor="signal-override">Sygnał po korekcie (0–100)</Label>
+            <FieldHint id="signal-override-pomoc">Zostaw puste, żeby usunąć korektę. Na listach i stronie publicznej liczy się korekta zamiast oceny radaru.</FieldHint>
+            <Input id="signal-override" name="signal" type="number" inputMode="numeric" min={0} max={100} step={1}
+              defaultValue={row.signal_override ?? ""} aria-describedby="signal-override-pomoc" className="max-w-40" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="signal-reason">Powód korekty</Label>
+            <FieldHint id="signal-reason-pomoc">Obowiązkowy. Trafia do historii zmian, żeby każda korekta była jawna. Nie wpisuj danych osobowych.</FieldHint>
+            <Textarea id="signal-reason" name="reason" required minLength={10} maxLength={1000} aria-describedby="signal-reason-pomoc" className="max-w-xl min-h-24" />
+          </div>
+          <SubmitButton variant="outline">Zapisz korektę</SubmitButton>
+        </ActionForm>
       </section>
 
       <section aria-labelledby="tworcy" className="space-y-3">
@@ -332,6 +377,9 @@ function describeChange(h: AuditRow): string {
     case "initiative.publish": return "Opublikowano";
     case "initiative.unpublish": return "Ukryto z publicznej bazy";
     case "initiative.assign_mentor": return `Przypisano mentora${note}`;
+    case "initiative.radar": return `Nowa ocena radaru: sygnał ${d.from ?? "brak"} → ${d.to}`;
+    case "initiative.signal_override":
+      return `${d.to == null ? "Usunięto korektę sygnału" : `Korekta sygnału: ${d.to}/100`}${d.reason ? ` — „${d.reason}”` : ""}`;
     default: return d.to ? `Status: ${statusLabel(String(d.to))}${note}` : h.action;
   }
 }

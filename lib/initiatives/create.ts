@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import { describeGmina, findGmina } from "../gminy";
 import { lexicalCandidates, matchDetails, rankCandidates, relatedSupport } from "../matching";
 import { notify } from "../notifications";
@@ -9,6 +10,7 @@ import {
   type IdeaPoster, type InitiativeCard, type InitiativeResponse, type SimilarInitiative, type SubmissionKind,
 } from "../schemas";
 import { similarInitiatives, upsertIndex } from "../search";
+import { assessInitiative } from "../radar";
 import { newStatusCode } from "../status-code";
 import { createAdminClient } from "../supabase/admin";
 import { newAccessKey } from "./access";
@@ -84,6 +86,15 @@ export async function createInitiative({ kind, card: input, text, gmina, teryt, 
   }
   if (!row) throw new Error("Nie udało się nadać kodu zgłoszenia");
   const initiative = row;
+
+  // Ocena radaru (jedno wywołanie modelu) nie blokuje odpowiedzi: liczy się po jej wysłaniu. Przy błędzie albo limicie
+  // Groq zgłoszenie zostaje bez oceny — Panel pokaże „Oceń ponownie”.
+  const assess = () => assessInitiative(initiative.id).then(() => undefined, (e) => console.error("[zgłoszenie] ocena radaru:", e));
+  try {
+    after(assess);
+  } catch {
+    void assess(); // poza żądaniem (skrypt, test) after() nie działa
+  }
 
   // Wszystkie oceny zapisujemy (analityka), pokazujemy tylko te powyżej progu.
   const kindOf = new Map(lexical.map((l) => [l.candidate.id, l.kind]));

@@ -4,6 +4,7 @@ import {
   CREATOR_ROLE_KEYS, CROSS_KEYS, DOMAIN_KEYS, INNOVATION_KIND_KEYS, INSTITUTION_KEYS, IP_STATUS_KEYS, SECTOR_KEYS, STAGE_KEYS,
   TRL_MAX, TRL_MIN,
 } from "./taxonomy.ts";
+import { RADAR_KEYS } from "./taxonomy.ts";
 
 /** Rodzaje kart we wspólnym indeksie wyszukiwania (search_index.kind, 0001_core.sql). */
 export const CARD_KINDS = ["initiative", "pattern", "challenge", "mentor", "program", "domain", "material", "partner"] as const;
@@ -395,3 +396,25 @@ export const RELATED_MIN_SIMILARITY = 0.25;
 export const SIMILAR_INITIATIVE_MIN_SIMILARITY = 0.4;
 /** Od tego podobieństwa asystent warsztatu mówi „podobne już istnieje”. */
 export const NOVELTY_MIN_SIMILARITY = 0.5;
+
+// ── Ocena radaru (5/10): odpowiedź modelu przed regułami z lib/radar/score.ts ──
+export const RadarModelDimension = z.object({
+  key: z.enum(RADAR_KEYS),
+  score: z.number().int().min(0).max(5),
+  why: z.string().max(400), // jedno zdanie uzasadnienia prostym językiem
+  evidence: z.string().max(400), // DOSŁOWNY fragment karty, na którym opiera się ocena; "" gdy karta o tym milczy
+  basis: z.enum(["opis", "brak_danych"]),
+});
+export const RadarModelResult = z.object({
+  dimensions: z.array(RadarModelDimension).min(1).max(RADAR_KEYS.length),
+  strengths: z.array(z.string().max(300)).max(3),
+  risks: z.array(z.string().max(300)).max(3),
+});
+export type RadarModelResult = z.infer<typeof RadarModelResult>;
+
+/** Panel: ręczna korekta sygnału zawsze z powodem (audit_log). Pusty sygnał = usunięcie korekty. */
+export const SignalOverrideInput = z.object({
+  initiativeId: z.uuid(),
+  signal: z.union([z.literal(""), z.coerce.number().int().min(0).max(100)]),
+  reason: z.string().trim().min(10).max(1000),
+});
