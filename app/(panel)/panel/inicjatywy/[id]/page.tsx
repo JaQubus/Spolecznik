@@ -15,7 +15,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { RadioGroup, RadioGroupOption } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { viewerClient } from "@/lib/auth";
-import { applyScope, requireStaff } from "@/lib/panel/access";
+import { requireStaff } from "@/lib/panel/access";
 import { statusLabel, STATUS_LABELS } from "@/lib/initiatives/status";
 import { initiativeHref, patternHref } from "@/lib/knowledge/hrefs";
 import {
@@ -59,7 +59,8 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
 
   const supabase = await viewerClient(viewer);
   // Opiekun instytucji: RLS (0010) i filtr w zapytaniu — cudza innowacja jest dla niego „nie znaleziona”.
-  const { data, error } = await applyScope(supabase.from("initiatives").select(INITIATIVE_COLUMNS), scope).eq("id", id).maybeSingle();
+  const base = supabase.from("initiatives").select(INITIATIVE_COLUMNS);
+  const { data, error } = await (scope.kind === "all" ? base : base.eq("institution_id", scope.institutionId)).eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) notFound();
   const row = data as unknown as InitiativeRow;
