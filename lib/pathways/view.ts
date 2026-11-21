@@ -2,6 +2,7 @@
 // Czysta funkcja — te same dane widzą karta publiczna, Panel, rozmowa twórcy i wynik zgłoszenia.
 import { readAssessment } from "../radar/score.ts";
 import { readStoredPathways, type PathwayNarrativeItem } from "../schemas.ts";
+import { contentWords, sameStem } from "../stems.ts";
 import type { PathwayKey } from "../taxonomy.ts";
 import { rankChallenges, rankPartners, type ChallengeCandidate, type ChallengeMatch, type MatchInput, type PartnerCandidate, type PartnerMatch } from "./match.ts";
 import { recommendPathways, type PathwayRecommendation } from "./rules.ts";
@@ -32,6 +33,26 @@ export type PathwaysView = {
   partners: PartnerMatch[];
   challenges: ChallengeMatch[];
 };
+
+/** Od tej części słów treściowych miernik od AI uznajemy za powtórzenie miernika z konfiguracji (albo wcześniejszego). */
+export const METRIC_REPEAT = 0.5;
+
+/**
+ * Mierniki od AI bez powtórzeń: model mimo zakazu w prompcie przepisuje mierniki z konfiguracji innymi słowami
+ * („List intencyjny od firmy… do 6 miesiąca” obok „List intencyjny z firmą z sektora w 6 miesięcy”).
+ */
+export function extraMetrics(configured: string[], fromAi: string[]): string[] {
+  const kept: string[] = [];
+  for (const m of fromAi) {
+    const words = contentWords(m);
+    const repeats = (other: string) => {
+      const theirs = contentWords(other);
+      return words.length > 0 && words.filter((w) => theirs.some((t) => sameStem(w, t))).length / words.length >= METRIC_REPEAT;
+    };
+    if (![...configured, ...kept].some(repeats)) kept.push(m);
+  }
+  return kept;
+}
 
 export function matchInput(src: PathwaySource, pathways: PathwayRecommendation["pathways"]): MatchInput {
   const card = src.card ?? {};
@@ -68,9 +89,11 @@ export function buildPathwaysView(src: PathwaySource, candidates: MatchCandidate
   const recommendation = recommendationFor(src);
   const input = matchInput(src, recommendation.pathways);
   const stored = readStoredPathways(src.pathways);
-  const chosen = new Set(recommendation.pathways.map((p) => p.key));
   const narrative: PathwaysView["narrative"] = {};
-  for (const item of stored?.items ?? []) if (chosen.has(item.key)) narrative[item.key] = item;
+  for (const item of stored?.items ?? []) {
+    const pathway = recommendation.pathways.find((p) => p.key === item.key);
+    if (pathway) narrative[item.key] = { ...item, metrics: extraMetrics(pathway.metrics, item.metrics) };
+  }
   return {
     recommendation,
     narrative,

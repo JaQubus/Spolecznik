@@ -241,7 +241,8 @@ export default async function Page(props: PageProps<"/panel/inicjatywy/[id]">) {
                   {c.initiatedBy === "author" ? "Prośba twórcy" : "Propozycja zespołu"}, {formatDate(c.createdAt)}.
                   {" "}Twórca: {c.authorConsent ? "zgoda" : "bez odpowiedzi"}. Partner: {c.partnerConsent ? "zgoda" : "bez odpowiedzi"}.
                 </p>
-                <p className="font-bold">{contactStatus(c)}</p>
+                {/* Region na żywo: po „Partner się zgodził” formularz znika razem ze swoim komunikatem, a zmianę stanu ogłasza ten wiersz. */}
+                <p role="status" className="font-bold">{contactStatus(c)}</p>
                 {c.status === "oczekuje" && !c.partnerConsent && (
                   <div className="flex flex-wrap gap-3">
                     <ActionForm action={recordPartnerAnswer}>
