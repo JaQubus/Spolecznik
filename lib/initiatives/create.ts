@@ -11,7 +11,7 @@ import {
 } from "../schemas";
 import { similarInitiatives, upsertIndex } from "../search";
 import { similarSources } from "../sources";
-import { assessInitiative } from "../radar";
+import { assessAndExplain, pathwaysFor, type PathwaysView } from "../pathways";
 import { newStatusCode } from "../status-code";
 import { createAdminClient } from "../supabase/admin";
 import { newAccessKey } from "./access";
@@ -89,9 +89,9 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
   if (!row) throw new Error("Nie udało się nadać kodu zgłoszenia");
   const initiative = row;
 
-  // Ocena radaru (jedno wywołanie modelu) nie blokuje odpowiedzi: liczy się po jej wysłaniu. Przy błędzie albo limicie
-  // Groq zgłoszenie zostaje bez oceny — Panel pokaże „Oceń ponownie”.
-  const assess = () => assessInitiative(initiative.id).then(() => undefined, (e) => console.error("[zgłoszenie] ocena radaru:", e));
+  // Ocena radaru i po niej uzasadnienie ścieżek (dwa wywołania modelu) nie blokują odpowiedzi: liczą się po jej wysłaniu.
+  // Przy błędzie albo limicie Groq zgłoszenie zostaje bez oceny — Panel pokaże „Oceń ponownie” i „Przygotuj uzasadnienie”.
+  const assess = () => assessAndExplain(initiative.id).then(() => undefined, (e) => console.error("[zgłoszenie] ocena radaru i ścieżki:", e));
   try {
     after(assess);
   } catch {
@@ -131,6 +131,12 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
   ]);
   for (const r of sideEffects) if (r.status === "rejected") console.error("[zgłoszenie] efekt uboczny:", r.reason);
 
+  // Wstępne ścieżki i partnerzy z samych reguł (bez oceny radaru, bez modelu) — od razu w wyniku zgłoszenia.
+  const pathways = await pathwaysFor({
+    innovation_kind: card.innovationKind, stage: card.stage, trl: card.trl, sectors: card.sectors, ip_status: card.ipStatus,
+    institution_type: card.institutionType, domains: card.domains, teryt: gminaRow?.teryt ?? null, card, radar: null,
+  }).catch((e): PathwaysView | null => { console.error("[zgłoszenie] ścieżki:", e); return null; });
+
   return {
     initiative: { id: initiative.id, statusCode: initiative.status_code, accessKey: access.key, gmina: gminaRow?.nazwa ?? null },
     similar: await similarDetails(similar),
@@ -138,6 +144,7 @@ export async function createInitiative({ kind, card, text, gmina, teryt, canvas,
     patterns: await matchDetails(ranked.filter((m) => m.fit >= GAP_THRESHOLD), kindOf, matchIds),
     ...support,
     similarSources: sources,
+    pathways,
   };
 }
 

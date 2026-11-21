@@ -19668,6 +19668,78 @@
         ]
       },
       "created_at": "2026-06-04T10:11:00+00:00"
+    },
+    {
+      "id": "c26b7115-4a60-5df0-bddd-f8f541651890",
+      "teryt": "1804011",
+      "institution_type": "szkola_ponadpodstawowa",
+      "best_fit": 61,
+      "is_gap": false,
+      "card": {
+        "summary": "Technikum chce, żeby uczniowie mieli praktyki u prawdziwych pracodawców, ale firmy z okolicy nie odpowiadają na nasze propozycje.",
+        "domains": [
+          "edukacja",
+          "gospodarka"
+        ],
+        "institutionType": "szkola_ponadpodstawowa",
+        "municipality": "Jarosław",
+        "keywords": [
+          "technikum",
+          "praktyka zawodowa",
+          "pracodawca",
+          "staż",
+          "kształcenie zawodowe"
+        ]
+      },
+      "created_at": "2026-08-26T19:53:00+00:00"
+    },
+    {
+      "id": "1afb2a5b-d9b7-5938-a539-11d86ae4c62a",
+      "teryt": "1809023",
+      "institution_type": "szkola_ponadpodstawowa",
+      "best_fit": 55,
+      "is_gap": false,
+      "card": {
+        "summary": "Absolwenci naszego technikum mechanicznego wyjeżdżają do pracy za granicę, choć zakłady w powiecie szukają ludzi.",
+        "domains": [
+          "edukacja",
+          "gospodarka"
+        ],
+        "institutionType": "szkola_ponadpodstawowa",
+        "municipality": "Cieszanów",
+        "keywords": [
+          "technikum",
+          "absolwent",
+          "praca",
+          "odpływ młodych",
+          "pracodawca"
+        ]
+      },
+      "created_at": "2026-08-08T11:40:00+00:00"
+    },
+    {
+      "id": "f3c279b8-5813-56ea-b3e2-220f287a722e",
+      "teryt": "1812032",
+      "institution_type": "szkola_ponadpodstawowa",
+      "best_fit": 89,
+      "is_gap": false,
+      "card": {
+        "summary": "Szkoła branżowa traci chętnych, bo młodzież nie widzi w regionie pracy w zawodzie. Chcemy pokazać uczniom firmy od środka.",
+        "domains": [
+          "edukacja",
+          "gospodarka"
+        ],
+        "institutionType": "szkola_ponadpodstawowa",
+        "municipality": "Jeżowe",
+        "keywords": [
+          "szkoła branżowa",
+          "kształcenie zawodowe",
+          "pracodawca",
+          "uczeń",
+          "zawód"
+        ]
+      },
+      "created_at": "2026-09-13T07:08:00+00:00"
     }
   ],
   "mentors": [

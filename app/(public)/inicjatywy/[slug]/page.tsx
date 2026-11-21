@@ -4,10 +4,13 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/knowledge/breadcrumbs";
 import { StorySteps } from "@/components/knowledge/story-steps";
 import { DomainBadge } from "@/components/taxonomy/icons";
+import { PathwaysSection } from "@/components/pathways/pathways-section";
 import { RadarNotes, RadarTable } from "@/components/radar/radar-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getPublicCreators, getPublicInitiative, publicInitiativesAvailable, type PublicCreator } from "@/lib/initiatives/public";
+import { getPublicCreators, getPublicInitiative, getPublicPathways, publicInitiativesAvailable, type PublicCreator } from "@/lib/initiatives/public";
+import { pathwaysFor, type PathwaysView } from "@/lib/pathways";
+import { org } from "@/lib/brand";
 import {
   creatorRoleLabel, crossLabel, innovationKindLabel, institutionLabel, ipStatusLabel, sectorLabel, signalLevel, stageLabel, trlLabel,
 } from "@/lib/taxonomy";
@@ -30,7 +33,13 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
   if (!i) notFound();
   const param = `inicjatywa=${encodeURIComponent(i.slug ?? i.id)}`;
   const radar = readAssessment(i.radar);
-  const creators = await getPublicCreators(i.id).catch((e) => { console.error("[inicjatywa] twórcy:", e); return [] as PublicCreator[]; });
+  const [creators, narrative] = await Promise.all([
+    getPublicCreators(i.id).catch((e) => { console.error("[inicjatywa] twórcy:", e); return [] as PublicCreator[]; }),
+    getPublicPathways(i.id).catch((e) => { console.error("[inicjatywa] uzasadnienie ścieżek:", e); return null; }),
+  ]);
+  // Ścieżki i partnerzy z reguł (6/10); błąd nie zasłania reszty karty.
+  const pathways = await pathwaysFor({ ...i, card: i.card, radar: i.radar, pathways: narrative })
+    .catch((e): PathwaysView | null => { console.error("[inicjatywa] ścieżki:", e); return null; });
 
   return (
     <article className="space-y-14">
@@ -86,6 +95,18 @@ export default async function Page(props: PageProps<"/inicjatywy/[slug]">) {
           <RadarTable radar={radar} id="radar" />
           <RadarNotes radar={radar} />
         </section>
+      )}
+
+      {pathways && (
+        <PathwaysSection
+          view={pathways}
+          audience="public"
+          contactNote={
+            <p className="text-muted-foreground">
+              Kontakt z partnerem zestawia zespół {org.short}, gdy zgodzą się obie strony. Twórca może poprosić o kontakt w swojej rozmowie.
+            </p>
+          }
+        />
       )}
 
       <section aria-labelledby="dzialaj" className="full-bleed space-y-4 bg-secondary py-10">

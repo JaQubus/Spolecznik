@@ -4,6 +4,8 @@ import { UsersIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { DomainBadge } from "@/components/taxonomy/icons";
+import { ContactButton } from "@/components/pathways/contact-button";
+import { PathwaysSection } from "@/components/pathways/pathways-section";
 import { SimilarSources } from "@/components/sources/similar-sources";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,8 +17,9 @@ import { org } from "@/lib/brand";
 import { linkClass, MatchRow, StatusCode, SupportSections } from "./result-parts";
 
 /**
- * Po zgłoszeniu albo wskazaniu: jak zrozumieliśmy inicjatywę, kod RAD, podobne inicjatywy z regionu (partnerzy),
- * sprawdzone rozwiązania z Polski (inspiracje), mentorzy i programy. Ocena radaru dochodzi w kolejnym kroku.
+ * Po zgłoszeniu albo wskazaniu: jak zrozumieliśmy inicjatywę, kod RAD, wstępne ścieżki rozwoju i dopasowani partnerzy
+ * (z reguł, przed oceną radaru), podobne inicjatywy z regionu, sprawdzone rozwiązania z Polski, mentorzy i programy.
+ * Ocena radaru i uzasadnienie ścieżek od AI dochodzą w kolejnym kroku — twórca zobaczy je w rozmowie.
  */
 export function InitiativeResults({
   kind, card, result, onReset,
@@ -51,6 +54,25 @@ export function InitiativeResults({
       </div>
 
       <StatusCode code={initiative.statusCode} accessKey={initiative.accessKey} />
+
+      {result.pathways && (
+        <PathwaysSection
+          view={result.pathways}
+          audience="author"
+          size="result"
+          idPrefix="wynik-sciezki"
+          contactNote={
+            <p>
+              {kind === "nomination"
+                ? `Kontakt z partnerem zestawiamy tylko za zgodą twórców. Zespół ${org.short} zapyta ich, gdy zweryfikuje wskazanie.`
+                : `„Poproś o kontakt” to Twoja zgoda. Zespół ${org.short} zapyta partnera, a gdy też się zgodzi, przedstawi was sobie w rozmowie.`}
+            </p>
+          }
+          partnerAction={kind === "nomination" ? undefined : (m) => (
+            <ContactButton code={initiative.statusCode} partnerId={m.partner.id} partnerName={m.partner.name} pathway={m.pathway} />
+          )}
+        />
+      )}
 
       <SimilarSources
         items={similarSources}

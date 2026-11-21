@@ -1,0 +1,81 @@
+// Widok ścieżek dla jednej innowacji: reguły + partnerzy + wyzwania + (jeśli jest) uzasadnienie od modelu.
+// Czysta funkcja — te same dane widzą karta publiczna, Panel, rozmowa twórcy i wynik zgłoszenia.
+import { readAssessment } from "../radar/score.ts";
+import { readStoredPathways, type PathwayNarrativeItem } from "../schemas.ts";
+import type { PathwayKey } from "../taxonomy.ts";
+import { rankChallenges, rankPartners, type ChallengeCandidate, type ChallengeMatch, type MatchInput, type PartnerCandidate, type PartnerMatch } from "./match.ts";
+import { recommendPathways, type PathwayRecommendation } from "./rules.ts";
+
+/** Kolumny inicjatywy (initiatives albo public_initiatives) potrzebne do ścieżek. */
+export type PathwaySource = {
+  innovation_kind: string | null;
+  stage: string | null;
+  trl: number | null;
+  sectors: string[];
+  ip_status: string | null;
+  institution_type: string | null;
+  domains: string[];
+  teryt: string | null;
+  adoptions_count?: number | null;
+  card: { title?: string; problem?: string; solution?: string; keywords?: string[]; creatorRoles?: string[] } | null;
+  radar: unknown;
+  pathways?: unknown;
+};
+
+export type MatchCandidates = { partners: PartnerCandidate[]; challenges: ChallengeCandidate[] };
+
+export type PathwaysView = {
+  recommendation: PathwayRecommendation;
+  /** Uzasadnienie i kroki od modelu dla ścieżek, które nadal wybierają reguły. */
+  narrative: Partial<Record<PathwayKey, PathwayNarrativeItem>>;
+  narrativeMeta: { model: string; generatedAt: string } | null;
+  partners: PartnerMatch[];
+  challenges: ChallengeMatch[];
+};
+
+export function matchInput(src: PathwaySource, pathways: PathwayRecommendation["pathways"]): MatchInput {
+  const card = src.card ?? {};
+  return {
+    innovationKind: src.innovation_kind,
+    stage: src.stage,
+    trl: src.trl,
+    sectors: src.sectors ?? [],
+    domains: src.domains ?? [],
+    institutionType: src.institution_type,
+    teryt: src.teryt,
+    keywords: card.keywords ?? [],
+    text: [card.title, card.problem, card.solution].filter(Boolean).join(" "),
+    pathways,
+  };
+}
+
+export function recommendationFor(src: PathwaySource): PathwayRecommendation {
+  const radar = readAssessment(src.radar);
+  return recommendPathways({
+    innovationKind: src.innovation_kind,
+    stage: src.stage,
+    trl: src.trl,
+    sectors: src.sectors ?? [],
+    ipStatus: src.ip_status,
+    institutionType: src.institution_type,
+    creatorRoles: src.card?.creatorRoles ?? [],
+    radar,
+    adoptionsCount: src.adoptions_count ?? 0,
+  });
+}
+
+export function buildPathwaysView(src: PathwaySource, candidates: MatchCandidates): PathwaysView {
+  const recommendation = recommendationFor(src);
+  const input = matchInput(src, recommendation.pathways);
+  const stored = readStoredPathways(src.pathways);
+  const chosen = new Set(recommendation.pathways.map((p) => p.key));
+  const narrative: PathwaysView["narrative"] = {};
+  for (const item of stored?.items ?? []) if (chosen.has(item.key)) narrative[item.key] = item;
+  return {
+    recommendation,
+    narrative,
+    narrativeMeta: stored ? { model: stored.model, generatedAt: stored.generatedAt } : null,
+    partners: rankPartners(input, candidates.partners),
+    challenges: rankChallenges(input, candidates.challenges),
+  };
+}

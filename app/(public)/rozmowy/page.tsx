@@ -1,12 +1,17 @@
 import Link from "next/link";
 import { NoDatabase } from "@/components/layout/no-database";
 import { EmailOptIn } from "@/components/rozmowa/email-opt-in";
+import { ContactButton } from "@/components/pathways/contact-button";
+import { PathwaysSection } from "@/components/pathways/pathways-section";
 import { MyInitiatives } from "@/components/rozmowa/my-initiatives";
 import { PrivateLink } from "@/components/rozmowa/private-link";
 import { Alert } from "@/components/ui/alert";
 import { maskedContactEmail } from "@/lib/author-contact";
 import { rememberedKey } from "@/lib/initiatives/access";
+import { initiativeContacts, type ContactRequest } from "@/lib/contacts";
 import { initiativePartnerships, type Partnership } from "@/lib/partnerships";
+import { initiativePathwaySource, pathwaysFor, type PathwaysView } from "@/lib/pathways";
+import { partnerKindLabel } from "@/lib/taxonomy";
 import { plural } from "@/lib/pl";
 import { STATUS_CODE } from "@/lib/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
@@ -36,6 +41,8 @@ export default async function Page(props: PageProps<"/rozmowy">) {
   let contact: string | null = null;
   let chosenName: string | null = null;
   let partnerships: Partnership[] = [];
+  let pathways: PathwaysView | null = null;
+  let contacts: ContactRequest[] = [];
   try {
     if (STATUS_CODE.test(raw)) {
       const found = await initiativeThread({ code: raw });
@@ -46,6 +53,15 @@ export default async function Page(props: PageProps<"/rozmowy">) {
       // Mentor z wyników — tylko podpowiedź, dopóki zespół nie przypisze kogoś w Panelu.
       if (thread && !thread.mentor && askedMentor) chosenName = await mentorName(askedMentor);
       if (thread && key) partnerships = await initiativePartnerships(thread.id).catch((e) => { console.error("[rozmowy] partnerstwa:", e); return []; });
+      if (thread && key) {
+        const id = thread.id;
+        // Ścieżki, partnerzy i prośby o kontakt (6/10) — błąd nie zasłania rozmowy.
+        [pathways, contacts] = await Promise.all([
+          initiativePathwaySource(id).then((src) => (src ? pathwaysFor(src) : null))
+            .catch((e): PathwaysView | null => { console.error("[rozmowy] ścieżki:", e); return null; }),
+          initiativeContacts(id).catch((e): ContactRequest[] => { console.error("[rozmowy] kontakty:", e); return []; }),
+        ]);
+      }
     }
     if (!thread) mine = await rememberedThreads();
   } catch (e) {
@@ -82,6 +98,7 @@ export default async function Page(props: PageProps<"/rozmowy">) {
       </div>
 
       <PartnershipNotice code={thread.code} partnerships={partnerships} />
+      <ContactNotice contacts={contacts} />
 
       <Conversation
         code={thread.code}
@@ -91,8 +108,61 @@ export default async function Page(props: PageProps<"/rozmowy">) {
         initial={{ threadId: thread.threadId, messages: thread.messages, waiting: thread.waiting }}
       />
 
+      <OtherContacts code={thread.code} contacts={contacts} shown={new Set(pathways?.partners.map((m) => m.partner.id) ?? [])} />
+
+      {pathways && (
+        <div id="kontakty" className="space-y-12 scroll-mt-24">
+          <PathwaysSection
+            view={pathways}
+            audience="author"
+            size="panel"
+            contactNote={
+              <p>
+                „Poproś o kontakt” to Twoja zgoda. Zespół {org.short} zapyta partnera, a gdy też się zgodzi, przedstawi was sobie w tej rozmowie.
+                Partner nie zobaczy zgłoszenia ani Twoich danych bez Twojej zgody.
+              </p>
+            }
+            partnerAction={(m) => {
+              const c = contacts.find((x) => x.partnerId === m.partner.id);
+              return <ContactButton code={thread.code} partnerId={m.partner.id} partnerName={m.partner.name} pathway={m.pathway} existing={c} />;
+            }}
+          />
+        </div>
+      )}
+
       <PrivateLink code={thread.code} accessKey={key} />
       <EmailOptIn code={thread.code} accessKey={key} current={contact} />
+    </section>
+  );
+}
+
+/** Propozycje kontaktu od zespołu, na które twórca jeszcze nie odpowiedział — widać je od razu pod nagłówkiem. */
+function ContactNotice({ contacts }: { contacts: ContactRequest[] }) {
+  const proposals = contacts.filter((c) => c.status === "oczekuje" && !c.authorConsent);
+  if (proposals.length === 0) return null;
+  return (
+    <Alert title={`Zespół ${org.short} proponuje kontakt z partnerem`}>
+      <p>{proposals.map((c) => c.partnerName).join(", ")}. Bez Twojej zgody partner nie zobaczy zgłoszenia.</p>
+      <p><a href="#kontakty" className={linkClass}>Odpowiedz przy partnerze</a></p>
+    </Alert>
+  );
+}
+
+/** Prośby o partnerów, których nie ma już w dopasowaniu (np. po zmianie karty) — żeby nie zniknęły z widoku. */
+function OtherContacts({ code, contacts, shown }: { code: string; contacts: ContactRequest[]; shown: Set<string> }) {
+  const other = contacts.filter((c) => !shown.has(c.partnerId) && !(c.status === "odrzucone" && c.declinedBy === "author"));
+  if (other.length === 0) return null;
+  return (
+    <section aria-labelledby="inne-kontakty" className="max-w-[68ch] space-y-3">
+      <h2 id="inne-kontakty" className="text-2xl font-bold">Prośby o kontakt</h2>
+      <ul className="border-t">
+        {other.map((c) => (
+          <li key={c.id} className="space-y-2 border-b py-4">
+            <p><span className="font-bold">{c.partnerName}</span>{c.partnerKind && <span className="text-muted-foreground"> · {partnerKindLabel(c.partnerKind)}</span>}</p>
+            <ContactButton code={code} partnerId={c.partnerId} partnerName={c.partnerName} pathway={c.pathway ?? undefined} existing={c} />
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

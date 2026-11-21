@@ -2,21 +2,26 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { brand, org } from "@/lib/brand";
 import { models } from "@/lib/llm";
+import { describeCondition } from "@/lib/pathways/rules";
 import { QUOTE_WORD_TOLERANCE } from "@/lib/radar/score";
 import {
-  INNOVATION_KIND_KEYS, innovationKindLabel, RADAR, RADAR_KEYS, STAGE_KEYS, stageLabel, TRL_LEVELS, type RadarWeightsKey,
+  EASE_OF_ADOPTION, INNOVATION_KIND_KEYS, innovationKindLabel, PARTNER_MATCHING, PATHWAY_KEYS, PATHWAY_RULES, PATHWAYS, RADAR, RADAR_KEYS,
+  STAGE_KEYS, stageLabel, TRL_LEVELS, type RadarWeightsKey,
 } from "@/lib/taxonomy";
 
 export const metadata: Metadata = {
   title: "Jak oceniamy innowacje",
-  description: `Metodologia radaru ${brand.nameGenitive}: wymiary oceny, kotwice, wagi dla typów innowacji, reguły i ograniczenia AI.`,
+  description: `Metodologia radaru ${brand.nameGenitive}: wymiary oceny, kotwice, wagi dla typów innowacji, reguły, ścieżki rozwoju, dopasowanie partnerów i ograniczenia AI.`,
 };
 
 const link = "font-bold underline decoration-1 underline-offset-4 hover:decoration-2";
 const th = "p-3 text-left";
 const WEIGHT_SETS: RadarWeightsKey[] = [...INNOVATION_KIND_KEYS, "domyslne"];
 
-/** Cała strona powstaje z config/taxonomy.json → radar, więc nie rozjedzie się z tym, jak liczy kod (lib/radar/score.ts). */
+/**
+ * Cała strona powstaje z config/taxonomy.json (radar, pathways, pathwayRules, easeOfAdoption, partnerMatching), więc nie rozjedzie
+ * się z tym, jak liczy kod (lib/radar/score.ts, lib/pathways/).
+ */
 export default function Page() {
   const levels = RADAR.levels;
   return (
@@ -119,6 +124,62 @@ export default function Page() {
           <li>
             <strong>Korekta zespołu.</strong> Zespół może zmienić sygnał po weryfikacji, ale tylko z powodem zapisanym w historii zmian.
             Na karcie inicjatywy widać, że sygnał skorygowano.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="sciezki" className="space-y-4">
+        <h2 id="sciezki" className="text-3xl font-bold">Ścieżki rozwoju i dopasowanie partnerów</h2>
+        <p className="max-w-[68ch] text-lg">
+          Po ocenie radaru reguły wybierają od 1 do {PATHWAYS.max} ścieżek: {PATHWAY_KEYS.map((k) => PATHWAYS.kinds[k].label.toLowerCase()).join(", ")}.
+          Każda reguła, której warunek się zgadza, daje ścieżce punkty i powód. Pokazujemy ścieżki z co najmniej {PATHWAYS.minPoints} punktami
+          (przed oceną radaru: {PATHWAYS.minPointsWithoutRadar}). AI nie wybiera ścieżek — pisze tylko uzasadnienie, kolejne kroki i dodatkowe mierniki.
+        </p>
+        <div role="region" aria-labelledby="sciezki-caption" tabIndex={0} className="relative overflow-x-auto">
+          <table className="w-full border-collapse text-base">
+            <caption id="sciezki-caption" className="mb-3 text-left text-muted-foreground">Reguły ścieżek: kiedy działają, ile dają punktów i jaki powód zobaczy twórca.</caption>
+            <thead>
+              <tr className="border-b border-border-strong">
+                <th scope="col" className={th}>Ścieżka</th>
+                <th scope="col" className={th}>Warunek</th>
+                <th scope="col" className={th}>Punkty</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PATHWAY_RULES.map((r, n) => (
+                <tr key={n} className="border-b border-border align-top">
+                  <th scope="row" className={th}>
+                    {PATHWAYS.kinds[r.pathway].label}
+                    <span className="block text-sm font-normal text-muted-foreground">{PATHWAYS.kinds[r.pathway].variants[r.variant]?.label}</span>
+                  </th>
+                  <td className="p-3">{describeCondition(r.when)}</td>
+                  <td className="p-3 tabular-nums">{r.points}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <ul className="max-w-[68ch] list-disc space-y-3 pl-6 text-lg">
+          <li>
+            <strong>Łatwość wdrożenia</strong> to element ścieżki „{PATHWAYS.kinds.wdrozenie.label}”: {Math.round(EASE_OF_ADOPTION.weights.skalowalnosc * 100)}% skalowalności
+            {" "}i {Math.round(EASE_OF_ADOPTION.weights.dojrzalosc * 100)}% dojrzałości z radaru oraz {Math.round(EASE_OF_ADOPTION.weights.kind * 100)}% łatwości typu innowacji
+            {" "}({INNOVATION_KIND_KEYS.map((k) => `${innovationKindLabel(k).toLowerCase()} ${EASE_OF_ADOPTION.kindBase[k]}`).join(", ")}),
+            {" "}plus {EASE_OF_ADOPTION.transferredBonus}, gdy rozwiązanie działa już w innym miejscu.
+          </li>
+          <li>
+            <strong>Mierniki skuteczności</strong> są przy każdej ścieżce (np. list intencyjny, liczba instytucji wdrażających, docelowy TRL z terminem).
+            Część pochodzi z konfiguracji, a AI może dodać najwyżej dwa dopasowane do karty.
+          </li>
+          <li>
+            <strong>Partnerzy</strong> dostają punkty za ten sam sektor ({PARTNER_MATCHING.points.sector}), wspólne dziedziny (po {PARTNER_MATCHING.points.domain},
+            {" "}najwyżej {PARTNER_MATCHING.points.domainMax}), dojrzałość w ich zakresie TRL albo etapów ({PARTNER_MATCHING.points.maturity}), formę wsparcia
+            {" "}pasującą do ścieżki ({PARTNER_MATCHING.points.support}), rodzaj partnera ({PARTNER_MATCHING.points.kind}), wspólne słowa kluczowe
+            {" "}(do {PARTNER_MATCHING.points.keywords}) i siedzibę w tym samym powiecie ({PARTNER_MATCHING.points.county}). Partner spoza swojego zakresu TRL
+            {" "}albo etapów odpada, tak samo partner bez wspólnego sektora, dziedziny i słów kluczowych. Pokazujemy dopasowania od {PARTNER_MATCHING.minScore} na 100 i przy każdym piszemy, dlaczego pasuje.
+          </li>
+          <li>
+            <strong>Kontakt tylko za zgodą obu stron.</strong> Twórca prosi o kontakt (albo przyjmuje propozycję zespołu), a zespół {org.short} pyta partnera.
+            Dopiero gdy obie strony się zgodzą, zespół przedstawia je sobie w rozmowie. Do tego czasu partner nie widzi zgłoszenia.
           </li>
         </ul>
       </section>

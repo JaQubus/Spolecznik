@@ -10,7 +10,7 @@ import {
   type ClaimRequest, type InitiativeCard, type SimilarSource, type SourceClassification, type SourceKey, type SourceRecordKind,
 } from "./schemas";
 import { keywordSearch, upsertIndex } from "./search";
-import { assessInitiative } from "./radar";
+import { assessAndExplain } from "./pathways";
 import { pickDuplicate } from "./source-records";
 import { newStatusCode } from "./status-code";
 import { createAdminClient } from "./supabase/admin";
@@ -244,8 +244,9 @@ export async function claimInitiative(input: ClaimRequest, key: string): Promise
     notify({ role: "admin", kind: "nowa_inicjatywa", payload: { initiativeId: view.id, statusCode: view.code, title: card.title, submissionKind: "detected" } }),
   ]);
   for (const r of sideEffects) if (r.status === "rejected") console.error("[przejęcie] efekt uboczny:", r.reason);
-  // Karta uzupełniona przez twórcę (np. TRL) = pierwsza ocena radaru, jak po zwykłym zgłoszeniu (lib/initiatives/create.ts).
-  const assess = () => assessInitiative(view.id).then(() => undefined, (e) => console.error("[przejęcie] ocena radaru:", e));
+  // Karta uzupełniona przez twórcę (np. TRL) = pierwsza ocena radaru i uzasadnienie ścieżek, jak po zwykłym zgłoszeniu
+  // (lib/initiatives/create.ts).
+  const assess = () => assessAndExplain(view.id).then(() => undefined, (e) => console.error("[przejęcie] ocena radaru i ścieżki:", e));
   try {
     after(assess);
   } catch {

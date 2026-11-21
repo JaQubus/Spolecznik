@@ -1,4 +1,5 @@
 import "server-only";
+import { advanceFunnel } from "../funnel";
 import { radarAssess, models } from "../llm";
 import { createAdminClient } from "../supabase/admin";
 import type { RadarKey } from "../taxonomy";
@@ -15,7 +16,7 @@ export async function assessInitiative(initiativeId: string): Promise<RadarAsses
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("initiatives")
-    .select("card, stage, innovation_kind, sectors, trl, ip_status")
+    .select("card, stage, innovation_kind, sectors, trl, ip_status, status")
     .eq("id", initiativeId)
     .maybeSingle();
   if (error) throw error;
@@ -37,5 +38,7 @@ export async function assessInitiative(initiativeId: string): Promise<RadarAsses
     .update({ radar: assessment, signal: assessment.signal, updated_at: new Date().toISOString() })
     .eq("id", initiativeId);
   if (saveError) throw saveError;
+  // Lejek: wykryta zostaje wykrytą, dopóki twórca jej nie przejmie.
+  if (data.status !== "detected") await advanceFunnel(initiativeId, "oceniona", "system", { note: `Sygnał radaru ${assessment.signal}/100` });
   return assessment;
 }

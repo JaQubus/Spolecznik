@@ -88,3 +88,10 @@ export async function getPublicCreators(initiativeId: string): Promise<PublicCre
   if (error) throw error;
   return (data ?? []) as PublicCreator[];
 }
+
+/** Uzasadnienie ścieżek (public_initiatives.pathways, 0009). Osobne zapytanie: baza sprzed 0009 nie ma tej kolumny. */
+export async function getPublicPathways(initiativeId: string): Promise<unknown> {
+  const { data, error } = await createPublicClient().from("public_initiatives").select("pathways").eq("id", initiativeId).maybeSingle();
+  if (error) throw error;
+  return (data as { pathways?: unknown } | null)?.pathways ?? null;
+}
