@@ -92,7 +92,7 @@ export async function loadReport(teryt: string): Promise<GminaReport | null> {
       ? supabase.from("search_index").select("ref_id").eq("kind", "nabor").eq("active", true).overlaps("areas", profile.focus)
       : Promise.resolve({ data: [], error: null }),
   ]);
-  // Bez migracji 0026 raport działa dalej na szablonie i innowacjach z obszaru.
+  // Bez migracji 0006 raport działa dalej na szablonie i innowacjach z obszaru.
   for (const r of [stored, matches]) if (r.error && !isMissingTable(r.error)) throw r.error;
   for (const r of [needs, callHits]) if (r.error) throw r.error;
 

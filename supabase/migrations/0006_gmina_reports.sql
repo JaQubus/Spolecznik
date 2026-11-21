@@ -4,7 +4,7 @@
 
 -- Podsumowanie raportu: zdania z modelu po sprawdzeniu liczb albo zdania z szablonu.
 create table if not exists gmina_reports (
-  teryt          text primary key references gminy on delete cascade,
+  teryt          text primary key references municipalities on delete cascade,
   summary        text not null,
   summary_source text not null check (summary_source in ('llm', 'szablon')),
   data_version   text not null,      -- skrót danych wejściowych; inny = do przeliczenia
@@ -22,7 +22,7 @@ create table if not exists gmina_report_matches (
   primary key (area, cohort)
 );
 
--- Bez danych osobowych: podsumowanie z danych publicznych (GUS, IOSS), dopasowania do Biblioteki.
+-- Bez danych osobowych: podsumowanie z danych publicznych (GUS), dopasowania do Biblioteki.
 alter table gmina_reports enable row level security;
 alter table gmina_report_matches enable row level security;
 create policy "publiczny odczyt" on gmina_reports for select using (true);
